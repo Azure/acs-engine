@@ -516,7 +516,7 @@
       "dependsOn": [
           "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
           "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]"
-          {{if .MasterProfile.IsCustomVNET}}
+          {{if not .MasterProfile.IsCustomVNET}}
             ,"[variables('vnetID')]"
           {{end}}
       ]
