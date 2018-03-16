@@ -182,17 +182,36 @@ func (cli *CLIProvisioner) generateName() string {
 
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() {
-		cli.Config.SetKubeConfig()
-		log.Println("Waiting on nodes to go into ready state...")
-		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if !ready {
-			return errors.New("Error: Not all nodes in a healthy state")
+		if !cli.IsPrivate() {
+			cli.Config.SetKubeConfig()
+			log.Println("Waiting on nodes to go into ready state...")
+			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
+			if !ready {
+				return errors.New("Error: Not all nodes in a healthy state")
+			}
+			version, err := node.Version()
+			if err != nil {
+				log.Printf("Ready nodes did not return a version: %s", err)
+			}
+			log.Printf("Testing a Kubernetes %s cluster...\n", version)
+		} else {
+			log.Println("This cluster is private")
+			if cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile == nil {
+				// TODO: add "bring your own jumpbox to e2e"
+				return errors.New("Error: cannot test a private cluster without provisioning a jumpbox")
+			}
+			log.Printf("Testing a Kubernetes private cluster...")
+			// hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
+			// conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username, cli.Config.GetSSHKeyPath())
+			// if err != nil {
+			// 	return err
+			// }
+			// str, err := conn.Execute("kubectl get nodes -o json")
+			// if err != nil {
+			// 	return err
+			// }
+			// log.Printf("kubectl get nodes -o json\n %s", str)
 		}
-		version, err := node.Version()
-		if err != nil {
-			log.Printf("Ready nodes did not return a version: %s", err)
-		}
-		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {
@@ -258,4 +277,12 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	}
 
 	return nil
+}
+
+// IsPrivate will return true if the cluster has no public IPs
+func (cli *CLIProvisioner) IsPrivate() bool {
+	if cli.Config.IsKubernetes() && cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && *cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
+		return true
+	}
+	return false
 }

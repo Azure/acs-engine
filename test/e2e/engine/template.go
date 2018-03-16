@@ -96,6 +96,9 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 	if config.PublicSSHKey != "" {
 		cs.ContainerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData = config.PublicSSHKey
+		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey = config.PublicSSHKey
+		}
 	}
 
 	if config.WindowsAdminPasssword != "" {
@@ -177,6 +180,15 @@ func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 		}
 	}
 	return false, api.KubernetesAddon{}
+}
+
+// IsPrivate will return true if private cluster mode is enabled
+func (e *Engine) IsPrivate() bool {
+	kc := e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig
+	if kc != nil && kc.PrivateCluster != nil && *kc.PrivateCluster.Enabled {
+		return true
+	}
+	return false
 }
 
 // OrchestratorVersion1Dot8AndUp will return true if the orchestrator version is 1.8 and up
