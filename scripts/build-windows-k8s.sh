@@ -158,6 +158,8 @@ k8s_18_cherry_pick() {
 	if [ ! "${version}" \< "1.8.9" ]; then
 		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
 		git revert --no-edit 63b4f60e43 || true
+		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
+		git revert --no-edit 40d5e0a34f || true
 	fi
 
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
@@ -171,6 +173,8 @@ k8s_18_cherry_pick() {
 	if [ ! "${version}" \< "1.8.9" ]; then
 		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
 		git cherry-pick --allow-empty --keep-redundant-commits 6a8305e419
+		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
+		git cherry-pick --allow-empty --keep-redundant-commits b90d61a48c
 	fi
 }
 
