@@ -100,6 +100,13 @@ k8s_17_cherry_pick() {
 						echo "version 1.7.14 and after..."
 						# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
 						git revert --no-edit 975d0a4bb9 || true
+						# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
+						git revert --no-edit 51584188ee || true
+						git revert --no-edit 3a0db21dcb || true
+						# From 1.7.14, 273411cc90 conflict with e9591ef03e. We use d18812a049 in Azure repo instead of 273411cc90
+						git revert --no-edit 273411cc90 || true
+						# From 1.7.14, a97f60fbf3 conflict with a36d59ddda. We use 69c56c6037 in Azure repo instead of a97f60fbf3
+						git revert --no-edit a97f60fbf3 || true
 					fi
 				fi
 			fi
@@ -118,6 +125,12 @@ k8s_17_cherry_pick() {
 		if [ ! "${version}" \< "1.7.14" ]; then
 			# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
 			git cherry-pick --allow-empty --keep-redundant-commits a36d59ddda
+			# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
+			git cherry-pick --allow-empty --keep-redundant-commits f5c45d3def
+			# From 1.7.14, 273411cc90 conflict with e9591ef03e. We use d18812a049 in Azure repo instead of 273411cc90
+			git cherry-pick --allow-empty --keep-redundant-commits d18812a049
+			# From 1.7.14, a97f60fbf3 conflict with a36d59ddda. We use 69c56c6037 in Azure repo instead of a97f60fbf3
+			git cherry-pick --allow-empty --keep-redundant-commits 69c56c6037
 		fi
 }
 
