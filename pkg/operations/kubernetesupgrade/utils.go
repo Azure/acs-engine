@@ -2,6 +2,7 @@ package kubernetesupgrade
 
 import "k8s.io/api/core/v1"
 
+// GetNodeCondition returns the NodeCondition of the desired conditionType, or -1
 func GetNodeCondition(status *v1.NodeStatus, conditionType v1.NodeConditionType) (int, *v1.NodeCondition) {
 	if status == nil {
 		return -1, nil
