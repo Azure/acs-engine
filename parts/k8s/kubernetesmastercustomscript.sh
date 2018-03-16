@@ -487,12 +487,11 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        timeout 60s systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
                 echo "status $?"
-                timeout 60s systemctl restart docker
+               /bin/systemctl restart docker
             else
                 echo "docker started, took $i seconds"
                 dockerStarted=0
