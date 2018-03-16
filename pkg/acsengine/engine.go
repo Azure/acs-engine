@@ -727,6 +727,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			if properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL != "" {
 				dcosBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL
 			}
+
+			if len(properties.OrchestratorProfile.DcosConfig.Registry) > 0 {
+				addValue(parametersMap, "registry", properties.OrchestratorProfile.DcosConfig.Registry)
+				addValue(parametersMap, "registryKey", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", properties.OrchestratorProfile.DcosConfig.RegistryUser, properties.OrchestratorProfile.DcosConfig.RegistryPass))))
+			}
 		}
 
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
@@ -926,6 +931,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},
+		"HasPrivateRegistry": func() bool {
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil {
+				return len(cs.Properties.OrchestratorProfile.DcosConfig.Registry) > 0
+			}
+			return false
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
@@ -994,7 +1005,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript()
+			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
@@ -1011,7 +1022,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile, *cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
@@ -2169,7 +2180,7 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 
 	var scriptname string
@@ -2197,13 +2208,20 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	} else {
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
-
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
 
-	return provisionScript
+	var b bytes.Buffer
+	b.WriteString(provisionScript)
+	b.WriteString("\n")
+
+	if len(orchProfile.DcosConfig.Registry) == 0 {
+		b.WriteString("rm /etc/docker.tar.gz\n")
+	}
+
+	return b.String()
 }
 
-func getDCOSMasterProvisionScript() string {
+func getDCOSMasterProvisionScript(orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
@@ -2219,8 +2237,12 @@ func getDCOSMasterProvisionScript() string {
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	var b bytes.Buffer
+	b.WriteString(provisionScript)
+	b.WriteString("\n")
 
-	return provisionScript
+	return b.String()
+
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
@@ -2244,7 +2266,7 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
 
 	b, err := Asset(yamlFilename)
 	if err != nil {
-		panic(fmt.Sprintf("BUG: %s", err.Error()))
+		panic(fmt.Sprintf("BUG getting yaml custom data file: %s", err.Error()))
 	}
 
 	// transform the provision script content
