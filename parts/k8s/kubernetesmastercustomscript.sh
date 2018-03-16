@@ -509,9 +509,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    docker images
-    retrycmd_if_failure 5 1 docker pull $HYPERKUBE_URL
-    docker images
+    retrycmd_if_failure 100 1 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
