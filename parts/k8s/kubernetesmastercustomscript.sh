@@ -491,7 +491,7 @@ function ensureDocker() {
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
                 echo "status $?"
-               /bin/systemctl restart docker
+                /bin/systemctl restart docker
             else
                 echo "docker started, took $i seconds"
                 dockerStarted=0
