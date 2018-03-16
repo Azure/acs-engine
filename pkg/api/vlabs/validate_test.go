@@ -580,7 +580,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.13"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Windows version: %v", err,
@@ -588,7 +588,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -604,7 +604,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.8"
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.9"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Windows version: %v", err,
@@ -612,7 +612,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.9"
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.10"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -628,7 +628,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.3"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.4"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Windows version: %v", err,
@@ -636,7 +636,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.4"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.5"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
