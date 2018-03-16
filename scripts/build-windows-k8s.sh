@@ -131,6 +131,8 @@ k8s_17_cherry_pick() {
 			git cherry-pick --allow-empty --keep-redundant-commits d18812a049
 			# From 1.7.14, a97f60fbf3 conflict with a36d59ddda. We use 69c56c6037 in Azure repo instead of a97f60fbf3
 			git cherry-pick --allow-empty --keep-redundant-commits 69c56c6037
+
+			git cherry-pick --allow-empty --keep-redundant-commits 3e930be6bc
 		fi
 }
 
