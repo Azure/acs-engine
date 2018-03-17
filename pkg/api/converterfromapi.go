@@ -621,6 +621,7 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = api.OrchestratorType
+
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
 		sv, _ := semver.NewVersion(o.OrchestratorVersion)
@@ -641,6 +642,17 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
 	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
+	if api.Registry != "" {
+		vlabs.Registry = api.Registry
+	}
+
+	if api.RegistryUser != "" {
+		vlabs.RegistryUser = api.RegistryUser
+	}
+
+	if api.RegistryPass != "" {
+		vlabs.RegistryPass = api.RegistryPass
+	}
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {

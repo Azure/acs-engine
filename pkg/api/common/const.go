@@ -116,7 +116,7 @@ const (
 	// KubernetesVersion1Dot6Dot13 is the major.minor.patch string for the 1.6.13 version of kubernetes
 	KubernetesVersion1Dot6Dot13 string = "1.6.13"
 	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
-	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
+	KubernetesDefaultVersion string = KubernetesVersion1Dot8Dot9
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
@@ -181,6 +181,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot7Dot10:      true,
 	KubernetesVersion1Dot7Dot12:      true,
 	KubernetesVersion1Dot7Dot13:      true,
+	KubernetesVersion1Dot7Dot14:      true,
 	KubernetesVersion1Dot8Dot0:       true,
 	KubernetesVersion1Dot8Dot1:       true,
 	KubernetesVersion1Dot8Dot2:       true,
@@ -188,10 +189,12 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot6:       true,
 	KubernetesVersion1Dot8Dot7:       true,
 	KubernetesVersion1Dot8Dot8:       true,
+	KubernetesVersion1Dot8Dot9:       true,
 	KubernetesVersion1Dot9Dot0:       true,
 	KubernetesVersion1Dot9Dot1:       true,
 	KubernetesVersion1Dot9Dot2:       true,
 	KubernetesVersion1Dot9Dot3:       true,
+	KubernetesVersion1Dot9Dot4:       true,
 	KubernetesVersion1Dot10Dot0Beta2: false,
 	KubernetesVersion1Dot10Dot0Beta4: false,
 }

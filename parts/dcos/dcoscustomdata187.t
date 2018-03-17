@@ -68,6 +68,15 @@ runcmd: PREPROVISION_EXTENSION
   - mask
   - --now
   - lxc-net.service
+- - tar
+  - czf 
+  - /etc/docker.tar.gz
+  - -C
+  - /tmp/xtoph
+  - .docker
+- - rm 
+  - -rf 
+  - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -349,4 +358,7 @@ write_files:
 - path: /var/lib/dcos/mesos-slave-common
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
+  owner: "root"
+- content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"

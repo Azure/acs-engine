@@ -288,6 +288,9 @@ type KubernetesConfig struct {
 type DcosConfig struct {
 	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
 	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                string `json:"registry,omitempty"`
+	RegistryUser            string `json:"registryUser,omitempty"`
+	RegistryPass            string `json:"registryPassword,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

@@ -85,6 +85,15 @@ runcmd: PREPROVISION_EXTENSION
 - sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
 - service ssh restart 
 - /opt/azure/containers/setup_ephemeral_disk.sh
+- - tar
+  - czf 
+  - /etc/docker.tar.gz
+  - -C
+  - /tmp/xtoph
+  - .docker
+- - rm 
+  - -rf 
+  - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -119,7 +128,6 @@ runcmd: PREPROVISION_EXTENSION
   - --no-block
   - start
   - dcos-setup.service
-- /opt/azure/containers/add_admin_to_docker_group.sh
 write_files:
 - content: 'https://dcosio.azureedge.net/dcos/stable
 
@@ -305,11 +313,8 @@ write_files:
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
   owner: "root"
-- content: |
-    #!/bin/bash
-    adduser {{{adminUsername}}} docker
-  path: "/opt/azure/containers/add_admin_to_docker_group.sh"
-  permissions: "0744"
+- content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"
 - content: |
     #!/bin/bash
