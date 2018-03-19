@@ -88,10 +88,10 @@
               "destinationAddressPrefix": "*", 
               "destinationPortRange": "3389-3389", 
               "direction": "Inbound", 
-              "priority": 102, 
-              "protocol": "Tcp", 
-              "sourceAddressPrefix": "*", 
-              "sourcePortRange": "*"
+              "priority": 102,
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Tcp"
             }
           },
 {{end}}       
@@ -100,13 +100,45 @@
             "properties": {
               "access": "Allow",
               "description": "Allow SSH traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22-22",
               "direction": "Inbound",
               "priority": 101,
               "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
+              {{if gt (len .MasterProfile.NetworkAccessProfile.SSH.SourceAddressPrefixes) 0}}
+              "sourceAddressPrefixes": [
+                {{range $index, $prefix := .MasterProfile.NetworkAccessProfile.SSH.SourceAddressPrefixes}}
+                  {{if $index}}, {{end}}"{{$prefix}}"
+                {{end}}
+              ],
+              {{else}}
+              "sourceAddressPrefix": "{{.MasterProfile.NetworkAccessProfile.SSH.SourceAddressPrefix}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.SSH.SourcePortRanges) 0}}
+              "sourcePortRanges": [
+                {{range $index, $range := .MasterProfile.NetworkAccessProfile.SSH.SourcePortRanges}}
+                  {{if $index}}, {{end}}"{{$range}}"
+                {{end}}
+              ],
+              {{else}}
+              "sourcePortRange": "{{.MasterProfile.NetworkAccessProfile.SSH.SourcePortRange}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.SSH.DestinationAddressPrefixes) 0}}
+              "destinationAddressPrefixes": [
+                {{range $index, $prefix := .MasterProfile.NetworkAccessProfile.SSH.DestinationAddressPrefixes}}
+                  {{if $index}}, {{end}}"{{$prefix}}"
+                {{end}}
+              ],
+              {{else}}
+              "destinationAddressPrefix": "{{.MasterProfile.NetworkAccessProfile.SSH.DestinationAddressPrefix}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.SSH.DestinationPortRanges) 0}}
+              "destinationPortRanges": [
+                {{range $index, $range := .MasterProfile.NetworkAccessProfile.SSH.DestinationPortRanges}}
+                  {{if $index}}, {{end}}"{{$range}}"
+                {{end}}
+              ]
+              {{else}}
+              "destinationPortRange": "{{.MasterProfile.NetworkAccessProfile.SSH.DestinationPortRange}}"
+              {{end}}
             }
           },
           {
@@ -114,13 +146,45 @@
             "properties": {
               "access": "Allow",
               "description": "Allow kube-apiserver (tls) traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443-443",
               "direction": "Inbound",
               "priority": 100,
               "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
+              {{if gt (len .MasterProfile.NetworkAccessProfile.TLS.SourceAddressPrefixes) 0}}
+              "sourceAddressPrefixes": [
+                {{range $index, $prefix := .MasterProfile.NetworkAccessProfile.TLS.SourceAddressPrefixes}}
+                  {{if $index}}, {{end}}"{{$prefix}}"
+                {{end}}
+              ],
+              {{else}}
+              "sourceAddressPrefix": "{{.MasterProfile.NetworkAccessProfile.TLS.SourceAddressPrefix}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.TLS.SourcePortRanges) 0}}
+              "sourcePortRanges": [
+                {{range $index, $range := .MasterProfile.NetworkAccessProfile.TLS.SourcePortRanges}}
+                  {{if $index}}, {{end}}"{{$range}}"
+                {{end}}
+              ],
+              {{else}}
+              "sourcePortRange": "{{.MasterProfile.NetworkAccessProfile.TLS.SourcePortRange}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.TLS.DestinationAddressPrefixes) 0}}
+              "destinationAddressPrefixes": [
+                {{range $index, $prefix := .MasterProfile.NetworkAccessProfile.TLS.DestinationAddressPrefixes}}
+                  {{if $index}}, {{end}}"{{$prefix}}"
+                {{end}}
+              ],
+              {{else}}
+              "destinationAddressPrefix": "{{.MasterProfile.NetworkAccessProfile.TLS.DestinationAddressPrefix}}",
+              {{end}}
+              {{if gt (len .MasterProfile.NetworkAccessProfile.TLS.DestinationPortRanges) 0}}
+              "destinationPortRanges": [
+                {{range $index, $range := .MasterProfile.NetworkAccessProfile.TLS.DestinationPortRanges}}
+                  {{if $index}}, {{end}}"{{$range}}"
+                {{end}}
+              ]
+              {{else}}
+              "destinationPortRange": "{{.MasterProfile.NetworkAccessProfile.TLS.DestinationPortRange}}"
+              {{end}}
             }
           }
         ]
@@ -729,7 +793,7 @@
      },
      {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "2017-12-01",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"

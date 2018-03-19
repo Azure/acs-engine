@@ -530,6 +530,28 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
 					a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
 				}
+
+				if a.MasterProfile.NetworkAccessProfile == nil {
+					a.MasterProfile.NetworkAccessProfile = &api.MasterNetworkAccessProfile{}
+				}
+
+				if a.MasterProfile.NetworkAccessProfile.SSH == nil {
+					a.MasterProfile.NetworkAccessProfile.SSH = &api.NetworkAccessProfile{
+						SourceAddressPrefix:      "*",
+						SourcePortRange:          "*",
+						DestinationAddressPrefix: "*",
+						DestinationPortRange:     "22",
+					}
+				}
+
+				if a.MasterProfile.NetworkAccessProfile.TLS == nil {
+					a.MasterProfile.NetworkAccessProfile.TLS = &api.NetworkAccessProfile{
+						SourceAddressPrefix:      "*",
+						SourcePortRange:          "*",
+						DestinationAddressPrefix: "*",
+						DestinationPortRange:     "443",
+					}
+				}
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
