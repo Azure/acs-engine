@@ -51,8 +51,8 @@ func TestGetLatestPatchVersion(t *testing.T) {
 	}
 
 	version = GetLatestPatchVersion("1.8", GetAllSupportedKubernetesVersions())
-	if version != KubernetesVersion1Dot8Dot9 {
-		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot9)
+	if version != KubernetesVersion1Dot8Dot10 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot10)
 	}
 
 	version = GetLatestPatchVersion("1.9", GetAllSupportedKubernetesVersions())
@@ -121,6 +121,11 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "1.6.6", false)
 	if version != "" {
 		t.Errorf("It is not empty string")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "v1.8", "", false)
+	if version != KubernetesVersion1Dot8Dot10 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot10)
 	}
 
 	version = RationalizeReleaseAndVersion(Kubernetes, "", "v1.8.8", false)

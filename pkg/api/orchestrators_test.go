@@ -67,8 +67,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.7.10, 1.7.12, 1.7.13, 1.7.14, 1.8.0, 1.8.1, 1.8.2, 1.8.4, 1.8.6, 1.8.7, 1.8.8, 1.8.9
-	Expect(len(orch.Upgrades)).To(Equal(18))
+	// 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.7.10, 1.7.12, 1.7.13, 1.7.14, 1.8.0, 1.8.1, 1.8.2, 1.8.4, 1.8.6, 1.8.7, 1.8.8, 1.8.9, 1.8.10
+	Expect(len(orch.Upgrades)).To(Equal(19))
 
 	// 1.7.14 is upgradable to 1.8.x
 	csOrch = &OrchestratorProfile{
@@ -77,8 +77,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.8.0, 1.8.1, 1.8.2, 1.8.4, 1.8.6, 1.8.7, 1.8.8, 1.8.9
-	Expect(len(orch.Upgrades)).To(Equal(8))
+	// 1.8.0, 1.8.1, 1.8.2, 1.8.4, 1.8.6, 1.8.7, 1.8.8, 1.8.9, 1.8.10
+	Expect(len(orch.Upgrades)).To(Equal(9))
 
 	// 1.8.4 is upgradable to 1.8.x and 1.9.x
 	csOrch = &OrchestratorProfile{
@@ -87,8 +87,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.8.6, 1.8.7, 1.8.8, 1.8.9, 1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.9.4, 1.9.5
-	Expect(len(orch.Upgrades)).To(Equal(10))
+	// 1.8.6, 1.8.7, 1.8.8, 1.8.9, 1.8.10, 1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.9.4, 1.9.5
+	Expect(len(orch.Upgrades)).To(Equal(11))
 
 	// 1.9.5 is upgradable to 1.10.x
 	csOrch = &OrchestratorProfile{
@@ -121,12 +121,12 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// v20170930 - all orchestrators
 	list, e := GetOrchestratorVersionProfileListV20170930("", "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(37))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(38))
 
 	// v20170930 - kubernetes only
 	list, e = GetOrchestratorVersionProfileListV20170930(common.Kubernetes, "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(32))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(33))
 }
 
 func TestKubernetesInfo(t *testing.T) {
