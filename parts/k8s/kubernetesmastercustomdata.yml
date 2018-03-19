@@ -301,7 +301,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     Restart=always
     [Install]
     WantedBy=multi-user.target
-    Alias=etcd.service
 
 - path: "/opt/azure/containers/setup-etcd.sh"
   permissions: "0744"
