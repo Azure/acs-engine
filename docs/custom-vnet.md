@@ -1,5 +1,5 @@
-# Using a custom virtual network with Azure Container Service 
-In this tutorial you are going to learn how to use [ACS Engine](https://github.com/Azure/acs-engine) to deploy a brand new cluster into an existing or pre-created virtual network. 
+# Using a custom virtual network with Azure Container Service
+In this tutorial you are going to learn how to use [ACS Engine](https://github.com/Azure/acs-engine) to deploy a brand new cluster into an existing or pre-created virtual network.
 By doing this, you will be able to control the properties of the virtual network or integrate a new cluster into your existing infrastructure.
 
 *Note: This article describes the procedure with Docker Swarm but it will work in the exact same way with the all the orchestrators available with ACS Engine: Docker Swarm, Kubernetes and DC/OS.*
@@ -20,7 +20,7 @@ For this example, we deployed a virtual network that contains two subnets:
 - 10.100.0.0/24
 - 10.200.0.0/24
 
-The first one will be used for the master nodes and the second one for the agent nodes. 
+The first one will be used for the master nodes and the second one for the agent nodes.
 
 The Azure Resource Manager template used to deploy this virtual network is:
 
@@ -81,7 +81,7 @@ Once the deployment is completed you should see the virtual network in the resou
 ## Create the template for ACS Engine
 ACS Engine uses a JSON template in input and generates the ARM template and ARM parameters files in output.
 
-Depending on the orchestrator you want to deploy, the number of agent pools, the machine size you want (etc.) this input template could differ from the one we are going to detail here. 
+Depending on the orchestrator you want to deploy, the number of agent pools, the machine size you want (etc.) this input template could differ from the one we are going to detail here.
 
 There are a lot of examples available on the [ACS Engine GitHub](https://github.com/Azure/acs-engine/tree/master/examples) and you can find [one dedicated for virtual network](https://github.com/Azure/acs-engine/blob/master/examples/vnet/README.md).
 
@@ -99,7 +99,7 @@ In this case, we are going to use the following template:
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
       "vnetSubnetId": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet",
-      "firstConsecutiveStaticIP": "10.100.0.5" 
+      "firstConsecutiveStaticIP": "10.100.0.5"
     },
     "agentPoolProfiles": [
       {
