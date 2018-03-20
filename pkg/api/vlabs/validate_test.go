@@ -580,7 +580,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Windows version: %v", err,
@@ -588,7 +588,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.16"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -678,7 +678,7 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Linux version: %v", err,
@@ -686,7 +686,7 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.16"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Linux version",

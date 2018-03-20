@@ -535,6 +535,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot12:      true,
 		common.KubernetesVersion1Dot7Dot13:      true,
 		common.KubernetesVersion1Dot7Dot14:      true,
+		common.KubernetesVersion1Dot7Dot15:      true,
 		common.KubernetesVersion1Dot6Dot6:       true,
 		common.KubernetesVersion1Dot6Dot9:       true,
 		common.KubernetesVersion1Dot6Dot11:      true,
