@@ -204,13 +204,6 @@ function ensureFilepath() {
     fi
 }
 
-function downloadUrl () {
-	# Wrapper around curl to download blobs more reliably.
-	# Workaround the --retry issues with a for loop and set a max timeout.
-	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
-    echo Executed curl for \"${1}\" $i times
-}
-
 function setMaxPods () {
     sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
