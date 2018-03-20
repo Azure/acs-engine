@@ -310,6 +310,7 @@ type MasterProfile struct {
 	Extensions               []Extension       `json:"extensions"`
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ManagementIPWhitelist    string            `json:"managementIPWhitelist,omitempty"`
 
 	// subnet is internal
 	subnet string

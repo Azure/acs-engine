@@ -473,6 +473,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+		addValue(parametersMap, "managementIPWhitelist", properties.MasterProfile.ManagementIPWhitelist)
 		if isClassicMode {
 			addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
 		}
