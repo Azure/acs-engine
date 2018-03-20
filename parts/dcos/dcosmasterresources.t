@@ -362,7 +362,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          {{GetDCOSMasterCustomData}}
+          {{GetDCOSMasterCustomData .}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {

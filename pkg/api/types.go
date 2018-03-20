@@ -315,6 +315,7 @@ type MasterProfile struct {
 	StorageProfile           string            `json:"storageProfile,omitempty"`
 	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool              `json:"oauthEnabled"`
+	CustomNodeLabels         map[string]string `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension    *Extension        `json:"preProvisionExtension"`
 	Extensions               []Extension       `json:"extensions"`
 	Distro                   Distro            `json:"distro,omitempty"`
