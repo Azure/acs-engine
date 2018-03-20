@@ -53,6 +53,8 @@ const (
 )
 
 const (
+	// KubernetesVersion1Dot10Dot0RC1 is the string for kubernetes 1.10.0-rc.1
+	KubernetesVersion1Dot10Dot0RC1 string = "1.10.0-rc.1"
 	// KubernetesVersion1Dot10Dot0Beta2 is the string for kubernetes 1.10.0-beta.2
 	KubernetesVersion1Dot10Dot0Beta2 string = "1.10.0-beta.2"
 	// KubernetesVersion1Dot10Dot0Beta4 is the string for kubernetes 1.10.0-beta.4
@@ -161,6 +163,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot9Dot5:       true,
 	KubernetesVersion1Dot10Dot0Beta2: true,
 	KubernetesVersion1Dot10Dot0Beta4: true,
+	KubernetesVersion1Dot10Dot0RC1:   true,
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -209,6 +212,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot9Dot5:       true,
 	KubernetesVersion1Dot10Dot0Beta2: false,
 	KubernetesVersion1Dot10Dot0Beta4: false,
+	KubernetesVersion1Dot10Dot0RC1:   false,
 }
 
 // GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows

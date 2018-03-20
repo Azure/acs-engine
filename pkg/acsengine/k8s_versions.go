@@ -142,6 +142,7 @@ var k8sComponentVersions = map[string]map[string]string{
 
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
+	common.KubernetesVersion1Dot10Dot0RC1:   getK8sVersionComponents("1.10.0-rc.1", nil),
 	common.KubernetesVersion1Dot10Dot0Beta4: getK8sVersionComponents("1.10.0-beta.4", nil),
 	common.KubernetesVersion1Dot10Dot0Beta2: getK8sVersionComponents("1.10.0-beta.2", nil),
 	common.KubernetesVersion1Dot9Dot5:       getK8sVersionComponents("1.9.5", nil),
