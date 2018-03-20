@@ -43,7 +43,7 @@
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",
-      "caPrivateKey": "caPrivateKey",      
+      "caPrivateKey": "caPrivateKey",
       "apiServerCertificate": "apiServerCertificate",
       "apiServerPrivateKey": "apiServerPrivateKey",
       "clientCertificate": "clientCertificate",
