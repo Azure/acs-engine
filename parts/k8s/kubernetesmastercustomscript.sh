@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -x
+source /opt/azure/containers/provision_source.sh
+
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -22,8 +24,6 @@ if [[ $OS == $COREOS_OS_NAME ]]; then
     echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
-
-retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -204,13 +204,6 @@ function ensureFilepath() {
     fi
 }
 
-function downloadUrl () {
-	# Wrapper around curl to download blobs more reliably.
-	# Workaround the --retry issues with a for loop and set a max timeout.
-	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
-    echo Executed curl for \"${1}\" $i times
-}
-
 function setMaxPods () {
     sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
@@ -239,9 +232,13 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
+    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
+    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
