@@ -90,7 +90,7 @@
               "direction": "Inbound", 
               "priority": 102, 
               "protocol": "Tcp", 
-              "sourceAddressPrefix": "*", 
+              "sourceAddressPrefix": "[parameters('managementIPWhitelist')]",
               "sourcePortRange": "*"
             }
           },
@@ -105,7 +105,7 @@
               "direction": "Inbound",
               "priority": 101,
               "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
+              "sourceAddressPrefix": "[parameters('managementIPWhitelist')]",
               "sourcePortRange": "*"
             }
           },
@@ -119,7 +119,7 @@
               "direction": "Inbound",
               "priority": 100,
               "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
+              "sourceAddressPrefix": "[parameters('managementIPWhitelist')]",
               "sourcePortRange": "*"
             }
           }

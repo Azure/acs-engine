@@ -733,3 +733,10 @@
       "type": "string"
     }
 {{end}}
+    ,"managementIPWhitelist": {
+      "defaultValue": "*",
+      "metadata": {
+        "description": "List of CIDR allowed to SSH and HTTPS to the masters"
+      },
+      "type": "string"
+    }
