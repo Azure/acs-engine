@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	"k8s.io/client-go/pkg/api/v1/node"
-
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -92,7 +90,7 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 			if err != nil {
 				kmn.logger.Infof("Master VM: %s status error: %v\n", *vmName, err)
 				time.Sleep(time.Second * 5)
-			} else if node.IsNodeReady(masterNode) {
+			} else if IsNodeReady(masterNode) {
 				kmn.logger.Infof("Master VM: %s is ready", *vmName)
 				ch <- struct{}{}
 			} else {

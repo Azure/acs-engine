@@ -50,17 +50,23 @@ import:
   version: v1.3.1
 - package: github.com/imdario/mergo
   version: ^0.2.2
+- package: k8s.io/api/core/v1
+  version: 11147472b7c934c474a2c484af3c0c5210b7a3af
 - package: k8s.io/apiserver
   version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
 - package: k8s.io/client-go
-  version: ~4.0.0
+  version: ~6.0.0
 testImport:
 # glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
+  version: dcabb60a477c2b6f456df65037cb6708210fbb02
 - package: github.com/onsi/ginkgo
+  version: 11459a886d9cd66b319dac7ef1e917ee221372c9
 - package: github.com/kelseyhightower/envconfig
+- package: k8s.io/api/core/v1
+  version: 11147472b7c934c474a2c484af3c0c5210b7a3af
 - package: k8s.io/apiserver
   version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
 - package: k8s.io/client-go
-  version: ~4.0.0
+  version: ~6.0.0
 - package: github.com/influxdata/influxdb/client/v2

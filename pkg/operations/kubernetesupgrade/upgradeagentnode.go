@@ -128,7 +128,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v", *vmName, err)
 				retryTimer.Reset(retry)
-			} else if node.IsNodeReady(agentNode) {
+			} else if IsNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
 				timeoutTimer.Stop()
 				return nil
