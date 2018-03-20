@@ -109,7 +109,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 
 		if cs.Properties.OrchestratorProfile.KubernetesConfig.IsNVIDIADevicePluginEnabled() {
-			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.9.0", "DevicePlugins=true")
+			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.8.0", "DevicePlugins=true")
 		} else if strings.Contains(profile.VMSize, "Standard_N") {
 			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
 		}
