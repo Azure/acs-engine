@@ -3,13 +3,10 @@
 set -x
 source /opt/azure/containers/provision_source.sh
 
-# Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
-
-# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 
@@ -18,15 +15,11 @@ ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 set -x
 
-# CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
-#   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
     echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
@@ -39,8 +32,6 @@ ensureRunCommandCompleted()
     done
 }
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
@@ -55,9 +46,6 @@ ensureDockerInstallCompleted()
 
 echo `date`,`hostname`, startscript>>/opt/m
 
-# A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue:
-# https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
 else
@@ -176,13 +164,8 @@ cat << EOF > "${AZURE_JSON_PATH}"
 }
 EOF
 
-###########################################################
-# END OF SECRET DATA
-###########################################################
-
 set -x
 
-# wait for presence of a file
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
@@ -253,7 +236,6 @@ function configAzureNetworkPolicy() {
 	configCNINetworkPolicy
 }
 
-# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCNINetworkPolicy() {
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
@@ -271,7 +253,6 @@ function configNetworkPolicy() {
     fi
 }
 
-# Install the Clear Containers runtime
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
@@ -308,7 +289,6 @@ function installClearContainersRuntime() {
 	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
-# Install Go from source
 function installGo() {
 	export GO_SRC=/usr/local/go
 	export GOPATH="${HOME}/.go"
@@ -338,7 +318,6 @@ function installGo() {
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
 
-# Build and install runc
 function buildRunc() {
 	# Clone the runc source
 	echo "Cloning the runc source..."
@@ -355,7 +334,6 @@ function buildRunc() {
 	echo "Successfully built and installed runc..."
 }
 
-# Build and install CRI-O
 function buildCRIO() {
 	# Add CRI-O repositories
 	echo "Adding repositories required for cri-o..."
@@ -423,7 +401,6 @@ function buildCRIO() {
 	setupCRIO;
 }
 
-# Setup CRI-O
 function setupCRIO() {
 	# Configure CRI-O
 	echo "Configuring CRI-O..."
@@ -699,7 +676,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	apt-mark hold walinuxagent
 fi
 
-# master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
@@ -726,12 +702,9 @@ echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
-# On all other runtimes, but "clear-containers" we can ensure the run command
-# completed here to allow for parallelizing the custom script
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
-# master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureFilepath $KUBECTL
