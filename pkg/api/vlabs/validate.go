@@ -507,6 +507,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot10Dot0RC1:   true,
 		common.KubernetesVersion1Dot10Dot0Beta4: true,
 		common.KubernetesVersion1Dot10Dot0Beta2: true,
 		common.KubernetesVersion1Dot9Dot0:       true,
@@ -692,6 +693,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot9Dot5:       true,
 		common.KubernetesVersion1Dot10Dot0Beta2: true,
 		common.KubernetesVersion1Dot10Dot0Beta4: true,
+		common.KubernetesVersion1Dot10Dot0RC1:   true,
 	}
 
 	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
