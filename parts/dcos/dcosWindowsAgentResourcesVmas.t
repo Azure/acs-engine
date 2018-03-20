@@ -261,22 +261,22 @@
 {{end}}
 {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
-{{end}}     
+{{end}}
           }
         }
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]", 
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]", 
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
-      }, 
+      },
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
-      ], 
-      "location": "[variables('location')]", 
+      ],
+      "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/cse')]",
       "properties": {
         "publisher": "Microsoft.Compute",
@@ -286,6 +286,6 @@
         "settings": {
           "commandToExecute": "[variables('{{.Name}}windowsAgentCustomScript')]"
         }
-      }, 
+      },
       "type": "Microsoft.Compute/virtualMachines/extensions"
     }

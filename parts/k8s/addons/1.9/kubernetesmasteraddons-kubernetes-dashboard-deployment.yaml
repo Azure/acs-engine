@@ -61,7 +61,7 @@ spec:
         k8s-app: kubernetes-dashboard
     spec:
       containers:
-      - args: 
+      - args:
         - --auto-generate-certificates
         - --heapster-host=http://heapster.kube-system:80
         image: <kubernetesDashboardSpec>

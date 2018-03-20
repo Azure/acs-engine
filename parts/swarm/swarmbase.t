@@ -38,7 +38,7 @@
         {{else}}
           {{template "swarm/swarmagentresourcesvmss.t" .}},
         {{end}}
-      {{end}}      
+      {{end}}
     {{end}}
     {{template "swarm/swarmmasterresources.t" .}}
   ],

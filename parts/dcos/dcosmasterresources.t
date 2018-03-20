@@ -207,7 +207,7 @@
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
-{{if IsDCOS19}} 
+{{if IsDCOS19}}
             {
                 "properties": {
                     "priority": 201,
@@ -277,7 +277,7 @@
       },
       "dependsOn": [
         "[variables('masterNSGID')]",
-{{if not .MasterProfile.IsCustomVNET}}        
+{{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
