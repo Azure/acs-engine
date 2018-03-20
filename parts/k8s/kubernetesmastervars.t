@@ -3,8 +3,8 @@
     "etcdVersion": "[parameters('etcdVersion')]",
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
-    "totalNodes": "[parameters('totalNodes')]",
 {{ if not IsHostedMaster }}
+    "totalNodes": "[parameters('totalNodes')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "etcdServerCertificate": "[parameters('etcdServerCertificate')]",
     "etcdServerPrivateKey": "[parameters('etcdServerPrivateKey')]",
