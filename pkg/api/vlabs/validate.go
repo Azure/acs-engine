@@ -406,7 +406,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
-		if len(agentPoolProfile.CustomNodeLabels) > 0 {
+		if len(agentPoolProfile.CustomNodeLabels) > 0 || len(masterProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Kubernetes:

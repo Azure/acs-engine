@@ -883,10 +883,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			constraint, _ := semver.NewConstraint("~" + version)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
-		"GetMasterKubernetesLabels": func(rg string) string {
+		"GetMasterKubernetesLabels": func(profile *api.MasterProfile, rg string) string {
 			var buf bytes.Buffer
 			buf.WriteString("kubernetes.io/role=master")
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
+			for k, v := range profile.CustomNodeLabels {
+				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
+			}
 			return buf.String()
 		},
 		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile, rg string) string {
@@ -1005,9 +1008,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
-		"GetDCOSMasterCustomData": func() string {
+		"GetDCOSMasterCustomData": func(masterProfile *api.MasterProfile) string {
 			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
-			masterAttributeContents := getDCOSMasterCustomNodeLabels()
+			masterAttributeContents := getDCOSMasterCustomNodeLabels(masterProfile)
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
 				masterPreprovisionExtension += "\n"
@@ -1894,9 +1897,17 @@ func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) stri
 	return ""
 }
 
-func getDCOSMasterCustomNodeLabels() string {
-	// return empty string for DCOS since no attribtutes needed on master
-	return ""
+func getDCOSMasterCustomNodeLabels(profile *api.MasterProfile) string {
+	var buf bytes.Buffer
+	var attrstring string
+	buf.WriteString("")
+	if len(profile.CustomNodeLabels) > 0 {
+		for k, v := range profile.CustomNodeLabels {
+			buf.WriteString(fmt.Sprintf(";%s:%s", k, v))
+		}
+	}
+	buf.WriteString("")
+	return buf.String()
 }
 
 func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
