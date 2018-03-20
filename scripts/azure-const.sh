@@ -36,4 +36,4 @@ if [ $exit_code -gt "0" ]; then
 else
   echo "File was modified! Exiting 1"
   exit 1
-fi 
+fi
