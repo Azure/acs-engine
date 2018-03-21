@@ -1,5 +1,5 @@
-hash: 7ddcdfd12d54f159ec71d030acfaab7215b7657057d8052446832664a02ffcdb
-updated: 2018-03-05T11:49:40.182606-08:00
+hash: 6ccf7505e5ada9ca2cbbfc77ca540b6ec59e0bd40d9392c79e29942386446685
+updated: 2018-03-05T12:31:54.990805-08:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -98,6 +98,10 @@ imports:
   - jwriter
 - name: github.com/Masterminds/semver
   version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
+- name: github.com/mattn/go-colorable
+  version: 167de6bfdfba052fa6b2d3664c8f5272e23c9072
+- name: github.com/mattn/go-isatty
+  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/mattn/kinako
   version: 332c0a7e205a29536e672337a4bea6c7a96b04c1
   subpackages:

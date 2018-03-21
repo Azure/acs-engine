@@ -145,6 +145,7 @@ var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot10Dot0RC1:   getK8sVersionComponents("1.10.0-rc.1", nil),
 	common.KubernetesVersion1Dot10Dot0Beta4: getK8sVersionComponents("1.10.0-beta.4", nil),
 	common.KubernetesVersion1Dot10Dot0Beta2: getK8sVersionComponents("1.10.0-beta.2", nil),
+	common.KubernetesVersion1Dot9Dot6:       getK8sVersionComponents("1.9.6", nil),
 	common.KubernetesVersion1Dot9Dot5:       getK8sVersionComponents("1.9.5", nil),
 	common.KubernetesVersion1Dot9Dot4:       getK8sVersionComponents("1.9.4", nil),
 	common.KubernetesVersion1Dot9Dot3:       getK8sVersionComponents("1.9.3", nil),
