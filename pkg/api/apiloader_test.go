@@ -11,7 +11,7 @@ import (
 
 func TestLoadContainerServiceFromFile(t *testing.T) {
 	existingContainerService := &ContainerService{Name: "test",
-		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: common.KubernetesVersion1Dot6Dot9}}}
+		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.6.9"}}}
 
 	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
 	i18n.Initialize(locale)
@@ -25,7 +25,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot11 {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.11" {
 		t.Error("Failed to set orcherstator version when it is set in the json")
 	}
 
@@ -33,7 +33,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot9 {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -41,7 +41,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot9 {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -49,7 +49,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot9 {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 

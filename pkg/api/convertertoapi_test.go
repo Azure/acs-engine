@@ -94,12 +94,12 @@ func TestOrchestratorVersion(t *testing.T) {
 		Properties: &v20170701.Properties{
 			OrchestratorProfile: &v20170701.OrchestratorProfile{
 				OrchestratorType:    v20170701.Kubernetes,
-				OrchestratorVersion: common.KubernetesVersion1Dot6Dot11,
+				OrchestratorVersion: "1.6.11",
 			},
 		},
 	}
 	cs = ConvertV20170701ContainerService(v20170701cs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot11 {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.11" {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 	// test vlabs
@@ -119,12 +119,12 @@ func TestOrchestratorVersion(t *testing.T) {
 		Properties: &vlabs.Properties{
 			OrchestratorProfile: &vlabs.OrchestratorProfile{
 				OrchestratorType:    vlabs.Kubernetes,
-				OrchestratorVersion: common.KubernetesVersion1Dot6Dot11,
+				OrchestratorVersion: "1.6.11",
 			},
 		},
 	}
 	cs = ConvertVLabsContainerService(vlabscs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot6Dot11 {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.11" {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 }

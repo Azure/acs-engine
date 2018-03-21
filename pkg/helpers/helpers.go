@@ -40,3 +40,9 @@ func IsTrueBoolPointer(b *bool) bool {
 	}
 	return false
 }
+
+// PointerToBool returns a pointer to a bool
+func PointerToBool(b bool) *bool {
+	p := b
+	return &p
+}

@@ -32,3 +32,22 @@ func Test_GetSupportedKubernetesVersion(t *testing.T) {
 		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", KubernetesDefaultVersion, defaultVersion)
 	}
 }
+
+func TestGetVersionsGt(t *testing.T) {
+	versions := []string{"1.1.0", "1.2.0", "1.2.1"}
+	expected := []string{"1.2.0", "1.2.1"}
+	expectedMap := map[string]bool{
+		"1.2.0": true,
+		"1.2.1": true,
+	}
+	v := GetVersionsGt(versions, "1.1.0")
+	errStr := "GetVersionsGt returned an unexpected list of strings"
+	if len(v) != len(expected) {
+		t.Errorf(errStr)
+	}
+	for _, ver := range v {
+		if !expectedMap[ver] {
+			t.Errorf(errStr)
+		}
+	}
+}
