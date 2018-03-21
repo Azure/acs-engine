@@ -564,6 +564,18 @@ func (p *Properties) HasStorageAccountDisks() bool {
 	return false
 }
 
+// TotalNodes returns the total number of nodes in the cluster configuration
+func (p *Properties) TotalNodes() int {
+	var totalNodes int
+	if p.MasterProfile != nil {
+		totalNodes = p.MasterProfile.Count
+	}
+	for _, pool := range p.AgentPoolProfiles {
+		totalNodes = totalNodes + pool.Count
+	}
+	return totalNodes
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0

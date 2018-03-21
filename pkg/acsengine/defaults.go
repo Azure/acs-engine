@@ -446,7 +446,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
-			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+			switch {
+			case a.TotalNodes() > 20:
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "2048"
+			case a.TotalNodes() > 10:
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "1024"
+			case a.TotalNodes() > 3:
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "512"
+			default:
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+			}
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
