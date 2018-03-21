@@ -1,8 +1,8 @@
 package common
 
-// AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
 import "github.com/Masterminds/semver"
 
+// AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
 var AllKubernetesSupportedVersions = map[string]bool{
 	"1.6.6":         true,
 	"1.6.9":         true,
