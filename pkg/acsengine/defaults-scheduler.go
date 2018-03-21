@@ -10,7 +10,6 @@ func setSchedulerConfig(cs *api.ContainerService) {
 		"--kubeconfig":   "/var/lib/kubelet/kubeconfig",
 		"--leader-elect": "true",
 		"--profiling":    "false",
-		"--v":            "2",
 	}
 
 	staticWindowsSchedulerConfig := make(map[string]string)
@@ -22,7 +21,9 @@ func setSchedulerConfig(cs *api.ContainerService) {
 
 	// Default scheduler config
 	// TODO move any user-overridable options from staticLinuxSchedulerConfig into here
-	defaultSchedulerConfig := map[string]string{}
+	defaultSchedulerConfig := map[string]string{
+		"--v": "2",
+	}
 
 	// If no user-configurable scheduler config values exists, use the defaults
 	if o.KubernetesConfig.SchedulerConfig == nil {
