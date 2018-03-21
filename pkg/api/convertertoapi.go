@@ -587,6 +587,18 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosBootstrapURL = vlabs.DcosBootstrapURL
 	api.DcosWindowsBootstrapURL = vlabs.DcosWindowsBootstrapURL
+
+	if len(vlabs.Registry) > 0 {
+		api.Registry = vlabs.Registry
+	}
+
+	if len(vlabs.RegistryUser) > 0 {
+		api.RegistryUser = vlabs.RegistryUser
+	}
+
+	if len(vlabs.RegistryPass) > 0 {
+		api.RegistryPass = vlabs.RegistryPass
+	}
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
@@ -877,6 +889,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
 		api.CustomNodeLabels[k] = v

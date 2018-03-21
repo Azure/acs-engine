@@ -1,13 +1,12 @@
 #!/bin/bash
 
 set -x
-# Find distro name via ID value in releases files and upcase
+source /opt/azure/containers/provision_source.sh
+
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
-
-# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 
@@ -16,15 +15,11 @@ ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 set -x
 
-# CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
-#   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
     echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
@@ -37,8 +32,6 @@ ensureRunCommandCompleted()
     done
 }
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
@@ -53,9 +46,6 @@ ensureDockerInstallCompleted()
 
 echo `date`,`hostname`, startscript>>/opt/m
 
-# A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue:
-# https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
 else
@@ -174,13 +164,8 @@ cat << EOF > "${AZURE_JSON_PATH}"
 }
 EOF
 
-###########################################################
-# END OF SECRET DATA
-###########################################################
-
 set -x
 
-# wait for presence of a file
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
@@ -200,13 +185,6 @@ function ensureFilepath() {
         echo "$1 is not present after $i seconds of trying to verify"
         exit 1
     fi
-}
-
-function downloadUrl () {
-	# Wrapper around curl to download blobs more reliably.
-	# Workaround the --retry issues with a for loop and set a max timeout.
-	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
-    echo Executed curl for \"${1}\" $i times
 }
 
 function setMaxPods () {
@@ -237,9 +215,13 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
+    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
+    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
@@ -254,7 +236,6 @@ function configAzureNetworkPolicy() {
 	configCNINetworkPolicy
 }
 
-# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCNINetworkPolicy() {
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
@@ -272,7 +253,6 @@ function configNetworkPolicy() {
     fi
 }
 
-# Install the Clear Containers runtime
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
@@ -309,7 +289,6 @@ function installClearContainersRuntime() {
 	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
-# Install Go from source
 function installGo() {
 	export GO_SRC=/usr/local/go
 	export GOPATH="${HOME}/.go"
@@ -339,7 +318,6 @@ function installGo() {
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
 
-# Build and install runc
 function buildRunc() {
 	# Clone the runc source
 	echo "Cloning the runc source..."
@@ -356,7 +334,6 @@ function buildRunc() {
 	echo "Successfully built and installed runc..."
 }
 
-# Build and install CRI-O
 function buildCRIO() {
 	# Add CRI-O repositories
 	echo "Adding repositories required for cri-o..."
@@ -424,7 +401,6 @@ function buildCRIO() {
 	setupCRIO;
 }
 
-# Setup CRI-O
 function setupCRIO() {
 	# Configure CRI-O
 	echo "Configuring CRI-O..."
@@ -485,12 +461,11 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
                 echo "status $?"
-                /bin/systemctl restart docker
+                timeout 60s /bin/systemctl restart docker
             else
                 echo "docker started, took $i seconds"
                 dockerStarted=0
@@ -507,6 +482,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
+    retrycmd_if_failure 100 1 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
@@ -700,7 +676,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	apt-mark hold walinuxagent
 fi
 
-# master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
@@ -727,12 +702,9 @@ echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
-# On all other runtimes, but "clear-containers" we can ensure the run command
-# completed here to allow for parallelizing the custom script
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
-# master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureFilepath $KUBECTL

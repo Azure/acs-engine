@@ -82,8 +82,8 @@
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
       "properties": {
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "3",
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3,
         "managed": "true"
       },
       "type": "Microsoft.Compute/availabilitySets"

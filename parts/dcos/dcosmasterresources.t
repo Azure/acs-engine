@@ -4,8 +4,8 @@
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "3",
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3,
         "managed": "true"
       },
       "type": "Microsoft.Compute/availabilitySets"
@@ -226,7 +226,7 @@
             {
                 "name": "http",
                 "properties": {
-                    "protocol": "TCP",
+                    "protocol": "Tcp",
                     "sourcePortRange": "*",
                     "destinationPortRange": "80",
                     "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",
@@ -239,7 +239,7 @@
             {
                 "name": "https",
                 "properties": {
-                    "protocol": "TCP",
+                    "protocol": "Tcp",
                     "sourcePortRange": "*",
                     "destinationPortRange": "443",
                     "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",

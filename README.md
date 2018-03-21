@@ -47,12 +47,12 @@ Please follow these instructions before submitting a PR:
 Usage is best demonstrated with an example:
 
 ```shell
-$ vim examples/kubernetes.classic.json
+$ vim examples/classic/kubernetes.classic.json
 
 # insert your preferred, unique DNS prefix
 # insert your SSH public key
 
-$ ./acs-engine generate examples/kubernetes.classic.json
+$ ./acs-engine generate examples/classic/kubernetes.classic.json
 ```
 
 This produces a new directory inside `_output/` that contains an ARM template

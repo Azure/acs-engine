@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Masterminds/semver"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -173,14 +174,13 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 	if len(arr) != 2 {
 		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
 	}
-	currentVer := arr[1]
-	arr = strings.Split(currentVer, ".")
-	if len(arr) != 3 {
-		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer)
+	currentVer, err := semver.NewVersion(arr[1])
+	if err != nil {
+		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer.String())
 	}
 	csOrch := &api.OrchestratorProfile{
 		OrchestratorType:    api.Kubernetes,
-		OrchestratorVersion: currentVer,
+		OrchestratorVersion: currentVer.String(),
 	}
 	orch, err := api.GetOrchestratorVersionProfile(csOrch)
 	if err != nil {

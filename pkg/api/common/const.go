@@ -53,8 +53,12 @@ const (
 )
 
 const (
-	// KubernetesVersion1Dot10Dot0 is the string for kubernetes 1.10.0-beta.2
-	KubernetesVersion1Dot10Dot0 string = "1.10.0-beta.2"
+	// KubernetesVersion1Dot10Dot0RC1 is the string for kubernetes 1.10.0-rc.1
+	KubernetesVersion1Dot10Dot0RC1 string = "1.10.0-rc.1"
+	// KubernetesVersion1Dot10Dot0Beta2 is the string for kubernetes 1.10.0-beta.2
+	KubernetesVersion1Dot10Dot0Beta2 string = "1.10.0-beta.2"
+	// KubernetesVersion1Dot10Dot0Beta4 is the string for kubernetes 1.10.0-beta.4
+	KubernetesVersion1Dot10Dot0Beta4 string = "1.10.0-beta.4"
 	// KubernetesVersion1Dot9Dot0 is the major.minor.patch string for the 1.9.0 version of kubernetes
 	KubernetesVersion1Dot9Dot0 string = "1.9.0"
 	// KubernetesVersion1Dot9Dot1 is the major.minor.patch string for the 1.9.1 version of kubernetes
@@ -65,6 +69,8 @@ const (
 	KubernetesVersion1Dot9Dot3 string = "1.9.3"
 	// KubernetesVersion1Dot9Dot4 is the major.minor.patch string for the 1.9.4 version of kubernetes
 	KubernetesVersion1Dot9Dot4 string = "1.9.4"
+	// KubernetesVersion1Dot9Dot5 is the major.minor.patch string for the 1.9.5 version of kubernetes
+	KubernetesVersion1Dot9Dot5 string = "1.9.5"
 	// KubernetesVersion1Dot8Dot0 is the major.minor.patch string for the 1.8.0 version of kubernetes
 	KubernetesVersion1Dot8Dot0 string = "1.8.0"
 	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for the 1.8.1 version of kubernetes
@@ -81,6 +87,8 @@ const (
 	KubernetesVersion1Dot8Dot8 string = "1.8.8"
 	// KubernetesVersion1Dot8Dot9 is the major.minor.patch string for the 1.8.9 version of kubernetes
 	KubernetesVersion1Dot8Dot9 string = "1.8.9"
+	// KubernetesVersion1Dot8Dot10 is the major.minor.patch string for the 1.8.10 version of kubernetes
+	KubernetesVersion1Dot8Dot10 string = "1.8.10"
 	// KubernetesVersion1Dot7Dot0 is the major.minor.patch string for the 1.7.0 version of kubernetes
 	KubernetesVersion1Dot7Dot0 string = "1.7.0"
 	// KubernetesVersion1Dot7Dot1 is the major.minor.patch string for the 1.7.1 version of kubernetes
@@ -103,6 +111,8 @@ const (
 	KubernetesVersion1Dot7Dot13 string = "1.7.13"
 	// KubernetesVersion1Dot7Dot14 is the major.minor.patch string for the 1.7.14 version of kubernetes
 	KubernetesVersion1Dot7Dot14 string = "1.7.14"
+	// KubernetesVersion1Dot7Dot15 is the major.minor.patch string for the 1.7.15 version of kubernetes
+	KubernetesVersion1Dot7Dot15 string = "1.7.15"
 	// KubernetesVersion1Dot6Dot6 is the major.minor.patch string for the 1.6.6 version of kubernetes
 	KubernetesVersion1Dot6Dot6 string = "1.6.6"
 	// KubernetesVersion1Dot6Dot9 is the major.minor.patch string for the 1.6.9 version of kubernetes
@@ -114,41 +124,46 @@ const (
 	// KubernetesVersion1Dot6Dot13 is the major.minor.patch string for the 1.6.13 version of kubernetes
 	KubernetesVersion1Dot6Dot13 string = "1.6.13"
 	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
-	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
+	KubernetesDefaultVersion string = KubernetesVersion1Dot8Dot9
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
 var AllKubernetesSupportedVersions = map[string]bool{
-	KubernetesVersion1Dot6Dot6:  true,
-	KubernetesVersion1Dot6Dot9:  true,
-	KubernetesVersion1Dot6Dot11: true,
-	KubernetesVersion1Dot6Dot12: true,
-	KubernetesVersion1Dot6Dot13: true,
-	KubernetesVersion1Dot7Dot0:  true,
-	KubernetesVersion1Dot7Dot1:  true,
-	KubernetesVersion1Dot7Dot2:  true,
-	KubernetesVersion1Dot7Dot4:  true,
-	KubernetesVersion1Dot7Dot5:  true,
-	KubernetesVersion1Dot7Dot7:  true,
-	KubernetesVersion1Dot7Dot9:  true,
-	KubernetesVersion1Dot7Dot10: true,
-	KubernetesVersion1Dot7Dot12: true,
-	KubernetesVersion1Dot7Dot13: true,
-	KubernetesVersion1Dot7Dot14: true,
-	KubernetesVersion1Dot8Dot0:  true,
-	KubernetesVersion1Dot8Dot1:  true,
-	KubernetesVersion1Dot8Dot2:  true,
-	KubernetesVersion1Dot8Dot4:  true,
-	KubernetesVersion1Dot8Dot6:  true,
-	KubernetesVersion1Dot8Dot7:  true,
-	KubernetesVersion1Dot8Dot8:  true,
-	KubernetesVersion1Dot8Dot9:  true,
-	KubernetesVersion1Dot9Dot0:  true,
-	KubernetesVersion1Dot9Dot1:  true,
-	KubernetesVersion1Dot9Dot2:  true,
-	KubernetesVersion1Dot9Dot3:  true,
-	KubernetesVersion1Dot9Dot4:  true,
-	KubernetesVersion1Dot10Dot0: true,
+	KubernetesVersion1Dot6Dot6:       true,
+	KubernetesVersion1Dot6Dot9:       true,
+	KubernetesVersion1Dot6Dot11:      true,
+	KubernetesVersion1Dot6Dot12:      true,
+	KubernetesVersion1Dot6Dot13:      true,
+	KubernetesVersion1Dot7Dot0:       true,
+	KubernetesVersion1Dot7Dot1:       true,
+	KubernetesVersion1Dot7Dot2:       true,
+	KubernetesVersion1Dot7Dot4:       true,
+	KubernetesVersion1Dot7Dot5:       true,
+	KubernetesVersion1Dot7Dot7:       true,
+	KubernetesVersion1Dot7Dot9:       true,
+	KubernetesVersion1Dot7Dot10:      true,
+	KubernetesVersion1Dot7Dot12:      true,
+	KubernetesVersion1Dot7Dot13:      true,
+	KubernetesVersion1Dot7Dot14:      true,
+	KubernetesVersion1Dot7Dot15:      true,
+	KubernetesVersion1Dot8Dot0:       true,
+	KubernetesVersion1Dot8Dot1:       true,
+	KubernetesVersion1Dot8Dot2:       true,
+	KubernetesVersion1Dot8Dot4:       true,
+	KubernetesVersion1Dot8Dot6:       true,
+	KubernetesVersion1Dot8Dot7:       true,
+	KubernetesVersion1Dot8Dot8:       true,
+	KubernetesVersion1Dot8Dot9:       true,
+	KubernetesVersion1Dot8Dot10:      true,
+	KubernetesVersion1Dot9Dot0:       true,
+	KubernetesVersion1Dot9Dot1:       true,
+	KubernetesVersion1Dot9Dot2:       true,
+	KubernetesVersion1Dot9Dot3:       true,
+	KubernetesVersion1Dot9Dot4:       true,
+	KubernetesVersion1Dot9Dot5:       true,
+	KubernetesVersion1Dot10Dot0Beta2: true,
+	KubernetesVersion1Dot10Dot0Beta4: true,
+	KubernetesVersion1Dot10Dot0RC1:   true,
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -170,26 +185,34 @@ func GetAllSupportedKubernetesVersions() []string {
 
 // AllKubernetesWindowsSupportedVersions maintain a set of available k8s Windows versions in acs-engine
 var AllKubernetesWindowsSupportedVersions = map[string]bool{
-	KubernetesVersion1Dot7Dot2:  true,
-	KubernetesVersion1Dot7Dot4:  true,
-	KubernetesVersion1Dot7Dot5:  true,
-	KubernetesVersion1Dot7Dot7:  true,
-	KubernetesVersion1Dot7Dot9:  true,
-	KubernetesVersion1Dot7Dot10: true,
-	KubernetesVersion1Dot7Dot12: true,
-	KubernetesVersion1Dot7Dot13: true,
-	KubernetesVersion1Dot8Dot0:  true,
-	KubernetesVersion1Dot8Dot1:  true,
-	KubernetesVersion1Dot8Dot2:  true,
-	KubernetesVersion1Dot8Dot4:  true,
-	KubernetesVersion1Dot8Dot6:  true,
-	KubernetesVersion1Dot8Dot7:  true,
-	KubernetesVersion1Dot8Dot8:  true,
-	KubernetesVersion1Dot9Dot0:  true,
-	KubernetesVersion1Dot9Dot1:  true,
-	KubernetesVersion1Dot9Dot2:  true,
-	KubernetesVersion1Dot9Dot3:  true,
-	KubernetesVersion1Dot10Dot0: false,
+	KubernetesVersion1Dot7Dot2:       true,
+	KubernetesVersion1Dot7Dot4:       true,
+	KubernetesVersion1Dot7Dot5:       true,
+	KubernetesVersion1Dot7Dot7:       true,
+	KubernetesVersion1Dot7Dot9:       true,
+	KubernetesVersion1Dot7Dot10:      true,
+	KubernetesVersion1Dot7Dot12:      true,
+	KubernetesVersion1Dot7Dot13:      true,
+	KubernetesVersion1Dot7Dot14:      true,
+	KubernetesVersion1Dot7Dot15:      true,
+	KubernetesVersion1Dot8Dot0:       true,
+	KubernetesVersion1Dot8Dot1:       true,
+	KubernetesVersion1Dot8Dot2:       true,
+	KubernetesVersion1Dot8Dot4:       true,
+	KubernetesVersion1Dot8Dot6:       true,
+	KubernetesVersion1Dot8Dot7:       true,
+	KubernetesVersion1Dot8Dot8:       true,
+	KubernetesVersion1Dot8Dot9:       true,
+	KubernetesVersion1Dot8Dot10:      true,
+	KubernetesVersion1Dot9Dot0:       true,
+	KubernetesVersion1Dot9Dot1:       true,
+	KubernetesVersion1Dot9Dot2:       true,
+	KubernetesVersion1Dot9Dot3:       true,
+	KubernetesVersion1Dot9Dot4:       true,
+	KubernetesVersion1Dot9Dot5:       true,
+	KubernetesVersion1Dot10Dot0Beta2: false,
+	KubernetesVersion1Dot10Dot0Beta4: false,
+	KubernetesVersion1Dot10Dot0RC1:   false,
 }
 
 // GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows

@@ -56,6 +56,11 @@ func (c *KubernetesClientSetClient) UpdateNode(node *v1.Node) (*v1.Node, error) 
 	return c.clientset.Nodes().Update(node)
 }
 
+//DeleteNode deregisters the node in the api server
+func (c *KubernetesClientSetClient) DeleteNode(name string) error {
+	return c.clientset.Nodes().Delete(name, &metav1.DeleteOptions{})
+}
+
 //SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported
 func (c *KubernetesClientSetClient) SupportEviction() (string, error) {
 	discoveryClient := c.clientset.Discovery()

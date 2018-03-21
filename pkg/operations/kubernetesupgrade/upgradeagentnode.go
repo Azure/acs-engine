@@ -5,13 +5,14 @@ import (
 	"math/rand"
 	"time"
 
-	"k8s.io/client-go/pkg/api/v1/node"
-
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1/node"
 )
 
 const (
@@ -40,23 +41,36 @@ type UpgradeAgentNode struct {
 // the node
 // The 'drain' flag is used to invoke 'cordon and drain' flow.
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
+	var kubeAPIServerURL string
+
+	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
+	} else {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
+	}
+
+	client, err := kan.Client.GetKubernetesClient(kubeAPIServerURL, kan.kubeConfig, interval, kan.timeout)
+	if err != nil {
+		return err
+	}
+	// Cordon and drain the node
 	if drain {
-		var kubeAPIServerURL string
-
-		if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
-			kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
-		} else {
-			kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
-		}
-
-		err := operations.SafelyDrainNode(kan.Client, kan.logger, kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
+		err := operations.SafelyDrainNodeWithClient(client, kan.logger, *vmName, time.Minute)
 		if err != nil {
 			kan.logger.Warningf("Error draining agent VM %s. Proceeding with deletion. Error: %v", *vmName, err)
 			// Proceed with deletion anyways
 		}
 	}
+	// Delete VM in ARM
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
+	}
+	// Delete VM in api server
+	if err = client.DeleteNode(*vmName); err != nil {
+		statusErr, ok := err.(*errors.StatusError)
+		if ok && statusErr.ErrStatus.Reason != v1.StatusReasonNotFound {
+			kan.logger.Warnf("Node %s got an error while deregistering: %#v", *vmName, err)
+		}
 	}
 	return nil
 }

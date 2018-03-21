@@ -44,6 +44,7 @@ type MockKubernetesClient struct {
 	FailGetNode           bool
 	UpdateNodeFunc        func(*v1.Node) (*v1.Node, error)
 	FailUpdateNode        bool
+	FailDeleteNode        bool
 	FailSupportEviction   bool
 	FailDeletePod         bool
 	FailEvictPod          bool
@@ -82,6 +83,14 @@ func (mkc *MockKubernetesClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
 		return nil, fmt.Errorf("UpdateNode failed")
 	}
 	return node, nil
+}
+
+//DeleteNode deregisters node in the api server
+func (mkc *MockKubernetesClient) DeleteNode(name string) error {
+	if mkc.FailDeleteNode {
+		return fmt.Errorf("DeleteNode failed")
+	}
+	return nil
 }
 
 //SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported

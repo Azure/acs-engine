@@ -5,9 +5,9 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
         {
-            "platformFaultDomainCount": "2",
-            "platformUpdateDomainCount": "3",
-		        "managed" : "true"
+            "platformFaultDomainCount": 2,
+            "platformUpdateDomainCount": 3,
+		        "managed" : true
         },
       "type": "Microsoft.Compute/availabilitySets"
     },
@@ -390,7 +390,7 @@
               "computerName": "[variables('jumpboxVMName')]",
               "adminUsername": "[variables('jumpboxUsername')]",
               "linuxConfiguration": {
-                  "disablePasswordAuthentication": "true",
+                  "disablePasswordAuthentication": true,
                   "ssh": {
                       "publicKeys": [
                           {
@@ -464,7 +464,7 @@
                   "name": "default-allow-ssh",
                   "properties": {
                       "priority": 1000,
-                      "protocol": "TCP",
+                      "protocol": "Tcp",
                       "access": "Allow",
                       "direction": "Inbound",
                       "sourceAddressPrefix": "*",
@@ -515,8 +515,10 @@
       },
       "dependsOn": [
           "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]",
-          "[variables('vnetID')]"
+          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]"
+          {{if not .MasterProfile.IsCustomVNET}}
+            ,"[variables('vnetID')]"
+          {{end}}
       ]
     },
   {{end}}
@@ -634,7 +636,7 @@
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
           {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
+            "disablePasswordAuthentication": true,
             "ssh": {
               "publicKeys": [
                 {
