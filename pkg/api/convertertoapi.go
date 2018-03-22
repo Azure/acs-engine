@@ -638,6 +638,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	convertControllerManagerConfigToAPI(vlabs, api)
 	convertCloudControllerManagerConfigToAPI(vlabs, api)
 	convertAPIServerConfigToAPI(vlabs, api)
+	convertSchedulerConfigToAPI(vlabs, api)
 	convertPrivateClusterToAPI(vlabs, api)
 }
 
@@ -706,6 +707,13 @@ func convertAPIServerConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig)
 	a.APIServerConfig = map[string]string{}
 	for key, val := range v.APIServerConfig {
 		a.APIServerConfig[key] = val
+	}
+}
+
+func convertSchedulerConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.SchedulerConfig = map[string]string{}
+	for key, val := range v.SchedulerConfig {
+		a.SchedulerConfig[key] = val
 	}
 }
 
