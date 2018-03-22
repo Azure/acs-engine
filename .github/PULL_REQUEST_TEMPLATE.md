@@ -1,3 +1,4 @@
+
 <!--  Thanks for sending a pull request!  Here are some tips for you:
 1. If you want *faster* PR reviews, read how: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#best-practices-for-faster-reviews
 -->
@@ -7,6 +8,11 @@
 **Which issue this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close that issue when PR gets merged)*: fixes #
 
 **Special notes for your reviewer**:
+
+**If applicable**:
+- [ ] documentation
+- [ ] unit tests
+- [ ] tested backward compatibility (ie. deploy with previous version, upgrade with this branch)
 
 **Release note**:
 <!--  Steps to write your release note:
