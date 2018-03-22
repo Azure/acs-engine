@@ -3,7 +3,9 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.8",
       "kubernetesConfig": {
+        "networkPolicy": "azure",
         "containerRuntime": "clear-containers"
       }
     },
@@ -14,10 +16,12 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "linuxpool1",
+        "name": "agentpool1",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "vmSize": "Standard_D4s_v3",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [1023]
       }
     ],
     "linuxProfile": {
@@ -33,7 +37,6 @@
     "servicePrincipalProfile": {
       "clientId": "",
       "secret": ""
-    },
-    "certificateProfile": {}
+    }
   }
 }
