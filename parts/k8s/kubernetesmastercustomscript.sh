@@ -216,11 +216,27 @@ function configAzureNetworkPolicy() {
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
+    for i in {1..600}; do
+        tar -tzf $AZURE_CNI_TGZ_TMP
+        if [ $? -eq 0 ]
+        then
+            break
+        fi
+        retrycmd_if_failure_no_stats 180 1 10 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
+        sleep 1
+    done
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
+    for i in {1..600}; do
+        tar -tzf $CONTAINERNETWORKING_CNI_TGZ_TMP
+        if [ $? -eq 0 ]
+        then
+            break
+        fi
+        retrycmd_if_failure_no_stats 180 1 10 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
+        sleep 1
+    done
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -482,7 +498,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    retrycmd_if_failure 100 1 docker pull $HYPERKUBE_URL
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
