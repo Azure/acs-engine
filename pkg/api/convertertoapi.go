@@ -818,6 +818,11 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 		api.KubernetesConfig = &KubernetesConfig{}
 		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
 	}
+	if vlabs.ImageRef != nil {
+		api.ImageRef = &ImageReference{}
+		api.ImageRef.Name = vlabs.ImageRef.Name
+		api.ImageRef.ResourceGroup = vlabs.ImageRef.ResourceGroup
+	}
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -919,6 +924,11 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	if vlabs.KubernetesConfig != nil {
 		api.KubernetesConfig = &KubernetesConfig{}
 		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
+	}
+	if vlabs.ImageRef != nil {
+		api.ImageRef = &ImageReference{}
+		api.ImageRef.Name = vlabs.ImageRef.Name
+		api.ImageRef.ResourceGroup = vlabs.ImageRef.ResourceGroup
 	}
 }
 

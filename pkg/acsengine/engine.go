@@ -446,6 +446,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 	// Identify Master distro
 	masterDistro := getMasterDistro(properties.MasterProfile)
+	if properties.MasterProfile != nil && properties.MasterProfile.ImageRef != nil {
+		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
+		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
+	}
 	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
 	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
 	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
@@ -757,6 +761,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		// Unless distro is defined, default distro is configured by defaults#setAgentNetworkDefaults
 		//   Ignores Windows OS
 		if !(agentProfile.OSType == api.Windows) {
+			if agentProfile.ImageRef != nil {
+				addValue(parametersMap, fmt.Sprintf("%sosImageName", agentProfile.Name), agentProfile.ImageRef.Name)
+				addValue(parametersMap, fmt.Sprintf("%sosImageResourceGroup", agentProfile.Name), agentProfile.ImageRef.ResourceGroup)
+			}
 			addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageOffer)
 			addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageSku)
 			addValue(parametersMap, fmt.Sprintf("%sosImagePublisher", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImagePublisher)
@@ -1336,6 +1344,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetAgentOSImageVersion": func(profile *api.AgentPoolProfile) string {
 			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
+		},
+		"UseAgentCustomImage": func(profile *api.AgentPoolProfile) bool {
+			imageRef := profile.ImageRef
+			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
+		},
+		"UseMasterCustomImage": func() bool {
+			imageRef := cs.Properties.MasterProfile.ImageRef
+			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
 		},
 		"GetMasterEtcdServerPort": func() int {
 			return DefaultMasterEtcdServerPort

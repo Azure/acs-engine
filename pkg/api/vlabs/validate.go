@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
-	"github.com/satori/go.uuid"
+	"github.com/satori/uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -158,8 +158,23 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	return nil
 }
 
+func validateImageNameAndGroup(name, resourceGroup string) error {
+	if name == "" && resourceGroup != "" {
+		return errors.New("imageName needs to be specified when imageResourceGroup is provided")
+	}
+	if name != "" && resourceGroup == "" {
+		return errors.New("imageResourceGroup needs to be specified when imageName is provided")
+	}
+	return nil
+}
+
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
+	if m.ImageRef != nil {
+		if err := validateImageNameAndGroup(m.ImageRef.Name, m.ImageRef.ResourceGroup); err != nil {
+			return err
+		}
+	}
 	return validateDNSName(m.DNSPrefix)
 }
 
@@ -211,6 +226,9 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	}
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
+	}
+	if a.ImageRef != nil {
+		return validateImageNameAndGroup(a.ImageRef.Name, a.ImageRef.ResourceGroup)
 	}
 	return nil
 }

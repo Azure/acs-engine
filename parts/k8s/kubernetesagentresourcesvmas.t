@@ -178,12 +178,18 @@
             {{end}}
         },
         "storageProfile": {
+          {{if not (UseAgentCustomImage .)}}
           {{GetDataDisks .}}
+          {{end}}
           "imageReference": {
+            {{if UseAgentCustomImage .}}
+            "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
+            {{else}}
             "offer": "[variables('{{.Name}}osImageOffer')]",
             "publisher": "[variables('{{.Name}}osImagePublisher')]",
             "sku": "[variables('{{.Name}}osImageSKU')]",
             "version": "[variables('{{.Name}}osImageVersion')]"
+            {{end}}
           },
           "osDisk": {
             "createOption": "FromImage"
