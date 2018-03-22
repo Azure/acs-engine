@@ -271,7 +271,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 
 	trueVal := true
 	// Tests that apply to 1.8 and later releases
-	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(), "1.7.99") {
+	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(), "1.8.0", true, true) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
