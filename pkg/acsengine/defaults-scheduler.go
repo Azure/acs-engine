@@ -4,26 +4,26 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 )
 
+// staticLinuxSchedulerConfig is not user-overridable
+var staticLinuxSchedulerConfig = map[string]string{
+	"--kubeconfig":   "/var/lib/kubelet/kubeconfig",
+	"--leader-elect": "true",
+	"--profiling":    "false",
+}
+
+// defaultSchedulerConfig provides targeted defaults, but is user-overridable
+var defaultSchedulerConfig = map[string]string{
+	"--v": "2",
+}
+
 func setSchedulerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	staticLinuxSchedulerConfig := map[string]string{
-		"--kubeconfig":   "/var/lib/kubelet/kubeconfig",
-		"--leader-elect": "true",
-		"--profiling":    "false",
-	}
-
 	staticWindowsSchedulerConfig := make(map[string]string)
 	for key, val := range staticLinuxSchedulerConfig {
 		staticWindowsSchedulerConfig[key] = val
 	}
 	// Windows scheduler config overrides
 	// TODO placeholder for specific config overrides for Windows clusters
-
-	// Default scheduler config
-	// TODO move any user-overridable options from staticLinuxSchedulerConfig into here
-	defaultSchedulerConfig := map[string]string{
-		"--v": "2",
-	}
 
 	// If no user-configurable scheduler config values exists, use the defaults
 	if o.KubernetesConfig.SchedulerConfig == nil {
