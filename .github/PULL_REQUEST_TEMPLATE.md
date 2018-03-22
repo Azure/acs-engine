@@ -8,6 +8,11 @@
 
 **Special notes for your reviewer**:
 
+**If applicable**:
+- [ ] documentation
+- [ ] unit tests
+- [ ] tested backward compatibility (ie. deploy with previous version, upgrade with this branch)
+
 **Release note**:
 <!--  Steps to write your release note:
 1. Use the release-note-* labels to set the release note state (if you have access)
