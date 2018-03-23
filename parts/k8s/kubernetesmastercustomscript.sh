@@ -211,26 +211,10 @@ function configAzureNetworkPolicy() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    for i in {1..600}; do
-        tar -tzf $AZURE_CNI_TGZ_TMP
-        if [ $? -eq 0 ]
-        then
-            break
-        fi
-        retrycmd_if_failure_no_stats 180 1 10 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
-        sleep 1
-    done
+    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    for i in {1..600}; do
-        tar -tzf $CONTAINERNETWORKING_CNI_TGZ_TMP
-        if [ $? -eq 0 ]
-        then
-            break
-        fi
-        retrycmd_if_failure_no_stats 180 1 10 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
-        sleep 1
-    done
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
