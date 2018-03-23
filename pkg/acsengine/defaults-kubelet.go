@@ -24,6 +24,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
 		"--keep-terminated-pod-volumes":     "false",
+		"--containerized":                   "",
 	}
 
 	staticWindowsKubeletConfig := make(map[string]string)
