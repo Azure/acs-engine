@@ -141,43 +141,51 @@ var k8sComponentVersions = map[string]map[string]string{
 }
 
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
-var KubeConfigs = map[string]map[string]string{
-	common.KubernetesVersion1Dot10Dot0RC1:   getK8sVersionComponents("1.10.0-rc.1", nil),
-	common.KubernetesVersion1Dot10Dot0Beta4: getK8sVersionComponents("1.10.0-beta.4", nil),
-	common.KubernetesVersion1Dot10Dot0Beta2: getK8sVersionComponents("1.10.0-beta.2", nil),
-	common.KubernetesVersion1Dot9Dot6:       getK8sVersionComponents("1.9.6", nil),
-	common.KubernetesVersion1Dot9Dot5:       getK8sVersionComponents("1.9.5", nil),
-	common.KubernetesVersion1Dot9Dot4:       getK8sVersionComponents("1.9.4", nil),
-	common.KubernetesVersion1Dot9Dot3:       getK8sVersionComponents("1.9.3", nil),
-	common.KubernetesVersion1Dot9Dot2:       getK8sVersionComponents("1.9.2", nil),
-	common.KubernetesVersion1Dot9Dot1:       getK8sVersionComponents("1.9.1", nil),
-	common.KubernetesVersion1Dot9Dot0:       getK8sVersionComponents("1.9.0", nil),
-	common.KubernetesVersion1Dot8Dot10:      getK8sVersionComponents("1.8.10", nil),
-	common.KubernetesVersion1Dot8Dot9:       getK8sVersionComponents("1.8.9", map[string]string{"windowszip": "v1.8.9-2int.zip"}),
-	common.KubernetesVersion1Dot8Dot8:       getK8sVersionComponents("1.8.8", nil),
-	common.KubernetesVersion1Dot8Dot7:       getK8sVersionComponents("1.8.7", nil),
-	common.KubernetesVersion1Dot8Dot6:       getK8sVersionComponents("1.8.6", map[string]string{"windowszip": "v1.8.6-2int.zip"}),
-	common.KubernetesVersion1Dot8Dot4:       getK8sVersionComponents("1.8.4", nil),
-	common.KubernetesVersion1Dot8Dot2:       getK8sVersionComponents("1.8.2", map[string]string{"windowszip": "v1.8.2-2int.zip"}),
-	common.KubernetesVersion1Dot8Dot1:       getK8sVersionComponents("1.8.1", map[string]string{"windowszip": "v1.8.1-2int.zip"}),
-	common.KubernetesVersion1Dot8Dot0:       getK8sVersionComponents("1.8.0", map[string]string{"windowszip": "v1.8.0-2int.zip"}),
-	common.KubernetesVersion1Dot7Dot15:      getK8sVersionComponents("1.7.15", map[string]string{"windowszip": "v1.7.15-1int.zip"}),
-	common.KubernetesVersion1Dot7Dot14:      getK8sVersionComponents("1.7.14", map[string]string{"windowszip": "v1.7.14-1int.zip"}),
-	common.KubernetesVersion1Dot7Dot13:      getK8sVersionComponents("1.7.13", map[string]string{"windowszip": "v1.7.13-1int.zip"}),
-	common.KubernetesVersion1Dot7Dot12:      getK8sVersionComponents("1.7.12", map[string]string{"windowszip": "v1.7.12-2int.zip"}),
-	common.KubernetesVersion1Dot7Dot10:      getK8sVersionComponents("1.7.10", map[string]string{"windowszip": "v1.7.10-1int.zip"}),
-	common.KubernetesVersion1Dot7Dot9:       getK8sVersionComponents("1.7.9", map[string]string{"windowszip": "v1.7.9-2int.zip"}),
-	common.KubernetesVersion1Dot7Dot7:       getK8sVersionComponents("1.7.7", map[string]string{"windowszip": "v1.7.7-2int.zip"}),
-	common.KubernetesVersion1Dot7Dot5:       getK8sVersionComponents("1.7.5", map[string]string{"windowszip": "v1.7.5-4int.zip"}),
-	common.KubernetesVersion1Dot7Dot4:       getK8sVersionComponents("1.7.4", map[string]string{"windowszip": "v1.7.4-2int.zip"}),
-	common.KubernetesVersion1Dot7Dot2:       getK8sVersionComponents("1.7.2", map[string]string{"windowszip": "v1.7.2-1int.zip"}),
-	common.KubernetesVersion1Dot7Dot1:       getK8sVersionComponents("1.7.1", nil),
-	common.KubernetesVersion1Dot7Dot0:       getK8sVersionComponents("1.7.0", nil),
-	common.KubernetesVersion1Dot6Dot13:      getK8sVersionComponents("1.6.13", nil),
-	common.KubernetesVersion1Dot6Dot12:      getK8sVersionComponents("1.6.12", nil),
-	common.KubernetesVersion1Dot6Dot11:      getK8sVersionComponents("1.6.11", nil),
-	common.KubernetesVersion1Dot6Dot9:       getK8sVersionComponents("1.6.9", nil),
-	common.KubernetesVersion1Dot6Dot6:       getK8sVersionComponents("1.6.6", nil),
+var KubeConfigs = getKubeConfigs()
+
+func getKubeConfigs() map[string]map[string]string {
+	ret := make(map[string]map[string]string)
+	for _, version := range common.GetAllSupportedKubernetesVersions() {
+		ret[version] = getK8sVersionComponents(version, getVersionOverrides(version))
+	}
+	return ret
+}
+
+func getVersionOverrides(v string) map[string]string {
+	switch v {
+	case "1.8.9":
+		return map[string]string{"windowszip": "v1.8.9-2int.zip"}
+	case "1.8.6":
+		return map[string]string{"windowszip": "v1.8.6-2int.zip"}
+	case "1.8.2":
+		return map[string]string{"windowszip": "v1.8.2-2int.zip"}
+	case "1.8.1":
+		return map[string]string{"windowszip": "v1.8.1-2int.zip"}
+	case "1.8.0":
+		return map[string]string{"windowszip": "v1.8.0-2int.zip"}
+	case "1.7.15":
+		return map[string]string{"windowszip": "v1.7.15-1int.zip"}
+	case "1.7.14":
+		return map[string]string{"windowszip": "v1.7.14-1int.zip"}
+	case "1.7.13":
+		return map[string]string{"windowszip": "v1.7.13-1int.zip"}
+	case "1.7.12":
+		return map[string]string{"windowszip": "v1.7.12-2int.zip"}
+	case "1.7.10":
+		return map[string]string{"windowszip": "v1.7.10-1int.zip"}
+	case "1.7.9":
+		return map[string]string{"windowszip": "v1.7.9-2int.zip"}
+	case "1.7.7":
+		return map[string]string{"windowszip": "v1.7.7-2int.zip"}
+	case "1.7.5":
+		return map[string]string{"windowszip": "v1.7.5-4int.zip"}
+	case "1.7.4":
+		return map[string]string{"windowszip": "v1.7.4-2int.zip"}
+	case "1.7.2":
+		return map[string]string{"windowszip": "v1.7.2-1int.zip"}
+	default:
+		return nil
+	}
 }
 
 func getK8sVersionComponents(version string, overrides map[string]string) map[string]string {

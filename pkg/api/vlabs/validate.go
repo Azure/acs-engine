@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/Masterminds/semver"
 	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -88,9 +89,9 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return err
 				}
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+					sv, _ := semver.NewVersion(o.OrchestratorVersion)
+					cons, _ := semver.NewConstraint("<" + "1.7.0")
+					if cons.Check(sv) {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.7.0", o.OrchestratorVersion)
 					}
@@ -102,9 +103,9 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					}
 
 					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+						sv, _ := semver.NewVersion(o.OrchestratorVersion)
+						cons, _ := semver.NewConstraint("<" + "1.7.0")
+						if cons.Check(sv) {
 							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 								"1.7.0", o.OrchestratorVersion)
 						}
@@ -114,24 +115,12 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
 					}
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot0 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot1 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot2 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot4 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot5 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot7 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot13 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot14 {
+					sv, _ := semver.NewVersion(o.OrchestratorVersion)
+					cons, _ := semver.NewConstraint("<" + "1.8.0")
+					if cons.Check(sv) {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.8.0", o.OrchestratorVersion)
 					}
-
 				}
 			}
 
@@ -233,22 +222,6 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	// Rationalize orchestrator type should be done from versioned to unversioned
 	// I will go ahead to simplify this
 	return o.OrchestratorProfile.Validate(false)
-}
-
-// ValidateForUpgrade validates upgrade input data
-func (o *OrchestratorProfile) ValidateForUpgrade() error {
-	switch o.OrchestratorType {
-	case DCOS, SwarmMode, Swarm:
-		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
-	case Kubernetes:
-		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot6Dot13:
-		case common.KubernetesVersion1Dot7Dot14:
-		default:
-			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
-		}
-	}
-	return nil
 }
 
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
@@ -506,44 +479,13 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = map[string]bool{
-		common.KubernetesVersion1Dot10Dot0RC1:   true,
-		common.KubernetesVersion1Dot10Dot0Beta4: true,
-		common.KubernetesVersion1Dot10Dot0Beta2: true,
-		common.KubernetesVersion1Dot9Dot0:       true,
-		common.KubernetesVersion1Dot9Dot1:       true,
-		common.KubernetesVersion1Dot9Dot2:       true,
-		common.KubernetesVersion1Dot9Dot3:       true,
-		common.KubernetesVersion1Dot9Dot4:       true,
-		common.KubernetesVersion1Dot9Dot5:       true,
-		common.KubernetesVersion1Dot9Dot6:       true,
-		common.KubernetesVersion1Dot8Dot0:       true,
-		common.KubernetesVersion1Dot8Dot1:       true,
-		common.KubernetesVersion1Dot8Dot2:       true,
-		common.KubernetesVersion1Dot8Dot4:       true,
-		common.KubernetesVersion1Dot8Dot6:       true,
-		common.KubernetesVersion1Dot8Dot7:       true,
-		common.KubernetesVersion1Dot8Dot8:       true,
-		common.KubernetesVersion1Dot8Dot9:       true,
-		common.KubernetesVersion1Dot8Dot10:      true,
-		common.KubernetesVersion1Dot7Dot0:       true,
-		common.KubernetesVersion1Dot7Dot1:       true,
-		common.KubernetesVersion1Dot7Dot2:       true,
-		common.KubernetesVersion1Dot7Dot4:       true,
-		common.KubernetesVersion1Dot7Dot5:       true,
-		common.KubernetesVersion1Dot7Dot7:       true,
-		common.KubernetesVersion1Dot7Dot9:       true,
-		common.KubernetesVersion1Dot7Dot10:      true,
-		common.KubernetesVersion1Dot7Dot12:      true,
-		common.KubernetesVersion1Dot7Dot13:      true,
-		common.KubernetesVersion1Dot7Dot14:      true,
-		common.KubernetesVersion1Dot7Dot15:      true,
-		common.KubernetesVersion1Dot6Dot6:       true,
-		common.KubernetesVersion1Dot6Dot9:       true,
-		common.KubernetesVersion1Dot6Dot11:      true,
-		common.KubernetesVersion1Dot6Dot12:      true,
-		common.KubernetesVersion1Dot6Dot13:      true,
-	}
+	var backoffEnabledVersions = common.AllKubernetesSupportedVersions
+	// at present all supported versions allow for cloudprovider backoff
+	// disallow backoff for future versions thusly:
+	// for version := range []string{"1.11.0", "1.11.1", "1.11.2"} {
+	//     backoffEnabledVersions[version] = false
+	// }
+
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions
 
@@ -676,30 +618,10 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		return e
 	}
 
-	var ccmEnabledVersions = map[string]bool{
-		common.KubernetesVersion1Dot8Dot0:       true,
-		common.KubernetesVersion1Dot8Dot1:       true,
-		common.KubernetesVersion1Dot8Dot2:       true,
-		common.KubernetesVersion1Dot8Dot4:       true,
-		common.KubernetesVersion1Dot8Dot6:       true,
-		common.KubernetesVersion1Dot8Dot7:       true,
-		common.KubernetesVersion1Dot8Dot8:       true,
-		common.KubernetesVersion1Dot8Dot9:       true,
-		common.KubernetesVersion1Dot8Dot10:      true,
-		common.KubernetesVersion1Dot9Dot0:       true,
-		common.KubernetesVersion1Dot9Dot1:       true,
-		common.KubernetesVersion1Dot9Dot2:       true,
-		common.KubernetesVersion1Dot9Dot3:       true,
-		common.KubernetesVersion1Dot9Dot4:       true,
-		common.KubernetesVersion1Dot9Dot5:       true,
-		common.KubernetesVersion1Dot9Dot6:       true,
-		common.KubernetesVersion1Dot10Dot0Beta2: true,
-		common.KubernetesVersion1Dot10Dot0Beta4: true,
-		common.KubernetesVersion1Dot10Dot0RC1:   true,
-	}
-
 	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
-		if !ccmEnabledVersions[k8sVersion] {
+		sv, _ := semver.NewVersion(k8sVersion)
+		cons, _ := semver.NewConstraint("<" + "1.8.0")
+		if cons.Check(sv) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.UseCloudControllerManager and OrchestratorProfile.KubernetesConfig.CustomCcmImage not available in kubernetes version %s", k8sVersion)
 		}
 	}

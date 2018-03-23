@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/Azure/acs-engine/pkg/test"
@@ -27,9 +26,9 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 1, 1)
+		cs := createContainerService("testcluster", "1.6.9", 1, 1)
 
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot14
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -51,9 +50,9 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to detete VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 1, 1)
+		cs := createContainerService("testcluster", "1.6.9", 1, 1)
 
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot14
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -71,8 +70,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to deploy template during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot13, 1, 1)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot6Dot13
+		cs := createContainerService("testcluster", "1.6.13", 1, 1)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.6.13"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -90,8 +89,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to get a virtual machine during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 1, 6)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot14
+		cs := createContainerService("testcluster", "1.6.9", 1, 6)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -109,8 +108,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to get storage client during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 5, 1)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot14
+		cs := createContainerService("testcluster", "1.6.9", 5, 1)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -128,8 +127,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to delete network interface during upgrade operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 3, 2)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot14
+		cs := createContainerService("testcluster", "1.6.9", 3, 2)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -147,8 +146,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		cs := createContainerService("testcluster", common.KubernetesVersion1Dot6Dot9, 3, 3)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot8Dot6
+		cs := createContainerService("testcluster", "1.6.9", 3, 3)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.8.6"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
