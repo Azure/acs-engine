@@ -3,13 +3,13 @@ package acsengine
 import (
 	"testing"
 
-	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(true)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--cloud-provider"] != "external" {
@@ -18,8 +18,8 @@ func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 	}
 
 	// Test UseCloudControllerManager = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(false)
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--cloud-provider"] != "azure" {
@@ -31,7 +31,7 @@ func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 
 func TestKubeletConfigNetworkPolicy(t *testing.T) {
 	// Test NetworkPolicy = none
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyNone
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -41,7 +41,7 @@ func TestKubeletConfigNetworkPolicy(t *testing.T) {
 	}
 
 	// Test NetworkPolicy = azure
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -54,8 +54,8 @@ func TestKubeletConfigNetworkPolicy(t *testing.T) {
 
 func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(true)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--anonymous-auth"] != "false" {
@@ -72,8 +72,8 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	}
 
 	// Test EnableSecureKubelet = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(false)
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
