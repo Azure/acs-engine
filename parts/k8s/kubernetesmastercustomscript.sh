@@ -206,15 +206,10 @@ function setDockerOpts () {
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
-
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-
-    # Download Azure VNET CNI plugins.
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
-
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
     for i in {1..600}; do
         tar -tzf $AZURE_CNI_TGZ_TMP
@@ -226,7 +221,6 @@ function configAzureNetworkPolicy() {
         sleep 1
     done
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
     for i in {1..600}; do
         tar -tzf $CONTAINERNETWORKING_CNI_TGZ_TMP
@@ -240,15 +234,9 @@ function configAzureNetworkPolicy() {
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
-
-    # Copy config file
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-
-    # Dump ebtables rules.
     /sbin/ebtables -t nat --list
-
-    # Enable CNI.
 	configCNINetworkPolicy
 }
 
