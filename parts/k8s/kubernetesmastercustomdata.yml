@@ -319,7 +319,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     source /opt/azure/containers/provision_source.sh
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
-    retrycmd_if_failure 5 5 15 curl --retry 5 --retry-delay 10 --retry-max-time 15 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     systemctl daemon-reload
     systemctl enable etcd.service

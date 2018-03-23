@@ -280,29 +280,18 @@ function installClearContainersRuntime() {
 function installGo() {
 	export GO_SRC=/usr/local/go
 	export GOPATH="${HOME}/.go"
-
-	# Remove any old version of Go
 	if [[ -d "$GO_SRC" ]]; then
 		rm -rf "$GO_SRC"
 	fi
-
-	# Remove any old GOPATH
 	if [[ -d "$GOPATH" ]]; then
 		rm -rf "$GOPATH"
 	fi
 
-	# Get the latest Go version
-	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
+    retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://golang.org/VERSION?m=text > /tmp/gover.txt
+    GO_VERSION=$(cat /tmp/gover.txt)
+    retrycmd_get_tarball 60 1 /tmp/golang.tgz https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz
+    tar -v -C /usr/local -xzf /tmp/golang.tgz
 
-	echo "Installing Go version $GO_VERSION..."
-
-	# subshell
-	(
-	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
-	)
-
-	# Set GOPATH and update PATH
-	echo "Setting GOPATH and updating PATH"
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
 
