@@ -1,8 +1,16 @@
-# Calico Version v3.0.3
-# https://docs.projectcalico.org/v3.0/releases#v3.0.3
+# Calico Version v3.0.4
+# https://docs.projectcalico.org/v3.0/releases#v3.0.4
 # This manifest includes the following component versions:
-#   calico/node:v3.0.3
-#   calico/cni:v2.0.1
+#   calico/node:v3.0.4
+#   calico/cni:v2.0.3
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico-node
+  namespace: kube-system
+
+---
 
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -285,7 +293,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.0.3
+          image: quay.io/calico/node:v3.0.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -361,7 +369,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v2.0.1
+          image: quay.io/calico/cni:v2.0.3
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -496,11 +504,3 @@ spec:
     kind: NetworkPolicy
     plural: networkpolicies
     singular: networkpolicy
-
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: calico-node
-  namespace: kube-system
