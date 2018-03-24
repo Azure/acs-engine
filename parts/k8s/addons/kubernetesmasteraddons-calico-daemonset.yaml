@@ -9,13 +9,16 @@ kind: ServiceAccount
 metadata:
   name: calico-node
   namespace: kube-system
-
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 ---
 
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: calico-node
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 rules:
   - apiGroups: [""]
     resources:
@@ -84,6 +87,8 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -100,6 +105,8 @@ apiVersion: v1
 metadata:
   name: calico-config
   namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 data:
   # To enable Typha, set this to "calico-typha" *and* set a non-zero value for Typha replicas
   # below.  We recommend using Typha if you have more than 50 nodes. Above 100 nodes it is
@@ -150,6 +157,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   ports:
     - port: 5473
@@ -170,6 +178,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the calico-config ConfigMap above.
@@ -265,14 +274,14 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
-      annotations:
-        # This, along with the CriticalAddonsOnly toleration below,
-        # marks the pod as a critical add-on, ensuring it gets
-        # priority scheduling and that its resources are reserved
-        # if it ever gets evicted. 
-        # Deprecated in 1.10, Removed in 1.11. kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods 
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
+        annotations:
+          # This, along with the CriticalAddonsOnly toleration below,
+          # marks the pod as a critical add-on, ensuring it gets
+          # priority scheduling and that its resources are reserved
+          # if it ever gets evicted. 
+          # Deprecated in 1.10, Removed in 1.11. kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods 
+          scheduler.alpha.kubernetes.io/critical-pod: ''  
+        spec:
       hostNetwork: true
       serviceAccountName: calico-node
       tolerations:
@@ -416,6 +425,8 @@ description: Calico Felix Configuration
 kind: CustomResourceDefinition
 metadata:
    name: felixconfigurations.crd.projectcalico.org
+   labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -432,6 +443,8 @@ description: Calico BGP Configuration
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -448,6 +461,8 @@ description: Calico IP Pools
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -464,6 +479,8 @@ description: Calico Cluster Information
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -480,6 +497,8 @@ description: Calico Global Network Policies
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -496,6 +515,8 @@ description: Calico Network Policies
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
+  labels:
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
