@@ -139,7 +139,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 
 	// Test OIDC user overrides
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs = createContainerService("testcluster", "1.7.12", 3, 2)
 	cs.Properties.AADProfile = &api.AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
