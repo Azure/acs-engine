@@ -247,7 +247,7 @@
 {{end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic1')]",
       "properties": {
         "ipConfigurations": [
           {
@@ -323,7 +323,7 @@
   {{end}}
         ],
         "location": "[variables('location')]",
-        "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+        "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic1')]",
         "properties": {
           "ipConfigurations": [
             {
@@ -597,7 +597,7 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic1')]"
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
@@ -627,7 +627,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex(variables('masterOffset'))))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic1'))]"
             }
           ]
         },
