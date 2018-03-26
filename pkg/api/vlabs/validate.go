@@ -69,7 +69,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				o.OrchestratorVersion,
 				false)
 			if version == "" {
-				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 			}
 		case Swarm:
 		case SwarmMode:
@@ -80,7 +80,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				o.OrchestratorVersion,
 				false)
 			if version == "" {
-				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 			}
 
 			if o.KubernetesConfig != nil {
@@ -140,7 +140,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
 				// if there isn't a supported patch version for this version fail
 				if patchVersion == "" {
-					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 				}
 			}
 
@@ -422,7 +422,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 						false)
 				}
 				if version == "" {
-					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
 				}
 				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
 					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
