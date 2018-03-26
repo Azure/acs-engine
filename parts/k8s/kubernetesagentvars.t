@@ -4,7 +4,7 @@
 {{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
-    "{{.Name}}AvailabilitySet": "[concat(parameters('clusterName'), '-{{.Name}}-availabilitySet')]",
+    "{{.Name}}AvailabilitySet": "[concat(parameters('clusterName'), '-{{.Name}}-availabilityset')]",
 {{if .IsWindows}}
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
     "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), parameters('clusterName'), add(900,variables('{{.Name}}Index')))]",
