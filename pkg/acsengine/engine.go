@@ -675,14 +675,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "jumpboxPublicKey", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey)
 			addValue(parametersMap, "jumpboxStorageProfile", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile)
 		}
-		var totalNodes int
-		if cs.Properties.MasterProfile != nil {
-			totalNodes = cs.Properties.MasterProfile.Count
+		if cs.Properties.HostedMasterProfile == nil {
+			var totalNodes int
+			if cs.Properties.MasterProfile != nil {
+				totalNodes = cs.Properties.MasterProfile.Count
+			}
+			for _, pool := range cs.Properties.AgentPoolProfiles {
+				totalNodes = totalNodes + pool.Count
+			}
+			addValue(parametersMap, "totalNodes", totalNodes)
 		}
-		for _, pool := range cs.Properties.AgentPoolProfiles {
-			totalNodes = totalNodes + pool.Count
-		}
-		addValue(parametersMap, "totalNodes", totalNodes)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {

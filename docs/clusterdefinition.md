@@ -51,6 +51,7 @@ Here are the valid values for the orchestrator types:
 |controllerManagerConfig|no|Configure various runtime configuration for controller-manager. See `controllerManagerConfig` [below](#feat-controller-manager-config).|
 |cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config).|
 |apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config).|
+|schedulerConfig|no|Configure various runtime configuration for scheduler. See `schedulerConfig` [below](#feat-scheduler-config).|
 
 #### addons
 
@@ -312,7 +313,7 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |"--feature-gates"|No default (can be a comma-separated list)|
 
 
-Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces apiserver configuration, or because a static configuration is required to build a functional cluster:
 
 |apiserver option|default value|
 |---|---|
@@ -355,7 +356,38 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
 |"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
 
-We consider `kubeletConfig`, `controllerManagerConfig`, and `apiServerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
+<a name="feat-scheduler-config"></a>
+#### schedulerConfig
+
+`schedulerConfig` declares runtime configuration for the kube-scheduler daemon running on all master nodes. Like `kubeletConfig`, `controllerManagerConfig`, and `apiServerConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom apiserver config:
+
+```
+"kubernetesConfig": {
+    "schedulerConfig": {
+        "--v": "2"
+    }
+}
+```
+
+See [here](https://kubernetes.io/docs/reference/generated/kube-scheduler/) for a reference of supported kube-scheduler options.
+
+Below is a list of scheduler options that acs-engine will configure by default:
+
+|kube-scheduler option|default value|
+|---|---|
+|"--v"|"2"|
+|"--feature-gates"|No default (can be a comma-separated list)|
+
+
+Below is a list of kube-scheduler options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kube-scheduler configuration, or because a static configuration is required to build a functional cluster:
+
+|kube-scheduler option|default value|
+|---|---|
+|"--kubeconfig"|"/var/lib/kubelet/kubeconfig"|
+|"--leader-elect"|"true"|
+|"--profiling"|"false"|
+
+We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `schedulerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
 
 <a name="feat-private-cluster"></a>
 #### privateCluster

@@ -206,33 +206,21 @@ function setDockerOpts () {
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
-
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-
-    # Download Azure VNET CNI plugins.
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
-
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${VNET_CNI_PLUGINS_URL} > $AZURE_CNI_TGZ_TMP
+    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_if_failure_no_stats 180 1 curl -fsSL ${CNI_PLUGINS_URL} > $CONTAINERNETWORKING_CNI_TGZ_TMP
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
-
-    # Copy config file
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-
-    # Dump ebtables rules.
     /sbin/ebtables -t nat --list
-
-    # Enable CNI.
 	configCNINetworkPolicy
 }
 
@@ -292,29 +280,18 @@ function installClearContainersRuntime() {
 function installGo() {
 	export GO_SRC=/usr/local/go
 	export GOPATH="${HOME}/.go"
-
-	# Remove any old version of Go
 	if [[ -d "$GO_SRC" ]]; then
 		rm -rf "$GO_SRC"
 	fi
-
-	# Remove any old GOPATH
 	if [[ -d "$GOPATH" ]]; then
 		rm -rf "$GOPATH"
 	fi
 
-	# Get the latest Go version
-	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
+    retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://golang.org/VERSION?m=text > /tmp/gover.txt
+    GO_VERSION=$(cat /tmp/gover.txt)
+    retrycmd_get_tarball 60 1 /tmp/golang.tgz https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz
+    tar -v -C /usr/local -xzf /tmp/golang.tgz
 
-	echo "Installing Go version $GO_VERSION..."
-
-	# subshell
-	(
-	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
-	)
-
-	# Set GOPATH and update PATH
-	echo "Setting GOPATH and updating PATH"
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
 
@@ -482,7 +459,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    retrycmd_if_failure 100 1 docker pull $HYPERKUBE_URL
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then

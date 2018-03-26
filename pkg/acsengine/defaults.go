@@ -10,6 +10,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -179,7 +180,7 @@ var (
 	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
 	DefaultTillerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultTillerAddonName,
-		Enabled: pointerToBool(api.DefaultTillerAddonEnabled),
+		Enabled: helpers.PointerToBool(api.DefaultTillerAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultTillerAddonName,
@@ -197,7 +198,7 @@ var (
 	// DefaultACIConnectorAddonsConfig is the default ACI Connector Kubernetes addon Config
 	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultACIConnectorAddonName,
-		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Enabled: helpers.PointerToBool(api.DefaultACIConnectorAddonEnabled),
 		Config: map[string]string{
 			"region":   "westus",
 			"nodeName": "aci-connector",
@@ -218,7 +219,7 @@ var (
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
-		Enabled: pointerToBool(api.DefaultDashboardAddonEnabled),
+		Enabled: helpers.PointerToBool(api.DefaultDashboardAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultDashboardAddonName,
@@ -233,7 +234,7 @@ var (
 	// DefaultReschedulerAddonsConfig is the default rescheduler Kubernetes addon Config
 	DefaultReschedulerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultReschedulerAddonName,
-		Enabled: pointerToBool(api.DefaultReschedulerAddonEnabled),
+		Enabled: helpers.PointerToBool(api.DefaultReschedulerAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultReschedulerAddonName,
@@ -248,7 +249,7 @@ var (
 	// DefaultMetricsServerAddonsConfig is the default metrics-server Kubernetes addon Config
 	DefaultMetricsServerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultMetricsServerAddonName,
-		Enabled: pointerToBool(api.DefaultMetricsServerAddonEnabled),
+		Enabled: helpers.PointerToBool(api.DefaultMetricsServerAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: DefaultMetricsServerAddonName,
@@ -441,7 +442,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if o.KubernetesConfig.PrivateCluster.Enabled == nil {
-			o.KubernetesConfig.PrivateCluster.Enabled = pointerToBool(api.DefaultPrivateClusterEnabled)
+			o.KubernetesConfig.PrivateCluster.Enabled = helpers.PointerToBool(api.DefaultPrivateClusterEnabled)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
@@ -461,15 +462,15 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
+			a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultSecureKubeletEnabled)
+			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(api.DefaultSecureKubeletEnabled)
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
-			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = pointerToBool(api.DefaultUseInstanceMetadata)
+			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
 		// Configure kubelet
@@ -480,6 +481,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		setCloudControllerManagerConfig(cs)
 		// Configure apiserver
 		setAPIServerConfig(cs)
+		// Configure scheduler
+		setSchedulerConfig(cs)
 
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
@@ -833,12 +836,6 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 	return addon
 }
 
-// pointerToBool returns a pointer to a bool
-func pointerToBool(b bool) *bool {
-	p := b
-	return &p
-}
-
 // combine user-provided --feature-gates vals with defaults
 // a minimum k8s version may be declared as required for defaults assignment
 func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
@@ -893,5 +890,5 @@ func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.Orches
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return pointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }

@@ -168,48 +168,13 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	if err != nil {
 		return nil, err
 	}
-	currentMajor, currentMinor := currentVer.Major(), currentVer.Minor()
-	var nextMajor, nextMinor int64
-
-	switch {
-	case currentMajor == 1 && currentMinor == 5:
-		nextMajor = 1
-		nextMinor = 6
-	case currentMajor == 1 && currentMinor == 6:
-		nextMajor = 1
-		nextMinor = 7
-	case currentMajor == 1 && currentMinor == 7:
-		nextMajor = 1
-		nextMinor = 8
-	case currentMajor == 1 && currentMinor == 8:
-		nextMajor = 1
-		nextMinor = 9
-	case currentMajor == 1 && currentMinor == 9:
-		nextMajor = 1
-		nextMinor = 10
-	}
-	for ver, supported := range common.AllKubernetesSupportedVersions {
-		if !supported {
-			continue
-		}
-		nextVersion, err := semver.NewVersion(ver)
-		if err != nil {
-			continue
-		}
-		// add patch upgrade
-		if nextVersion.Major() == currentMajor && nextVersion.Minor() == currentMinor && currentVer.LessThan(nextVersion) {
-			ret = append(ret, &OrchestratorProfile{
-				OrchestratorType:    Kubernetes,
-				OrchestratorVersion: ver,
-			})
-		}
-		// add next version
-		if nextVersion.Major() == nextMajor && nextVersion.Minor() == nextMinor {
-			ret = append(ret, &OrchestratorProfile{
-				OrchestratorType:    Kubernetes,
-				OrchestratorVersion: ver,
-			})
-		}
+	nextNextMinorVersion := currentVer.IncMinor().IncMinor()
+	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorVersion.String(), false, true)
+	for _, ver := range upgradeableVersions {
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: ver,
+		})
 	}
 	return ret, nil
 }

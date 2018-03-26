@@ -259,10 +259,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6 and later releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
-		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12, common.KubernetesVersion1Dot7Dot13, common.KubernetesVersion1Dot7Dot14,
-		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7, common.KubernetesVersion1Dot8Dot8, common.KubernetesVersion1Dot8Dot9, common.KubernetesVersion1Dot8Dot10,
-		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2, common.KubernetesVersion1Dot9Dot3, common.KubernetesVersion1Dot9Dot4, common.KubernetesVersion1Dot9Dot5, common.KubernetesVersion1Dot10Dot0Beta2, common.KubernetesVersion1Dot10Dot0RC1} {
+	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -274,7 +271,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 
 	trueVal := true
 	// Tests that apply to 1.8 and later releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot8Dot1} {
+	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(), "1.8.0", true, true) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
@@ -628,7 +625,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.5"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Windows version: %v", err,
@@ -636,7 +633,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.7"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -742,7 +739,7 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.4"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
 			"should not error on valid Linux version: %v", err,
@@ -750,7 +747,7 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.7"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Linux version",
