@@ -120,11 +120,11 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-username-claim"] != "oid" {
-		t.Logf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
+		t.Fatalf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
 			a["--oidc-username-claim"])
 	}
 	if a["--oidc-groups-claim"] != "groups" {
-		t.Logf("got unexpected '--oidc-groups-claim' API server config value for HasAadProfile=true: %s",
+		t.Fatalf("got unexpected '--oidc-groups-claim' API server config value for HasAadProfile=true: %s",
 			a["--oidc-groups-claim"])
 	}
 	if a["--oidc-client-id"] != "spn:"+cs.Properties.AADProfile.ServerAppID {
@@ -134,6 +134,29 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	if a["--oidc-issuer-url"] != "https://sts.windows.net/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true: %s",
 			a["--oidc-issuer-url"])
+	}
+
+	// Test OIDC user overrides
+	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs.Properties.AADProfile = &api.AADProfile{
+		ServerAppID: "test-id",
+		TenantID:    "test-tenant",
+	}
+	usernameClaimOverride := "custom-username-claim"
+	groupsClaimOverride := "custom-groups-claim"
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{
+		"--oidc-username-claim": usernameClaimOverride,
+		"--oidc-groups-claim":   groupsClaimOverride,
+	}
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--oidc-username-claim"] != usernameClaimOverride {
+		t.Fatalf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
+			a["--oidc-username-claim"])
+	}
+	if a["--oidc-groups-claim"] != groupsClaimOverride {
+		t.Fatalf("got unexpected '--oidc-groups-claim' API server config value for HasAadProfile=true: %s",
+			a["--oidc-groups-claim"])
 	}
 
 	// Test China Cloud settings
