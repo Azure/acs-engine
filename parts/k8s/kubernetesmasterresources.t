@@ -657,7 +657,7 @@
               "createOption": "Empty"
               ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
-              ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+              ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'_EtcdDisk')]"
               {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
