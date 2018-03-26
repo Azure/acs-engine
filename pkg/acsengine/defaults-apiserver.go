@@ -37,6 +37,21 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--v":                          "4",
 	}
 
+	// Windows apiserver config overrides
+	// TODO placeholder for specific config overrides for Windows clusters
+	staticWindowsAPIServerConfig := make(map[string]string)
+	for key, val := range staticLinuxAPIServerConfig {
+		staticWindowsAPIServerConfig[key] = val
+	}
+
+	// Default apiserver config
+	defaultAPIServerConfig := map[string]string{
+		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
+		"--audit-log-maxage":    "30",
+		"--audit-log-maxbackup": "10",
+		"--audit-log-maxsize":   "100",
+	}
+
 	// Data Encryption at REST configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
@@ -61,8 +76,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// AAD configuration
 	if cs.Properties.HasAadProfile() {
-		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
-		staticLinuxAPIServerConfig["--oidc-groups-claim"] = "groups"
+		defaultAPIServerConfig["--oidc-username-claim"] = "oid"
+		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
 		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
@@ -74,21 +89,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// Audit Policy configuration
 	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
 		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
-	}
-
-	staticWindowsAPIServerConfig := make(map[string]string)
-	for key, val := range staticLinuxAPIServerConfig {
-		staticWindowsAPIServerConfig[key] = val
-	}
-	// Windows apiserver config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
-
-	// Default apiserver config
-	defaultAPIServerConfig := map[string]string{
-		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
-		"--audit-log-maxage":    "30",
-		"--audit-log-maxbackup": "10",
-		"--audit-log-maxsize":   "100",
 	}
 
 	// RBAC configuration
