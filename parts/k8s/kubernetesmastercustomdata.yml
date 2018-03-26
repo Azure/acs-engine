@@ -269,7 +269,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesAPIServerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesSchedulerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.SchedulerConfig}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{if not EnablePodSecurityPolicy}}
+{{if not EnablePodSecurityPolicy}} 
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 
