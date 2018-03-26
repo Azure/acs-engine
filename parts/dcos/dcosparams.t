@@ -26,3 +26,10 @@
       }, 
       "type": "string"
     },
+    "dcosProviderPackageID": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The guid for provider dcos-provider package."
+      }, 
+      "type": "string"
+    },

@@ -656,6 +656,7 @@ func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 	}
 	vlabs.DcosRepositoryURL = api.DcosRepositoryURL
 	vlabs.DcosClusterPackageListID = api.DcosClusterPackageListID
+	vlabs.DcosProviderPackageID = api.DcosProviderPackageID
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {

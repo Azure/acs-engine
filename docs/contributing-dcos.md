@@ -15,6 +15,9 @@ We now need to find the package GUID of each variant.
 In each template you should find a string that looks like: `dcos-config--setup_<Some GUID>`, this GUID is what we are looking for.
 Extract the GUIDs from the 3 differents templates, and them in `engine.go/getPackageGUID` for your specific DC/OS version.
 
+In DC/OS 1.11 and greater, you should find a the contents for `/etc/mesosphere/setup-flags/repository-url` in each 3 ARM templates (1, 3 and 5 masters variants).
+Extract the GUIDs from the 3 differents templates, and them in `dcos/dcoscustomdataXXX.t` for your specific DC/OS version.
+
 
 ## 3. Extract the cloud-config data from the template
 

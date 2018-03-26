@@ -30,6 +30,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 		case Swarm:
 		case DCOS:
 			switch o.OrchestratorVersion {
+			case common.DCOSVersion1Dot11Dot0:
 			case common.DCOSVersion1Dot10Dot0:
 			case common.DCOSVersion1Dot9Dot0:
 			case common.DCOSVersion1Dot8Dot8:
