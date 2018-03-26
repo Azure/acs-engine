@@ -287,11 +287,16 @@ type KubernetesConfig struct {
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
+<<<<<<< HEAD
 	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
 	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
 	Registry                string `json:"registry,omitempty"`
 	RegistryUser            string `json:"registryUser,omitempty"`
 	RegistryPass            string `json:"registryPassword,omitempty"`
+	DcosBootstrapURL         string `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string `json:"dcosWindowsBootstrapURL,omitempty"`
+	DcosRepositoryURL        string `json:"dcosRepositoryURL,omitempty"`
+	DcosClusterPackageListID string `json:"dcosClusterPackageListID,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
