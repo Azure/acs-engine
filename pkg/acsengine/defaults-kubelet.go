@@ -108,10 +108,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 
-		if strings.Contains(profile.VMSize, "Standard_N") && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
-			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.8.0", "DevicePlugins=true")
-		} else if strings.Contains(profile.VMSize, "Standard_N") {
-			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+		// For N Series (GPU) VMs
+		if strings.Contains(profile.VMSize, "Standard_N") {
+			if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && cs.Properties.IsNVIDIADevicePluginEnabled() {
+				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.8.0", "DevicePlugins=true")
+			} else if !cs.Properties.IsNVIDIADevicePluginEnabled() {
+				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+			}
 		}
 	}
 }
