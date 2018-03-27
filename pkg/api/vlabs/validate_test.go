@@ -731,14 +731,6 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.10.0-rc.1"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
 	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
 	if err := p.Validate(false); err != nil {
 		t.Errorf(
