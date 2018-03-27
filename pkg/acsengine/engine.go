@@ -2176,9 +2176,9 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile, k8sVersion string
 	*/
 	if common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
 		installScript += fmt.Sprintf(`
-- retrycmd_if_failure_no_stats 180 1 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
+- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
 - cat /tmp/aptnvidia.gpg | apt-key add -
-- retrycmd_if_failure_no_stats 180 1 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
+- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
 - cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 - apt_get_update
 - retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
