@@ -252,15 +252,8 @@ function installClearContainersRuntime() {
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-	apt-get update
-	apt-get install --no-install-recommends -y \
+	apt-get update && apt-get install --no-install-recommends -y \
 		cc-runtime
-
-	# Install thin tools for devicemapper configuration
-	echo "Installing thin tools to provision devicemapper..."
-	apt-get install --no-install-recommends -y \
-		lvm2 \
-		thin-provisioning-tools
 
 	# Load systemd changes
 	echo "Loading changes to systemd service files..."
@@ -319,8 +312,8 @@ function buildContainerd() {
 	cd cri
 	git reset --hard "v1.0.0-rc.0"
 	make BUILDTAGS="seccomp apparmor"
-	make install.deps
-	make static-binaries
+	INSTALL_CNI=false make install.deps
+	make clean static-binaries
 	make install
 	)
 
@@ -337,10 +330,12 @@ function setupContainerd() {
 
 	mkdir -p "/etc/containerd"
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
-	echo "[plugins.cri.containerd.default_runtime]" > "$CRI_CONTAINERD_CONFIG"
+	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
+	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
-	echo "[plugins.cri.containerd.privileged_runtime]" > "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
