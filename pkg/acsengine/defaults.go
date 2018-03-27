@@ -57,7 +57,7 @@ var (
 
 	//DefaultDockerSpecConfig is the default Docker engine repo.
 	DefaultDockerSpecConfig = DockerSpecConfig{
-		DockerEngineRepo:         "https://download.docker.com/linux/ubuntu",
+		DockerEngineRepo:         "https://aptdocker.azureedge.net/repo",
 		DockerComposeDownloadURL: "https://github.com/docker/compose/releases/download",
 	}
 
@@ -306,8 +306,7 @@ var (
 
 	// DefaultNVIDIADevicePluginAddonsConfig is the default NVIDIA Device Plugin Kubernetes addon Config
 	DefaultNVIDIADevicePluginAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultNVIDIADevicePluginAddonName,
-		Enabled: pointerToBool(api.DefaultNVIDIADevicePluginAddonEnabled),
+		Name: DefaultNVIDIADevicePluginAddonName,
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: DefaultNVIDIADevicePluginAddonName,

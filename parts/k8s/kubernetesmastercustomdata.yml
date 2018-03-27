@@ -32,7 +32,7 @@ write_files:
 {{if .MasterProfile.IsCoreOS}}
     ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 {{else}}
-    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 {{end}}
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -271,7 +271,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.KubernetesConfig.IsNVIDIADevicePluginEnabled}}
+{{if IsNVIDIADevicePluginEnabled}}
     sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
 {{end}}
 

@@ -353,14 +353,14 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 	}
 
 	for _, sku := range validSkus {
-		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
+		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku}, "1.9.3")
 		if s == "" {
 			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
 		}
 	}
 
 	// VMSize without GPU
-	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"})
+	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"}, "1.9.3")
 	if s != "" {
 		t.Fatalf("VMSize without GPU should not receive a script, expected empty string, received %v", s)
 	}

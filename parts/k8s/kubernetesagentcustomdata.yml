@@ -22,7 +22,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -35,15 +35,6 @@ write_files:
          "max-size": "50m",
          "max-file": "5"
       }
-{{if IsNVIDIADevicePluginEnabled}}
-      ,"default-runtime": "nvidia",
-      "runtimes": {
-         "nvidia": {
-             "path": "/usr/bin/nvidia-container-runtime",
-             "runtimeArgs": []
-        }
-      }
-{{end}}
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"

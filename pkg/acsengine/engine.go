@@ -1503,13 +1503,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"IsNVIDIADevicePluginEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsNVIDIADevicePluginEnabled()
+			return cs.Properties.IsNVIDIADevicePluginEnabled()
 		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
 		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
-			return getGPUDriversInstallScript(profile)
+			k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
+			return getGPUDriversInstallScript(profile, k8sVersion)
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
@@ -2150,7 +2151,11 @@ func isCustomVNET(a []*api.AgentPoolProfile) bool {
 	return false
 }
 
-func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
+func getOrchestratorVersion(profile *api.OrchestratorProfile) string {
+	return profile.OrchestratorVersion
+}
+
+func getGPUDriversInstallScript(profile *api.AgentPoolProfile, k8sVersion string) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
 	dv := "390.30"
@@ -2169,14 +2174,15 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	/*
 		Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
 	*/
-	installScript += fmt.Sprintf(`
+	if common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
+		installScript += fmt.Sprintf(`
 - retrycmd_if_failure_no_stats 180 1 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
 - cat /tmp/aptnvidia.gpg | apt-key add -
 - retrycmd_if_failure_no_stats 180 1 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
 - cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 - apt_get_update
 - retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
-- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2
+- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=2.0.3+docker1.13.1-1 nvidia-container-runtime=2.0.0+docker1.13.1-1
 - sudo pkill -SIGHUP dockerd
 - mkdir -p %s
 - cd %s`, dest, dest)
