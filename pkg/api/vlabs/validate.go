@@ -108,6 +108,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 							return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
 						}
 					}
+				}
 
 					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
 						sv, err := semver.NewVersion(version)
@@ -124,6 +125,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						}
 					}
 				}
+				
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")

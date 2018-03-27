@@ -1136,6 +1136,7 @@
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
+    "apiVersionKeyVault": "2016-10-01",
     "caCertificate": "[parameters('caCertificate')]",
     "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",

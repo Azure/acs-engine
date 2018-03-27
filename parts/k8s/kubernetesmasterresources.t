@@ -740,6 +740,37 @@
       "type": "Microsoft.Network/loadBalancers"
     },
 {{end}}
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+     {
+       "type": "Microsoft.KeyVault/vaults",
+       "name": "[variables('clusterKeyVaultName')]",
+       "apiVersion": "[variables('apiVersionKeyVault')]",
+       "location": "[variables('location')]",
+       "properties": {
+         "enabledForDeployment": "false",
+         "enabledForDiskEncryption": "false",
+         "enabledForTemplateDeployment": "false",
+         "tenantId": "[variables('tenantID')]",
+ {{if not UseManagedIdentity}}
+         "accessPolicies": [
+           {
+             "tenantId": "[variables('tenantID')]",
+             "objectId": "[variables('servicePrincipalClientId')]",
+             "permissions": {
+               "keys": ["create", "encrypt", "decrypt", "get", "list"]
+             }
+           }
+         ],
+ {{else}}
+         "accessPolicies": [],
+ {{end}}
+         "sku": {
+           "name": "[variables('clusterKeyVaultSku')]",
+           "family": "A"
+         }
+       }
+     },
+ {{end}}
     {
     {{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",

@@ -148,7 +148,10 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
+    "providerKeyName": "t1",
+    "providerKeyVersion": ""
 }
 EOF
 

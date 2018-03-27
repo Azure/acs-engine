@@ -70,6 +70,15 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+- path: "/etc/kubernetes/enableExternalKms.sh"
+  permissions: "0744"
+  encoding: "gzip"
+  owner: "root"
+  content: !!binary |
+    sed -i "s|<externalKms>|unix:///tmp/azurekms.socket|g" "/etc/kubernetes/encryption-config.yaml"
+{{end}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -109,6 +118,57 @@ write_files:
                 - name: key1
                   secret: <etcdEncryptionSecret>
           - identity: {}
+{{end}}
+
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+- path: "/etc/kubernetes/encryption-config.yaml"
+  permissions: "0600"
+  owner: "root"
+  content: |
+    kind: EncryptionConfig
+    apiVersion: v1
+    resources:
+      - resources:
+        - secrets
+        providers:
+        - kms:
+            name: azurekmsprovider
+            endpoint: <externalKms>
+            cachesize: 0
+        - identity: {}
+{{end}}
+
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+- path: "/etc/kubernetes/manifests/kube-azurekmspod.yaml"
+  permissions: "0600"
+  owner: "root"
+  content: |
+    apiVersion: v1 
+    kind: Pod 
+    metadata: 
+     name: azurekms 
+    spec: 
+     containers: 
+     - name: azurekms 
+       image: ritazh/k8s-azure-kms:latest
+       imagePullPolicy: Always
+       volumeMounts:
+       - mountPath: /tmp
+         name: tmp
+       - mountPath: /etc/kubernetes
+         name: kube
+       - mountPath: /etc/ssl/certs/
+         name: certs
+     volumes:
+     - name: tmp
+     hostPath:
+       path: /tmp
+     - name: kube
+     hostPath:
+       path: /etc/kubernetes
+     - name: certs
+     hostPath:
+       path: /etc/ssl/certs/
 {{end}}
 
 MASTER_MANIFESTS_CONFIG_PLACEHOLDER
@@ -397,6 +457,12 @@ runcmd:
 {{if EnableAggregatedAPIs}}
 - bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+- bash /etc/kubernetes/externalKms.sh
+- systemctl daemon-reload
+- systemctl restart kubelet.service
+{{end}}
 - retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
+- apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
 {{end}}

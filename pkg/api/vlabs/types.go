@@ -283,6 +283,7 @@ type KubernetesConfig struct {
 	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
 	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	EnableDataEncryptionAtRestWithExternalKms   *bool             `json:"enableDataEncryptionAtRestWithExternalKms,omitempty"`
 	EnablePodSecurityPolicy      *bool             `json:"enablePodSecurityPolicy,omitempty"`
 	Addons                       []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`

@@ -1728,6 +1728,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnableDataEncryptionAtRest": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest)
 		},
+		"EnableDataEncryptionAtRestWithExternalKms": func() bool {
+			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRestWithExternalKms)
+		},
 		"EnableAggregatedAPIs": func() bool {
 			if cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
 				return true
