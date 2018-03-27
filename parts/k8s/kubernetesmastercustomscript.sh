@@ -361,7 +361,7 @@ function buildCRIO() {
 	git clone "https://github.com/kubernetes-incubator/cri-o.git"
 	cd cri-o
 	git reset --hard v1.0.0
-	make BUILDTAGS="seccomp apparmor"
+	make BUILDTAGS="seccomp"
 	make install
 	make install.config
 	make install.systemd
@@ -370,10 +370,10 @@ function buildCRIO() {
 	echo "Successfully built and installed CRI-O..."
 
 	# Cleanup the temporary directory
-	rm -vrf "$tmpd"
+	rm -rf "$tmpd"
 
 	# Cleanup the Go install
-	rm -vrf "$GO_SRC" "$GOPATH"
+	rm -rf "$GO_SRC" "$GOPATH"
 
 	setupCRIO;
 }
