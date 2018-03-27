@@ -288,11 +288,13 @@ function installGo() {
 		rm -rf "$GOPATH"
 	fi
 
-	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
+	retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://golang.org/VERSION?m=text > /tmp/gover.txt
+	GO_VERSION=$(cat /tmp/gover.txt)
 	echo "Installing Go version $GO_VERSION..."
-	(
-	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
-	)
+
+	retrycmd_get_tarball 60 1 /tmp/golang.tgz https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz
+	tar -v -C /usr/local -xzf /tmp/golang.tgz
+	rm -rf "/tmp/golang.tgz" "/tmp/gover.txt"
 
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
