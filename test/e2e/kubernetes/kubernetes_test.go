@@ -222,12 +222,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(running).To(Equal(true))
 		})
 
-		It("should have nvidia-device-plugin running", func() {
-			running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
-		})
-
 		It("should have tiller running", func() {
 			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -371,6 +365,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 			} else {
 				Skip("rescheduler disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have nvidia-device-plugin running", func() {
+			if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
+				running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range NVIDIADevicePluginAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("nvidia-device-plugin disabled for this cluster, will not test")
 			}
 		})
 	})
@@ -540,16 +550,29 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
 			if eng.HasGPUNodes() {
-				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
-				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
+				if eng.OrchestratorVersion1Dot8AndUp() {
+					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi-deviceplugin.yaml"), "nvidia-smi-deviceplugin", "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := j.Delete()
+					if delErr != nil {
+						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+						fmt.Println(delErr)
+					}
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
+				} else {
+					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := j.Delete()
+					if delErr != nil {
+						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+						fmt.Println(delErr)
+					}
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
 				}
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
 			}
 		})
 	})
