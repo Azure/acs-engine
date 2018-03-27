@@ -600,7 +600,7 @@
     },
     {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
-      "defaultValue": "https://download.docker.com/linux/ubuntu",
+      "defaultValue": "https://aptdocker.azureedge.net/repo",
       "metadata": {
         "description": "The docker engine download url for kubernetes."
       },
