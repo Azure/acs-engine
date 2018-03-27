@@ -465,9 +465,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
-	if a.OrchestratorProfile.OrchestratorType != DCOS && a.WindowsProfile != nil {
-		if a.WindowsProfile.WindowsImageSourceURL != "" {
-			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS")
+	if a.WindowsProfile != nil && a.WindowsProfile.WindowsImageSourceURL != "" {
+		if a.OrchestratorProfile.OrchestratorType != DCOS && a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS or Kubernetes")
 		}
 	}
 
