@@ -13,7 +13,7 @@
       },
       "masterProfile": {
         "count": 1,
-        "dnsPrefix": "acseistio",
+        "dnsPrefix": "",
         "vmSize": "Standard_DS2_v2"
       },
       "agentPoolProfiles": [
