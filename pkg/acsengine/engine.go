@@ -2151,10 +2151,6 @@ func isCustomVNET(a []*api.AgentPoolProfile) bool {
 	return false
 }
 
-func getOrchestratorVersion(profile *api.OrchestratorProfile) string {
-	return profile.OrchestratorVersion
-}
-
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile, k8sVersion string) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
