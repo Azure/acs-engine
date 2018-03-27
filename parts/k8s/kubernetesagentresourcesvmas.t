@@ -132,7 +132,7 @@
       "tags":
       {
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "clusterName" : "[variables('clusterName')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
         "poolName" : "{{.Name}}"
       },
