@@ -44,7 +44,8 @@ write_files:
       "log-opts":  {
          "max-size": "50m",
          "max-file": "5"
-      }
+      },
+      "dns-search": [ "ve-ci.com" ]
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"
