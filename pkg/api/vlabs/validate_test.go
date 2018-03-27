@@ -641,7 +641,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.10"
+	p.OrchestratorProfile.OrchestratorRelease = "1.11"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
