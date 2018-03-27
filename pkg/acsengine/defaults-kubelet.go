@@ -110,9 +110,10 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 		// For N Series (GPU) VMs
 		if strings.Contains(profile.VMSize, "Standard_N") {
-			if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && cs.Properties.IsNVIDIADevicePluginEnabled() {
+			// enabling device plugins for k8s >= 1.8 and <= 1.10 (not needed) and NVIDIA Device Plugin addon is not disabled
+			if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") && cs.Properties.IsNVIDIADevicePluginEnabled() {
 				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.8.0", "DevicePlugins=true")
-			} else if !cs.Properties.IsNVIDIADevicePluginEnabled() {
+			} else if !cs.Properties.IsNVIDIADevicePluginEnabled() { // enabling accelerators
 				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
 			}
 		}
