@@ -95,7 +95,7 @@ k8s_17_cherry_pick() {
 			git revert --no-edit 7305738dd1 || true #add tests only
 			git revert --no-edit e01bafcf80 || true #only for linux
 			git revert --no-edit afd79db7a6 || true #only for linux
-			git revert --no-edit 3a4abca2f7 || true #covered by commit 3aa179744f 
+			git revert --no-edit 3a4abca2f7 || true #covered by commit 3aa179744f
 			git revert --no-edit 6a2e2f47d3 || true #covered by commit 3aa179744f
 
 			if version_ge "${version}" "1.7.13"; then

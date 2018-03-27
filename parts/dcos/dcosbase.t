@@ -35,7 +35,7 @@
           {{end}}
         {{end}}
     {{end}}
-    
+
     {{template "dcos/dcosmastervars.t" .}}
   },
   "resources": [

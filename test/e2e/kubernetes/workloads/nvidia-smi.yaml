@@ -10,16 +10,16 @@ spec:
       restartPolicy: Never
       containers:
       - name: nvidia-smi
-        image: nvidia/cuda     
+        image: nvidia/cuda
         command:
         - nvidia-smi
         resources:
           limits:
             alpha.kubernetes.io/nvidia-gpu: 1
-        volumeMounts: 
+        volumeMounts:
         - name: nvidia
           mountPath: /usr/local/nvidia/
-      volumes: 
+      volumes:
       - name: nvidia
-        hostPath: 
+        hostPath:
           path: /usr/local/nvidia

@@ -69,13 +69,13 @@ runcmd: PREPROVISION_EXTENSION
   - --now
   - lxc-net.service
 - - tar
-  - czf 
+  - czf
   - /etc/docker.tar.gz
   - -C
   - /tmp/xtoph
   - .docker
-- - rm 
-  - -rf 
+- - rm
+  - -rf
   - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp

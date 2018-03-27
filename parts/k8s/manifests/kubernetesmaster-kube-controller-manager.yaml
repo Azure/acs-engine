@@ -13,7 +13,7 @@ spec:
       image: "<kubernetesHyperkubeSpec>"
       command: ["/hyperkube", "controller-manager"]
       args: [<kubernetesControllerManagerConfig>]
-      volumeMounts: 
+      volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
         - name: "var-lib-kubelet"
