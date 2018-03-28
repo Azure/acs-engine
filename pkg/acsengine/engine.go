@@ -1509,8 +1509,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return isNSeriesSKU(profile)
 		},
 		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
-			k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
-			return getGPUDriversInstallScript(profile, k8sVersion)
+			return getGPUDriversInstallScript(profile)
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
@@ -2151,12 +2150,11 @@ func isCustomVNET(a []*api.AgentPoolProfile) bool {
 	return false
 }
 
-func getGPUDriversInstallScript(profile *api.AgentPoolProfile, k8sVersion string) string {
+func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
 	dv := "390.30"
 	dest := "/usr/local/nvidia"
-
 	/*
 		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
 		We also installed needed dependencies.
@@ -2170,8 +2168,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile, k8sVersion string
 	/*
 		Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
 	*/
-	if common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
-		installScript += fmt.Sprintf(`
+	installScript += fmt.Sprintf(`
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
 - cat /tmp/aptnvidia.gpg | apt-key add -
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
