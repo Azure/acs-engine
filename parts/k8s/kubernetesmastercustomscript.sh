@@ -264,69 +264,23 @@ function installClearContainersRuntime() {
 	systemctl enable cc-proxy
 	systemctl start cc-proxy
 
-	# CRI-Containerd has only been tested with the azure plugin
-	configAzureNetworkPolicy
+	setNetworkPlugin cni
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/var/lib/containerd:/var/lib/containerd:ro"
 }
 
-function installGo() {
-	export GO_SRC=/usr/local/go
-	export GOPATH="${HOME}/.go"
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
+	local download_uri="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
-	if [[ -d "$GO_SRC" ]]; then
-		rm -rf "$GO_SRC"
-	fi
-	if [[ -d "$GOPATH" ]]; then
-		rm -rf "$GOPATH"
-	fi
+	curl -sSL "$download_uri" | tar -xz -C /
 
-	retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://golang.org/VERSION?m=text > /tmp/gover.txt
-	GO_VERSION=$(cat /tmp/gover.txt)
-	echo "Installing Go version $GO_VERSION..."
-
-	retrycmd_get_tarball 60 1 /tmp/golang.tgz https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz
-	tar -v -C /usr/local -xzf /tmp/golang.tgz
-	rm -rf "/tmp/golang.tgz" "/tmp/gover.txt"
-
-	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
-}
-
-function buildContainerd() {
-	apt-get update && apt-get install --no-install-recommends -y \
-		btrfs-tools \
-		gcc \
-		libapparmor-dev \
-		libc6-dev \
-		libseccomp-dev \
-		make \
-		pkg-config
-
-	installGo;
-
-	echo "Cloning the cri-containerd source..."
-	mkdir -p "${GOPATH}/src/github.com/containerd"
-	(
-	cd "${GOPATH}/src/github.com/containerd"
-	git clone "https://github.com/containerd/cri.git"
-	cd cri
-	git reset --hard "v1.0.0-rc.0"
-	make BUILDTAGS="seccomp apparmor"
-	INSTALL_CNI=false make install.deps
-	make clean static-binaries
-	make install
-	)
-
-	echo "Successfully built and installed cri-containerd..."
-	rm -rf "$tmpd"  "$GO_SRC" "$GOPATH"
+	echo "Successfully installed cri-containerd..."
 	setupContainerd;
 }
 
 function setupContainerd() {
 	echo "Configuring cri-containerd..."
-
-	SYSTEMD_CRI_CONTIANERD_SERVICE_FILE="/etc/systemd/system/containerd.service"
-	curl -sSL -o "$SYSTEMD_CRI_CONTIANERD_SERVICE_FILE" "https://raw.githubusercontent.com/containerd/cri/master/contrib/systemd-units/containerd.service"
 
 	mkdir -p "/etc/containerd"
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
@@ -606,8 +560,8 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
-		echo `date`,`hostname`, buildContainerdStart>>/opt/m
-		buildContainerd
+		echo `date`,`hostname`, installContainerdStart>>/opt/m
+		installContainerd
 	fi
 fi
 echo `date`,`hostname`, setMaxPodsStart>>/opt/m
