@@ -583,14 +583,15 @@
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
-        "description": "The network policy enforcement to use (calico|cilium); 'none' and 'azure' here for backwards compatibility"
+        "description": "The network policy enforcement to use (calico|cilium|flannel); 'none' and 'azure' here for backwards compatibility"
       },
       "allowedValues": [
         "",
         "none",
         "azure",
         "calico",
-        "cilium"
+        "cilium",
+        "flannel"
       ],
       "type": "string"
     },

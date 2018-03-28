@@ -925,7 +925,7 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico" || networkPolicy == "cilium") && a.HasWindows() {
+	if (networkPolicy == "calico" || networkPolicy == "cilium" || networkPolicy == "flannel") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 

@@ -351,6 +351,18 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			"should error on cilium for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on flannel for windows clusters",
+		)
+	}
 }
 
 func Test_Properties_ValidateNetworkPlugin(t *testing.T) {
