@@ -235,7 +235,7 @@
 {{end}}
 {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
-{{end}}     
+{{end}}
           }
 
         }

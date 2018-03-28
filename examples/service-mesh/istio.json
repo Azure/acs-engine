@@ -1,0 +1,43 @@
+{
+    "apiVersion": "vlabs",
+    "properties": {
+      "orchestratorProfile": {
+        "orchestratorType": "Kubernetes",
+        "orchestratorRelease": "1.9",
+        "kubernetesConfig": {
+          "apiServerConfig": {
+            "--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DenyEscalatingExec,Initializers,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota",
+            "--runtime-config": "admissionregistration.k8s.io/v1alpha1"
+          }
+        } 
+      },
+      "masterProfile": {
+        "count": 1,
+        "dnsPrefix": "",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "agentPoolProfiles": [
+        {
+          "name": "agentpool1",
+          "count": 2,
+          "vmSize": "Standard_DS2_v2",
+          "availabilityProfile": "AvailabilitySet"
+        }
+      ],
+      "linuxProfile": {
+        "adminUsername": "azureuser",
+        "ssh": {
+          "publicKeys": [
+            {
+              "keyData": ""
+            }
+          ]
+        }
+      },
+      "servicePrincipalProfile": {
+        "clientId": "",
+        "secret": ""
+      }
+    }
+  }
+  

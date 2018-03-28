@@ -11,15 +11,15 @@
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2",
       "firstConsecutiveStaticIP": "172.16.0.5",
-      "preProvisionExtension": 
-          { 
-            "name": "hello-world-k8s", 
+      "preProvisionExtension":
+          {
+            "name": "hello-world-k8s",
             "singleOrAll": "all"
           }
         ,
       "extensions": [
-          { 
-            "name": "hello-world-k8s", 
+          {
+            "name": "hello-world-k8s",
             "singleOrAll": "all"
           }
         ]
@@ -38,8 +38,8 @@
         "availabilityProfile": "VirtualMachineScaleSets",
         "storageProfile": "StorageAccount",
       "extensions": [
-          { 
-            "name": "hello-world-k8s", 
+          {
+            "name": "hello-world-k8s",
             "singleOrAll": "all"
           }
         ]
@@ -63,9 +63,9 @@
       }
     },
     "extensionProfiles": [
-      { 
-        "name": "hello-world-k8s", 
-        "version": "v1", 
+      {
+        "name": "hello-world-k8s",
+        "version": "v1",
         "extensionParameters": "extensionParameters",
         "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/",
         "script": "test.sh"

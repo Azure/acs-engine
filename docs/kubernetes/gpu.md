@@ -21,7 +21,7 @@ You will also need to mount the drivers from the host (the kubernetes agent) int
 
 On the host, the drivers are installed under `/usr/local/nvidia`.
 
-Here is an example template running TensorFlow: 
+Here is an example template running TensorFlow:
 
 ```
 apiVersion: extensions/v1beta1
@@ -35,11 +35,11 @@ spec:
     metadata:
       labels:
         app: tensorflow
-    spec:     
+    spec:
       containers:
       - name: tensorflow
         image: <SOME_IMAGE>
-        command: <SOME_COMMAND>    
+        command: <SOME_COMMAND>
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -49,7 +49,7 @@ spec:
           mountPath: /usr/local/nvidia
       volumes:
         - name: nvidia
-          hostPath: 
+          hostPath:
             path: /usr/local/nvidia
 ```
 

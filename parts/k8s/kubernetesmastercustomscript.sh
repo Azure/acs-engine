@@ -252,15 +252,8 @@ function installClearContainersRuntime() {
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-	apt-get update
-	apt-get install --no-install-recommends -y \
+	apt-get update && apt-get install --no-install-recommends -y \
 		cc-runtime
-
-	# Install thin tools for devicemapper configuration
-	echo "Installing thin tools to provision devicemapper..."
-	apt-get install --no-install-recommends -y \
-		lvm2 \
-		thin-provisioning-tools
 
 	# Load systemd changes
 	echo "Loading changes to systemd service files..."
@@ -271,143 +264,47 @@ function installClearContainersRuntime() {
 	systemctl enable cc-proxy
 	systemctl start cc-proxy
 
-	# CRIO has only been tested with the azure plugin
-	configAzureNetworkPolicy
-	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
-	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	setNetworkPlugin cni
+	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/var/lib/containerd:/var/lib/containerd:ro"
 }
 
-function installGo() {
-	export GO_SRC=/usr/local/go
-	export GOPATH="${HOME}/.go"
-	if [[ -d "$GO_SRC" ]]; then
-		rm -rf "$GO_SRC"
-	fi
-	if [[ -d "$GOPATH" ]]; then
-		rm -rf "$GOPATH"
-	fi
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
+	local download_uri="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
-    retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://golang.org/VERSION?m=text > /tmp/gover.txt
-    GO_VERSION=$(cat /tmp/gover.txt)
-    retrycmd_get_tarball 60 1 /tmp/golang.tgz https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz
-    tar -v -C /usr/local -xzf /tmp/golang.tgz
+	curl -sSL "$download_uri" | tar -xz -C /
 
-	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
+	echo "Successfully installed cri-containerd..."
+	setupContainerd;
 }
 
-function buildRunc() {
-	# Clone the runc source
-	echo "Cloning the runc source..."
-	mkdir -p "${GOPATH}/src/github.com/opencontainers"
-	(
-	cd "${GOPATH}/src/github.com/opencontainers"
-	git clone "https://github.com/opencontainers/runc.git"
-	cd runc
-	git reset --hard v1.0.0-rc4
-	make BUILDTAGS="seccomp apparmor"
-	make install
-	)
+function setupContainerd() {
+	echo "Configuring cri-containerd..."
 
-	echo "Successfully built and installed runc..."
-}
+	mkdir -p "/etc/containerd"
+	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
+	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
+	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
-function buildCRIO() {
-	# Add CRI-O repositories
-	echo "Adding repositories required for cri-o..."
-	add-apt-repository -y ppa:projectatomic/ppa
-	add-apt-repository -y ppa:alexlarsson/flatpak
-	apt-get update
-
-	# Install CRI-O dependencies
-	echo "Installing dependencies for CRI-O..."
-	apt-get install --no-install-recommends -y \
-		btrfs-tools \
-		gcc \
-		git \
-		libapparmor-dev \
-		libassuan-dev \
-		libc6-dev \
-		libdevmapper-dev \
-		libglib2.0-dev \
-		libgpg-error-dev \
-		libgpgme11-dev \
-		libostree-dev \
-		libseccomp-dev \
-		libselinux1-dev \
-		make \
-		pkg-config \
-		skopeo-containers
-
-	installGo;
-
-	# Install md2man
-	go get github.com/cpuguy83/go-md2man
-
-	# Fix for templates dependency
-	(
-	go get -u github.com/docker/docker/daemon/logger/templates
-	cd "${GOPATH}/src/github.com/docker/docker"
-	mkdir -p utils
-	cp -r daemon/logger/templates utils/
-	)
-
-	buildRunc;
-
-	# Clone the CRI-O source
-	echo "Cloning the CRI-O source..."
-	mkdir -p "${GOPATH}/src/github.com/kubernetes-incubator"
-	(
-	cd "${GOPATH}/src/github.com/kubernetes-incubator"
-	git clone "https://github.com/kubernetes-incubator/cri-o.git"
-	cd cri-o
-	git reset --hard v1.0.0
-	make BUILDTAGS="seccomp apparmor"
-	make install
-	make install.config
-	make install.systemd
-	)
-
-	echo "Successfully built and installed CRI-O..."
-
-	# Cleanup the temporary directory
-	rm -vrf "$tmpd"
-
-	# Cleanup the Go install
-	rm -vrf "$GO_SRC" "$GOPATH"
-
-	setupCRIO;
-}
-
-function setupCRIO() {
-	# Configure CRI-O
-	echo "Configuring CRI-O..."
-
-	# Configure crio systemd service file
-	SYSTEMD_CRI_O_SERVICE_FILE="/usr/local/lib/systemd/system/crio.service"
-	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$SYSTEMD_CRI_O_SERVICE_FILE"
-
-	# Configure /etc/crio/crio.conf
-	CRI_O_CONFIG="/etc/crio/crio.conf"
-	sed -i 's#storage_driver = ""#storage_driver = "devicemapper"#' "$CRI_O_CONFIG"
-	sed -i 's#storage_option = \[#storage_option = \["dm.directlvm_device=/dev/sdc", "dm.thinp_percent=95", "dm.thinp_metapercent=1", "dm.thinp_autoextend_threshold=80", "dm.thinp_autoextend_percent=20", "dm.directlvm_device_force=true"#' "$CRI_O_CONFIG"
-	sed -i 's#runtime = "/usr/bin/runc"#runtime = "/usr/local/sbin/runc"#' "$CRI_O_CONFIG"
-	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
-	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
-
-	# Load systemd changes
-	echo "Loading changes to systemd service files..."
 	systemctl daemon-reload
 }
 
-function ensureCRIO() {
+function ensureContainerd() {
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		# Make sure we can nest virtualization
 		if grep -q vmx /proc/cpuinfo; then
-			# Enable and start cri-o service
+			# Enable and start cri-containerd service
 			# Make sure this is done after networking plugins are installed
-			echo "Enabling and starting cri-o service..."
-			systemctl enable crio crio-shutdown
-			systemctl start crio
+			echo "Enabling and starting cri-containerd service..."
+			systemctl enable containerd
+			systemctl start containerd
 		fi
 	fi
 }
@@ -663,14 +560,14 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
-		echo `date`,`hostname`, buildCRIOStart>>/opt/m
-		buildCRIO
+		echo `date`,`hostname`, installContainerdStart>>/opt/m
+		installContainerd
 	fi
 fi
 echo `date`,`hostname`, setMaxPodsStart>>/opt/m
 setMaxPods ${MAX_PODS}
-echo `date`,`hostname`, ensureCRIOStart>>/opt/m
-ensureCRIO
+echo `date`,`hostname`, ensureContainerdStart>>/opt/m
+ensureContainerd
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
 echo `date`,`hostname`, extractKubctlStart>>/opt/m

@@ -7,7 +7,7 @@ node(env.NODE? env.NODE : 'slave') {
   ]) {
     timestamps {
       wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
-        
+
         stage('Prepare') {
           deleteDir()
           checkout scm
@@ -42,19 +42,19 @@ node(env.NODE? env.NODE : 'slave') {
             sh("git clone https://github.com/${BUILD_REPO} /go/src/github.com/kubernetes/kubernetes")
             sh("cd /go/src/github.com/kubernetes/kubernetes && git checkout ${BUILD_FROM}")
           }
-          
+
           stage('Build Binaries') {
             sh("cd /go/src/github.com/kubernetes/kubernetes && build/run.sh make cross KUBE_FASTBUILD=true ARCH=amd64")
           }
-          
+
           stage('Build Image') {
             sh("cd /go/src/github.com/kubernetes/kubernetes/cluster/images/hyperkube && make VERSION=${tag}")
           }
-          
+
           stage('Tag and Publish Image') {
             sh("docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD} ${REGISTRY_USERNAME}.azurecr.io")
-            
-            // We retag the gcr image from hyperkube-amd64 to just hyperkube since we can use image tags for separate architectures 
+
+            // We retag the gcr image from hyperkube-amd64 to just hyperkube since we can use image tags for separate architectures
             sh("cd /go/src/github.com/kubernetes/kubernetes && docker tag gcr.io/google-containers/hyperkube-amd64:${tag} ${REGISTRY_USERNAME}.azurecr.io/hyperkube:${tag}")
             sh("cd /go/src/github.com/kubernetes/kubernetes && docker push ${REGISTRY_USERNAME}.azurecr.io/hyperkube:${tag}")
           }
