@@ -177,7 +177,7 @@ jobs:
           echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
-          echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo  'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
