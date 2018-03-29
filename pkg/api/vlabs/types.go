@@ -58,6 +58,7 @@ type AzProfile struct {
 type ServicePrincipalProfile struct {
 	ClientID          string             `json:"clientId,omitempty"`
 	Secret            string             `json:"secret,omitempty"`
+	ObjectID          string             `json:"objectId,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 

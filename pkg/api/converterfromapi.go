@@ -1052,6 +1052,7 @@ func convertCustomProfileToV20170701(api *CustomProfile, v20170701 *v20170701.Cu
 func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v *v20170701.ServicePrincipalProfile) {
 	v.ClientID = api.ClientID
 	v.Secret = api.Secret
+	v.ObjectID = api.ObjectID
 	if api.KeyvaultSecretRef != nil {
 		v.KeyvaultSecretRef = &v20170701.KeyvaultSecretRef{
 			VaultID:       api.KeyvaultSecretRef.VaultID,
@@ -1064,6 +1065,7 @@ func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v *
 func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, v *vlabs.ServicePrincipalProfile) {
 	v.ClientID = api.ClientID
 	v.Secret = api.Secret
+	v.ObjectID = api.ObjectID
 	if api.KeyvaultSecretRef != nil {
 		v.KeyvaultSecretRef = &vlabs.KeyvaultSecretRef{
 			VaultID:       api.KeyvaultSecretRef.VaultID,

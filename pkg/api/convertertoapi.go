@@ -1046,16 +1046,19 @@ func convertV20170131JumpboxProfile(v20170131 *v20170131.JumpboxProfile, api *Ju
 func convertV20160930ServicePrincipalProfile(v20160930 *v20160930.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20160930.ClientID
 	api.Secret = v20160930.Secret
+	api.ObjectID = v20160930.ObjectID
 }
 
 func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20170131.ClientID
 	api.Secret = v20170131.Secret
+	api.ObjectID = v20170131.ObjectID
 }
 
 func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20170701.ClientID
 	api.Secret = v20170701.Secret
+	api.ObjectID = v20170701.ObjectID
 	if v20170701.KeyvaultSecretRef != nil {
 		api.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:       v20170701.KeyvaultSecretRef.VaultID,
@@ -1068,6 +1071,7 @@ func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincip
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
+	api.ObjectID = vlabs.ObjectID
 	if vlabs.KeyvaultSecretRef != nil {
 		api.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:       vlabs.KeyvaultSecretRef.VaultID,

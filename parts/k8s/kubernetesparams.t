@@ -657,6 +657,12 @@
       },
       "type": "securestring"
     },
+    "servicePrincipalObjectId": {
+      "metadata": {
+        "description": "Object ID (used by cloudprovider)"
+      },
+      "type": "securestring"
+    },
 {{ end }}
     "masterOffset": {
       "defaultValue": 0,

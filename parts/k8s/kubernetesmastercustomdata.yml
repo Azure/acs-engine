@@ -70,15 +70,6 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
-{{if EnableDataEncryptionAtRestWithExternalKms}}
-- path: "/etc/kubernetes/enableExternalKms.sh"
-  permissions: "0744"
-  encoding: "gzip"
-  owner: "root"
-  content: !!binary |
-    sed -i "s|<externalKms>|unix:///tmp/azurekms.socket|g" "/etc/kubernetes/encryption-config.yaml"
-{{end}}
-
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -133,42 +124,9 @@ write_files:
         providers:
         - kms:
             name: azurekmsprovider
-            endpoint: <externalKms>
+            endpoint: unix:///tmp/azurekms.socket
             cachesize: 0
         - identity: {}
-{{end}}
-
-{{if EnableDataEncryptionAtRestWithExternalKms}}
-- path: "/etc/kubernetes/manifests/kube-azurekmspod.yaml"
-  permissions: "0600"
-  owner: "root"
-  content: |
-    apiVersion: v1 
-    kind: Pod 
-    metadata: 
-     name: azurekms 
-    spec: 
-     containers: 
-     - name: azurekms 
-       image: ritazh/k8s-azure-kms:latest
-       imagePullPolicy: Always
-       volumeMounts:
-       - mountPath: /tmp
-         name: tmp
-       - mountPath: /etc/kubernetes
-         name: kube
-       - mountPath: /etc/ssl/certs/
-         name: certs
-     volumes:
-     - name: tmp
-     hostPath:
-       path: /tmp
-     - name: kube
-     hostPath:
-       path: /etc/kubernetes
-     - name: certs
-     hostPath:
-       path: /etc/ssl/certs/
 {{end}}
 
 MASTER_MANIFESTS_CONFIG_PLACEHOLDER

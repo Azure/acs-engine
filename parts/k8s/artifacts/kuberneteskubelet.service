@@ -23,6 +23,8 @@ ExecStart=/usr/local/bin/kubelet \
         --volume-plugin-dir=/etc/kubernetes/volumeplugins \
         $KUBELET_CONFIG $KUBELET_OPTS \
         ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
+ExecStopPost=/bin/bash -c "if [ -e /tmp/azurekms.socket ]; then \
+  /usr/bin/docker stop azurekmsk8s ; fi"
 
 [Install]
 WantedBy=multi-user.target
