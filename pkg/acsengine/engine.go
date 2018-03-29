@@ -747,11 +747,17 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			}
 			if properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID != "" {
 				dcosClusterPackageListID = properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID
+			} else {
+				dcosClusterPackageListID = getDCOSDefaultClusterPackageListGUID(
+					properties.OrchestratorProfile.OrchestratorType,
+					properties.OrchestratorProfile.OrchestratorVersion,
+					properties.MasterProfile.Count)
 			}
+
 			if properties.OrchestratorProfile.DcosConfig.DcosProviderPackageID != "" {
 				dcosProviderPackageID = properties.OrchestratorProfile.DcosConfig.DcosProviderPackageID
 			} else {
-				dcosProviderPackageID = getDefaultProviderPackageGUID(
+				dcosProviderPackageID = getDCOSDefaultProviderPackageGUID(
 					properties.OrchestratorProfile.OrchestratorType,
 					properties.OrchestratorProfile.OrchestratorVersion,
 					properties.MasterProfile.Count)
@@ -1792,7 +1798,7 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 	return parms
 }
 
-func getDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
+func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {
 		case api.DCOSVersion1Dot11Dot0:
@@ -1831,6 +1837,25 @@ func getDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion 
 			case 5:
 				return "d9b61156dfcc9383e014851529738aa550ef57d9"
 			}
+		}
+	}
+	return ""
+}
+
+func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
+	if orchestratorType == api.DCOS {
+		switch orchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			switch masterCount {
+			case 1:
+				return "eee6337ea89c74ba58986406d24e373bdeae8012"
+			case 3:
+				return "248a66388bba1adbcb14a52fd3b7b424ab06fa76"
+			case 5:
+				return "302987609a34f07c206da1791c5a553141416ad8"
+			}
+        default:
+            break;
 		}
 	}
 	return ""
