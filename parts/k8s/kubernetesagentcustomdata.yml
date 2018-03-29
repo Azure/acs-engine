@@ -120,9 +120,6 @@ write_files:
     DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
-{{if IsKubernetesVersionGe "1.6.0"}}
-    KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
-{{end}}
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 
