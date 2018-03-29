@@ -272,7 +272,7 @@
     "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
 {{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilityset-',variables('nameSuffix'))]",
+    "primaryAvailabilitySetName": "[concat(variables('clusterName'), '-', '{{ (index .AgentPoolProfiles 0).Name }}-availabilityset)]",
 {{if not IsHostedMaster }}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
