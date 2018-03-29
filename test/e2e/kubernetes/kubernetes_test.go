@@ -369,18 +369,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have nvidia-device-plugin running", func() {
-			if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
-				running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
-				pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
-				Expect(err).NotTo(HaveOccurred())
-				for i, c := range NVIDIADevicePluginAddon.Containers {
-					err := pods[0].Spec.Containers[i].ValidateResources(c)
+			if eng.HasGPUNodes() {
+				if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
+					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
+					Expect(running).To(Equal(true))
+					pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					for i, c := range NVIDIADevicePluginAddon.Containers {
+						err := pods[0].Spec.Containers[i].ValidateResources(c)
+						Expect(err).NotTo(HaveOccurred())
+					}
+				} else {
+					Skip("nvidia-device-plugin disabled for this cluster, will not test")
 				}
-			} else {
-				Skip("nvidia-device-plugin disabled for this cluster, will not test")
 			}
 		})
 	})
