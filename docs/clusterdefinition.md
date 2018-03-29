@@ -305,7 +305,7 @@ Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
 |"--audit-log-maxage"|"30"|
 |"--audit-log-maxbackup"|"10"|
