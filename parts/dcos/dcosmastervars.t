@@ -110,7 +110,7 @@
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
-{{if IsDCOS19}}
+{{if or IsDCOS19 IsDCOS111}}
     "masterSshInboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'))]",
     "masterSshPort22InboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'))]",
     "masterLbInboundNatRules": [
