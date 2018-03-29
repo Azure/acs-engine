@@ -84,34 +84,3 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	}
 
 }
-
-func TestKubeletConfigDefaults(t *testing.T) {
-	clusterVer := "1.7.12"
-	cs := createContainerService("testcluster", clusterVer, 3, 2)
-	setKubeletConfig(cs)
-	val, ok := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--containerized"]
-	if val != "" && !ok {
-		t.Fatalf("expected --containerized kubelet option for Kubernetes v%s", clusterVer)
-	}
-	clusterVer = "1.8.10"
-	cs = createContainerService("testcluster", clusterVer, 3, 2)
-	setKubeletConfig(cs)
-	val, ok = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--containerized"]
-	if val != "" && !ok {
-		t.Fatalf("expected --containerized kubelet option for Kubernetes v%s", clusterVer)
-	}
-	clusterVer = "1.9.6"
-	cs = createContainerService("testcluster", clusterVer, 3, 2)
-	setKubeletConfig(cs)
-	val, ok = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--containerized"]
-	if val != "" && !ok {
-		t.Fatalf("expected --containerized kubelet option for Kubernetes v%s", clusterVer)
-	}
-	clusterVer = "1.10.0-rc.1"
-	cs = createContainerService("testcluster", clusterVer, 3, 2)
-	setKubeletConfig(cs)
-	val, ok = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--containerized"]
-	if val != "" && !ok {
-		t.Fatalf("expected --containerized kubelet option for Kubernetes v%s", clusterVer)
-	}
-}
