@@ -24,32 +24,20 @@ write_files:
     ExecStart=
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
-{{if and (IsNSeriesSKU .) (UseNvidiaRuntime)}}
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
   content: |
     {
+{{if and (IsNSeriesSKU .) (UseNvidiaRuntime)}}
       "default-runtime": "nvidia",
-      "live-restore": true,
-      "log-driver": "json-file",
-      "log-opts":  {
-         "max-size": "50m",
-         "max-file": "5"
-      },
       "runtimes": {
         "nvidia": {
           "path": "/usr/bin/nvidia-container-runtime",
           "runtimeArgs": []
         }
-      }
-    }
-{{else}}
-- path: "/etc/docker/daemon.json"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    {
+      },
+{{end}}
       "live-restore": true,
       "log-driver": "json-file",
       "log-opts":  {
@@ -57,7 +45,6 @@ write_files:
          "max-file": "5"
       }
     }
-{{end}}
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
