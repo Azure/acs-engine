@@ -171,6 +171,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
+|"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option.|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
@@ -178,7 +179,6 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |kubelet option|default value|
 |---|---|
 |"--address"|"0.0.0.0"|
-|"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
 |"--network-plugin"|"cni"|
