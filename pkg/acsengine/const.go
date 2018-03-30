@@ -15,8 +15,6 @@ const (
 	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
-	// DefaultNonMasqueradeCidr specifies the subnet that should not be masqueraded on host
-	DefaultNonMasqueradeCidr = "10.0.0.0/8"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
