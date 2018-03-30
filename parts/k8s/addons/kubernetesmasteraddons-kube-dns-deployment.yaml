@@ -47,6 +47,8 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10055"
       labels:
         k8s-app: kube-dns
         kubernetes.io/cluster-service: "true"
@@ -78,6 +80,9 @@ spec:
         - "--dns-port=10053"
         - "--v=2"
         - "--config-dir=/kube-dns-config"
+        env:
+        - name: PROMETHEUS_PORT
+          value: "10055"
         image: <kubernetesKubeDNSSpec>
         livenessProbe:
           failureThreshold: 5
@@ -95,6 +100,9 @@ spec:
           protocol: UDP
         - containerPort: 10053
           name: dns-tcp-local
+          protocol: TCP
+        - containerPort: 10055
+          name: metrics
           protocol: TCP
         readinessProbe:
           httpGet:
