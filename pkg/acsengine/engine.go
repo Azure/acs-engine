@@ -337,6 +337,78 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
+// GenerateKubernetesAgentRawData generates the raw data for an agent node.
+func (t *TemplateGenerator) GenerateKubernetesAgentRawData(cs *api.ContainerService, agentPoolName string) (customData, provisionScript string, err error) {
+	customData, err = t.generateKubernetesAgentCustomData(cs, agentPoolName)
+	if err != nil {
+		return "", "", err
+	}
+
+	provisionScript = t.generateKubeProvisionScript()
+
+	return customData, provisionScript, nil
+}
+
+func (t *TemplateGenerator) generateKubernetesAgentCustomData(cs *api.ContainerService, agentPoolName string) (string, error) {
+	var profile *api.AgentPoolProfile
+	for _, p := range cs.Properties.AgentPoolProfiles {
+		if strings.EqualFold(p.Name, agentPoolName) {
+			profile = p
+			break
+		}
+	}
+
+	if profile == nil {
+		return "", fmt.Errorf("Failed to find agent pool profile for '%v'", agentPoolName)
+	}
+
+	customDataTemplate := kubernetesAgentCustomDataYaml
+	if profile.OSType == "Windows" {
+		customDataTemplate = kubernetesWindowsAgentCustomDataPS1
+	}
+
+	str, err := t.getSingleLineForTemplate(customDataTemplate, cs, profile)
+
+	if err != nil {
+		return "", err
+	}
+
+	if profile.OSType != api.Windows {
+		// add artifacts
+		str = substituteConfigString(str,
+			kubernetesArtifactSettingsInit(cs.Properties),
+			"k8s/artifacts",
+			"/etc/systemd/system",
+			"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
+			cs.Properties.OrchestratorProfile.OrchestratorVersion)
+	}
+
+	// Replace all variables with special format
+	r := regexp.MustCompile("',variables[(]'([a-zA-Z0-9]+)'[)],'")
+	matches := r.FindAllStringSubmatch(str, -1)
+
+	for _, match := range matches {
+		str = strings.Replace(str, match[0], fmt.Sprintf("{{%v}}", match[1]), -1)
+	}
+
+	// Replace all escapes
+	str = strings.Replace(str, "\\n", "\n", -1)
+	str = strings.Replace(str, "\\\"", "\"", -1)
+	str = strings.Replace(str, "\\\\", "\\", -1)
+
+	return str, nil
+}
+
+func (t *TemplateGenerator) generateKubeProvisionScript() string {
+	b, err := Asset(kubernetesMasterCustomScript)
+	if err != nil {
+		// this should never happen and this is a bug
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
+	}
+
+	return string(b)
+}
+
 func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string

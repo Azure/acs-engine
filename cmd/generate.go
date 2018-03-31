@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
@@ -30,6 +31,7 @@ type generateCmd struct {
 	classicMode       bool
 	noPrettyPrint     bool
 	parametersOnly    bool
+	dumpAgentRawData  string
 
 	// derived
 	containerService *api.ContainerService
@@ -60,6 +62,7 @@ func newGenerateCmd() *cobra.Command {
 	f.BoolVar(&gc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.BoolVar(&gc.noPrettyPrint, "no-pretty-print", false, "skip pretty printing the output")
 	f.BoolVar(&gc.parametersOnly, "parameters-only", false, "only output parameters files")
+	f.StringVar(&gc.dumpAgentRawData, "dump-agent-raw-data", "", "dump files that can be used to provision single agent node")
 
 	return generateCmd
 }
@@ -166,6 +169,31 @@ func (gc *generateCmd) run() error {
 	}
 	if err = writer.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
+	}
+
+	if gc.dumpAgentRawData != "" {
+		if gc.containerService.Properties.OrchestratorProfile.OrchestratorType != api.Kubernetes {
+			return fmt.Errorf("Dumpping agent node raw data is not supported for orchestrator '%v'", gc.containerService.Properties.OrchestratorProfile)
+		}
+
+		customDataDump, provisionScriptDump, err := templateGenerator.GenerateKubernetesAgentRawData(gc.containerService, gc.dumpAgentRawData)
+		if err != nil {
+			log.Fatalf("Failed to dump agent node raw data: %s", err.Error())
+		}
+
+		f := acsengine.FileSaver{
+			Translator: &i18n.Translator{
+				Locale: gc.locale,
+			},
+		}
+
+		rawDataPath := path.Join(gc.outputDirectory, fmt.Sprintf("%v-raw-data", strings.ToLower(gc.dumpAgentRawData)))
+		if err = f.SaveFile(rawDataPath, "user-data.txt", []byte(customDataDump)); err != nil {
+			return err
+		}
+		if err = f.SaveFile(rawDataPath, "provision.sh", []byte(provisionScriptDump)); err != nil {
+			return err
+		}
 	}
 
 	return nil
