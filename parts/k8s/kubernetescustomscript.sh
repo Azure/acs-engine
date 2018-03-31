@@ -188,7 +188,7 @@ function ensureFilepath() {
         echo "Timeout waiting for $1"
         exit 6
     fi
-    
+
 }
 
 function setKubeletOpts () {
