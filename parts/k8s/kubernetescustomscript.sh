@@ -141,6 +141,8 @@ touch "${AZURE_JSON_PATH}"
 chmod 0600 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
 
+VM_TYPE="vmss"
+
 set +x
 echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
@@ -153,6 +155,7 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
     "resourceGroup": "${RESOURCE_GROUP}",
     "location": "${LOCATION}",
+    "vmType": ${VM_TYPE},
     "subnetName": "${SUBNET}",
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",

@@ -679,6 +679,11 @@ func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet
 }
 
+// IsVirtualMachineScaleSets returns true if the agent pool availability profile is VMSS
+func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
+	return a.AvailabilityProfile == VirtualMachineScaleSets
+}
+
 // IsManagedDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
