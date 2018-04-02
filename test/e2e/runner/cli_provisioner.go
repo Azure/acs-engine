@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	"github.com/Azure/acs-engine/test/e2e/remote"
+	"github.com/Azure/fork/acs-engine/pkg/helpers"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -272,7 +273,7 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 
 // IsPrivate will return true if the cluster has no public IPs
 func (cli *CLIProvisioner) IsPrivate() bool {
-	if cli.Config.IsKubernetes() && cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && *cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
+	if cli.Config.IsKubernetes() && cli.Engine != nil && cli.Engine.ClusterDefinition != nil && cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
 		return true
 	}
 	return false
