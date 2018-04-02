@@ -1287,8 +1287,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
+		"UseNvidiaRuntime": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.ContainerRuntime == "nvidia"
+		},
 		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
 			return getGPUDriversInstallScript(profile)
+		},
+		"GetNvidiaContainerRuntimeInstallScript": func() string {
+			return getNvidiaContainerRuntimeInstallScript()
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
@@ -1880,6 +1886,26 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// The VM is not part of the GPU skus, no extra steps.
 	return ""
+}
+
+func getNvidiaContainerRuntimeInstallScript() string {
+	nvidiaDockerVersion := "2.0.2"
+	dockerVersion := "1.13.1-1"
+	nvidiaContainerRuntimeVersion := "1.1.1"
+	installScript := fmt.Sprintf(`
+# Get keys for nvidia-docker.
+- curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+- distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+- curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+- sudo apt-get update
+# Temporarily rename daemon.json. This allows the installation to complete without further user input.
+- sudo mv /etc/docker/daemon.json /etc/docker/daemon_backup.json
+# Install nvidia-docker2 and the Nvidia container runtime.
+- sudo apt-get install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
+- sudo mv /etc/docker/daemon_backup.json /etc/docker/daemon.json
+# Restart the Docker daemon.
+- sudo pkill -SIGHUP dockerd`, nvidiaDockerVersion, dockerVersion, nvidiaContainerRuntimeVersion, dockerVersion)
+	return installScript
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {

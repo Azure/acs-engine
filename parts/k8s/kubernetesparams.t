@@ -596,11 +596,12 @@
     "containerRuntime": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
       "metadata": {
-        "description": "The container runtime to use (docker|clear-containers)"
+        "description": "The container runtime to use (docker|clear-containers|nvidia)"
       },
       "allowedValues": [
         "docker",
-        "clear-containers"
+        "clear-containers",
+        "nvidia"
       ],
       "type": "string"
     },

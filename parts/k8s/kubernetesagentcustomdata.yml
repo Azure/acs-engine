@@ -29,6 +29,15 @@ write_files:
   owner: "root"
   content: |
     {
+{{if and (IsNSeriesSKU .) (UseNvidiaRuntime)}}
+      "default-runtime": "nvidia",
+      "runtimes": {
+        "nvidia": {
+          "path": "/usr/bin/nvidia-container-runtime",
+          "runtimeArgs": []
+        }
+      },
+{{end}}
       "live-restore": true,
       "log-driver": "json-file",
       "log-opts":  {
@@ -207,6 +216,9 @@ runcmd:
 - usermod -aG docker {{WrapAsVariable "username"}}
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
+  {{if UseNvidiaRuntime}}
+    {{GetNvidiaContainerRuntimeInstallScript}}
+  {{end}}
 {{end}}
 - echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
 - /usr/lib/apt/apt.systemd.daily
