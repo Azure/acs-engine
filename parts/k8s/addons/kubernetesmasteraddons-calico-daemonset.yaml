@@ -274,14 +274,14 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
-        annotations:
-          # This, along with the CriticalAddonsOnly toleration below,
-          # marks the pod as a critical add-on, ensuring it gets
-          # priority scheduling and that its resources are reserved
-          # if it ever gets evicted. 
-          # Deprecated in 1.10, Removed in 1.11. kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods 
-          scheduler.alpha.kubernetes.io/critical-pod: ''  
-        spec:
+      annotations:
+        # This, along with the CriticalAddonsOnly toleration below,
+        # marks the pod as a critical add-on, ensuring it gets
+        # priority scheduling and that its resources are reserved
+        # if it ever gets evicted. 
+        # Deprecated in 1.10, Removed in 1.11. kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods 
+        scheduler.alpha.kubernetes.io/critical-pod: ''  
+    spec:
       hostNetwork: true
       serviceAccountName: calico-node
       tolerations:
