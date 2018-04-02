@@ -448,11 +448,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			switch {
 			case a.TotalNodes() > 20:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "2048"
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = EtcdDiskSizeGT20Nodes
 			case a.TotalNodes() > 10:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "1024"
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = EtcdDiskSizeGT10Nodes
 			case a.TotalNodes() > 3:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = "512"
+				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = EtcdDiskSizeGT3Nodes
 			default:
 				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 			}
