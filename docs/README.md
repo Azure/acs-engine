@@ -13,7 +13,7 @@ This cluster definition examples demonstrate how to create a customized Docker E
 * [Kubernetes Windows Walkthrough](kubernetes/windows.md) - shows how to create a hybrid Kubernetes Windows enabled Docker cluster on Azure.
 * [Kubernetes with GPU support Walkthrough](kubernetes/gpu.md) - shows how to create a Kubernetes cluster with GPU support.
 * [Kubernetes AAD integration Walkthrough](kubernetes/aad.md) - shows how to create a Kubernetes cluster with AAD as authentication provider.
-* [Kubernetes Monitoring Walkthrough](kubernetes/monitoring.md) - shows how to set up monitoring of your Kubernetes cluster  
+* [Kubernetes Monitoring Walkthrough](kubernetes/monitoring.md) - shows how to set up monitoring of your Kubernetes cluster
 * [Swarm Walkthrough](swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Swarm Mode Walkthrough](swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](../examples/vnet) - shows how to use a custom VNET

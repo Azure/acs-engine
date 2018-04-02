@@ -1,4 +1,4 @@
-{{if .MasterProfile.IsManagedDisks}} 
+{{if .MasterProfile.IsManagedDisks}}
     {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "location": "[variables('location')]",
@@ -81,20 +81,20 @@
         "securityRules": [
 {{if .HasWindows}}
           {
-            "name": "allow_rdp", 
+            "name": "allow_rdp",
             "properties": {
-              "access": "Allow", 
-              "description": "Allow RDP traffic to master", 
-              "destinationAddressPrefix": "*", 
-              "destinationPortRange": "3389-3389", 
-              "direction": "Inbound", 
+              "access": "Allow",
+              "description": "Allow RDP traffic to master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389-3389",
+              "direction": "Inbound",
               "priority": 102,
+              "protocol": "Tcp",
               "sourceAddressPrefix": "*",
-              "sourcePortRange": "*",
-              "protocol": "Tcp"
+              "sourcePortRange": "*"
             }
           },
-{{end}}       
+{{end}}
           {
             "name": "allow_ssh",
             "properties": {
@@ -322,7 +322,7 @@
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
 {{if gt .MasterProfile.Count 1}}
-                ,               
+                ,
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
@@ -394,7 +394,7 @@
               "name": "ipconfig1",
               "properties": {
                 "loadBalancerBackendAddressPools": [
-  {{if gt .MasterProfile.Count 1}}                
+  {{if gt .MasterProfile.Count 1}}
                   {
                     "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                   }
@@ -491,7 +491,7 @@
                 },
                 "name": "[variables('jumpboxOSDiskName')]"
               },
-            {{end}}   
+            {{end}}
           "dataDisks": []
           },
           "networkProfile": {
@@ -747,7 +747,7 @@
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}
-            
+
           }
         }
       },

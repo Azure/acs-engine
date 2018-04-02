@@ -1,13 +1,12 @@
 #!/bin/bash
 
 set -x
-# Find distro name via ID value in releases files and upcase
+source /opt/azure/containers/provision_source.sh
+
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
-
-# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 
@@ -16,17 +15,11 @@ ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 set -x
 
-# CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
-#   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
     echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
 
-retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
-
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
@@ -39,8 +32,6 @@ ensureRunCommandCompleted()
     done
 }
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
@@ -55,9 +46,6 @@ ensureDockerInstallCompleted()
 
 echo `date`,`hostname`, startscript>>/opt/m
 
-# A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue:
-# https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
 else
@@ -176,13 +164,8 @@ cat << EOF > "${AZURE_JSON_PATH}"
 }
 EOF
 
-###########################################################
-# END OF SECRET DATA
-###########################################################
-
 set -x
 
-# wait for presence of a file
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
@@ -204,13 +187,6 @@ function ensureFilepath() {
     fi
 }
 
-function downloadUrl () {
-	# Wrapper around curl to download blobs more reliably.
-	# Workaround the --retry issues with a for loop and set a max timeout.
-	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
-    echo Executed curl for \"${1}\" $i times
-}
-
 function setMaxPods () {
     sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
@@ -230,33 +206,24 @@ function setDockerOpts () {
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
-
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-
-    # Download Azure VNET CNI plugins.
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
-
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
+    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
+    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
-
-    # Copy config file
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-
-    # Dump ebtables rules.
     /sbin/ebtables -t nat --list
-
-    # Enable CNI.
 	configCNINetworkPolicy
 }
 
-# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCNINetworkPolicy() {
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
@@ -274,7 +241,6 @@ function configNetworkPolicy() {
     fi
 }
 
-# Install the Clear Containers runtime
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
@@ -286,15 +252,8 @@ function installClearContainersRuntime() {
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-	apt-get update
-	apt-get install --no-install-recommends -y \
+	apt-get update && apt-get install --no-install-recommends -y \
 		cc-runtime
-
-	# Install thin tools for devicemapper configuration
-	echo "Installing thin tools to provision devicemapper..."
-	apt-get install --no-install-recommends -y \
-		lvm2 \
-		thin-provisioning-tools
 
 	# Load systemd changes
 	echo "Loading changes to systemd service files..."
@@ -305,158 +264,47 @@ function installClearContainersRuntime() {
 	systemctl enable cc-proxy
 	systemctl start cc-proxy
 
-	# CRIO has only been tested with the azure plugin
-	configAzureNetworkPolicy
-	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
-	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	setNetworkPlugin cni
+	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/var/lib/containerd:/var/lib/containerd:ro"
 }
 
-# Install Go from source
-function installGo() {
-	export GO_SRC=/usr/local/go
-	export GOPATH="${HOME}/.go"
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
+	local download_uri="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
-	# Remove any old version of Go
-	if [[ -d "$GO_SRC" ]]; then
-		rm -rf "$GO_SRC"
-	fi
+	curl -sSL "$download_uri" | tar -xz -C /
 
-	# Remove any old GOPATH
-	if [[ -d "$GOPATH" ]]; then
-		rm -rf "$GOPATH"
-	fi
-
-	# Get the latest Go version
-	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
-
-	echo "Installing Go version $GO_VERSION..."
-
-	# subshell
-	(
-	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
-	)
-
-	# Set GOPATH and update PATH
-	echo "Setting GOPATH and updating PATH"
-	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
+	echo "Successfully installed cri-containerd..."
+	setupContainerd;
 }
 
-# Build and install runc
-function buildRunc() {
-	# Clone the runc source
-	echo "Cloning the runc source..."
-	mkdir -p "${GOPATH}/src/github.com/opencontainers"
-	(
-	cd "${GOPATH}/src/github.com/opencontainers"
-	git clone "https://github.com/opencontainers/runc.git"
-	cd runc
-	git reset --hard v1.0.0-rc4
-	make BUILDTAGS="seccomp apparmor"
-	make install
-	)
+function setupContainerd() {
+	echo "Configuring cri-containerd..."
 
-	echo "Successfully built and installed runc..."
-}
+	mkdir -p "/etc/containerd"
+	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
+	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
+	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
-# Build and install CRI-O
-function buildCRIO() {
-	# Add CRI-O repositories
-	echo "Adding repositories required for cri-o..."
-	add-apt-repository -y ppa:projectatomic/ppa
-	add-apt-repository -y ppa:alexlarsson/flatpak
-	apt-get update
-
-	# Install CRI-O dependencies
-	echo "Installing dependencies for CRI-O..."
-	apt-get install --no-install-recommends -y \
-		btrfs-tools \
-		gcc \
-		git \
-		libapparmor-dev \
-		libassuan-dev \
-		libc6-dev \
-		libdevmapper-dev \
-		libglib2.0-dev \
-		libgpg-error-dev \
-		libgpgme11-dev \
-		libostree-dev \
-		libseccomp-dev \
-		libselinux1-dev \
-		make \
-		pkg-config \
-		skopeo-containers
-
-	installGo;
-
-	# Install md2man
-	go get github.com/cpuguy83/go-md2man
-
-	# Fix for templates dependency
-	(
-	go get -u github.com/docker/docker/daemon/logger/templates
-	cd "${GOPATH}/src/github.com/docker/docker"
-	mkdir -p utils
-	cp -r daemon/logger/templates utils/
-	)
-
-	buildRunc;
-
-	# Clone the CRI-O source
-	echo "Cloning the CRI-O source..."
-	mkdir -p "${GOPATH}/src/github.com/kubernetes-incubator"
-	(
-	cd "${GOPATH}/src/github.com/kubernetes-incubator"
-	git clone "https://github.com/kubernetes-incubator/cri-o.git"
-	cd cri-o
-	git reset --hard v1.0.0
-	make BUILDTAGS="seccomp apparmor"
-	make install
-	make install.config
-	make install.systemd
-	)
-
-	echo "Successfully built and installed CRI-O..."
-
-	# Cleanup the temporary directory
-	rm -vrf "$tmpd"
-
-	# Cleanup the Go install
-	rm -vrf "$GO_SRC" "$GOPATH"
-
-	setupCRIO;
-}
-
-# Setup CRI-O
-function setupCRIO() {
-	# Configure CRI-O
-	echo "Configuring CRI-O..."
-
-	# Configure crio systemd service file
-	SYSTEMD_CRI_O_SERVICE_FILE="/usr/local/lib/systemd/system/crio.service"
-	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$SYSTEMD_CRI_O_SERVICE_FILE"
-
-	# Configure /etc/crio/crio.conf
-	CRI_O_CONFIG="/etc/crio/crio.conf"
-	sed -i 's#storage_driver = ""#storage_driver = "devicemapper"#' "$CRI_O_CONFIG"
-	sed -i 's#storage_option = \[#storage_option = \["dm.directlvm_device=/dev/sdc", "dm.thinp_percent=95", "dm.thinp_metapercent=1", "dm.thinp_autoextend_threshold=80", "dm.thinp_autoextend_percent=20", "dm.directlvm_device_force=true"#' "$CRI_O_CONFIG"
-	sed -i 's#runtime = "/usr/bin/runc"#runtime = "/usr/local/sbin/runc"#' "$CRI_O_CONFIG"
-	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
-	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
-
-	# Load systemd changes
-	echo "Loading changes to systemd service files..."
 	systemctl daemon-reload
 }
 
-function ensureCRIO() {
+function ensureContainerd() {
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		# Make sure we can nest virtualization
 		if grep -q vmx /proc/cpuinfo; then
-			# Enable and start cri-o service
+			# Enable and start cri-containerd service
 			# Make sure this is done after networking plugins are installed
-			echo "Enabling and starting cri-o service..."
-			systemctl enable crio crio-shutdown
-			systemctl start crio
+			echo "Enabling and starting cri-containerd service..."
+			systemctl enable containerd
+			systemctl start containerd
 		fi
 	fi
 }
@@ -487,12 +335,11 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
                 echo "status $?"
-                /bin/systemctl restart docker
+                timeout 60s /bin/systemctl restart docker
             else
                 echo "docker started, took $i seconds"
                 dockerStarted=0
@@ -509,7 +356,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    retrycmd_if_failure 100 1 docker pull $HYPERKUBE_URL
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
@@ -703,7 +550,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	apt-mark hold walinuxagent
 fi
 
-# master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
@@ -714,14 +560,14 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
-		echo `date`,`hostname`, buildCRIOStart>>/opt/m
-		buildCRIO
+		echo `date`,`hostname`, installContainerdStart>>/opt/m
+		installContainerd
 	fi
 fi
 echo `date`,`hostname`, setMaxPodsStart>>/opt/m
 setMaxPods ${MAX_PODS}
-echo `date`,`hostname`, ensureCRIOStart>>/opt/m
-ensureCRIO
+echo `date`,`hostname`, ensureContainerdStart>>/opt/m
+ensureContainerd
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
 echo `date`,`hostname`, extractKubctlStart>>/opt/m
@@ -730,12 +576,9 @@ echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
-# On all other runtimes, but "clear-containers" we can ensure the run command
-# completed here to allow for parallelizing the custom script
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
-# master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureFilepath $KUBECTL

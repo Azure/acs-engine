@@ -9,7 +9,7 @@
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2",
       "vnetSubnetId": "/subscriptions/SUBSCRIPTION/resourceGroups/ExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet",
-      "firstConsecutiveStaticIP": "10.100.0.5" 
+      "firstConsecutiveStaticIP": "10.100.0.5"
     },
     "agentPoolProfiles": [
       {

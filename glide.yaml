@@ -20,6 +20,8 @@ import:
   - autorest/date
 - package: github.com/sirupsen/logrus
   version: v1.0.3
+- package: github.com/mattn/go-colorable
+  version: v0.0.9
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir

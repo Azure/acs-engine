@@ -11,13 +11,8 @@ spec:
   containers:
     - name: "kube-scheduler"
       image: "<kubernetesHyperkubeSpec>"
-      command:
-        - "/hyperkube"
-        - "scheduler"
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        - "--leader-elect=true"
-        - "--profiling=false"
-        - "--v=2"
+      command: ["/hyperkube", "scheduler"]
+      args: [<kubernetesSchedulerConfig>]
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

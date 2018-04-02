@@ -56,6 +56,14 @@ create_version_branch() {
 	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_TAG_BRANCH} || true
 }
 
+version_lt() {
+        [ "$1" != $(printf "$1\n$2" | sort -V | head -n 2 | tail -n 1) ]
+}
+
+version_ge() {
+        [ "$1" == $(printf "$1\n$2" | sort -V | head -n 2 | tail -n 1) ]
+}
+
 k8s_16_cherry_pick() {
 	# 232fa6e5bc (HEAD -> release-1.6, origin/release-1.6) Fix the delay caused by network setup in POD Infra container
 	# 02b1c2b9e2 Use dns policy to determine setting DNS servers on the correct NIC in Windows container
@@ -72,14 +80,14 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
-	if [ ! "${version}" \< "1.7.10" ]; then
+	if version_ge "${version}" "1.7.10"; then
 		echo "version 1.7.10 and after..."
 		# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
 		# due to the out-of-order back porting into Azure 1.7. So removing it.
 		# cee32e92f7 fix#50150: azure disk mount failure on coreos
 		git revert --no-edit cee32e92f7 || true
 
-		if [ ! "${version}" \< "1.7.12" ]; then
+		if version_ge "${version}" "1.7.12"; then
 			echo "version 1.7.12 and after..."
 			# In 1.7.12, the following commits are cherry-picked in upstream and has conflict
 			# with 137f4cb16e. So removing them.
@@ -87,17 +95,24 @@ k8s_17_cherry_pick() {
 			git revert --no-edit 7305738dd1 || true #add tests only
 			git revert --no-edit e01bafcf80 || true #only for linux
 			git revert --no-edit afd79db7a6 || true #only for linux
-			git revert --no-edit 3a4abca2f7 || true #covered by commit 3aa179744f 
+			git revert --no-edit 3a4abca2f7 || true #covered by commit 3aa179744f
 			git revert --no-edit 6a2e2f47d3 || true #covered by commit 3aa179744f
 
-			if [ ! "${version}" \< "1.7.13" ]; then
+			if version_ge "${version}" "1.7.13"; then
 				echo "version 1.7.13 and after..."
 				# In 1.7.13, the following commit is cherry-picked in upstream and has conflict
 				# with 137f4cb16e. So removing it.
 				git revert --no-edit 3aa179744f || true #only for linux
 
-				if [ ! "${version}" \< "1.7.14" ]; then
+				if version_ge "${version}" "1.7.14"; then
 					echo "version 1.7.14 and after..."
+					if version_ge "${version}" "1.7.15"; then
+						echo "version 1.7.15 and after..."
+						# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
+						git revert --no-edit 0d5df36f05 || true
+						# From 1.7.15, 4d50500614 conflict with reverting 51584188ee. It is server side code so jsut revert it.
+						git revert --no-edit 4d50500614 || true
+					fi
 					# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
 					git revert --no-edit 975d0a4bb9 || true
 					# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
@@ -117,12 +132,14 @@ k8s_17_cherry_pick() {
 	# b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 	# From 1.7.13, acbdec96da is not needed since 060111c603 supercedes it
 	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..e912889a7f
-	if [ "${version}" \< "1.7.13" ]; then
+	if version_lt "${version}" "1.7.13"; then
+		echo "before version 1.7.13..."
 		git cherry-pick --allow-empty --keep-redundant-commits acbdec96da
 	fi
 	git cherry-pick --allow-empty --keep-redundant-commits 76d7c23f62^..32ceaa7918
 
-	if [ ! "${version}" \< "1.7.14" ]; then
+	if version_ge "${version}" "1.7.14"; then
+		echo "version 1.7.14 and after..."
 		# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
 		git cherry-pick --allow-empty --keep-redundant-commits a36d59ddda
 		# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
@@ -133,6 +150,12 @@ k8s_17_cherry_pick() {
 		git cherry-pick --allow-empty --keep-redundant-commits 69c56c6037
 
 		git cherry-pick --allow-empty --keep-redundant-commits 3e930be6bc
+
+		if version_ge "${version}" "1.7.15"; then
+			echo "version 1.7.15 and after..."
+			# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
+			git cherry-pick --allow-empty --keep-redundant-commits 631e363b9d
+		fi
 	fi
 }
 
@@ -155,26 +178,40 @@ k8s_18_cherry_pick() {
 	# ...
 	# 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-	if [ ! "${version}" \< "1.8.9" ]; then
+	if version_ge "${version}" "1.8.9"; then
+		echo "version 1.8.9 and after..."
+		if version_ge "${version}" "1.8.10"; then
+			echo "version 1.8.10 and after..."
+			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
+			git revert --no-edit 5936faed37 || true
+		fi
 		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
 		git revert --no-edit 63b4f60e43 || true
 		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
 		git revert --no-edit 40d5e0a34f || true
+
 	fi
 
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
 	git cherry-pick --allow-empty --keep-redundant-commits b42981f90b^..cb29df51c0
-	if [ "${version}" \< "1.8.6" ]; then
+	if version_lt "${version}" "1.8.6"; then
+		echo "before version 1.8.6..."
 		git cherry-pick --allow-empty --keep-redundant-commits b8594873f4
 	fi
 	git cherry-pick --allow-empty --keep-redundant-commits d75ef50170
 	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4fd355d04a
 
-	if [ ! "${version}" \< "1.8.9" ]; then
+	if version_ge "${version}" "1.8.9"; then
+		echo "version 1.8.9 and after..."
 		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
 		git cherry-pick --allow-empty --keep-redundant-commits 6a8305e419
 		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
 		git cherry-pick --allow-empty --keep-redundant-commits b90d61a48c
+		if version_ge "${version}" "1.8.10"; then
+			echo "version 1.8.10 and after..."
+			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
+			git cherry-pick --allow-empty --keep-redundant-commits 1f26b7a083
+		fi
 	fi
 }
 
@@ -187,6 +224,8 @@ apply_acs_cherry_picks() {
 		k8s_18_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.9" ]; then
 		echo "No need to cherry-pick for 1.9!"
+	elif [ "${KUBERNETES_RELEASE}" == "1.10" ]; then
+		echo "No need to cherry-pick for 1.10!"
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1

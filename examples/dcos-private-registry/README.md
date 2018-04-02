@@ -7,7 +7,7 @@ The credentials are specified in the orchestrator profile in the apimodel:
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "DCOS",
-      "dcosConfig" : { 
+      "dcosConfig" : {
         "Registry" : "",
         "RegistryUser" : "",
         "RegistryPassword" : ""
@@ -20,7 +20,7 @@ The agent provisioning process will then create a tar archive containing a docke
 ## Example
 Let's provision a DC/OS cluster with credentials to an [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/) deployed to every agent node.
 
-- First, [provision an Azure Container Registry](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-managed-get-started-portal).  
+- First, [provision an Azure Container Registry](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-managed-get-started-portal).
 
 - Enable Admin Access and note the registry credentials
 <img src="../../docs/images/acrblade.png" alt="ACR Blade with Admin Access enabled" style="width: 50%; height: 50%;"/>
@@ -64,4 +64,4 @@ az group deployment create -g cluster-rg --template-file _output/dcoscluster/azu
 ## Limitations
 - The API model currenlty only supports credentials to a single registry.
 - Not tested with Kubernetes clusters
-- Credentials have to be updated on each node 
+- Credentials have to be updated on each node

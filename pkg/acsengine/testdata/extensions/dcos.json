@@ -42,9 +42,9 @@
       }
     },
     "extensionProfiles": [
-      { 
-        "name": "hello-world", 
-        "version": "v1", 
+      {
+        "name": "hello-world",
+        "version": "v1",
         "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/",
         "script": "hello.sh"
       }

@@ -16,7 +16,7 @@
         "vmSize": "Standard_DS2_v2",
         "availabilityProfile": "AvailabilitySet",
         "extensions": [
-          { 
+          {
             "name": "prometheus-grafana-k8s"
           }
         ]
@@ -33,8 +33,8 @@
       }
     },
     "extensionProfiles": [
-      { 
-        "name": "prometheus-grafana-k8s", 
+      {
+        "name": "prometheus-grafana-k8s",
         "version": "v1",
         "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/"
       }

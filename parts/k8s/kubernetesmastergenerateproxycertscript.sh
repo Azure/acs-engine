@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /opt/azure/containers/provision_source.sh
+
 PROXY_CA_KEY="${PROXY_CA_KEY:=/tmp/proxy-client-ca.key}"
 PROXY_CRT="${PROXY_CRT:=/tmp/proxy-client-ca.crt}"
 PROXY_CLIENT_KEY="${PROXY_CLIENT_KEY:=/tmp/proxy-client.key}"
@@ -26,8 +28,6 @@ openssl genrsa -out $PROXY_CLIENT_KEY 2048
 openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters'
 openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT
 
-retrycmd_if_failure() { for i in $(seq 1 10); do $@; [ $? -eq 0  ] && break || sleep 30; done; echo Executed \"$@\" $i times; }
-
 write_certs_to_disk() {
     etcdctl get $ETCD_REQUESTHEADER_CLIENT_CA > $K8S_PROXY_CA_CRT_FILEPATH
     etcdctl get $ETCD_PROXY_KEY > $K8S_PROXY_KEY_FILEPATH
@@ -45,7 +45,7 @@ write_certs_to_disk_with_retry() {
 }
 
 # block until all etcd is ready
-retrycmd_if_failure etcdctl cluster-health
+retrycmd_if_failure 100 5 10 etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
 if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
     etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"

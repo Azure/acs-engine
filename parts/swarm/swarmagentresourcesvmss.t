@@ -128,10 +128,10 @@
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
 {{if IsSwarmMode}}
   {{if not .IsRHEL}}
-            {{GetAgentSwarmModeCustomData .}} 
+            {{GetAgentSwarmModeCustomData .}}
   {{end}}
 {{else}}
-            {{GetAgentSwarmCustomData .}} 
+            {{GetAgentSwarmCustomData .}}
 {{end}}
             "linuxConfiguration": {
               "disablePasswordAuthentication": "true",

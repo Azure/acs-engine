@@ -36,9 +36,9 @@
       }
     },
     "extensionProfiles": [
-      { 
-        "name": "hello-world", 
-        "version": "v1", 
+      {
+        "name": "hello-world",
+        "version": "v1",
         "script": "hello.sh"
       }
     ],

@@ -4,14 +4,16 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/satori/uuid"
 )
 
+const defaultTestClusterVer = "1.7.12"
+
 func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 	// Test EnableDataEncryptionAtRest = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = helpers.PointerToBool(true)
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--experimental-encryption-provider-config"] != "/etc/kubernetes/encryption-config.yaml" {
@@ -20,8 +22,8 @@ func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 	}
 
 	// Test EnableDataEncryptionAtRest = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = helpers.PointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--experimental-encryption-provider-config"]; ok {
@@ -32,7 +34,7 @@ func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 
 func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 	// Test EnableAggregatedAPIs = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
@@ -66,7 +68,7 @@ func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 	}
 
 	// Test EnableAggregatedAPIs = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = false
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
@@ -82,8 +84,8 @@ func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 
 func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(true)
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--cloud-provider"]; ok {
@@ -96,8 +98,8 @@ func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 	}
 
 	// Test UseCloudControllerManager = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--cloud-provider"] != "azure" {
@@ -112,7 +114,7 @@ func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 
 func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	// Test HasAadProfile = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.AADProfile = &api.AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
@@ -136,8 +138,31 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 			a["--oidc-issuer-url"])
 	}
 
+	// Test OIDC user overrides
+	cs = createContainerService("testcluster", "1.7.12", 3, 2)
+	cs.Properties.AADProfile = &api.AADProfile{
+		ServerAppID: "test-id",
+		TenantID:    "test-tenant",
+	}
+	usernameClaimOverride := "custom-username-claim"
+	groupsClaimOverride := "custom-groups-claim"
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{
+		"--oidc-username-claim": usernameClaimOverride,
+		"--oidc-groups-claim":   groupsClaimOverride,
+	}
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--oidc-username-claim"] != usernameClaimOverride {
+		t.Fatalf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
+			a["--oidc-username-claim"])
+	}
+	if a["--oidc-groups-claim"] != groupsClaimOverride {
+		t.Fatalf("got unexpected '--oidc-groups-claim' API server config value for HasAadProfile=true: %s",
+			a["--oidc-groups-claim"])
+	}
+
 	// Test China Cloud settings
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	cs.Properties.AADProfile = &api.AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
@@ -151,7 +176,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 
 	// Test HasAadProfile = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--oidc-username-claim", "--oidc-groups-claim", "--oidc-client-id", "--oidc-issuer-url"} {
@@ -164,8 +189,8 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 
 func TestAPIServerConfigEnableRbac(t *testing.T) {
 	// Test EnableRbac = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "Node,RBAC" {
@@ -174,8 +199,8 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	}
 
 	// Test EnableRbac = true with 1.6 cluster
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot6Dot11, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(true)
+	cs = createContainerService("testcluster", "1.6.11", 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "RBAC" {
@@ -184,8 +209,8 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	}
 
 	// Test EnableRbac = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--authorization-mode"]; ok {
@@ -194,8 +219,8 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	}
 
 	// Test EnableRbac = false with 1.6 cluster
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot6Dot11, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(false)
+	cs = createContainerService("testcluster", "1.6.11", 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--authorization-mode"]; ok {
@@ -206,8 +231,8 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 
 func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(true)
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(true)
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--kubelet-client-certificate"] != "/etc/kubernetes/certs/client.crt" {
@@ -220,8 +245,8 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	}
 
 	// Test EnableSecureKubelet = false
-	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(false)
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--kubelet-client-certificate", "--kubelet-client-key"} {
@@ -275,8 +300,8 @@ func createContainerService(containerServiceName string, orchestratorVersion str
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
 	cs.Properties.OrchestratorProfile.OrchestratorVersion = orchestratorVersion
 	cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{
-		EnableSecureKubelet: pointerToBool(api.DefaultSecureKubeletEnabled),
-		EnableRbac:          pointerToBool(api.DefaultRBACEnabled),
+		EnableSecureKubelet: helpers.PointerToBool(api.DefaultSecureKubeletEnabled),
+		EnableRbac:          helpers.PointerToBool(api.DefaultRBACEnabled),
 		EtcdDiskSizeGB:      DefaultEtcdDiskSize,
 		ServiceCIDR:         DefaultKubernetesServiceCIDR,
 		DockerBridgeSubnet:  DefaultDockerBridgeSubnet,
@@ -288,6 +313,7 @@ func createContainerService(containerServiceName string, orchestratorVersion str
 		ContainerRuntime:    DefaultContainerRuntime,
 		NetworkPolicy:       DefaultNetworkPolicy,
 		EtcdVersion:         DefaultEtcdVersion,
+		KubeletConfig:       make(map[string]string),
 	}
 
 	cs.Properties.CertificateProfile = &api.CertificateProfile{}

@@ -81,7 +81,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: metrics-server
-  namespace: kube-system  
+  namespace: kube-system
 ---
 apiVersion: v1
 kind: Service

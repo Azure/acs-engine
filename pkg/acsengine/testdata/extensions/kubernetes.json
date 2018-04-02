@@ -9,8 +9,8 @@
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2",
       "extensions": [
-        { 
-          "name": "hello-world-k8s", 
+        {
+          "name": "hello-world-k8s",
           "singleOrAll": "single"
         }
      ]
@@ -22,8 +22,8 @@
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
       "extensions": [
-          { 
-            "name": "hello-world-k8s", 
+          {
+            "name": "hello-world-k8s",
             "singleOrAll": "all"
           }
         ]
@@ -46,10 +46,10 @@
       }
     },
     "extensionProfiles": [
-      { 
-        "name": "hello-world-k8s", 
-        "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/" 
+      {
+        "name": "hello-world-k8s",
+        "version": "v1",
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/"
       }
     ],
     "servicePrincipalProfile": {

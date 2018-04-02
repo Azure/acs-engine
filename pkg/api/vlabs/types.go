@@ -274,6 +274,7 @@ type KubernetesConfig struct {
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
+	SchedulerConfig              map[string]string `json:"schedulerConfig,omitempty"`
 	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`

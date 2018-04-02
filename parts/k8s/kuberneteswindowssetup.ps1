@@ -131,14 +131,33 @@ Install-Package($package)
     Write-Log "$package installed"
 }
 
+function DownloadFileOverHttp($Url, $DestinationPath)
+{
+     $secureProtocols = @()
+     $insecureProtocols = @([System.Net.SecurityProtocolType]::SystemDefault, [System.Net.SecurityProtocolType]::Ssl3)
+
+     foreach ($protocol in [System.Enum]::GetValues([System.Net.SecurityProtocolType]))
+     {
+         if ($insecureProtocols -notcontains $protocol)
+         {
+             $secureProtocols += $protocol
+         }
+     }
+     [System.Net.ServicePointManager]::SecurityProtocol = $secureProtocols
+
+    curl $Url -UseBasicParsing -OutFile $DestinationPath -Verbose
+    Write-Log "$DestinationPath updated"
+}
+function Get-HnsPsm1()
+{
+    DownloadFileOverHttp "https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1" "$global:HNSModule"
+}
+
 function Update-WinCNI()
 {
     $wincni = "wincni.exe"
     $wincniFile = [Io.path]::Combine($global:CNIPath, $wincni)
-    $url = $global:WindowsPackageSASURLBase + $wincni
-    Invoke-WebRequest -Uri $url -OutFile $wincniFile
-
-    Write-Log "$wincni updated"
+    DownloadFileOverHttp "https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/cni/wincni.exe" $wincniFile
 }
 
 function
@@ -153,6 +172,7 @@ Update-WindowsPackages()
     }
 
     Update-WinCNI
+    Get-HnsPsm1
 }
 
 function
@@ -277,7 +297,7 @@ Write-KubernetesStartFiles($podCIDR)
 c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
 
-    if ($global:KubeBinariesVersion -lt "1.8.0")
+    if ([System.Version]$global:KubeBinariesVersion -lt [System.Version]"1.8.0")
     {
         # --api-server deprecates from 1.8.0
         $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
@@ -301,6 +321,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     $kubeStartStr = @"
 `$global:AzureHostname = "$AzureHostname"
 `$global:MasterIP = "$MasterIP"
+`$global:KubeDnsSearchPath = "svc.cluster.local"
 `$global:KubeDnsServiceIp = "$KubeDnsServiceIp"
 `$global:MasterSubnet = "$global:MasterSubnet"
 `$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
@@ -363,7 +384,8 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
         }]
     },
     ""dns"" : {
-    ""Nameservers"" : [ ""<NameServers>"" ]
+    ""Nameservers"" : [ ""<NameServers>"" ],
+    ""Search"" : [ ""<Cluster DNS Suffix or Search Path>"" ]
     },
     ""AdditionalArgs"" : [
     {
@@ -380,6 +402,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
     `$configJson.ipam.subnet=`$podCIDR
     `$configJson.ipam.routes[0].GW = `$masterSubnetGW
     `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
+    `$configJson.dns.Search[0] = `$global:KubeDnsSearchPath
 
     `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
     `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
@@ -429,13 +452,23 @@ try
     # startup the service
     `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
 
-    if (!`$hnsNetwork)
+    if (`$hnsNetwork)
     {
-        Write-Host "No HNS network found, creating a new one..."
-        ipmo `$global:HNSModule
-
-        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+        # Kubelet has been restarted with existing network.
+        # Cleanup all containers
+        docker ps -q | foreach {docker rm `$_ -f}
+        # cleanup network
+        Write-Host "Cleaning up old HNS network found"
+        Remove-HnsNetwork `$hnsNetwork
+        Start-Sleep 10
     }
+
+    Write-Host "Creating a new hns Network"
+    ipmo `$global:HNSModule
+
+    `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+    # New network has been created, Kubeproxy service has to be restarted
+    Restart-Service Kubeproxy   
 
     Start-Sleep 10
     # Add route to all other POD networks
@@ -456,6 +489,7 @@ catch
     $kubeProxyStartStr = @"
 `$env:KUBE_NETWORK = "$global:KubeNetwork"
 `$global:NetworkMode = "$global:NetworkMode"
+`$global:HNSModule = "$global:HNSModule"
 `$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
 while (!`$hnsNetwork)
 {
@@ -463,7 +497,13 @@ while (!`$hnsNetwork)
     `$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
 }
 
-c:\k\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
+#
+# cleanup the persisted policy lists
+#
+ipmo `$global:HNSModule
+Get-HnsPolicyList | Remove-HnsPolicyList
+
+$global:KubeDir\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=$global:KubeDir\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile

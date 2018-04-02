@@ -3,11 +3,10 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.8",
+      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
         "networkPolicy": "azure",
         "containerRuntime": "clear-containers",
-        "etcdVersion": "3.1.10",
         "addons": [
           {
             "name": "tiller",
@@ -30,9 +29,7 @@
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D4s_v3",
-        "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks",
-        "diskSizesGB": [1023]
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
