@@ -342,9 +342,9 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 5
 	setOrchestratorDefaults(&mockCS)
-	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != EtcdDiskSizeGT3Nodes {
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT3Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, EtcdDiskSizeGT3Nodes)
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT3Nodes)
 	}
 
 	mockCS = getMockBaseContainerService("1.8.10")
@@ -353,9 +353,9 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.MasterProfile.Count = 5
 	properties.AgentPoolProfiles[0].Count = 6
 	setOrchestratorDefaults(&mockCS)
-	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != EtcdDiskSizeGT10Nodes {
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT10Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, EtcdDiskSizeGT10Nodes)
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT10Nodes)
 	}
 
 	mockCS = getMockBaseContainerService("1.8.10")
@@ -364,9 +364,9 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.MasterProfile.Count = 5
 	properties.AgentPoolProfiles[0].Count = 16
 	setOrchestratorDefaults(&mockCS)
-	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != EtcdDiskSizeGT20Nodes {
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT20Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, EtcdDiskSizeGT20Nodes)
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT20Nodes)
 	}
 
 	mockCS = getMockBaseContainerService("1.8.10")
