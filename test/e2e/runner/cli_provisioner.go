@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/dcos"
@@ -19,7 +20,6 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	"github.com/Azure/acs-engine/test/e2e/remote"
-	"github.com/Azure/fork/acs-engine/pkg/helpers"
 	"github.com/kelseyhightower/envconfig"
 )
 
