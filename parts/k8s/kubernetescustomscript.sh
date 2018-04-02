@@ -293,6 +293,13 @@ function systemctlEnableAndStart() {
 function ensureDocker() {
     systemctlEnableAndStart docker
 }
+function ensureKMS() {
+    systemctlEnableAndCheck kms
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kms
+    fi
+}
 
 function ensureKubelet() {
     systemctlEnableAndStart kubelet

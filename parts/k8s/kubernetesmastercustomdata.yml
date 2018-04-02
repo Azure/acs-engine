@@ -290,6 +290,9 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
+{{if EnableDataEncryptionAtRestWithExternalKms}}
+    sed -i "s|docker.service|docker.service kms.service|g" "/etc/systemd/system/kubelet.service"
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
