@@ -201,16 +201,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 				return errors.New("Error: cannot test a private cluster without provisioning a jumpbox")
 			}
 			log.Printf("Testing a Kubernetes private cluster...")
-			// hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
-			// conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username, cli.Config.GetSSHKeyPath())
-			// if err != nil {
-			// 	return err
-			// }
-			// str, err := conn.Execute("kubectl get nodes -o json")
-			// if err != nil {
-			// 	return err
-			// }
-			// log.Printf("kubectl get nodes -o json\n %s", str)
+			// TODO: create SSH connection and get nodes and k8s version
 		}
 	}
 
