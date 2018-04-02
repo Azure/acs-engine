@@ -211,6 +211,9 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
+{{if .HasVirtualMachineScaleSets}}
+    "apiVersionVirtualMachineScaleSets": "2017-12-01",
+{{end}}
 {{if not IsHostedMaster}}
   {{if .MasterProfile.IsStorageAccount}}
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
