@@ -182,15 +182,6 @@ func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 	return false, api.KubernetesAddon{}
 }
 
-// IsPrivate will return true if private cluster mode is enabled
-func (e *Engine) IsPrivate() bool {
-	kc := e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig
-	if kc != nil && kc.PrivateCluster != nil && *kc.PrivateCluster.Enabled {
-		return true
-	}
-	return false
-}
-
 // OrchestratorVersion1Dot8AndUp will return true if the orchestrator version is 1.8 and up
 func (e *Engine) OrchestratorVersion1Dot8AndUp() bool {
 	return e.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion >= "1.8"
