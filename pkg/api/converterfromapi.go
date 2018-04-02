@@ -474,6 +474,10 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.AADProfile = &vlabs.AADProfile{}
 		convertAADProfileToVLabs(api.AADProfile, vlabsProps.AADProfile)
 	}
+	if api.AzProfile != nil {
+		vlabsProps.AzProfile = &vlabs.AzProfile{}
+		convertAzProfileToVLabs(api.AzProfile, vlabsProps.AzProfile)
+	}
 }
 
 func convertLinuxProfileToV20160930(api *LinuxProfile, obj *v20160930.LinuxProfile) {
@@ -1087,4 +1091,11 @@ func convertAADProfileToVLabs(api *AADProfile, vlabs *vlabs.AADProfile) {
 	vlabs.ServerAppID = api.ServerAppID
 	vlabs.TenantID = api.TenantID
 	vlabs.AdminGroupID = api.AdminGroupID
+}
+
+func convertAzProfileToVLabs(api *AzProfile, vlabs *vlabs.AzProfile) {
+	vlabs.Location = api.Location
+	vlabs.ResourceGroup = api.ResourceGroup
+	vlabs.SubscriptionID = api.SubscriptionID
+	vlabs.TenantID = api.TenantID
 }

@@ -510,6 +510,19 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
+	switch a.OrchestratorProfile.OrchestratorType {
+	case OpenShift:
+		if a.AzProfile == nil || a.AzProfile.Location == "" ||
+			a.AzProfile.ResourceGroup == "" || a.AzProfile.SubscriptionID == "" ||
+			a.AzProfile.TenantID == "" {
+			return fmt.Errorf("'azProfile' must be supplied in full for orchestrator '%v'", OpenShift)
+		}
+	default:
+		if a.AzProfile != nil {
+			return fmt.Errorf("'azProfile' is only supported by orchestrator '%v'", OpenShift)
+		}
+	}
+
 	for _, extension := range a.ExtensionProfiles {
 		if extension.ExtensionParametersKeyVaultRef != nil {
 			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.VaultID, "required"); e != nil {

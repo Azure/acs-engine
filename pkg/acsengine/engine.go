@@ -1734,10 +1734,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				ConfigBundle           string
 				ExternalMasterHostname string
 				RouterLBHostname       string
+				Location               string
 			}{
 				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]),
 				ExternalMasterHostname: cs.Properties.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname,
 				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
+				Location:               cs.Properties.AzProfile.Location,
 			})
 			return b.String()
 		},

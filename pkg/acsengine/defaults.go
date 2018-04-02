@@ -278,7 +278,7 @@ func SetPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, erro
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
 
-	certsGenerated, e := setDefaultCerts(properties, cs.Location)
+	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
 		return false, e
 	}
@@ -658,9 +658,9 @@ func setStorageDefaults(a *api.Properties) {
 	}
 }
 
-func openShiftSetDefaultCerts(a *api.Properties, location string) (bool, error) {
-	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, location)
-	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, location)
+func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
+	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
+	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
 	c := certgen.Config{
 		Master: &certgen.Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
@@ -672,6 +672,14 @@ func openShiftSetDefaultCerts(a *api.Properties, location string) (bool, error) 
 		ExternalMasterHostname: externalMasterHostname,
 		ClusterUsername:        a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:        a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
+		AzureConfig: certgen.AzureConfig{
+			TenantID:        a.AzProfile.TenantID,
+			SubscriptionID:  a.AzProfile.SubscriptionID,
+			AADClientID:     a.ServicePrincipalProfile.ClientID,
+			AADClientSecret: a.ServicePrincipalProfile.Secret,
+			ResourceGroup:   a.AzProfile.ResourceGroup,
+			Location:        a.AzProfile.Location,
+		},
 	}
 	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
 	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname
@@ -736,9 +744,9 @@ func getConfigBundle(write writeFn) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func setDefaultCerts(a *api.Properties, location string) (bool, error) {
+func setDefaultCerts(a *api.Properties) (bool, error) {
 	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return openShiftSetDefaultCerts(a, location)
+		return openShiftSetDefaultCerts(a)
 	}
 
 	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {

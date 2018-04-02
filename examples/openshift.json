@@ -8,6 +8,12 @@
         "clusterPassword": "demo"
       }
     },
+    "azProfile": {
+      "tenantId": "YOUR TENANT ID",
+      "subscriptionId": "YOUR SUBSCRIPTION ID",
+      "resourceGroup": "YOUR RESOURCE GROUP",
+      "location": "YOUR LOCATION"
+    },
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "YOUR DNS PREFIX",

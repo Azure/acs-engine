@@ -14,6 +14,10 @@ kind: NodeConfig
 kubeletArguments:
   node-labels:
   - region=infra
+  cloud-provider:
+  - "azure"
+  cloud-config:
+  - "/etc/azure/azure.conf"
 masterClientConnectionOverrides:
   acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
   contentType: application/vnd.kubernetes.protobuf

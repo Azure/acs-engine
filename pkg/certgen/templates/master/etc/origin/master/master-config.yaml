@@ -103,11 +103,19 @@ kubernetesMasterConfig:
     - etcd3
     storage-media-type:
     - application/vnd.kubernetes.protobuf
+    cloud-provider:
+    - "azure"
+    cloud-config:
+    - "/etc/azure/azure.conf"
   controllerArguments:
     cluster-signing-cert-file:
-      - "/etc/origin/master/ca.crt"
+    - "/etc/origin/master/ca.crt"
     cluster-signing-key-file:
-      - "/etc/origin/master/ca.key"
+    - "/etc/origin/master/ca.key"
+    cloud-provider:
+    - "azure"
+    cloud-config:
+    - "/etc/azure/azure.conf"
   masterCount: 1
   masterIP: {{ (index .Master.IPs 0).String }}
   podEvictionTimeout: null

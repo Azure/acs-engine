@@ -82,7 +82,7 @@ func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
 		}
 
 		b := &bytes.Buffer{}
-		err = t.Execute(b, struct{}{})
+		err = t.Execute(b, c)
 		if err != nil {
 			return err
 		}

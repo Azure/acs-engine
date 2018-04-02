@@ -21,6 +21,17 @@ type Config struct {
 	Bootstrap              KubeConfig
 	ClusterUsername        string
 	ClusterPassword        string
+	AzureConfig            AzureConfig
+}
+
+// AzureConfig represents the azure.conf configuration
+type AzureConfig struct {
+	TenantID        string
+	SubscriptionID  string
+	AADClientID     string
+	AADClientSecret string
+	ResourceGroup   string
+	Location        string
 }
 
 // Master represents an OpenShift master configuration
