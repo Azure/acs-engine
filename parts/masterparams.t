@@ -102,7 +102,7 @@
       "type": "string"
     },
     "osImageVersion": {
-      "defaultValue": "16.04.201802220",
+      "defaultValue": "16.04.201803230",
       "metadata": {
         "description": "OS image version."
       },
