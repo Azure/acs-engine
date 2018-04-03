@@ -356,7 +356,6 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
@@ -364,11 +363,12 @@ function ensureKubelet() {
     fi
 }
 
-function extractKubectl(){
-    systemctlEnableAndCheck kubectl-extract
+function extractHyperkube(){
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
+    systemctlEnableAndCheck hyperkube-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart kubectl-extract
+        systemctl restart hyperkube-extract
     fi
 }
 
@@ -568,10 +568,10 @@ echo `date`,`hostname`, setMaxPodsStart>>/opt/m
 setMaxPods ${MAX_PODS}
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
+echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
+extractHyperkube
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
-echo `date`,`hostname`, extractKubctlStart>>/opt/m
-extractKubectl
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m

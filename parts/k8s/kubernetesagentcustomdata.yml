@@ -74,12 +74,12 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-- path: "/etc/systemd/system/kubectl-extract.service"
+- path: "/etc/systemd/system/hyperkube-extract.service"
   permissions: "0644"
   owner: "root"
   content: |
     [Unit]
-    Description=Kubectl extraction
+    Description=kubectl and kubelet extraction
     Requires=docker.service
     After=docker.service
 {{if .IsCoreOS}}
@@ -96,11 +96,13 @@ write_files:
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
 {{if .IsCoreOS}}
+    ExecStartPre=/bin/cp /tmp/kubectldir/hyperkube /opt/kubelet
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
-    ExecStart=/bin/chmod a+x /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubelet && /bin/chmod a+x /opt/kubectl
 {{else}}
+    ExecStartPre=/bin/cp /tmp/kubectldir/hyperkube /usr/local/bin/kubelet
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
-    ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+    ExecStart=/bin/chmod a+x /usr/local/bin/kubelet && /bin/chmod a+x /usr/local/bin/kubectl
 {{end}}
 
     [Install]
@@ -128,7 +130,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
