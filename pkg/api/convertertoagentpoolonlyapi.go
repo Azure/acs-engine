@@ -1,12 +1,17 @@
 package api
 
 import (
+	"acs-engine/pkg/acsengine"
+	"acs-engine/pkg/api"
+	"crypto/rand"
 	"encoding/json"
+	"log"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 ///////////////////////////////////////////////////////////
@@ -80,6 +85,18 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	}
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20170831AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
+	} else {
+		properties.LinuxProfile.AdminUsername = "azureuser"
+		creator := &acsengine.SSHCreator{
+			Translator: &i18n.Translator{
+				Locale: dc.locale,
+			},
+		}
+		_, publicKey, err := creator.CreateSSH(rand.Reader)
+		if err != nil {
+			log.Fatal("Failed to generate SSH Key")
+		}
+		properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 	if obj.WindowsProfile != nil {
 		properties.WindowsProfile = convertV20170831AgentPoolOnlyWindowsProfile(obj.WindowsProfile)

@@ -3,6 +3,7 @@ package api
 import (
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 )
 
@@ -33,6 +34,18 @@ func TestConvertFromV20180331AddonProfile(t *testing.T) {
 	}
 	if v != "value1" {
 		t.Error("addon config value does not match")
+	}
+}
+
+func TestConvertFromV20180331AgentPoolOnlyProperties(t *testing.T) {
+	versionedProperties := &v20170831.Properties{
+		DNSPrefix:         "dp",
+		KubernetesVersion: "1.8.7",
+	}
+
+	unversionedProperties := convertV20170831AgentPoolOnlyProperties(versionedProperties)
+	if unversionedProperties.LinuxProfile == nil {
+		t.Error("Expected non-nil Linux profile, but it was not")
 	}
 }
 
