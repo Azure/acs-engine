@@ -75,9 +75,9 @@ func main() {
 			log.Printf("Soak cluster %s does not exist or has expired\n", rg)
 			log.Printf("Deleting Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
+			cfg.Name = ""
 		} else {
 			log.Printf("Soak cluster %s exists, skipping provision...\n", rg)
-			cfg.Name = cfg.SoakClusterName
 		}
 	}
 	// Only provision a cluster if there isn't a name present
@@ -100,7 +100,6 @@ func main() {
 		if err != nil {
 			teardown()
 			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)
-
 		}
 		eng = &engine.Engine{
 			Config:            engCfg,
