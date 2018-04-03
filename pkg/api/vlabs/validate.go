@@ -88,12 +88,13 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				if err != nil {
 					return err
 				}
+				minVersion := "1.7.0"
+				
 				if o.KubernetesConfig.EnableAggregatedAPIs {
 					sv, err := semver.NewVersion(version)
 					if err != nil {
 						return fmt.Errorf("could not validate version %s", version)
 					}
-					minVersion := "1.7.0"
 					cons, err := semver.NewConstraint("<" + minVersion)
 					if err != nil {
 						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
@@ -110,21 +111,20 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					}
 				}
 
-					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						sv, err := semver.NewVersion(version)
-						if err != nil {
-							return fmt.Errorf("could not validate version %s", version)
-						}
-						cons, err := semver.NewConstraint("<" + minVersion)
-						if err != nil {
-							return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
-						}
-						if cons.Check(sv) {
-							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-								minVersion, o.OrchestratorVersion)
-						}
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+					sv, err := semver.NewVersion(version)
+					if err != nil {
+						return fmt.Errorf("could not validate version %s", version)
 					}
-				}
+					cons, err := semver.NewConstraint("<" + minVersion)
+					if err != nil {
+						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+					}
+					if cons.Check(sv) {
+						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							minVersion, o.OrchestratorVersion)
+					}
+				}	
 				
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {

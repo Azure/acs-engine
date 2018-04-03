@@ -2,12 +2,19 @@
 Description=azurekms
 Requires=docker.service
 After=docker.service
+
 [Service]
 Type=simple
 Restart=always
 EnvironmentFile=-/etc/default/%p
 TimeoutStartSec=0
-ExecStart=/bin/bash -c 'if [ ! -e /tmp/azurekms.socket ]; then /usr/bin/docker run --rm -v /tmp:/tmp -v /etc/kubernetes:/etc/kubernetes -v '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt' --name=azurekmsk8s ritazh/k8s-azure-kms:latest ; fi'
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --volume=/tmp:/tmp \
+  --volume=/etc/kubernetes:/etc/kubernetes \
+  --volume=/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt \
+  --name=azurekmsk8s \
+  ritazh/k8s-azure-kms:latest
 
 [Install]
 WantedBy=multi-user.target
