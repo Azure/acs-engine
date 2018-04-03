@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
@@ -56,13 +57,31 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 	}
-	// Only provision a cluster if there isnt a name present
-	if cfg.Name == "" {
-		if cfg.SoakClusterName != "" {
-			rg := cfg.SoakClusterName
+
+	// Handle soak tests differently
+	if cfg.SoakClusterName != "" {
+		provision := true
+		rg := cfg.SoakClusterName
+		err = acct.SetResourceGroup(rg)
+		if err == nil {
+			// set expiration time to 7 days = 168h for now
+			d, err := time.ParseDuration("168h")
+			if err != nil {
+				log.Fatalf("unexpected error parsing duration: %s", err)
+			}
+			provision = acct.IsResourceGroupOlderThan(d)
+		}
+		if provision {
+			log.Printf("Soak cluster %s does not exist or has expired\n", rg)
 			log.Printf("Deleting Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
+		} else {
+			log.Printf("Soak cluster %s exists, skipping provision...\n", rg)
+			cfg.Name = cfg.SoakClusterName
 		}
+	}
+	// Only provision a cluster if there isn't a name present
+	if cfg.Name == "" {
 		err = cliProvisioner.Run()
 		rgs = cliProvisioner.ResourceGroups
 		eng = cliProvisioner.Engine

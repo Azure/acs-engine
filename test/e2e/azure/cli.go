@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
@@ -24,8 +25,9 @@ type Account struct {
 
 // ResourceGroup represents a collection of azure resources
 type ResourceGroup struct {
-	Name     string
-	Location string
+	Name     string            `json:"name"`
+	Location string            `json:"location"`
+	Tags     map[string]string `json:"tags"`
 }
 
 // VM represents an azure vm
@@ -102,6 +104,9 @@ func (a *Account) CreateGroup(name, location string) error {
 	r := ResourceGroup{
 		Name:     name,
 		Location: location,
+		Tags: map[string]string{
+			"now": now,
+		},
 	}
 	a.ResourceGroup = r
 	return nil
@@ -243,6 +248,40 @@ func (a *Account) GetHosts(name string) ([]VM, error) {
 	if err != nil {
 		log.Printf("Error unmarshalling account json:%s\n", err)
 		log.Printf("JSON:%s\n", out)
+		return nil, err
 	}
 	return v, nil
+}
+
+// SetResourceGroup will set the account resource group
+func (a *Account) SetResourceGroup(name string) error {
+	if a.ResourceGroup.Name != "" {
+		return nil
+	}
+	cmd := exec.Command("az", "group", "show", "-g", name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to show resource group:%s\n", out)
+		return err
+	}
+	a.ResourceGroup = ResourceGroup{}
+	err = json.Unmarshal(out, &a.ResourceGroup)
+	if err != nil {
+		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// IsResourceGroupOlderThan will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
+func (a *Account) IsResourceGroupOlderThan(d time.Duration) bool {
+	tag, err := strconv.ParseInt(a.ResourceGroup.Tags["now"], 10, 64)
+	if err != nil {
+		log.Printf("Error parsing RG now tag:%s\n", err)
+		return true
+	}
+	t := time.Unix(tag, 0)
+	return time.Since(t) > d
 }
