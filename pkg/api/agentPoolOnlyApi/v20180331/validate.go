@@ -29,7 +29,7 @@ func (l *LinuxProfile) Validate() error {
 	// Don't need to call validate.Struct(l)
 	// It is handled by Properties.Validate()
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
-		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
+		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string when using ssh key ")
 	}
 	return nil
 }
@@ -39,7 +39,7 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 	ns := err.Namespace()
 	switch ns {
 	// TODO: Add more validation here
-	case "Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
+	case "Properties.ServicePrincipalProfile.ClientID",
 		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
 		"Properties.WindowsProfile.AdminPassword":
 		return fmt.Errorf("missing %s", ns)
