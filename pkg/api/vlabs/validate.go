@@ -124,7 +124,17 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion, o.OrchestratorVersion)
 					}
-				}	
+					
+				}
+
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRestWithExternalKms) {
+					sv, _ := semver.NewVersion(version)
+					cons, _ := semver.NewConstraint("<" + "1.10.0")
+					if cons.Check(sv) {
+						return fmt.Errorf("EnableDataEncryptionAtRestWithExternalKms is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							"1.10.0", o.OrchestratorVersion)
+					}
+				}
 				
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
@@ -393,6 +403,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
 				(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
 				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if  (a.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRestWithExternalKms) && len(a.ServicePrincipalProfile.ObjectID) == 0 ) {
+				return fmt.Errorf("the service principal object ID must be specified with Orchestrator %s when enableDataEncryptionAtRestWithExternalKms is true", a.OrchestratorProfile.OrchestratorType)
 			}
 
 			if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {

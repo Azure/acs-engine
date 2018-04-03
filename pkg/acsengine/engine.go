@@ -708,7 +708,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretVersion)
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
-				if properties.ServicePrincipalProfile.ObjectID != "" {
+				if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRestWithExternalKms) && properties.ServicePrincipalProfile.ObjectID != "" {
 					addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
 				}
 			}
