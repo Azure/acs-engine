@@ -583,7 +583,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 		if c > -1 {
 			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Config["clientId"])
-			addValue(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Config["clientKey"])
+			addSecret(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Config["clientKey"], false)
 			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Config["tenantId"])
 			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Config["subscriptionId"])
 			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Config["resourceGroup"])
@@ -676,14 +676,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "jumpboxStorageProfile", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile)
 		}
 		if cs.Properties.HostedMasterProfile == nil {
-			var totalNodes int
-			if cs.Properties.MasterProfile != nil {
-				totalNodes = cs.Properties.MasterProfile.Count
-			}
-			for _, pool := range cs.Properties.AgentPoolProfiles {
-				totalNodes = totalNodes + pool.Count
-			}
-			addValue(parametersMap, "totalNodes", totalNodes)
+			addValue(parametersMap, "totalNodes", cs.Properties.TotalNodes())
 		}
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
@@ -1817,7 +1810,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - apt_get_update
-- retrycmd_if_failure 5 10 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 10 120 apt-get install -y linux-headers-$(uname -r) gcc make
 - mkdir -p %s
 - cd %s`, dest, dest)
 
@@ -1827,7 +1820,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
 	installScript += fmt.Sprintf(`
-- retrycmd_if_failure 5 10 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
+- retrycmd_if_failure 5 10 30 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
 - mkdir -p lib64 overlay-workdir
 - mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
 
@@ -1842,7 +1835,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - umount /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
-- retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- retrycmd_if_failure 5 10 30 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.

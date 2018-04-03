@@ -41,6 +41,7 @@ Here are the valid values for the orchestrator types:
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |enableDataEncryptionAtRest|no|Enable [kuberetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
+|etcdDiskSizeGB|no|Size in GB to assign to etcd data volume. Defaults (if no user value provided) are: 256 GB for clusters up to 3 nodes; 512 GB for clusters with between 4 and 10 nodes; 1024 GB for clusters with between 11 and 20 nodes; and 2048 GB for clusters with more than 20 nodes|
 |privateCluster|no|Build a cluster without public addresses assigned. See `privateClusters` [below](#feat-private-cluster).|
 |maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
 |gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
@@ -171,6 +172,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
+|"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option.|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
@@ -178,7 +180,6 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |kubelet option|default value|
 |---|---|
 |"--address"|"0.0.0.0"|
-|"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
 |"--network-plugin"|"cni"|
@@ -305,7 +306,7 @@ Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
 |"--audit-log-maxage"|"30"|
 |"--audit-log-maxbackup"|"10"|

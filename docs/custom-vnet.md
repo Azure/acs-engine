@@ -170,15 +170,30 @@ Depending on the number of agent you have asked for the deployment can take a wh
 
 ## Post-Deployment: Attach Cluster Route Table to VNET
 
-For Kubernetes clusters, we need to update the VNET to attach to the route table created by the above `az group deployment create` command. An example in bash form:
+For Kubernetes clusters, we need to update the VNET to attach to the route table created by the above `az group deployment create` command. An example in bash form if the VNET is in the same ResourceGroup as the Kubernetes Cluster:
 
 ```
 #!/bin/bash
 rt=$(az network route-table list -g acs-custom-vnet -o json | jq -r '.[].id')
-az network vnet subnet update -n KubernetesSubnet -g acs-custom-vnet --vnet-name KubernetesCustomVNET --route-table $rt
+az network vnet subnet update -n KubernetesSubnet \
+-g acs-custom-vnet \
+--vnet-name KubernetesCustomVNET \
+--route-table $rt
 ```
 
 ... where `KubernetesSubnet` is the name of the vnet subnet, and `KubernetesCustomVNET` is the name of the custom VNET itself.
+
+An example in bash form if the VNET is in a separate ResourceGroup:
+
+```
+#!/bin/bash
+rt=$(az network route-table list -g RESOURCE_GROUP_NAME_KUBE -o json | jq -r '.[].id')
+az network vnet subnet update \
+-g RESOURCE_GROUP_NAME_VNET \
+--route-table $rt \
+--ids "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME_VNET/providers/Microsoft.Network/VirtualNetworks/KUBERNETES_CUSTOM_VNET/subnets/KUBERNETES_SUBNET"
+```
+... where `RESOURCE_GROUP_NAME_KUBE` is the name of the Resource Group that contains the Kubernetes cluster, `SUBSCRIPTION_ID` is the id of the Azure subscription that both the VNET & Cluster are in, `RESOURCE_GROUP_NAME_VNET` is the name of the Resource Group that the VNET is in,  `KUBERNETES_SUBNET` is the name of the vnet subnet, and `KUBERNETES_CUSTOM_VNET` is the name of the custom VNET itself.
 
 ## Connect to your new cluster
 Once the deployment is completed, you can follow [this documentation](https://docs.microsoft.com/en-us/azure/container-service/container-service-connect) to connect to your new Azure Container Service cluster.

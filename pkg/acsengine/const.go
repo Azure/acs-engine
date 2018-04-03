@@ -15,8 +15,6 @@ const (
 	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
-	// DefaultNonMasqueradeCidr specifies the subnet that should not be masqueraded on host
-	DefaultNonMasqueradeCidr = "10.0.0.0/8"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
@@ -105,7 +103,13 @@ const (
 	// DefaultEtcdVersion specifies the default etcd version to install
 	DefaultEtcdVersion = "3.2.16"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
-	DefaultEtcdDiskSize = "128"
+	DefaultEtcdDiskSize = "256"
+	// DefaultEtcdDiskSizeGT3Nodes = size for Kubernetes master etcd disk volumes in GB if > 3 nodes
+	DefaultEtcdDiskSizeGT3Nodes = "512"
+	// DefaultEtcdDiskSizeGT10Nodes = size for Kubernetes master etcd disk volumes in GB if > 10 nodes
+	DefaultEtcdDiskSizeGT10Nodes = "1024"
+	// DefaultEtcdDiskSizeGT20Nodes = size for Kubernetes master etcd disk volumes in GB if > 20 nodes
+	DefaultEtcdDiskSizeGT20Nodes = "2048"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment

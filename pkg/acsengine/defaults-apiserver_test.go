@@ -313,6 +313,7 @@ func createContainerService(containerServiceName string, orchestratorVersion str
 		ContainerRuntime:    DefaultContainerRuntime,
 		NetworkPolicy:       DefaultNetworkPolicy,
 		EtcdVersion:         DefaultEtcdVersion,
+		KubeletConfig:       make(map[string]string),
 	}
 
 	cs.Properties.CertificateProfile = &api.CertificateProfile{}
