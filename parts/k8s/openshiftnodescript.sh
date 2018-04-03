@@ -2,6 +2,10 @@
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
+SERVICE_TYPE=origin
+if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
+    SERVICE_TYPE=atomic-openshift
+fi
 
 # TODO: remove this once we generate the registry certificate
 cat >>/etc/sysconfig/docker <<'EOF'
@@ -11,9 +15,9 @@ EOF
 systemctl restart docker.service
 
 {{if .IsInfra}}
-echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/atomic-openshift-node
+echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{else}}
-echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/atomic-openshift-node
+echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{end}}
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
@@ -26,8 +30,8 @@ update-ca-trust
 # TODO: when enabling secure registry, may need:
 # ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
 
-# note: atomic-openshift-node crash loops until master is up
-systemctl enable atomic-openshift-node.service
-systemctl start atomic-openshift-node.service
+# note: ${SERVICE_TYPE}-node crash loops until master is up
+systemctl enable ${SERVICE_TYPE}-node.service
+systemctl start ${SERVICE_TYPE}-node.service
 
 exit 0

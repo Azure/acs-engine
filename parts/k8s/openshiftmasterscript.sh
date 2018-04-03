@@ -2,6 +2,10 @@
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
+SERVICE_TYPE=origin
+if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
+    SERVICE_TYPE=atomic-openshift
+fi
 
 # TODO: remove this once we generate the registry certificate
 cat >>/etc/sysconfig/docker <<'EOF'
@@ -10,7 +14,7 @@ EOF
 
 systemctl restart docker.service
 
-echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/atomic-openshift-node
+echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
 for dst in tcp,2379 tcp,2380 tcp,8443 tcp,8444 tcp,8053 udp,8053 tcp,9090; do
 	proto=${dst%%,*}
@@ -20,7 +24,7 @@ done
 
 iptables-save >/etc/sysconfig/iptables
 
-sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/atomic-openshift-master-api
+sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/${SERVICE_TYPE}-master-api
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 
@@ -43,8 +47,8 @@ sed -i "s/TEMPROUTERIP/${routerLBIP}/" /etc/origin/master/master-config.yaml
 # TODO: when enabling secure registry, may need:
 # ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
 
-# note: atomic-openshift-node crash loops until master is up
-for unit in etcd.service atomic-openshift-master-api.service atomic-openshift-master-controllers.service; do
+# note: ${SERVICE_TYPE}-node crash loops until master is up
+for unit in etcd.service ${SERVICE_TYPE}-master-api.service ${SERVICE_TYPE}-master-controllers.service; do
 	systemctl enable $unit
 	systemctl start $unit
 done
@@ -66,10 +70,10 @@ oc create configmap node-config-master --namespace openshift-node --from-file=no
 oc create configmap node-config-compute --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/compute-config.yaml
 oc create configmap node-config-infra --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/infra-config.yaml
 
-# must start atomic-openshift-node after master is fully up and running
+# must start ${SERVICE_TYPE}-node after master is fully up and running
 # otherwise the implicit dns change may cause master startup to fail
-systemctl enable atomic-openshift-node.service
-systemctl start atomic-openshift-node.service &
+systemctl enable ${SERVICE_TYPE}-node.service
+systemctl start ${SERVICE_TYPE}-node.service &
 
 # TODO: run a CSR auto-approver
 # https://github.com/kargakis/acs-engine/issues/46
