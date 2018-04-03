@@ -1,5 +1,8 @@
   {
       "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+      "dependsOn": [
+        "[variables('vnetID')]"
+      ],
       "tags":
       {
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
