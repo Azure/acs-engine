@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/dcos"
@@ -182,17 +183,27 @@ func (cli *CLIProvisioner) generateName() string {
 
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() {
-		cli.Config.SetKubeConfig()
-		log.Println("Waiting on nodes to go into ready state...")
-		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if !ready {
-			return errors.New("Error: Not all nodes in a healthy state")
+		if !cli.IsPrivate() {
+			cli.Config.SetKubeConfig()
+			log.Println("Waiting on nodes to go into ready state...")
+			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
+			if !ready {
+				return errors.New("Error: Not all nodes in a healthy state")
+			}
+			version, err := node.Version()
+			if err != nil {
+				log.Printf("Ready nodes did not return a version: %s", err)
+			}
+			log.Printf("Testing a Kubernetes %s cluster...\n", version)
+		} else {
+			log.Println("This cluster is private")
+			if cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile == nil {
+				// TODO: add "bring your own jumpbox to e2e"
+				return errors.New("Error: cannot test a private cluster without provisioning a jumpbox")
+			}
+			log.Printf("Testing a Kubernetes private cluster...")
+			// TODO: create SSH connection and get nodes and k8s version
 		}
-		version, err := node.Version()
-		if err != nil {
-			log.Printf("Ready nodes did not return a version: %s", err)
-		}
-		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {
@@ -258,4 +269,12 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	}
 
 	return nil
+}
+
+// IsPrivate will return true if the cluster has no public IPs
+func (cli *CLIProvisioner) IsPrivate() bool {
+	if cli.Config.IsKubernetes() && cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
+		return true
+	}
+	return false
 }

@@ -485,6 +485,9 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "properties": {
+          "dnsSettings": {
+            "domainNameLabel": "[variables('masterFqdnPrefix')]"
+          },
           "publicIpAllocationMethod": "Dynamic"
       }
     },
