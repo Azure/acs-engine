@@ -175,7 +175,7 @@ func autofillApimodel(dc *deployCmd) {
 	}
 
 	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
-		return log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
+		log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
 	}
 
 	if dc.resourceGroup == "" {
