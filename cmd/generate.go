@@ -173,7 +173,7 @@ func (gc *generateCmd) run() error {
 
 	if gc.dumpAgentRawData != "" {
 		if gc.containerService.Properties.OrchestratorProfile.OrchestratorType != api.Kubernetes {
-			return fmt.Errorf("Dumpping agent node raw data is not supported for orchestrator '%v'", gc.containerService.Properties.OrchestratorProfile)
+			return fmt.Errorf("Dumping agent node raw data is not supported for orchestrator '%v'", gc.containerService.Properties.OrchestratorProfile)
 		}
 
 		customDataDump, provisionScriptDump, err := templateGenerator.GenerateKubernetesAgentRawData(gc.containerService, gc.dumpAgentRawData)

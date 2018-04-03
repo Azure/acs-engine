@@ -363,7 +363,7 @@ func (t *TemplateGenerator) generateKubernetesAgentCustomData(cs *api.ContainerS
 	}
 
 	customDataTemplate := kubernetesAgentCustomDataYaml
-	if profile.OSType == "Windows" {
+	if profile.OSType == api.Windows {
 		customDataTemplate = kubernetesWindowsAgentCustomDataPS1
 	}
 
