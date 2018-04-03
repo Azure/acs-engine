@@ -136,10 +136,6 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	// autofillApimodel calls log.Fatal() directly and does not return errors
 	autofillApimodel(dc)
 
-	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
-		return fmt.Errorf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
-	}
-
 	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("Failed to validate the apimodel after populating values: %s", err))
@@ -176,6 +172,10 @@ func autofillApimodel(dc *deployCmd) {
 
 	if dc.outputDirectory == "" {
 		dc.outputDirectory = path.Join("_output", dc.containerService.Properties.MasterProfile.DNSPrefix)
+	}
+
+	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
+		return log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
 	}
 
 	if dc.resourceGroup == "" {
