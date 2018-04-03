@@ -35,6 +35,7 @@ type deployCmd struct {
 	dnsPrefix         string
 	autoSuffix        bool
 	outputDirectory   string // can be auto-determined from clusterDefinition
+	forceOverwrite    bool
 	caCertificatePath string
 	caPrivateKeyPath  string
 	classicMode       bool
@@ -75,6 +76,7 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
 	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
 	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
+	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 
 	addAuthFlags(&dc.authArgs, f)
 
@@ -133,6 +135,10 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
 	autofillApimodel(dc)
+
+	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
+		return fmt.Errorf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
+	}
 
 	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
