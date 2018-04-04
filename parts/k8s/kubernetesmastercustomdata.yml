@@ -179,7 +179,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -e
-    . /opt/azure/containers/provision_source.sh
+    source /opt/azure/containers/provision_source.sh
     apt_get_update
     retrycmd_if_failure 20 10 120 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
 {{if gt .MasterProfile.Count 1}}
