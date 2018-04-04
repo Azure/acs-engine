@@ -320,11 +320,18 @@ type MasterProfile struct {
 	Extensions               []Extension       `json:"extensions"`
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ImageReference represents a reference to an Image resource in Azure.
+type ImageReference struct {
+	Name          string `json:"name,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
 // ExtensionProfile represents an extension definition
@@ -368,6 +375,7 @@ type AgentPoolProfile struct {
 	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
 	KubernetesConfig      *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef              *ImageReference   `json:"imageReference,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing

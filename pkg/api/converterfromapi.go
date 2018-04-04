@@ -837,6 +837,11 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 		vlabsProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, vlabsProfile.KubernetesConfig)
 	}
+	if api.ImageRef != nil {
+		vlabsProfile.ImageRef = &vlabs.ImageReference{}
+		vlabsProfile.ImageRef.Name = api.ImageRef.Name
+		vlabsProfile.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -932,6 +937,11 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	if api.KubernetesConfig != nil {
 		p.KubernetesConfig = &vlabs.KubernetesConfig{}
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, p.KubernetesConfig)
+	}
+	if api.ImageRef != nil {
+		p.ImageRef = &vlabs.ImageReference{}
+		p.ImageRef.Name = api.ImageRef.Name
+		p.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
 }
 

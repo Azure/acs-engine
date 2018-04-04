@@ -1,6 +1,8 @@
 package vlabs
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -752,5 +754,48 @@ func TestLinuxVersions(t *testing.T) {
 		t.Errorf(
 			"should error on invalid Linux version",
 		)
+	}
+}
+
+func TestValidateImageNameAndGroup(t *testing.T) {
+	tests := []struct {
+		name string
+
+		imageName          string
+		imageResourceGroup string
+
+		expectedErr error
+	}{
+		{
+			name: "valid run",
+
+			imageName:          "rhel9000",
+			imageResourceGroup: "club",
+
+			expectedErr: nil,
+		},
+		{
+			name: "invalid: image name is missing",
+
+			imageResourceGroup: "club",
+
+			expectedErr: errors.New(`imageName needs to be specified when imageResourceGroup is provided`),
+		},
+		{
+			name: "invalid: image resource group is missing",
+
+			imageName: "rhel9000",
+
+			expectedErr: errors.New(`imageResourceGroup needs to be specified when imageName is provided`),
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
+		if !reflect.DeepEqual(gotErr, test.expectedErr) {
+			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
+		}
 	}
 }
