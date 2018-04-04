@@ -92,17 +92,17 @@ write_files:
     TimeoutStartSec=0
     Restart=on-failure
     RestartSec=5s
-    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStartPre=/bin/mkdir -p /tmp/hyperkubedir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPre=/usr/bin/docker run --rm -v /tmp/hyperkubedir:/opt/hyperkubedir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/hyperkubedir/"
 {{if .IsCoreOS}}
-    ExecStartPre=/bin/cp /tmp/kubectldir/hyperkube /opt/kubelet
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
-    ExecStart=/bin/chmod a+x /opt/kubelet && /bin/chmod a+x /opt/kubectl
+    ExecStartPre=/bin/cp /tmp/hyperkubedir/hyperkube /opt/kubelet
+    ExecStartPre=/bin/mv /tmp/hyperkubedir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubelet /opt/kubectl
 {{else}}
-    ExecStartPre=/bin/cp /tmp/kubectldir/hyperkube /usr/local/bin/kubelet
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
-    ExecStart=/bin/chmod a+x /usr/local/bin/kubelet && /bin/chmod a+x /usr/local/bin/kubectl
+    ExecStartPre=/bin/cp /tmp/hyperkubedir/hyperkube /usr/local/bin/kubelet
+    ExecStartPre=/bin/mv /tmp/hyperkubedir/hyperkube /usr/local/bin/kubectl
+    ExecStart=/bin/chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
 {{end}}
 
     [Install]
