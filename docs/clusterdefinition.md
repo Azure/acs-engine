@@ -468,6 +468,9 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |adminUsername|yes|Describes the username to be used on all linux clusters|
 |ssh.publicKeys.keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 |secrets|no|Specifies an array of key vaults to pull secrets from and what secrets to pull from each|
+|customSearchDomain.name|no|describes the search domain to be used on all linux clusters|
+|customSearchDomain.realmUser|no|describes the realm user with permissions to update dns registries on Windows Server DNS|
+|customSearchDomain.realmPassword|no|describes the realm user password to update dns registries on Windows Server DNS|
 
 #### secrets
 `secrets` details which certificates to install on the masters and nodes in the cluster.
