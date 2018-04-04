@@ -160,7 +160,6 @@ MASTER_ADDONS_CONFIG_PLACEHOLDER
 {{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .MasterProfile.KubernetesConfig}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    DOCKER_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
   {{if HasLinuxAgents}}

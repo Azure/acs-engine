@@ -119,7 +119,6 @@ write_files:
 {{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 

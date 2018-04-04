@@ -199,10 +199,6 @@ function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
-function setDockerOpts () {
-    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
-}
-
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
@@ -226,7 +222,6 @@ function configAzureNetworkPolicy() {
 
 function configCNINetworkPolicy() {
     setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
@@ -237,7 +232,6 @@ function configNetworkPolicy() {
     else
         # No policy, defaults to kubenet.
         setNetworkPlugin kubenet
-        setDockerOpts ""
     fi
 }
 
@@ -266,7 +260,6 @@ function installClearContainersRuntime() {
 
 	setNetworkPlugin cni
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/var/lib/containerd:/var/lib/containerd:ro"
 }
 
 function installContainerd() {
