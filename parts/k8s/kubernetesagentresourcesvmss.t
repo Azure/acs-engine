@@ -89,22 +89,22 @@
       },
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     },
-     {
-      "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'))]"
-      ],
-      "location": "[variables('location')]",
-      "type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'),'/cse')]",
-      "properties": {
-        "publisher": "Microsoft.Azure.Extensions",
-        "type": "CustomScript",
-        "typeHandlerVersion": "2.0",
-        "autoUpgradeMinorVersion": true,
-        "settings": {},
-        "protectedSettings": {
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
-        }
+    {
+    "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+    "dependsOn": [
+      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'))]"
+    ],
+    "location": "[variables('location')]",
+    "type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
+    "name": "[concat(variables('{{.Name}}VMNamePrefix'),'/cse')]",
+    "properties": {
+      "publisher": "Microsoft.Azure.Extensions",
+      "type": "CustomScript",
+      "typeHandlerVersion": "2.0",
+      "autoUpgradeMinorVersion": true,
+      "settings": {},
+      "protectedSettings": {
+        "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
       }
     }
+  }
