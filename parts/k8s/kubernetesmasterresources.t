@@ -740,7 +740,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
 {{end}}
-{{if EnableDataEncryptionAtRestWithExternalKms}}
+{{if EnableEncryptionWithExternalKms}}
      {
        "type": "Microsoft.KeyVault/vaults",
        "name": "[variables('clusterKeyVaultName')]",

@@ -22,7 +22,7 @@ spec:
           mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
           readOnly: true
         - name: "sock"
-          mountPath: "/tmp"
+          mountPath: "/opt"
   volumes:
     - name: "etc-kubernetes"
       hostPath:
@@ -35,4 +35,4 @@ spec:
         path: "/var/lib/waagent/ManagedIdentity-Settings"
     - name: "sock"
       hostPath:
-        path: "/tmp"
+        path: "/opt"

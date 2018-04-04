@@ -5,7 +5,7 @@
       "orchestratorType": "Kubernetes",
       "orchestratorRelease": "1.10",
       "kubernetesConfig": {
-        "enableDataEncryptionAtRestWithExternalKms": true
+        "enableEncryptionWithExternalKms": true
       }
     },
     "masterProfile": {

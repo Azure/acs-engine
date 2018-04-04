@@ -57,7 +57,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 
 	// Data Encryption at REST with external KMS configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRestWithExternalKms) {
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 

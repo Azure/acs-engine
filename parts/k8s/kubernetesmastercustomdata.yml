@@ -111,9 +111,9 @@ write_files:
           - identity: {}
 {{end}}
 
-{{if EnableDataEncryptionAtRestWithExternalKms}}
+{{if EnableEncryptionWithExternalKms}}
 - path: "/etc/kubernetes/encryption-config.yaml"
-  permissions: "0600"
+  permissions: "0444"
   owner: "root"
   content: |
     kind: EncryptionConfig
@@ -124,7 +124,7 @@ write_files:
         providers:
         - kms:
             name: azurekmsprovider
-            endpoint: unix:///tmp/azurekms.socket
+            endpoint: unix:///opt/azurekms.socket
             cachesize: 0
         - identity: {}
 {{end}}
@@ -290,7 +290,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
-{{if EnableDataEncryptionAtRestWithExternalKms}}
+{{if EnableEncryptionWithExternalKms}}
     sed -i "s|docker.service|docker.service kms.service|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 

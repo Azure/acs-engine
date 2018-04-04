@@ -733,7 +733,7 @@
       "type": "string"
     }
 {{end}}
-{{if EnableDataEncryptionAtRestWithExternalKms}}
+{{if EnableEncryptionWithExternalKms}}
    ,"servicePrincipalObjectId": {
       "metadata": {
         "description": "Object ID (used by cloudprovider)"
