@@ -79,6 +79,29 @@
       },
       "type": "string"
     },
+{{if HasCustomSearchDomain}}
+    "sdName": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Custom Search Domain name."
+      },
+      "type": "string"
+    },
+    "sdRealmUser": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user name to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "string"
+    },
+    "sdRealmPassword": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user password to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "string"
+    },
+{{end}}
     "nameSuffix": {
       "defaultValue": "{{GetUniqueNameSuffix}}",
       "metadata": {
