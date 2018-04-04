@@ -179,7 +179,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     #!/bin/bash
     source /opt/azure/containers/provision_source.sh
     apt_get_update
-    retrycmd_if_failure 20 10 120 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
+    retrycmd_if_failure 20 10 300 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
     set -e
 {{if gt .MasterProfile.Count 1}}
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
