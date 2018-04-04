@@ -39,7 +39,7 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 	ns := err.Namespace()
 	switch ns {
 	// TODO: Add more validation here
-	case "Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
+	case "Properties.ServicePrincipalProfile.ClientID",
 		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
 		"Properties.WindowsProfile.AdminPassword":
 		return fmt.Errorf("missing %s", ns)
