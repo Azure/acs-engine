@@ -178,10 +178,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-    set -e
     source /opt/azure/containers/provision_source.sh
     apt_get_update
     retrycmd_if_failure 20 10 120 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
+    set -e
 {{if gt .MasterProfile.Count 1}}
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
     # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
