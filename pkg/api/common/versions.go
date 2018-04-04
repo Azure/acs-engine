@@ -26,6 +26,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.7.13":        true,
 	"1.7.14":        true,
 	"1.7.15":        true,
+	"1.7.16":        true,
 	"1.8.0":         true,
 	"1.8.1":         true,
 	"1.8.2":         true,
