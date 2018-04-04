@@ -89,11 +89,18 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return err
 				}
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					sv, _ := semver.NewVersion(o.OrchestratorVersion)
-					cons, _ := semver.NewConstraint("<" + "1.7.0")
+					sv, err := semver.NewVersion(version)
+					if err != nil {
+						return fmt.Errorf("could not validate version %s", version)
+					}
+					minVersion := "1.7.0"
+					cons, err := semver.NewConstraint("<" + minVersion)
+					if err != nil {
+						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+					}
 					if cons.Check(sv) {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							"1.7.0", o.OrchestratorVersion)
+							minVersion, version)
 					}
 
 					if o.KubernetesConfig.EnableRbac != nil {
@@ -103,11 +110,17 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					}
 
 					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						sv, _ := semver.NewVersion(o.OrchestratorVersion)
-						cons, _ := semver.NewConstraint("<" + "1.7.0")
+						sv, err := semver.NewVersion(version)
+						if err != nil {
+							return fmt.Errorf("could not validate version %s", version)
+						}
+						cons, err := semver.NewConstraint("<" + minVersion)
+						if err != nil {
+							return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+						}
 						if cons.Check(sv) {
 							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-								"1.7.0", o.OrchestratorVersion)
+								minVersion, o.OrchestratorVersion)
 						}
 					}
 				}
@@ -115,11 +128,18 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
 					}
-					sv, _ := semver.NewVersion(o.OrchestratorVersion)
-					cons, _ := semver.NewConstraint("<" + "1.8.0")
+					sv, err := semver.NewVersion(version)
+					if err != nil {
+						return fmt.Errorf("could not validate version %s", version)
+					}
+					minVersion := "1.8.0"
+					cons, err := semver.NewConstraint("<" + minVersion)
+					if err != nil {
+						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+					}
 					if cons.Check(sv) {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							"1.8.0", o.OrchestratorVersion)
+							minVersion, version)
 					}
 				}
 			}
