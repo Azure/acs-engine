@@ -108,6 +108,14 @@ k8s_17_cherry_pick() {
 					echo "version 1.7.14 and after..."
 					if version_ge "${version}" "1.7.15"; then
 						echo "version 1.7.15 and after..."
+						if version_ge "${version}" "1.7.16"; then
+							echo "version 1.7.16 and after..."
+							# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+							git revert --no-edit 3e530479ed || true
+							# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+							git revert --no-edit 76017a002b || true
+						fi
+
 						# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
 						git revert --no-edit 0d5df36f05 || true
 						# From 1.7.15, 4d50500614 conflict with reverting 51584188ee. It is server side code so jsut revert it.
@@ -155,6 +163,14 @@ k8s_17_cherry_pick() {
 			echo "version 1.7.15 and after..."
 			# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
 			git cherry-pick --allow-empty --keep-redundant-commits 631e363b9d
+
+			if version_ge "${version}" "1.7.16"; then
+				echo "version 1.7.16 and after..."
+				# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+				git cherry-pick --allow-empty --keep-redundant-commits 3d97a43e41
+				# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+				git cherry-pick --allow-empty --keep-redundant-commits 5f9113ce9b
+			fi
 		fi
 	fi
 }
