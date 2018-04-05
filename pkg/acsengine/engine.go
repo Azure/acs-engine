@@ -658,6 +658,24 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
 			}
 		}
+		clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+		c = getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesClusterAutoscalerClientId", clusterAutoscalerAddon.Config["clientId"])
+			addSecret(parametersMap, "kubernetesClusterAutoscalerClientKey", clusterAutoscalerAddon.Config["clientKey"], false)
+			addValue(parametersMap, "kubernetesClusterAutoscalerTenantId", clusterAutoscalerAddon.Config["tenantId"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerSubscriptionId", clusterAutoscalerAddon.Config["subscriptionId"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerResourceGroup", clusterAutoscalerAddon.Config["resourceGroup"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
+			if clusterAutoscalerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.ClusterAutoscalerImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+			}
+		}
 		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 		if c > -1 {
@@ -1563,6 +1581,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
 				aciConnectorAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 				aC := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
+				clusterAutoscalerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+				aS := getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
 				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
@@ -1707,6 +1727,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						val = aciConnectorAddon.Containers[aC].MemoryLimits
 					} else {
 						val = ""
+					}
+				case "kubernetesClusterAutoscalerSpec":
+					if aS > -1 {
+						if clusterAutoscalerAddon.Containers[aS].Image != "" {
+							val = clusterAutoscalerAddon.Containers[aS].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.ClusterAutoscalerImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
+						}
 					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {

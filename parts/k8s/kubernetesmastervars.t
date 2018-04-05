@@ -109,6 +109,7 @@
     "kubernetesACIConnectorMemoryRequests": "[parameters('kubernetesACIConnectorMemoryRequests')]",
     "kubernetesACIConnectorCPULimit": "[parameters('kubernetesACIConnectorCPULimit')]",
     "kubernetesACIConnectorMemoryLimit": "[parameters('kubernetesACIConnectorMemoryLimit')]",
+    "kubernetesClusterAutoscalerSpec": "[parameters('kubernetesClusterAutoscalerSpec')]",
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",

@@ -251,6 +251,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesACIConnectorMemoryLimit>|{{WrapAsVariable "kubernetesACIConnectorMemoryLimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
 {{end}}
 
+{{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
+    sed -i "s|<kubernetesClusterAutoscalerSpec>|{{WrapAsVariable "kubernetesClusterAutoscalerSpec"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+{{end}}
+
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     sed -i "s|<kubernetesReschedulerSpec>|{{WrapAsVariable "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
     sed -i "s|<kubernetesReschedulerCPURequests>|{{WrapAsVariable "kubernetesReschedulerCPURequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"

@@ -444,6 +444,13 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerSpec"}}
+      "metadata": {
+        "description": "The container spec for the cluster autoscaler."
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {

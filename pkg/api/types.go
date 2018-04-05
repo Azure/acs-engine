@@ -835,6 +835,17 @@ func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
 }
 
+// IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
+func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
+	var clusterAutoscalerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
+			clusterAutoscalerAddon = k.Addons[i]
+		}
+	}
+	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
+}
+
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
 func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	var dashboardAddon KubernetesAddon

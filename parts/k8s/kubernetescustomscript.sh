@@ -240,6 +240,21 @@ function configNetworkPlugin() {
     fi
 }
 
+function configAddons() {
+    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = true ]]; then
+        configClusterAutoscalerAddon
+}
+
+function configClusterAutoscalerAddon() {
+    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    #TODO: this is for standard only, change this when we have VMSS PR (#) merged
+    sed -i "s|<kubernetesClusterAutoscalerVmType>|c3RhbmRhcmQ=|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+}
+
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
