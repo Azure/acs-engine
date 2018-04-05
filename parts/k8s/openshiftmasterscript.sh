@@ -44,6 +44,7 @@ update-ca-trust
 routerLBHost="{{.RouterLBHostname}}"
 routerLBIP=$(dig +short $routerLBHost)
 sed -i "s/TEMPROUTERIP/${routerLBIP}/" /etc/origin/master/master-config.yaml
+sed -i "s/TEMPROUTERIP/${routerLBIP}/" /tmp/ansible-playbooks/azure-local-master-inventory.yml
 
 # TODO: when enabling secure registry, may need:
 # ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
@@ -123,8 +124,8 @@ oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-sele
 
 oc adm registry --images='registry.reg-aws.openshift.com:443/openshift3/ose-${component}:${version}' --selector='region=infra'
 
-oc adm policy add-scc-to-user hostnetwork -z router
-oc adm router --images='registry.reg-aws.openshift.com:443/openshift3/ose-${component}:${version}' --selector='region=infra'
+# Deploy the router reusing relevant parts from openshift-ansible
+ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local /tmp/ansible-playbooks/deploy-router.yml -i /tmp/ansible-playbooks/azure-local-master-inventory.yml
 
 oc create -f - <<'EOF'
 kind: Project

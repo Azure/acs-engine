@@ -462,7 +462,7 @@ func (c *Config) WriteMasterCerts(fs filesystem.Filesystem) error {
 		}
 	}
 
-	return nil
+	return fs.WriteFile("etc/origin/master/ca.serial.txt", []byte(fmt.Sprintf("%02X\n", c.serial.Get())), 0666)
 }
 
 // WriteBootstrapCerts writes the node bootstrap certs
