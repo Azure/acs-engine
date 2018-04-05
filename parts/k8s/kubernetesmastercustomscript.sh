@@ -199,10 +199,6 @@ function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
-function setDockerOpts () {
-    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
-}
-
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
@@ -226,7 +222,6 @@ function configAzureNetworkPolicy() {
 
 function configCNINetworkPolicy() {
     setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
@@ -237,7 +232,6 @@ function configNetworkPolicy() {
     else
         # No policy, defaults to kubenet.
         setNetworkPlugin kubenet
-        setDockerOpts ""
     fi
 }
 
@@ -266,7 +260,6 @@ function installClearContainersRuntime() {
 
 	setNetworkPlugin cni
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/var/lib/containerd:/var/lib/containerd:ro"
 }
 
 function installContainerd() {
@@ -356,7 +349,6 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
@@ -364,11 +356,12 @@ function ensureKubelet() {
     fi
 }
 
-function extractKubectl(){
-    systemctlEnableAndCheck kubectl-extract
+function extractHyperkube(){
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
+    systemctlEnableAndCheck hyperkube-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart kubectl-extract
+        systemctl restart hyperkube-extract
     fi
 }
 
@@ -568,10 +561,10 @@ echo `date`,`hostname`, setMaxPodsStart>>/opt/m
 setMaxPods ${MAX_PODS}
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
+echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
+extractHyperkube
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
-echo `date`,`hostname`, extractKubctlStart>>/opt/m
-extractKubectl
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
