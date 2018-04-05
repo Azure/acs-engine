@@ -670,6 +670,8 @@ func openShiftSetDefaultCerts(a *api.Properties, location string) (bool, error) 
 			Port: 8443,
 		},
 		ExternalMasterHostname: externalMasterHostname,
+		ClusterUsername:        a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
+		ClusterPassword:        a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 	}
 	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
 	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname

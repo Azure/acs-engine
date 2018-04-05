@@ -4,6 +4,8 @@
     "orchestratorProfile": {
       "orchestratorType": "OpenShift",
       "openShiftConfig": {
+        "clusterUsername": "demo",
+        "clusterPassword": "demo"
       }
     },
     "masterProfile": {

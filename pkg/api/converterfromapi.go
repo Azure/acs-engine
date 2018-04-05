@@ -651,6 +651,8 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	if api.KubernetesConfig != nil {
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, vl.KubernetesConfig)
 	}
+	vl.ClusterUsername = api.ClusterUsername
+	vl.ClusterPassword = api.ClusterPassword
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {

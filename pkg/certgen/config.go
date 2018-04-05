@@ -19,6 +19,8 @@ type Config struct {
 	EncSecret              string
 	Master                 *Master
 	Bootstrap              KubeConfig
+	ClusterUsername        string
+	ClusterPassword        string
 }
 
 // Master represents an OpenShift master configuration

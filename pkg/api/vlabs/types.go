@@ -303,6 +303,11 @@ type DcosConfig struct {
 // OpenShiftConfig holds configuration for OpenShift
 type OpenShiftConfig struct {
 	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+
+	// ClusterUsername and ClusterPassword are temporary before AAD
+	// authentication is enabled, and will be removed subsequently.
+	ClusterUsername string `json:"clusterUsername,omitempty"`
+	ClusterPassword string `json:"clusterPassword,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

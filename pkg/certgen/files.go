@@ -10,6 +10,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/certgen/templates"
 	"github.com/Azure/acs-engine/pkg/filesystem"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // PrepareMasterFiles creates the shared authentication and encryption secrets
@@ -40,6 +41,10 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
+			"Bcrypt": func(password string) (string, error) {
+				h, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+				return string(h), err
+			},
 		}).Parse(string(tb))
 		if err != nil {
 			return err
