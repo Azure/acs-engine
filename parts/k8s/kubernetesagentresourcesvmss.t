@@ -25,7 +25,7 @@
       "properties": {
         "overprovision": true,
         "upgradePolicy": {
-          "mode": "Manual"
+          "mode": "Automatic"
         },
         "virtualMachineProfile": {
           "networkProfile": {
