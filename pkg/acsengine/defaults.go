@@ -608,6 +608,25 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile.Distro = api.Ubuntu
 		}
 
+		var defaultAgentPoolMaxPods int
+		// set defaultAgentPoolMaxPods to OrchestratorProfile.KubernetesConfig.MaxPods if exist.
+		if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.MaxPods != 0 {
+			defaultAgentPoolMaxPods = a.OrchestratorProfile.KubernetesConfig.MaxPods
+		} else {
+			if a.OrchestratorProfile.IsAzureCNI() {
+				defaultAgentPoolMaxPods = DefaultKubernetesMaxPodsVNETIntegrated
+			} else {
+				defaultAgentPoolMaxPods = DefaultKubernetesMaxPods
+			}
+		}
+
+		// if --max-pods is not defined in profile.KubernetesConfig.KubeletConfig, use defaultAgentPoolMaxPods
+		if profile.KubernetesConfig != nil && profile.KubernetesConfig.KubeletConfig != nil {
+			if _, ok := profile.KubernetesConfig.KubeletConfig["--max-pods"]; !ok {
+				profile.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(defaultAgentPoolMaxPods)
+			}
+		}
+
 		// Set the default number of IP addresses allocated for agents.
 		if profile.IPAddressCount == 0 {
 			// Allocate one IP address for the node.
@@ -616,7 +635,8 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			// Allocate IP addresses for pods if VNET integration is enabled.
 			if a.OrchestratorProfile.IsAzureCNI() {
 				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
+					agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
+					profile.IPAddressCount += agentPoolMaxPods
 				}
 			}
 		}
