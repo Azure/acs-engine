@@ -60,9 +60,11 @@ func GetSupportedKubernetesVersion(version string) string {
 
 // GetAllSupportedKubernetesVersions returns a slice of all supported Kubernetes versions
 func GetAllSupportedKubernetesVersions() []string {
-	versions := make([]string, 0, len(AllKubernetesSupportedVersions))
-	for k := range AllKubernetesSupportedVersions {
-		versions = append(versions, k)
+	var versions []string
+	for ver, supported := range AllKubernetesSupportedVersions {
+		if supported {
+			versions = append(versions, ver)
+		}
 	}
 	return versions
 }
