@@ -5,20 +5,17 @@
         "name": "loop"
       },
       "dependsOn": [
-{{if .IsCustomVNET}}
-      "[variables('nsgID')]"
-{{else}}
-      "[variables('vnetID')]"
+{{if not .IsCustomVNET}}
+      "[variables('vnetID')]",
 {{end}}
+      "[variables('nsgID')]"
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-{{if .IsCustomVNET}}
         "networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         },
-{{end}}
         "ipConfigurations": [
           {{range $seq := loop 1 .IPAddressCount}}
           {
