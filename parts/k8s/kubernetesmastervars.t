@@ -270,9 +270,9 @@
     "allocateNodeCidrs": true,
 {{end}}
 {{if HasCustomSearchDomain}}
-    "sdName": "[parameters('sdName')]",
-    "sdRealmUser": "[parameters('sdRealmUser')]",
-    "sdRealmPassword": "[parameters('sdRealmPassword')]",
+    "searchDomainName": "[parameters('searchDomainName')]",
+    "searchDomainRealmUser": "[parameters('searchDomainRealmUser')]",
+    "searchDomainRealmPassword": "[parameters('searchDomainRealmPassword')]",
 {{end}}
 {{if not IsHostedMaster}}
   {{if .MasterProfile.IsCustomVNET}}

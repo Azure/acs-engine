@@ -80,21 +80,21 @@
       "type": "string"
     },
 {{if HasCustomSearchDomain}}
-    "sdName": {
+    "searchDomainName": {
       "defaultValue": "",
       "metadata": {
         "description": "Custom Search Domain name."
       },
       "type": "string"
     },
-    "sdRealmUser": {
+    "searchDomainRealmUser": {
       "defaultValue": "",
       "metadata": {
         "description": "Windows server AD user name to join the Linux Machines with active directory and be able to change dns registries."
       },
       "type": "string"
     },
-    "sdRealmPassword": {
+    "searchDomainRealmPassword": {
       "defaultValue": "",
       "metadata": {
         "description": "Windows server AD user password to join the Linux Machines with active directory and be able to change dns registries."

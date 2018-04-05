@@ -539,9 +539,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	if properties.LinuxProfile.CustomSearchDomain != nil {
-		addValue(parametersMap, "sdName", properties.LinuxProfile.CustomSearchDomain.Name)
-		addValue(parametersMap, "sdRealmUser", properties.LinuxProfile.CustomSearchDomain.RealmUser)
-		addValue(parametersMap, "sdRealmPassword", properties.LinuxProfile.CustomSearchDomain.RealmPassword)
+		addValue(parametersMap, "searchDomainName", properties.LinuxProfile.CustomSearchDomain.Name)
+		addValue(parametersMap, "searchDomainRealmUser", properties.LinuxProfile.CustomSearchDomain.RealmUser)
+		addValue(parametersMap, "searchDomainRealmPassword", properties.LinuxProfile.CustomSearchDomain.RealmPassword)
 	}
 	// masterEndpointDNSNamePrefix is the basis for storage account creation across dcos, swarm, and k8s
 	if properties.MasterProfile != nil {
