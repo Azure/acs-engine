@@ -187,15 +187,11 @@ function ensureFilepath() {
     fi
 }
 
-function setNetworkPlugin () {
-    sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
-}
-
 function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
-function configAzureNetworkPolicy() {
+function configAzureCNI() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
     chown -R root:root $CNI_CONFIG_DIR
@@ -213,10 +209,9 @@ function configAzureNetworkPolicy() {
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
     /sbin/ebtables -t nat --list
-	setNetworkPlugin cni
 }
 
-function configKubenetNetworkPolicy() {
+function configKubenet() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
@@ -224,17 +219,13 @@ function configKubenetNetworkPolicy() {
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./bridge ./host-local
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
-	setNetworkPlugin kubenet
 }
 
 function configNetworkPolicy() {
     if [[ "${NETWORK_POLICY}" = "azure" ]]; then
-        configAzureNetworkPolicy
-    elif [[ "${NETWORK_POLICY}" = "calico" ]] || [[ "${NETWORK_POLICY}" = "cilium" ]]; then
-        setNetworkPlugin cni
-    else
-        # No policy, defaults to kubenet.
-        configKubenetNetworkPolicy
+        configAzureCNI
+    elif [[ "${NETWORK_POLICY}" = "none" ]] ; then
+        configKubenet
     fi
 }
 
@@ -261,7 +252,6 @@ function installClearContainersRuntime() {
 	systemctl enable cc-proxy
 	systemctl start cc-proxy
 
-	setNetworkPlugin cni
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
