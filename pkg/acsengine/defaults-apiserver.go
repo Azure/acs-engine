@@ -78,12 +78,12 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	if cs.Properties.HasAadProfile() {
 		defaultAPIServerConfig["--oidc-username-claim"] = "oid"
 		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
-		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
+		defaultAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
-		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
+		defaultAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
 	}
 
 	// Audit Policy configuration
