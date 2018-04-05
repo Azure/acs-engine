@@ -159,8 +159,7 @@ runcmd: PREPROVISION_EXTENSION
   - start
   - dcos-setup.service
 write_files:
-- content: 'https://dcosio.azureedge.net/dcos/stable/1.10.0
-
+- content: '{{{dcosRepositoryURL}}}
 '
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
