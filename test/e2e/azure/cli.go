@@ -14,7 +14,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Account holds the values needed to talk to the Azure API
+// Account represents an Azure account
 type Account struct {
 	User           *User  `json:"user"`
 	TenantID       string `json:"tenantId" envconfig:"TENANT_ID" required:"true"`
@@ -41,6 +41,13 @@ type Deployment struct {
 	TemplateDirectory string // engine.GeneratedDefinitionPath
 }
 
+// StorageAccount represents an azure storage account
+type StorageAccount struct {
+	Name             string
+	ConnectionString string `json:"connectionString"`
+	ResourceGroup    ResourceGroup
+}
+
 // User represents the user currently logged into an Account
 type User struct {
 	ID     string `json:"name" envconfig:"CLIENT_ID" required:"true"`
@@ -48,7 +55,7 @@ type User struct {
 	Type   string `json:"type"`
 }
 
-// NewAccount will parse env vars and return a new struct
+// NewAccount will parse env vars and return a new account struct
 func NewAccount() (*Account, error) {
 	a := new(Account)
 	if err := envconfig.Process("account", a); err != nil {
@@ -284,4 +291,54 @@ func (a *Account) IsResourceGroupOlderThan(d time.Duration) bool {
 	}
 	t := time.Unix(tag, 0)
 	return time.Since(t) > d
+}
+
+// UploadOutputToStorage will upload the output directory to storage
+func (sa *StorageAccount) UploadOutputToStorage(source, destination string) error {
+	err := sa.SetConnectionString()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", "destination", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying upload files to file share:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// DownloadOutputFromStorage will download the output directory from storage
+func (sa *StorageAccount) DownloadOutputFromStorage(source, destination string) error {
+	err := sa.SetConnectionString()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying download files from %s in storage account %s: %s\n", source, sa.Name, out)
+		return err
+	}
+	return nil
+}
+
+// SetConnectionString will set the storage account connection string
+func (sa *StorageAccount) SetConnectionString() error {
+	cmd := exec.Command("az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get connection-string:%s\n", out)
+		return err
+	}
+	err = json.Unmarshal(out, &sa)
+	if err != nil {
+		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+		return err
+	}
+	return nil
 }

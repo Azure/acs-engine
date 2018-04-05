@@ -58,16 +58,24 @@ func main() {
 		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 	}
 
-	// Handle soak tests differently
+	sa := new(azure.StorageAccount)
+	sa.Name = "acsesoaktests" + cfg.Location
+	sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
+	sa.ResourceGroup.Location = cfg.Location
+
+	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
 		provision := true
 		rg := cfg.SoakClusterName
 		err = acct.SetResourceGroup(rg)
+		if err != nil {
+			log.Fatalf("Error while trying to set RG:%s\n", err)
+		}
 		if err == nil {
 			// set expiration time to 7 days = 168h for now
 			d, err := time.ParseDuration("168h")
 			if err != nil {
-				log.Fatalf("unexpected error parsing duration: %s", err)
+				log.Fatalf("Unexpected error parsing duration: %s", err)
 			}
 			provision = acct.IsResourceGroupOlderThan(d)
 		}
@@ -78,6 +86,10 @@ func main() {
 			cfg.Name = ""
 		} else {
 			log.Printf("Soak cluster %s exists, skipping provision...\n", rg)
+			err = sa.DownloadOutputFromStorage(cfg.SoakClusterName, "_output")
+			if err != nil {
+				log.Fatalf("Error while trying to download _output dir:%s\n", err)
+			}
 		}
 	}
 	// Only provision a cluster if there isn't a name present
@@ -88,6 +100,12 @@ func main() {
 		if err != nil {
 			teardown()
 			log.Fatalf("Error while trying to provision cluster:%s", err)
+		}
+		if cfg.SoakClusterName != "" {
+			err = sa.UploadOutputToStorage(filepath.Join(cfg.CurrentWorkingDir, "_output"), cfg.SoakClusterName)
+			if err != nil {
+				log.Fatalf("Error while trying to upload _output dir:%s\n", err)
+			}
 		}
 	} else {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
