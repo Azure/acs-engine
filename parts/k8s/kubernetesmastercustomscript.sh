@@ -217,21 +217,28 @@ function configAzureNetworkPolicy() {
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
     /sbin/ebtables -t nat --list
-	configCNINetworkPolicy
+	setNetworkPlugin cni
 }
 
-function configCNINetworkPolicy() {
-    setNetworkPlugin cni
+function configAzureNetworkPolicy() {
+    CNI_BIN_DIR=/opt/cni/bin
+    mkdir -p $CNI_BIN_DIR
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./bridge ./host-local
+    chown -R root:root $CNI_BIN_DIR
+    chmod -R 755 $CNI_BIN_DIR
+	setNetworkPlugin kubenet
 }
 
 function configNetworkPolicy() {
     if [[ "${NETWORK_POLICY}" = "azure" ]]; then
         configAzureNetworkPolicy
     elif [[ "${NETWORK_POLICY}" = "calico" ]] || [[ "${NETWORK_POLICY}" = "cilium" ]]; then
-        configCNINetworkPolicy
+        setNetworkPlugin cni
     else
         # No policy, defaults to kubenet.
-        setNetworkPlugin kubenet
+        configKubenetPolicy
     fi
 }
 
