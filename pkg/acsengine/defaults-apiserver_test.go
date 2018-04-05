@@ -146,19 +146,31 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 	usernameClaimOverride := "custom-username-claim"
 	groupsClaimOverride := "custom-groups-claim"
+	clientIDOverride := "custom-client-id"
+	issuerURLOverride := "custom-issuer-url"
 	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{
 		"--oidc-username-claim": usernameClaimOverride,
 		"--oidc-groups-claim":   groupsClaimOverride,
+		"--oidc-client-id":      clientIDOverride,
+		"--oidc-issuer-url":     issuerURLOverride,
 	}
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-username-claim"] != usernameClaimOverride {
-		t.Fatalf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
-			a["--oidc-username-claim"])
+		t.Fatalf("got unexpected '--oidc-username-claim' API server config value when user override provided: %s, expected: %s",
+			a["--oidc-username-claim"], usernameClaimOverride)
 	}
 	if a["--oidc-groups-claim"] != groupsClaimOverride {
-		t.Fatalf("got unexpected '--oidc-groups-claim' API server config value for HasAadProfile=true: %s",
-			a["--oidc-groups-claim"])
+		t.Fatalf("got unexpected '--oidc-groups-claim' API server config value when user override provided: %s, expected: %s",
+			a["--oidc-groups-claim"], groupsClaimOverride)
+	}
+	if a["--oidc-client-id"] != clientIDOverride {
+		t.Fatalf("got unexpected '--oidc-client-id' API server config value when user override provided: %s, expected: %s",
+			a["--oidc-client-id"], clientIDOverride)
+	}
+	if a["--oidc-issuer-url"] != issuerURLOverride {
+		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value when user override provided: %s, expected: %s",
+			a["--oidc-issuer-url"], issuerURLOverride)
 	}
 
 	// Test China Cloud settings
