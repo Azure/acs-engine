@@ -1,5 +1,43 @@
 {{if IsOpenShift}}
     {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "name": "router-nsg",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow_http",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow http traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "80",
+              "direction": "Inbound",
+              "priority": 110,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          },
+          {
+            "name": "allow_https",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow https traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "443",
+              "direction": "Inbound",
+              "priority": 111,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
         "name": "router-ip",
         "type": "Microsoft.Network/publicIPAddresses",
         "apiVersion": "2017-08-01",
@@ -159,10 +197,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
 {{if not IsAzureCNI}}
-        ,
-        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if IsKubernetes}},{{end}}
+{{end}}
+{{if IsKubernetes}}
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
 {{end}}
       ],
       "location": "[variables('location')]",
@@ -177,10 +216,13 @@
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnet')]",
+              "addressPrefix": "[variables('subnet')]"
+{{if IsKubernetes}}
+              ,
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
               }
+{{end}}
 {{if not IsAzureCNI}}
               ,
               "routeTable": {
@@ -210,36 +252,6 @@
               "destinationPortRange": "3389-3389",
               "direction": "Inbound",
               "priority": 102,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-{{end}}
-{{if IsOpenShift}}
-          {
-            "name": "allow_http",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow http traffic to infra nodes",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "80",
-              "direction": "Inbound",
-              "priority": 110,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-          {
-            "name": "allow_https",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow https traffic to infra nodes",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443",
-              "direction": "Inbound",
-              "priority": 111,
               "protocol": "Tcp",
               "sourceAddressPrefix": "*",
               "sourcePortRange": "*"
@@ -387,10 +399,17 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
+{{if IsKubernetes}}
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
 {{else}}
         "[variables('vnetID')]",
+{{end}}
+{{else}}
+        "[variables('nsgID')]",
+{{if not .MasterProfile.IsCustomVNET}}
+        "[variables('vnetID')]",
+{{end}}
 {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
 {{if gt .MasterProfile.Count 1}}
@@ -448,7 +467,7 @@
         ,
         "enableIPForwarding": true
 {{end}}
-{{if .MasterProfile.IsCustomVNET}}
+{{if or .MasterProfile.IsCustomVNET IsOpenShift}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         }
@@ -464,10 +483,17 @@
           "name": "nicLoopNode"
         },
         "dependsOn": [
+  {{if IsKubernetes}}
   {{if .MasterProfile.IsCustomVNET}}
           "[variables('nsgID')]"
   {{else}}
           "[variables('vnetID')]"
+  {{end}}
+  {{else}}
+          "[variables('nsgID')]"
+  {{if not .MasterProfile.IsCustomVNET}}
+          ,"[variables('vnetID')]"
+  {{end}}
   {{end}}
   {{if gt .MasterProfile.Count 1}}
           ,"[variables('masterInternalLbName')]"
@@ -517,7 +543,7 @@
           ,
           "enableIPForwarding": true
   {{end}}
-  {{if .MasterProfile.IsCustomVNET}}
+  {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
           ,"networkSecurityGroup": {
             "id": "[variables('nsgID')]"
           }
