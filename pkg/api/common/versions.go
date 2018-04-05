@@ -36,6 +36,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.8.8":         true,
 	"1.8.9":         true,
 	"1.8.10":        true,
+	"1.8.11":        true,
 	"1.9.0":         true,
 	"1.9.1":         true,
 	"1.9.2":         true,
@@ -197,9 +198,11 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 
 // GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows
 func GetAllSupportedKubernetesVersionsWindows() []string {
-	versions := make([]string, 0, len(AllKubernetesWindowsSupportedVersions))
-	for k := range AllKubernetesWindowsSupportedVersions {
-		versions = append(versions, k)
+	var versions []string
+	for ver, supported := range AllKubernetesWindowsSupportedVersions {
+		if supported {
+			versions = append(versions, ver)
+		}
 	}
 	return versions
 }

@@ -2,10 +2,12 @@ package vlabs
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Masterminds/semver"
 )
 
 const (
@@ -562,8 +564,25 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 }
 
 func TestWindowsVersions(t *testing.T) {
+	for _, version := range common.GetAllSupportedKubernetesVersionsWindows() {
+		p := getK8sDefaultProperties(true)
+		p.OrchestratorProfile.OrchestratorVersion = version
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Windows version: %v", err,
+			)
+		}
+		sv, _ := semver.NewVersion(version)
+		p = getK8sDefaultProperties(true)
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Windows version: %v", err,
+			)
+		}
+	}
 	p := getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.6"
+	p.OrchestratorProfile.OrchestratorRelease = "1.4"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -571,79 +590,7 @@ func TestWindowsVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.7"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.0"
-	if err := p.Validate(false); err == nil {
-		t.Errorf(
-			"should error on invalid Windows version",
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.8"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.10"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.11"
-	if err := p.Validate(false); err == nil {
-		t.Errorf(
-			"should error on invalid Windows version",
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.9"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Windows version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.7"
-	if err := p.Validate(false); err == nil {
-		t.Errorf(
-			"should error on invalid Windows version",
-		)
-	}
-
-	p = getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorRelease = "1.11"
+	p.OrchestratorProfile.OrchestratorVersion = "1.4.0"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Windows version",
@@ -652,8 +599,25 @@ func TestWindowsVersions(t *testing.T) {
 }
 
 func TestLinuxVersions(t *testing.T) {
+	for _, version := range common.GetAllSupportedKubernetesVersions() {
+		p := getK8sDefaultProperties(false)
+		p.OrchestratorProfile.OrchestratorVersion = version
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Linux version: %v", err,
+			)
+		}
+		sv, _ := semver.NewVersion(version)
+		p = getK8sDefaultProperties(false)
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Linux version: %v", err,
+			)
+		}
+	}
 	p := getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.5"
+	p.OrchestratorProfile.OrchestratorRelease = "1.4"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Linux version",
@@ -661,95 +625,7 @@ func TestLinuxVersions(t *testing.T) {
 	}
 
 	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.6"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.7"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.3"
-	if err := p.Validate(false); err == nil {
-		t.Errorf(
-			"should error on invalid Linux version",
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.8"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.10"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.8.11"
-	if err := p.Validate(false); err == nil {
-		t.Errorf(
-			"should error on invalid Linux version",
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.9"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorRelease = "1.10"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.10.0-rc.1"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.6"
-	if err := p.Validate(false); err != nil {
-		t.Errorf(
-			"should not error on valid Linux version: %v", err,
-		)
-	}
-
-	p = getK8sDefaultProperties(false)
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.7"
+	p.OrchestratorProfile.OrchestratorVersion = "1.4.0"
 	if err := p.Validate(false); err == nil {
 		t.Errorf(
 			"should error on invalid Linux version",
