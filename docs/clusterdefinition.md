@@ -312,6 +312,10 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |"--audit-log-maxbackup"|"10"|
 |"--audit-log-maxsize"|"100"|
 |"--feature-gates"|No default (can be a comma-separated list)|
+|"--oidc-username-claim"|"oid" (*if has AADProfile*)|
+|"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
+|"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
+|"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
 
 
 Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces apiserver configuration, or because a static configuration is required to build a functional cluster:
@@ -352,10 +356,6 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--requestheader-username-headers"|"X-Remote-User" (*if enableAggregatedAPIs is true*)|
 |"--cloud-provider"|"azure" (*unless useCloudControllerManager is true*)|
 |"--cloud-config"|"/etc/kubernetes/azure.json" (*unless useCloudControllerManager is true*)|
-|"--oidc-username-claim"|"oid" (*if has AADProfile*)|
-|"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
-|"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
-|"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
 
 <a name="feat-scheduler-config"></a>
 #### schedulerConfig
