@@ -74,9 +74,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
 
-	// Get rid of values not supported in v1.5 clusters
-	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
-		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
+	// Get rid of values not supported in v1.6 clusters
+	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+		for _, key := range []string{"--cgroups-per-qos", "--enforce-node-allocatable"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}
