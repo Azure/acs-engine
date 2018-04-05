@@ -163,6 +163,8 @@ func getVersionOverrides(v string) map[string]string {
 		return map[string]string{"windowszip": "v1.8.1-2int.zip"}
 	case "1.8.0":
 		return map[string]string{"windowszip": "v1.8.0-2int.zip"}
+	case "1.7.16":
+		return map[string]string{"windowszip": "v1.7.16-1int.zip"}
 	case "1.7.15":
 		return map[string]string{"windowszip": "v1.7.15-1int.zip"}
 	case "1.7.14":
