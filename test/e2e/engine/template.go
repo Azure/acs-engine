@@ -96,6 +96,9 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 	if config.PublicSSHKey != "" {
 		cs.ContainerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData = config.PublicSSHKey
+		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey = config.PublicSSHKey
+		}
 	}
 
 	if config.WindowsAdminPasssword != "" {

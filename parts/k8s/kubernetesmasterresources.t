@@ -485,6 +485,9 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "properties": {
+          "dnsSettings": {
+            "domainNameLabel": "[variables('masterFqdnPrefix')]"
+          },
           "publicIpAllocationMethod": "Dynamic"
       }
     },
@@ -652,6 +655,7 @@
           {{end}}
         },
         "storageProfile": {
+          {{if not UseMasterCustomImage}}
           "dataDisks": [
             {
               "createOption": "Empty"
@@ -665,11 +669,16 @@
               {{end}}
             }
           ],
+          {{end}}
           "imageReference": {
+            {{if UseMasterCustomImage}}
+            "id": "[resourceId(variables('osImageResourceGroup'), 'Microsoft.Compute/images', variables('osImageName'))]"
+            {{else}}
             "offer": "[variables('osImageOffer')]",
             "publisher": "[variables('osImagePublisher')]",
             "sku": "[variables('osImageSku')]",
             "version": "[variables('osImageVersion')]"
+            {{end}}
           },
           "osDisk": {
             "caching": "ReadWrite"

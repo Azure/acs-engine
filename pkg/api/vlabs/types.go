@@ -311,6 +311,7 @@ type MasterProfile struct {
 	Extensions               []Extension       `json:"extensions"`
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -319,6 +320,12 @@ type MasterProfile struct {
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ImageReference represents a reference to an Image resource in Azure.
+type ImageReference struct {
+	Name          string `json:"name,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
 // ClassicAgentPoolProfileType represents types of classic profiles
@@ -359,6 +366,7 @@ type AgentPoolProfile struct {
 	IPAddressCount      int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 	Distro              Distro            `json:"distro,omitempty"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef            *ImageReference   `json:"imageReference,omitempty"`
 
 	// subnet is internal
 	subnet string

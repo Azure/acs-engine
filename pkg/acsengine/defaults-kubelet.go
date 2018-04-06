@@ -35,7 +35,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
 		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                        strconv.Itoa(DefaultKubernetesKubeletMaxPods),
+		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
@@ -60,6 +60,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Override default --network-plugin?
 	if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
 	// We don't support user-configurable values for the following,

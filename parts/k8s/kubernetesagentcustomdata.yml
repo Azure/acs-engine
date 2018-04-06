@@ -74,12 +74,12 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-- path: "/etc/systemd/system/kubectl-extract.service"
+- path: "/etc/systemd/system/hyperkube-extract.service"
   permissions: "0644"
   owner: "root"
   content: |
     [Unit]
-    Description=Kubectl extraction
+    Description=kubectl and kubelet extraction
     Requires=docker.service
     After=docker.service
 {{if .IsCoreOS}}
@@ -92,15 +92,17 @@ write_files:
     TimeoutStartSec=0
     Restart=on-failure
     RestartSec=5s
-    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStartPre=/bin/mkdir -p /tmp/hyperkubedir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPre=/usr/bin/docker run --rm -v /tmp/hyperkubedir:/opt/hyperkubedir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/hyperkubedir/"
 {{if .IsCoreOS}}
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
-    ExecStart=/bin/chmod a+x /opt/kubectl
+    ExecStartPre=/bin/cp /tmp/hyperkubedir/hyperkube /opt/kubelet
+    ExecStartPre=/bin/mv /tmp/hyperkubedir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubelet /opt/kubectl
 {{else}}
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
-    ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+    ExecStartPre=/bin/cp /tmp/hyperkubedir/hyperkube /usr/local/bin/kubelet
+    ExecStartPre=/bin/mv /tmp/hyperkubedir/hyperkube /usr/local/bin/kubectl
+    ExecStart=/bin/chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
 {{end}}
 
     [Install]
@@ -117,7 +119,6 @@ write_files:
 {{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 
@@ -128,7 +129,9 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-
+    source /opt/azure/containers/provision_source.sh
+    apt_get_update
+    retrycmd_if_failure 20 10 300 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
@@ -178,7 +181,6 @@ runcmd:
 # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
 - set -x
 - . /opt/azure/containers/provision_source.sh
-- apt_get_update() { for i in $(seq 1 100); do apt-get update 2>&1 | grep -x "[WE]:.*"; [ $? -ne 0  ] && break || sleep 1; done; echo Executed apt-get update $i times; }
 - retrycmd_if_failure 120 1 5 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
 - retrycmd_if_failure 120 1 5 nc -zw1 aptdocker.azureedge.net 443
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}

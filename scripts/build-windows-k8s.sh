@@ -108,6 +108,14 @@ k8s_17_cherry_pick() {
 					echo "version 1.7.14 and after..."
 					if version_ge "${version}" "1.7.15"; then
 						echo "version 1.7.15 and after..."
+						if version_ge "${version}" "1.7.16"; then
+							echo "version 1.7.16 and after..."
+							# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+							git revert --no-edit 3e530479ed || true
+							# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+							git revert --no-edit 76017a002b || true
+						fi
+
 						# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
 						git revert --no-edit 0d5df36f05 || true
 						# From 1.7.15, 4d50500614 conflict with reverting 51584188ee. It is server side code so jsut revert it.
@@ -155,6 +163,14 @@ k8s_17_cherry_pick() {
 			echo "version 1.7.15 and after..."
 			# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
 			git cherry-pick --allow-empty --keep-redundant-commits 631e363b9d
+
+			if version_ge "${version}" "1.7.16"; then
+				echo "version 1.7.16 and after..."
+				# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+				git cherry-pick --allow-empty --keep-redundant-commits 3d97a43e41
+				# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+				git cherry-pick --allow-empty --keep-redundant-commits 5f9113ce9b
+			fi
 		fi
 	fi
 }
@@ -182,6 +198,19 @@ k8s_18_cherry_pick() {
 		echo "version 1.8.9 and after..."
 		if version_ge "${version}" "1.8.10"; then
 			echo "version 1.8.10 and after..."
+			if version_ge "${version}" "1.8.11"; then
+				echo "version 1.8.11 and after..."
+				# From 1.8.11, 6487f82b13 conflict with 86107edff5. We use 8e081d5da9 in Azure repo instead of 6487f82b13
+				git revert --no-edit 6487f82b13 || true
+				# From 1.8.11, 2704ef877b conflict with reverting a418057ddd. We skip it since it is test file
+				git revert --no-edit 2704ef877b || true
+				# From 1.8.11, dc21ebe936 conflict with reverting 63b4f60e43. We use 18589971f7 in Azure repo instead of dc21ebe936
+				git revert --no-edit dc21ebe936 || true
+				# From 1.8.11, a418057ddd conflict with reverting 63b4f60e43. We use 57038dce90 in Azure repo instead of a418057ddd
+				git revert --no-edit a418057ddd || true
+				# From 1.8.11, beaca32611 conflict with reverting 63b4f60e43. We use e6d8af84df in Azure repo instead of beaca32611
+				git revert --no-edit beaca32611 || true
+			fi
 			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
 			git revert --no-edit 5936faed37 || true
 		fi
@@ -189,7 +218,6 @@ k8s_18_cherry_pick() {
 		git revert --no-edit 63b4f60e43 || true
 		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
 		git revert --no-edit 40d5e0a34f || true
-
 	fi
 
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
@@ -211,6 +239,14 @@ k8s_18_cherry_pick() {
 			echo "version 1.8.10 and after..."
 			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
 			git cherry-pick --allow-empty --keep-redundant-commits 1f26b7a083
+			if version_ge "${version}" "1.8.11"; then
+				echo "version 1.8.11 and after..."
+				# From 1.8.11, 6487f82b13 conflict with 86107edff5. We use 8e081d5da9 in Azure repo instead of 6487f82b13
+				# From 1.8.11, dc21ebe936 conflict with reverting 63b4f60e43. We use 18589971f7 in Azure repo instead of dc21ebe936
+				# From 1.8.11, a418057ddd conflict with reverting 63b4f60e43. We use 57038dce90 in Azure repo instead of a418057ddd
+				# From 1.8.11, beaca32611 conflict with reverting 63b4f60e43. We use e6d8af84df in Azure repo instead of beaca32611
+				git cherry-pick --allow-empty --keep-redundant-commits 8e081d5da9^..18589971f7
+			fi
 		fi
 	fi
 }
