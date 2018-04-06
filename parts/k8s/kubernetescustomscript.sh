@@ -533,7 +533,7 @@ fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	# make sure walinuxagent doesn't get updated in the middle of running this script
-	apt-mark hold walinuxagent
+	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
 fi
 
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
@@ -578,7 +578,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    apt-mark unhold walinuxagent
+    retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
 fi
 
 echo "Install complete successfully"

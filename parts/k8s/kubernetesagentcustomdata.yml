@@ -183,7 +183,7 @@ runcmd:
 - . /opt/azure/containers/provision_source.sh
 - retrycmd_if_failure 120 1 5 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
 - retrycmd_if_failure 120 1 5 nc -zw1 aptdocker.azureedge.net 443
-- apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
+- retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - echo `date`,`hostname`, preaptupdate>>/opt/m
 - apt_get_update
 - echo `date`,`hostname`, postaptupdate>>/opt/m
@@ -213,7 +213,7 @@ runcmd:
 - echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
 - /usr/lib/apt/apt.systemd.daily
 - echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
-- apt-mark unhold walinuxagent
+- retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 - echo `date`,`hostname`, endruncmd>>/opt/m
 {{end}}
