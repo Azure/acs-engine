@@ -129,10 +129,11 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
 					sv, _ := semver.NewVersion(version)
-					cons, _ := semver.NewConstraint("<" + "1.10.0")
+					minVersion := "1.10.0"
+					cons, _ := semver.NewConstraint("<" + minVersion)
 					if cons.Check(sv) {
 						return fmt.Errorf("enableEncryptionWithExternalKms is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							"1.10.0", o.OrchestratorVersion)
+							minVersion, o.OrchestratorVersion)
 					}
 				}
 				
