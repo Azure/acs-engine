@@ -220,7 +220,7 @@ function configAzureNetworkPolicy() {
 	setNetworkPlugin cni
 }
 
-function configAzureNetworkPolicy() {
+function configKubenetNetworkPolicy() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
