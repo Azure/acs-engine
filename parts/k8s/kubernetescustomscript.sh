@@ -187,10 +187,6 @@ function ensureFilepath() {
     fi
 }
 
-function setMaxPods () {
-    sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
-}
-
 function setNetworkPlugin () {
     sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
 }
@@ -564,8 +560,6 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		installContainerd
 	fi
 fi
-echo `date`,`hostname`, setMaxPodsStart>>/opt/m
-setMaxPods ${MAX_PODS}
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m

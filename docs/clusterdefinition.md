@@ -43,7 +43,6 @@ Here are the valid values for the orchestrator types:
 |enableDataEncryptionAtRest|no|Enable [kuberetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
 |etcdDiskSizeGB|no|Size in GB to assign to etcd data volume. Defaults (if no user value provided) are: 256 GB for clusters up to 3 nodes; 512 GB for clusters with between 4 and 10 nodes; 1024 GB for clusters with between 11 and 20 nodes; and 2048 GB for clusters with more than 20 nodes|
 |privateCluster|no|Build a cluster without public addresses assigned. See `privateClusters` [below](#feat-private-cluster).|
-|maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
 |gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`.|
@@ -166,7 +165,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--cloud-provider"|"azure"|
 |"--cluster-domain"|"cluster.local"|
 |"--pod-infra-container-image"|"pause-amd64:<version>"|
-|"--max-pods"|"110"|
+|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPolicy": "none"`)|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
 |"--node-status-update-frequency"|"10s"|
 |"--image-gc-high-threshold"|"85"|

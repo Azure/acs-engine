@@ -617,9 +617,9 @@
       "type": "string"
     },
     "maxPods": {
-      "defaultValue": 110,
+      "defaultValue": 30,
       "metadata": {
-        "description": "The maximum number of pods per node."
+        "description": "This param has been deprecated."
       },
       "type": "int"
     },
