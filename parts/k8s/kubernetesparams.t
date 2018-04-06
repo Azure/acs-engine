@@ -734,12 +734,16 @@
     }
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
-   ,"servicePrincipalObjectId": {
+   ,
+   {{if not UseManagedIdentity}}
+   "servicePrincipalObjectId": {
       "metadata": {
         "description": "Object ID (used by cloudprovider)"
       },
       "type": "securestring"
-    },"clusterKeyVaultSku": {
+    },
+    {{end}}
+    "clusterKeyVaultSku": {
        "type": "string",
        "defaultValue": "Standard",
        "allowedValues": [
