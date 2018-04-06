@@ -49,7 +49,7 @@ objects:
           - KubernetesNamespaceLifecycle,DefaultServicePlan,ServiceBindingsLifecycle,ServicePlanChangeValidator,BrokerAuthSarCheck
           - --feature-gates
           - OriginatingIdentity=true
-          image: registry.reg-aws.openshift.com:443/openshift3/ose-service-catalog:v3.9.11
+          image: ${IMAGE}
           command: ["/usr/bin/service-catalog"]
           imagePullPolicy: IfNotPresent
           name: apiserver
@@ -154,7 +154,7 @@ objects:
           - "5m"
           - --feature-gates
           - OriginatingIdentity=true
-          image: registry.reg-aws.openshift.com:443/openshift3/ose-service-catalog:v3.9.11
+          image: ${IMAGE}
           command: ["/usr/bin/service-catalog"]
           imagePullPolicy: IfNotPresent
           name: controller-manager
@@ -184,3 +184,4 @@ parameters:
 - name: ETCD_SERVER
 - name: NAMESPACE
   value: kube-service-catalog
+- name: IMAGE

@@ -3,8 +3,10 @@
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
 SERVICE_TYPE=origin
+IMAGE_BASE=openshift/origin
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
-    SERVICE_TYPE=atomic-openshift
+	SERVICE_TYPE=atomic-openshift
+	IMAGE_BASE=registry.reg-aws.openshift.com:443/openshift3/ose
 fi
 
 # TODO: remove this once we generate the registry certificate
@@ -43,8 +45,10 @@ update-ca-trust
 ###
 routerLBHost="{{.RouterLBHostname}}"
 routerLBIP=$(dig +short $routerLBHost)
-sed -i "s/TEMPROUTERIP/${routerLBIP}/" /etc/origin/master/master-config.yaml
-sed -i "s/TEMPROUTERIP/${routerLBIP}/" /tmp/ansible-playbooks/azure-local-master-inventory.yml
+
+for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible-playbooks/azure-local-master-inventory.yml; do
+	sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|TEMPIMAGEBASE|$IMAGE_BASE|" $i
+done
 
 # TODO: when enabling secure registry, may need:
 # ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
@@ -122,7 +126,7 @@ done
 
 oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-selector": ""}}}'
 
-oc adm registry --images='registry.reg-aws.openshift.com:443/openshift3/ose-${component}:${version}' --selector='region=infra'
+oc adm registry --images="$IMAGE_BASE-\${component}:\${version}" --selector='region=infra'
 
 # Deploy the router reusing relevant parts from openshift-ansible
 ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local /tmp/ansible-playbooks/deploy-router.yml -i /tmp/ansible-playbooks/azure-local-master-inventory.yml
@@ -139,7 +143,7 @@ EOF
 oc process -f /usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-template.yaml \
 	-p API_SERVER_CONFIG="$(sed -e s/127.0.0.1/{{ .ExternalMasterHostname }}/g </usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-config.yaml)" \
 	-p NODE_SELECTOR='{"node-role.kubernetes.io/master":"true"}' \
-	-p IMAGE='registry.reg-aws.openshift.com:443/openshift3/ose-web-console:v3.9.11' \
+	-p IMAGE="$IMAGE_BASE-web-console:v3.9.11" \
 	| oc create -f -
 
 oc create -f - <<'EOF'
@@ -184,6 +188,7 @@ oc adm policy add-cluster-role-to-user admin system:serviceaccount:kube-service-
 oc process -f /tmp/service-catalog/objects.yaml \
   -p CA_HASH="$(base64 -w0 </etc/origin/service-catalog/ca.crt | sha1sum | cut -d' ' -f1)" \
   -p ETCD_SERVER="$(hostname)" \
+	-p IMAGE="$IMAGE_BASE-service-catalog:v3.9.11" \
   | oc create -f -
 oc rollout status -n kube-service-catalog daemonset apiserver
 
@@ -197,7 +202,7 @@ metadata:
 EOF
 
 oc process -f /usr/share/ansible/openshift-ansible/roles/template_service_broker/files/apiserver-template.yaml \
-	-p IMAGE='registry.reg-aws.openshift.com:443/openshift3/ose-template-service-broker:v3.9.11' \
+	-p IMAGE="$IMAGE_BASE-template-service-broker:v3.9.11" \
 	-p NODE_SELECTOR='{"region":"infra"}' \
 	| oc create -f -
 oc process -f /usr/share/ansible/openshift-ansible/roles/template_service_broker/files/rbac-template.yaml | oc auth reconcile -f -
