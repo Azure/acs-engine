@@ -133,7 +133,9 @@ When using Azure integrated networking the maxPods setting will be set to 30 by 
 
 ```
       "kubernetesConfig": {
-        "maxPods": 50
+        "kubeletConfig": {
+          "--max-pods": "50"
+        }
       }
 ```
 
