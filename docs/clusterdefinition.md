@@ -2,7 +2,7 @@
 
 ## Cluster Defintions for apiVersion "vlabs"
 
-Here are the cluster definitions for apiVersion "vlabs"
+Here are the cluster definitions for apiVersion "vlabs":
 
 ### apiVersion
 
@@ -30,7 +30,7 @@ Here are the valid values for the orchestrator types:
 
 |Name|Required|Description|
 |---|---|---|
-|kubernetesImageBase|no|This specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`.|
+|kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`.|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g.. "17.03.*"|
 |networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience,<br>`none` for not enforcing any network policy,<br>`calico` for Calico network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>`cilium` for cilium network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>See [network policy examples](../examples/networkpolicy) for more information.|
 |containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The only other option is `clear-containers`.|
@@ -408,9 +408,9 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |name|yes|This is the unique name for the jumpbox VM. Some resources deployed with the jumpbox are derived from this name.|
 |vmSize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).|
 |publicKey|yes|The public SSH key used for authenticating access to the jumpbox.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
-|osDiskSizeGB|no|Describes the OS Disk Size in GB. Defaults to `30`|
-|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
-|username|no|describes the admin username to be used on the jumpbox. Defaults to `azureuser`|
+|osDiskSizeGB|no|Describes the OS Disk Size in GB. Defaults to `30`.|
+|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`.|
+|username|no|describes the admin username to be used on the jumpbox. Defaults to `azureuser`.|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -418,28 +418,28 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |Name|Required|Description|
 |---|---|---|
 |count|yes|Masters have count value of 1, 3, or 5 masters|
-|dnsPrefix|yes|this is the dns prefix for the masters FQDN.  The master FQDN is used for SSH or commandline access. This must be a unique name. ([bring your own VNET examples](../examples/vnet))|
-|firstConsecutiveStaticIP|only required when vnetSubnetId specified|this is the IP address of the first master.  IP Addresses will be assigned consecutively to additional master nodes.|
-|vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted machines with at least 2 cores and 100GB of ephemeral disk space.|
-|osDiskSizeGB|no|Describes the OS Disk Size in GB|
-|vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
-|extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles.|
-|vnetCidr|no| specifies the vnet cidr when using custom Vnets ([bring your own VNET examples](../examples/vnet))|
-|imageReference.name|no|The name of a a Linux OS image. Needs to be used in conjunction with resourceGroup, below.|
+|dnsPrefix|yes|The dns prefix for the master FQDN.  The master FQDN is used for SSH or commandline access. This must be a unique name. ([bring your own VNET examples](../examples/vnet))|
+|firstConsecutiveStaticIP|only required when vnetSubnetId specified|The IP address of the first master.  IP Addresses will be assigned consecutively to additional master nodes.|
+|vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/). These are restricted to machines with at least 2 cores and 100GB of ephemeral disk space.|
+|osDiskSizeGB|no|Describes the OS Disk Size in GB.|
+|vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
+|extensions|no|This is an array of extensions. This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles.|
+|vnetCidr|no|Specifies the vnet cidr when using a custom VNET ([bring your own VNET examples](../examples/vnet))|
+|imageReference.name|no|The name of the Linux OS image. Needs to be used in conjunction with resourceGroup, below.|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above.|
-|distro|no| Select Master(s) Operating System (Linux). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
+|distro|no|Select Master(s) Operating System (Linux only). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, user-defined OS Images, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
 
 |Name|Required|Description|
 |---|---|---|
-|availabilityProfile|no, defaults to `VirtualMachineScaleSets`| You can choose between `VirtualMachineScaleSets` and `AvailabilitySet`.  As a rule of thumb always choose `VirtualMachineScaleSets` unless you need features such as dynamic attached disks or require Kubernetes|
+|availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default) and `AvailabilitySet`.  For Kubernetes clusters before k8s version 1.10, use `AvailabilitySet`. Otherwise, you should use `VirtualMachineScaleSets`, unless you need features such as dynamic attached disks.|
 |count|yes|Describes the node count|
-|diskSizesGB|no|describes an array of up to 4 attached disk sizes.  Valid disk size values are between 1 and 1024.|
-|dnsPrefix|required if agents are to be exposed publically with a load balancer|this is the dns prefix that forms the FQDN to access the loadbalancer for this agent pool.  This must be a unique name among all agent pools.|
+|diskSizesGB|no|Describes an array of up to 4 attached disk sizes.  Valid disk size values are between 1 and 1024.|
+|dnsPrefix|Required if agents are to be exposed publically with a load balancer|The dns prefix that forms the FQDN to access the loadbalancer for this agent pool. This must be a unique name among all agent pools. Not supported for Kubernetes clusters.|
 |name|yes|This is the unique name for the agent pool profile. The resources of the agent pool profile are derived from this name.|
-|ports|only required if needed for exposing services publically|Describes an array of ports need for exposing publically.  A tcp probe is configured for each port and only opens to an agent node if the agent node is listening on that port.  A maximum of 150 ports may be specified.|
+|ports|only required if needed for exposing services publically|Describes an array of ports need for exposing publically.  A tcp probe is configured for each port and only opens to an agent node if the agent node is listening on that port.  A maximum of 150 ports may be specified. Not supported for Kubernetes clusters.|
 |storageProfile|no, defaults to `StorageAccount`|specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed)|
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted to machines with at least 2 cores|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
