@@ -153,6 +153,8 @@ func getKubeConfigs() map[string]map[string]string {
 
 func getVersionOverrides(v string) map[string]string {
 	switch v {
+	case "1.8.11":
+		return map[string]string{"kube-dns": "k8s-dns-kube-dns-amd64:1.14.9"}
 	case "1.8.9":
 		return map[string]string{"windowszip": "v1.8.9-2int.zip"}
 	case "1.8.6":
