@@ -35,7 +35,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
 		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                        strconv.Itoa(DefaultKubernetesKubeletMaxPods),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
@@ -97,6 +96,22 @@ func setKubeletConfig(cs *api.ContainerService) {
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
 
+		var defaultMasterMaxPods int
+		// set defaultMasterMaxPods to OrchestratorProfile.KubernetesConfig.MaxPods if exist.
+		if o.KubernetesConfig != nil && o.KubernetesConfig.MaxPods != 0 {
+			defaultMasterMaxPods = o.KubernetesConfig.MaxPods
+		} else {
+			if o.IsAzureCNI() {
+				defaultMasterMaxPods = DefaultKubernetesMaxPodsVNETIntegrated
+			} else {
+				defaultMasterMaxPods = DefaultKubernetesMaxPods
+			}
+		}
+
+		// if --max-pods is not defined in MasterProfile.KubernetesConfig.KubeletConfig, use defaultMasterMaxPods
+		if _, ok := cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig["--max-pods"]; !ok {
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(defaultMasterMaxPods)
+		}
 	}
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {

@@ -1,0 +1,60 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "azure",
+        "maxPods": 30
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_D2_v2",
+      "vnetSubnetID": "",
+      "FirstConsecutiveStaticIP": "",
+      "vnetCidr": ""
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "vnetSubnetID": "",
+        "kubernetesConfig": {
+          "kubeletConfig": {
+            "--max-pods": "25"
+          }
+        }
+      },
+      {
+        "name": "nodepool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "vnetSubnetID": "",
+        "kubernetesConfig": {
+          "kubeletConfig": {
+            "--max-pods": "50"
+          }
+        }
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
