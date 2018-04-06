@@ -77,7 +77,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("Unexpected error parsing duration: %s", err)
 			}
-			provision = acct.IsResourceGroupOlderThan(d)
+			provision = acct.HasClusterExpired(d)
 		}
 		if provision {
 			log.Printf("Soak cluster %s does not exist or has expired\n", rg)

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestIsResourceGroupOlderThan(t *testing.T) {
+func TestHasClusterExpired(t *testing.T) {
 	rg := ResourceGroup{
 		Name:     "testRG",
 		Location: "test",
@@ -27,7 +27,7 @@ func TestIsResourceGroupOlderThan(t *testing.T) {
 		t.Fatalf("unexpected error parsing duration: %s", err)
 	}
 	expected := true
-	result := a.IsResourceGroupOlderThan(d)
+	result := a.HasClusterExpired(d)
 	if expected != result {
 		t.Fatalf("Resource group should be older than 1h: expected %t but got %t", expected, result)
 	}
@@ -39,8 +39,19 @@ func TestIsResourceGroupOlderThan(t *testing.T) {
 		t.Fatalf("unexpected error parsing duration: %s", err)
 	}
 	expected = false
-	result = a.IsResourceGroupOlderThan(d)
+	result = a.HasClusterExpired(d)
 	if expected != result {
 		t.Fatalf("Resource group should not be older than 300h: expected %t but got %t", expected, result)
+	}
+
+	a.ResourceGroup.Name = "thisrgdoesntexist"
+	d, err = time.ParseDuration("1s")
+	if err != nil {
+		t.Fatalf("unexpected error parsing duration: %s", err)
+	}
+	expected = true
+	result = a.HasClusterExpired(d)
+	if expected != result {
+		t.Fatalf("Resource group does not exist: expected %t but got %t", expected, result)
 	}
 }

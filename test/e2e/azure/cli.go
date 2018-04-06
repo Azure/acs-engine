@@ -253,7 +253,7 @@ func (a *Account) GetHosts(name string) ([]VM, error) {
 	v := []VM{{}}
 	err = json.Unmarshal(out, &v)
 	if err != nil {
-		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("Error unmarshalling VM json:%s\n", err)
 		log.Printf("JSON:%s\n", out)
 		return nil, err
 	}
@@ -272,18 +272,22 @@ func (a *Account) SetResourceGroup(name string) error {
 		log.Printf("Error while trying to show resource group:%s\n", out)
 		return err
 	}
+	if len(out) == 0 {
+		log.Printf("Resource group %s does not exist\n", name)
+		return nil
+	}
 	a.ResourceGroup = ResourceGroup{}
 	err = json.Unmarshal(out, &a.ResourceGroup)
 	if err != nil {
-		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("Error unmarshalling resource group json:%s\n", err)
 		log.Printf("JSON:%s\n", out)
 		return err
 	}
 	return nil
 }
 
-// IsResourceGroupOlderThan will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
-func (a *Account) IsResourceGroupOlderThan(d time.Duration) bool {
+// HasClusterExpired will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
+func (a *Account) HasClusterExpired(d time.Duration) bool {
 	tag, err := strconv.ParseInt(a.ResourceGroup.Tags["now"], 10, 64)
 	if err != nil {
 		log.Printf("Error parsing RG now tag:%s\n", err)
