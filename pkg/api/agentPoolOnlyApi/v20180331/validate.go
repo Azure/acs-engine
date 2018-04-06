@@ -84,9 +84,12 @@ func (a *Properties) Validate() error {
 		}
 	}
 
-	if e := a.LinuxProfile.Validate(); e != nil {
-		return e
+	if a.LinuxProfile != nil {
+		if e := a.LinuxProfile.Validate(); e != nil {
+			return e
+		}
 	}
+
 	if e := validateVNET(a); e != nil {
 		return e
 	}
