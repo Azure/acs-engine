@@ -175,6 +175,8 @@
     "osImagePublisher": "[parameters('osImagePublisher')]",
     "osImageSKU": "[parameters('osImageSKU')]",
     "osImageVersion": "[parameters('osImageVersion')]",
+    "osImageName": "[parameters('osImageName')]",
+    "osImageResourceGroup": "[parameters('osImageResourceGroup')]",
     "resourceGroup": "[resourceGroup().name]",
     "truncatedResourceGroup": "[take(replace(replace(resourceGroup().name, '(', '-'), ')', '-'), 63)]",
     "labelResourceGroup": "[if(or(or(endsWith(variables('truncatedResourceGroup'), '-'), endsWith(variables('truncatedResourceGroup'), '_')), endsWith(variables('truncatedResourceGroup'), '.')), concat(take(variables('truncatedResourceGroup'), 62), 'z'), variables('truncatedResourceGroup'))]",
