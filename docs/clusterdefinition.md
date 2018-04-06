@@ -411,7 +411,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |publicKey|yes|The public SSH key used for authenticating access to the jumpbox.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB. Defaults to `30`|
 |storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
-|username|no|describes the admin username to be used on the jumpbox. Defaults to `azureuser`|
+|username|no|Describes the admin username to be used on the jumpbox. Defaults to `azureuser`|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -543,9 +543,9 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 
 |Name|Required|Description|
 |---|---|---|
-|clientAppID|yes|describes the client AAD application ID|
-|serverAppID|yes|describes the server AAD application ID|
-|tenantID|no|describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription|
+|clientAppID|yes|Describes the client AAD application ID|
+|serverAppID|yes|Describes the server AAD application ID|
+|tenantID|no|Describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription|
 ### extensionProfiles
 A cluster can have 0 - N extensions in extension profiles.  Extension profiles allow a user to easily add pre-packaged functionality into a cluster.  An example would be configuring a monitoring solution on your cluster.  You can think of extensions like a marketplace for acs clusters.
 
