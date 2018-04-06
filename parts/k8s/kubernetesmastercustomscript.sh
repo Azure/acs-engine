@@ -238,7 +238,7 @@ function configNetworkPolicy() {
         setNetworkPlugin cni
     else
         # No policy, defaults to kubenet.
-        configKubenetPolicy
+        configKubenetNetworkPolicy
     fi
 }
 
