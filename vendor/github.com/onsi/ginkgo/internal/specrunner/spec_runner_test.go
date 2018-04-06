@@ -18,6 +18,7 @@ import (
 )
 
 var noneFlag = types.FlagTypeNone
+var focusedFlag = types.FlagTypeFocused
 var pendingFlag = types.FlagTypePending
 
 var _ = Describe("Spec Runner", func() {
