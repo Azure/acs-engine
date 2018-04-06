@@ -365,13 +365,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
-		if o.KubernetesConfig.MaxPods == 0 {
-			if o.IsAzureCNI() {
-				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
-			} else {
-				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
-			}
-		}
 		if o.KubernetesConfig.GCHighThreshold == 0 {
 			o.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
 		}
@@ -572,7 +565,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 		// Allocate IP addresses for pods if VNET integration is enabled.
 		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-				a.MasterProfile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
+				masterMaxPods, _ := strconv.Atoi(a.MasterProfile.KubernetesConfig.KubeletConfig["--max-pods"])
+				a.MasterProfile.IPAddressCount += masterMaxPods
 			}
 		}
 	}
@@ -616,7 +610,8 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			// Allocate IP addresses for pods if VNET integration is enabled.
 			if a.OrchestratorProfile.IsAzureCNI() {
 				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
+					agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
+					profile.IPAddressCount += agentPoolMaxPods
 				}
 			}
 		}
