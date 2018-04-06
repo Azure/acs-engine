@@ -37,7 +37,7 @@ Here are the valid values for the orchestrator types:
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0)|
-|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet|
+|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNET|
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |enableDataEncryptionAtRest|no|Enable [kuberetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
@@ -425,7 +425,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |extensions|no|This is an array of extensions. This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles|
-|vnetCidr|no|Specifies the vnet cidr when using a custom VNET ([bring your own VNET examples](../examples/vnet))|
+|vnetCidr|no|Specifies the VNET cidr when using a custom VNET ([bring your own VNET examples](../examples/vnet))|
 |imageReference.name|no|The name of the Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
 |distro|no|Select Master(s) Operating System (Linux only). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
