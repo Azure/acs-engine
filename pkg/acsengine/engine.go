@@ -727,8 +727,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			case api.DCOSVersion1Dot11Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS111BootstrapDownloadURL
-	  	    }
-		    fmt.Printf("bootstrapURL = %s\n", dcosBootstrapURL)
+			}
 		}
 
 		if properties.OrchestratorProfile.DcosConfig != nil {
@@ -744,6 +743,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			}
 			if properties.OrchestratorProfile.DcosConfig.DcosRepositoryURL != "" {
 				dcosRepositoryURL = properties.OrchestratorProfile.DcosConfig.DcosRepositoryURL
+			} else {
+				dcosRepositoryURL = getDCOSDefaultRepositoryURL(
+					properties.OrchestratorProfile.OrchestratorType,
+					properties.OrchestratorProfile.OrchestratorVersion)
 			}
 			if properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID != "" {
 				dcosClusterPackageListID = properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID
@@ -1842,6 +1845,18 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 	return ""
 }
 
+func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion string) string {
+	if orchestratorType == api.DCOS {
+		switch orchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			return "https://dcosio.azureedge.net/dcos/stable/1.11.0"
+		case api.DCOSVersion1Dot10Dot0:
+			return "https://dcosio.azureedge.net/dcos/stable/1.10.0"
+		}
+	}
+	return ""
+}
+
 func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {
@@ -1854,8 +1869,8 @@ func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorV
 			case 5:
 				return "302987609a34f07c206da1791c5a553141416ad8"
 			}
-        default:
-            break;
+		default:
+			break
 		}
 	}
 	return ""

@@ -221,7 +221,7 @@ write_files:
       "oauth_enabled": |-
         {{{oauthEnabled}}}
     "late_bound_package_id": |-
-      dcos-provider-DCOSGUID-azure--setup
+      dcos-provider-{{{dcosProviderPackageID}}}-azure--setup
   owner: root
   path: /etc/mesosphere/setup-flags/late-config.yaml
   permissions: '0644'
