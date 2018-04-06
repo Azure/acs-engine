@@ -335,7 +335,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_output 
+          path: /go/src/github.com/Azure/acs-engine/_output
 workflows:
   version: 2
   build_and_test_pr:
