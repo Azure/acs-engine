@@ -14,25 +14,8 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-{{if not .MasterProfile.IsCoreOS}}
-- path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    [Service]
-    MountFlags=shared
-{{end}}
-
-- path: "/etc/systemd/system/docker.service.d/exec_start.conf"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    [Service]
-    ExecStart=
 {{if .MasterProfile.IsCoreOS}}
     ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
-{{else}}
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 {{end}}
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -178,9 +161,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     source /opt/azure/containers/provision_source.sh
-    apt_get_update
-    retrycmd_if_failure 20 10 300 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
-    set -e
 {{if gt .MasterProfile.Count 1}}
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
     # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
@@ -320,10 +300,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     #!/bin/bash
     set -x
     source /opt/azure/containers/provision_source.sh
-    ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
-    DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
-    retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
-    tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     systemctl daemon-reload
     systemctl enable etcd.service
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
@@ -373,7 +349,6 @@ runcmd:
 - set -x
 - . /opt/azure/containers/provision_source.sh
 - retrycmd_if_failure 120 1 5 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
-- retrycmd_if_failure 120 1 5 nc -zw1 aptdocker.azureedge.net 443
 - ensure_etcd_ready
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
@@ -386,20 +361,11 @@ runcmd:
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - retrycmd_if_failure 5 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
-- apt_get_update
-- retrycmd_if_failure 5 10 120 apt-get install -y apt-transport-https ca-certificates
-- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
-- cat /tmp/aptdocker.gpg | apt-key add -
-- echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-- "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt_get_update
-- retrycmd_if_failure 20 10 120 apt-get install -y ebtables docker-engine
 - touch /opt/azure/containers/dockerinstall.complete
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 - systemctl daemon-reload
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
-- usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
 {{if EnableAggregatedAPIs}}
 - bash /etc/kubernetes/generate-proxy-certs.sh
