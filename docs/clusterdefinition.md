@@ -297,7 +297,7 @@ Or perhaps you want to customize/override the set of admission-control flags pas
           "--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
         }
       }
-    } 
+    }
 ```
 
 See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
@@ -334,7 +334,6 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--etcd-certfile"|"/etc/kubernetes/certs/etcdclient.crt"|
 |"--etcd-keyfile"|"/etc/kubernetes/certs/etcdclient.key"|
 |"--etcd-servers"|*calculated value that represents etcd servers*|
-|"--etcd-quorum-read"|"true"|
 |"--profiling"|"false"|
 |"--repair-malformed-updates"|"false"|
 |"--tls-cert-file"|"/etc/kubernetes/certs/apiserver.crt"|

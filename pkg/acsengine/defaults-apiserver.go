@@ -23,7 +23,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
 		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
-		"--etcd-quorum-read":           "true",
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
