@@ -128,7 +128,7 @@ type WindowsProfile struct {
 	AdminUsername         string            `json:"adminUsername,omitempty"`
 	AdminPassword         string            `json:"adminPassword,omitempty"`
 	ImageVersion          string            `json:"imageVersion,omitempty"`
-	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
+	WindowsImageSourceURL string            `json:"windowsImageSourceUrl,omitempty"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
