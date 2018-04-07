@@ -493,13 +493,6 @@
       },
       "type": "string"
     },
-    "kubernetesClusterAutoscalerVMSSName": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerVMSSName"}}
-      "metadata": {
-        "description": "Cluster autoscaler VMSS name"
-      },
-      "type": "string"
-    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {

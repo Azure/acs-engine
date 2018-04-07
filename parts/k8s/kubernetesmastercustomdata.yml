@@ -252,20 +252,13 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
-    sed -i "s|<kubernetesClusterAutoscalerSpec>|{{WrapAsVariable "kubernetesClusterAutoscalerSpec"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerClientId>|{{WrapAsVariable "kubernetesClusterAutoscalerClientId"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerClientSecret>|{{WrapAsVariable "kubernetesClusterAutoscalerClientSecret"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|{{WrapAsVariable "kubernetesClusterAutoscalerResourceGroup"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|{{WrapAsVariable "kubernetesClusterAutoscalerSubscriptionId"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerTenantId>|{{WrapAsVariable "kubernetesClusterAutoscalerTenantId"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    # sed -i "s|<kubernetesClusterAutoscalerVmType>|{{WrapAsVariable "kubernetesClusterAutoscalerVmType"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerCPULimit>|{{WrapAsVariable "kubernetesClusterAutoscalerCPULimit"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerMemoryLimit>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerCPURequests>|{{WrapAsVariable "kubernetesClusterAutoscalerCPURequests"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerMemoryRequests>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerMinNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMinNodes"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerMaxNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMaxNodes"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|{{WrapAsVariable "kubernetesClusterAutoscalerVMSSName"}}|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerSpec>|{{WrapAsVariable "kubernetesClusterAutoscalerSpec"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerCPULimit>|{{WrapAsVariable "kubernetesClusterAutoscalerCPULimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerMemoryLimit>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryLimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerCPURequests>|{{WrapAsVariable "kubernetesClusterAutoscalerCPURequests"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerMemoryRequests>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryRequests"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerMinNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMinNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerMaxNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMaxNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
