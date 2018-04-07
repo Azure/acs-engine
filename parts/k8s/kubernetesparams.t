@@ -451,6 +451,55 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryLimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPURequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryRequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMinNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMinNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler min nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMaxNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMaxNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler max nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerVMSSName": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerVMSSName"}}
+      "metadata": {
+        "description": "Cluster autoscaler VMSS name"
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {

@@ -661,15 +661,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
 		c = getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
 		if c > -1 {
-			addValue(parametersMap, "kubernetesClusterAutoscalerClientId", clusterAutoscalerAddon.Config["clientId"])
-			addSecret(parametersMap, "kubernetesClusterAutoscalerClientKey", clusterAutoscalerAddon.Config["clientKey"], false)
-			addValue(parametersMap, "kubernetesClusterAutoscalerTenantId", clusterAutoscalerAddon.Config["tenantId"])
-			addValue(parametersMap, "kubernetesClusterAutoscalerSubscriptionId", clusterAutoscalerAddon.Config["subscriptionId"])
-			addValue(parametersMap, "kubernetesClusterAutoscalerResourceGroup", clusterAutoscalerAddon.Config["resourceGroup"])
 			addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
 			addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
 			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
 			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerVMSSName", clusterAutoscalerAddon.Config["vmssName"])
 			if clusterAutoscalerAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
 			} else {

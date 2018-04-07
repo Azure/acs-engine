@@ -4,6 +4,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
   name: cluster-autoscaler
   namespace: kube-system
 ---
@@ -14,6 +16,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 rules:
 - apiGroups: [""]
   resources: ["events","endpoints"]
@@ -55,6 +59,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 rules:
 - apiGroups: [""]
   resources: ["configmaps"]
@@ -71,6 +77,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -88,6 +96,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -105,17 +115,21 @@ data:
   SubscriptionID: <kubernetesClusterAutoscalerSubscriptionId>
   TenantID: <kubernetesClusterAutoscalerTenantId>
   VMType: <kubernetesClusterAutoscalerVmType>
-  Deployment: <kubernetesClusterAutoscalerDeployment>
 kind: Secret
 metadata:
   name: cluster-autoscaler-azure
   namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
     app: cluster-autoscaler
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "EnsureExists"
   name: cluster-autoscaler
   namespace: kube-system
 spec:
@@ -135,20 +149,18 @@ spec:
         name: cluster-autoscaler
         resources:
           limits:
-            cpu: 100m
-            memory: 300Mi
+            cpu: <kubernetesClusterAutoscalerCPULimit>
+            memory: <kubernetesClusterAutoscalerMemoryLimit>
           requests:
-            cpu: 100m
-            memory: 300Mi
+            cpu: <kubernetesClusterAutoscalerCPURequests>
+            memory: <kubernetesClusterAutoscalerMemoryRequests>
         command:
         - ./cluster-autoscaler
         - --v=3
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        {{}}
-        - --nodes=<kubernetesClusterAutoscalerMinNodes>:<kubernetesClusterAutoscalerMaxNodes>:<kubernetesClusterAutoscalerName>
-        {{}}
+        - --nodes=<kubernetesClusterAutoscalerMinNodes>:<kubernetesClusterAutoscalerMaxNodes>:<kubernetesClusterAutoscalerVMSSName>
         env:
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
@@ -180,39 +192,13 @@ spec:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
-
-{{}}
-        - name: ARM_DEPLOYMENT
-          valueFrom:
-            secretKeyRef:
-              key: Deployment
-              name: cluster-autoscaler-azure
-{{}}
-
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
           readOnly: true
-
-{{}}
-        - mountPath: /var/lib/azure/
-          name: deploy-parameters
-          readOnly: true
-      dnsPolicy: ClusterFirst
-{{}}
-
       restartPolicy: Always
       volumes:
       - hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
           type: ""
         name: ssl-certs
-
-{{}}
-      - name: deploy-parameters
-        secret:
-          secretName: cluster-autoscaler-azure-deploy-parameters
-          items:
-          - key: deploy-parameters
-            path: azuredeploy.parameters.json
-{{}}

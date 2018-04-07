@@ -250,15 +250,17 @@ var (
 		Name:    DefaultClusterAutoscalerAddonName,
 		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
 		Config: map[string]string{
-			"foo": "bar",
+			"minNodes": "1",
+			"maxNodes": "5",
+			"vmssName": "vmss",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultClusterAutoscalerAddonName,
-				CPURequests:    "50m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "150Mi",
+				CPURequests:    "100m",
+				MemoryRequests: "300Mi",
+				CPULimits:      "100m",
+				MemoryLimits:   "300Mi",
 			},
 		},
 	}

@@ -251,8 +251,7 @@ function configClusterAutoscalerAddon() {
     sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
-    #TODO: this is for standard only, change this when we have VMSS PR (#) merged
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|c3RhbmRhcmQ=|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/kube-cluster-autoscaler-deployment.yaml"
 }
 
 function installClearContainersRuntime() {
@@ -511,6 +510,7 @@ ensureDockerInstallCompleted
 ensureDocker
 echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
 configNetworkPlugin
+configAddons
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
