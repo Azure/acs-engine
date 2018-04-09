@@ -676,6 +676,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	if e := validateAddons(a); e != nil {
+		return e
+	}
 
 	if a.AADProfile != nil {
 		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
@@ -1093,6 +1096,25 @@ func validateVNET(a *Properties) error {
 			_, _, err := net.ParseCIDR(a.MasterProfile.VnetCidr)
 			if err != nil {
 				return fmt.Errorf("MasterProfile.VnetCidr '%s' contains invalid cidr notation", a.MasterProfile.VnetCidr)
+			}
+		}
+	}
+	return nil
+}
+
+func validateAddons(a *Properties) error {
+	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
+		var isAvailabilitySets bool
+
+		for _, agentPool := range a.AgentPoolProfiles {
+			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+				isAvailabilitySets = true
+			}
+		}
+
+		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
+				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
 			}
 		}
 	}
