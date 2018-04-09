@@ -252,7 +252,6 @@ var (
 		Config: map[string]string{
 			"minNodes": "1",
 			"maxNodes": "5",
-			"vmssName": "vmss",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{

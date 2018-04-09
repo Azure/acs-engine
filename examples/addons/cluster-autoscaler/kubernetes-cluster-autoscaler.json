@@ -1,61 +1,47 @@
 {
-    "apiVersion": "vlabs",
-    "properties": {
-      "orchestratorProfile": {
-        "orchestratorType": "Kubernetes",
-        "kubernetesConfig": {
-          "addons": [
-            {
-              "name": "aci-connector",
-              "enabled" : true,
-              "config": {
-                  "clientId": "",
-                  "clientKey": "",
-                  "tenantId": "",
-                  "subscriptionId": "",
-                  "resourceGroup": "",
-                  "region": "eastus"
-              },
-              "containers": [
-                {
-                  "name": "aci-connector",
-                  "image": "microsoft/aci-connector-k8s:latest",
-                  "cpuRequests": "50m",
-                  "memoryRequests": "150Mi",
-                  "cpuLimits": "50m",
-                  "memoryLimits": "150Mi"
-                }
-              ]
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "addons": [
+          {
+            "name": "cluster-autoscaler",
+            "enabled": true,
+            "config": {
+              "minNodes": "1",
+              "maxNodes": "5"
             }
-          ]
-        }
-      },
-      "masterProfile": {
-        "count": 1,
-        "dnsPrefix": "",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "agentPoolProfiles": [
-        {
-          "name": "agentpool",
-          "count": 3,
-          "vmSize": "Standard_DS2_v2",
-          "availabilityProfile": "AvailabilitySet"
-        }
-      ],
-      "linuxProfile": {
-        "adminUsername": "azureuser",
-        "ssh": {
-          "publicKeys": [
-            {
-              "keyData": ""
-            }
-          ]
-        }
-      },
-      "servicePrincipalProfile": {
-        "clientId": "",
-        "secret": ""
+          }
+        ]
       }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_DS2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool",
+        "count": 1,
+        "vmSize": "Standard_DS2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
     }
   }
+}
