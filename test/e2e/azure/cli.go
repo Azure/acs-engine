@@ -303,7 +303,7 @@ func (sa *StorageAccount) UploadOutputToStorage(source, destination string) erro
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", "destination", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {

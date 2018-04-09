@@ -63,6 +63,8 @@ func main() {
 	sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
 	sa.ResourceGroup.Location = cfg.Location
 
+	// TODO: create storage account if it doesn't exist
+
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
 		provision := true
@@ -85,10 +87,13 @@ func main() {
 			acct.DeleteGroup(rg, true)
 			cfg.Name = ""
 		} else {
-			log.Printf("Soak cluster %s exists, skipping provision...\n", rg)
+			log.Printf("Soak cluster %s exists, downloading output files from storage...\n", rg)
 			err = sa.DownloadOutputFromStorage(cfg.SoakClusterName, "_output")
 			if err != nil {
-				log.Fatalf("Error while trying to download _output dir:%s\n", err)
+				log.Printf("Error while trying to download _output dir:%s, will provision a new cluster.\n", err)
+				log.Printf("Deleting Group:%s\n", rg)
+				acct.DeleteGroup(rg, true)
+				cfg.Name = ""
 			}
 		}
 	}
