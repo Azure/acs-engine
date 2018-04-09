@@ -249,8 +249,8 @@ function installClearContainersRuntime() {
 
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	systemctl enable cc-proxy
-	systemctl start cc-proxy
+	systemctlEnableAndCheck cc-proxy
+	retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart cc-proxy
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
@@ -290,7 +290,7 @@ function ensureContainerd() {
 			# Make sure this is done after networking plugins are installed
 			echo "Enabling and starting cri-containerd service..."
 			systemctl enable containerd
-			systemctl start containerd
+			retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart containerd
 		fi
 	fi
 }
@@ -321,23 +321,7 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        dockerStarted=1
-        for i in {1..900}; do
-            if ! timeout 10s $DOCKER info; then
-                echo "status $?"
-                timeout 60s /bin/systemctl restart docker
-            else
-                echo "docker started, took $i seconds"
-                dockerStarted=0
-                break
-            fi
-            sleep 1
-        done
-        if [ $dockerStarted -ne 0 ]
-        then
-            echo "docker did not start"
-            exit 2
-        fi
+        retrycmd_if_failure 900 1 60 systemctl daemon-reload && systemctl restart docker
     fi
 }
 
@@ -345,7 +329,7 @@ function ensureKubelet() {
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart kubelet
+        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart kubelet
     fi
 }
 
@@ -354,7 +338,7 @@ function extractHyperkube(){
     systemctlEnableAndCheck hyperkube-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart hyperkube-extract
+        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart hyperkube-extract
     fi
 }
 
@@ -367,7 +351,7 @@ function ensureJournal(){
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart systemd-journald.service
+        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart systemd-journald.service
     fi
 }
 
