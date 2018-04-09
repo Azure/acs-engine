@@ -129,9 +129,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-    source /opt/azure/containers/provision_source.sh
-    apt_get_update
-    retrycmd_if_failure 20 10 300 apt-get install -y iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
@@ -185,7 +182,7 @@ runcmd:
 - echo `date`,`hostname`, preaptupdate>>/opt/m
 - apt_get_update
 - echo `date`,`hostname`, postaptupdate>>/opt/m
-- retrycmd_if_failure 5 10 120 apt-get install -y apt-transport-https ca-certificates nfs-common
+- retrycmd_if_failure 5 10 120 apt-get install -y apt-transport-https ca-certificates nfs-common iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
 - echo `date`,`hostname`, aptinstall>>/opt/m
 - systemctl enable rpcbind
 - systemctl enable rpc-statd
