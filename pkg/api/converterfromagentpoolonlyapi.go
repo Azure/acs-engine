@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strconv"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -149,10 +151,9 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 	p.ProvisioningState = v20180331.ProvisioningState(api.ProvisioningState)
 
 	if api.OrchestratorProfile != nil {
-		if api.OrchestratorProfile.OrchestratorVersion != "" {
-			p.KubernetesVersion = api.OrchestratorProfile.OrchestratorVersion
-		}
 		p.EnableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(api.OrchestratorProfile.KubernetesConfig)
+		p.NetworkProfile = &v20180331.NetworkProfile{}
+		convertOrchestratorProfileToV20180331AgentPoolOnly(api.OrchestratorProfile, &p.KubernetesVersion, p.NetworkProfile)
 	}
 	if api.HostedMasterProfile != nil {
 		p.DNSPrefix = api.HostedMasterProfile.DNSPrefix
@@ -182,6 +183,19 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 	}
 }
 
+func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile, kubernetesVersion *string, networkProfile *v20180331.NetworkProfile) {
+	if orchestratorProfile.OrchestratorVersion != "" {
+		*kubernetesVersion = orchestratorProfile.OrchestratorVersion
+	}
+
+	if orchestratorProfile.KubernetesConfig != nil {
+		networkProfile.NetworkPlugin = v20180331.NetworkPlugin(orchestratorProfile.KubernetesConfig.NetworkPolicy)
+		networkProfile.ServiceCidr = orchestratorProfile.KubernetesConfig.ServiceCIDR
+		networkProfile.DNSServiceIP = orchestratorProfile.KubernetesConfig.DNSServiceIP
+		networkProfile.DockerBridgeCidr = orchestratorProfile.KubernetesConfig.DockerBridgeSubnet
+	}
+}
+
 func convertLinuxProfileToV20180331AgentPoolOnly(api *LinuxProfile, obj *v20180331.LinuxProfile) {
 	obj.AdminUsername = api.AdminUsername
 	obj.SSH.PublicKeys = []v20180331.PublicKey{}
@@ -206,6 +220,12 @@ func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v
 	p.OSDiskSizeGB = api.OSDiskSizeGB
 	p.StorageProfile = api.StorageProfile
 	p.VnetSubnetID = api.VnetSubnetID
+	if api.KubernetesConfig != nil && api.KubernetesConfig.KubeletConfig != nil {
+		if maxPods, ok := api.KubernetesConfig.KubeletConfig["--max-pods"]; ok {
+			agentPoolMaxPods, _ := strconv.Atoi(maxPods)
+			p.MaxPods = agentPoolMaxPods
+		}
+	}
 }
 
 func convertServicePrincipalProfileToV20180331AgentPoolOnly(api *ServicePrincipalProfile, v20180331 *v20180331.ServicePrincipalProfile) {
