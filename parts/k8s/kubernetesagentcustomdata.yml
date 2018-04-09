@@ -181,8 +181,6 @@ runcmd:
 # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
 - set -x
 - . /opt/azure/containers/provision_source.sh
-- retrycmd_if_failure 120 1 5 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
-- retrycmd_if_failure 120 1 5 nc -zw1 aptdocker.azureedge.net 443
 - retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - echo `date`,`hostname`, preaptupdate>>/opt/m
 - apt_get_update
@@ -200,11 +198,9 @@ runcmd:
 - "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
 - apt_get_update
 - retrycmd_if_failure 20 10 120 apt-get install -y ebtables docker-engine
-- touch /opt/azure/containers/dockerinstall.complete
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-- systemctl daemon-reload
+- touch /opt/azure/containers/dockerinstall.complete
 - echo `date`,`hostname`, postdockerinstall>>/opt/m
-- retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 {{if IsNSeriesSKU .}}
