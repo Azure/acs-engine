@@ -37,3 +37,51 @@ func TestConvertToV20180331AddonProfile(t *testing.T) {
 		t.Error("addon config value does not match")
 	}
 }
+
+func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T) {
+	var kc *KubernetesConfig
+	kc = nil
+	enableRBAC := convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC {
+		t.Error("EnableRBAC expected to be false")
+	}
+	truePtr := true
+	falsePtr := false
+
+	kc = &KubernetesConfig{
+		EnableRbac:          nil,
+		EnableSecureKubelet: &truePtr,
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC {
+		t.Error("EnableRBAC expected to be false")
+	}
+
+	kc = &KubernetesConfig{
+		EnableRbac:          &falsePtr,
+		EnableSecureKubelet: &truePtr,
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC {
+		t.Error("EnableRBAC expected to be false")
+	}
+
+	kc = &KubernetesConfig{
+		EnableRbac:          &falsePtr,
+		EnableSecureKubelet: &falsePtr,
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC {
+		t.Error("EnableRBAC expected to be false")
+	}
+
+	kc = &KubernetesConfig{
+		EnableRbac:          &truePtr,
+		EnableSecureKubelet: &truePtr,
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if !enableRBAC {
+		t.Error("EnableRBAC expected to be true")
+	}
+
+}

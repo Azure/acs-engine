@@ -309,6 +309,7 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
 	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
+	properties.OrchestratorProfile.KubernetesConfig = convertV20180331AgentPoolOnlyKubernetesConfig(obj.EnableRBAC)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -346,6 +347,13 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 	return &WindowsProfile{
 		AdminUsername: obj.AdminUsername,
 		AdminPassword: obj.AdminPassword,
+	}
+}
+
+func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC bool) *KubernetesConfig {
+	return &KubernetesConfig{
+		EnableRbac:          &enableRBAC,
+		EnableSecureKubelet: &enableRBAC,
 	}
 }
 

@@ -130,12 +130,37 @@ func convertResourcePurchasePlanToV20180331AgentPoolOnly(api *ResourcePurchasePl
 	v20180331.Publisher = api.Publisher
 }
 
+func convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc *KubernetesConfig) bool {
+	if kc == nil {
+		return false
+	}
+	// Only if both KubernetesConfig.EnableRbac and KubernetesConfig.EnableSecureKubelet true
+	// We think EnableRBAC is on
+	enableRBAC := true
+	if kc.EnableRbac == nil {
+		enableRBAC = enableRBAC && false
+	} else {
+		enableRBAC = enableRBAC && *kc.EnableRbac
+	}
+
+	if kc.EnableSecureKubelet == nil {
+		enableRBAC = enableRBAC && false
+	} else {
+		enableRBAC = enableRBAC && *kc.EnableSecureKubelet
+	}
+	return enableRBAC
+}
+
 func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Properties) {
 	p.ProvisioningState = v20180331.ProvisioningState(api.ProvisioningState)
+
 	if api.OrchestratorProfile != nil {
 		if api.OrchestratorProfile.OrchestratorVersion != "" {
 			p.KubernetesVersion = api.OrchestratorProfile.OrchestratorVersion
 		}
+		p.EnableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(api.OrchestratorProfile.KubernetesConfig)
+		p.EnableRBAC = *api.OrchestratorProfile.KubernetesConfig.EnableRbac &&
+			*api.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet
 	}
 	if api.HostedMasterProfile != nil {
 		p.DNSPrefix = api.HostedMasterProfile.DNSPrefix

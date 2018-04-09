@@ -40,6 +40,7 @@ type Properties struct {
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	NodeResourceGroup       string                   `json:"nodeResourceGroup,omitempty"`
+	EnableRBAC              bool                     `json:"enableRBAC"`
 }
 
 // AddonProfile represents an addon for managed cluster
