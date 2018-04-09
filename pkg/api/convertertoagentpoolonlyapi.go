@@ -316,8 +316,6 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	}
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
-	} else {
-		properties.LinuxProfile = &LinuxProfile{}
 	}
 
 	if obj.WindowsProfile != nil {
