@@ -23,25 +23,13 @@ fi
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
-    for i in {1..900}; do
-        if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
+    wait_for_file 900 1 /opt/azure/containers/runcmd.complete
 }
 
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
-    for i in {1..900}; do
-        if [ -e /opt/azure/containers/dockerinstall.complete ]; then
-            echo "docker install finished, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
+    wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
@@ -170,21 +158,7 @@ function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
     fi
-    found=1
-    for i in {1..600}; do
-        if [ -e $1 ]
-        then
-            found=0
-            echo "$1 is present, took $i seconds to verify"
-            break
-        fi
-        sleep 1
-    done
-    if [ $found -ne 0 ]
-    then
-        echo "$1 is not present after $i seconds of trying to verify"
-        exit 1
-    fi
+    wait_for_file 600 1 $1
 }
 
 function setKubeletOpts () {
@@ -362,13 +336,7 @@ function ensureK8s() {
     k8sHealthy=1
     nodesActive=1
     nodesReady=1
-    for i in {1..600}; do
-        if [ -e $KUBECTL ]
-        then
-            break
-        fi
-        sleep 1
-    done
+    wait_for_file 600 1 $KUBECTL
     for i in {1..600}; do
         $KUBECTL 2>/dev/null cluster-info
             if [ "$?" = "0" ]
