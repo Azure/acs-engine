@@ -1852,6 +1852,8 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 			return "https://dcosio.azureedge.net/dcos/stable/1.11.0"
 		case api.DCOSVersion1Dot10Dot0:
 			return "https://dcosio.azureedge.net/dcos/stable/1.10.0"
+		default:
+			return "https://dcosio.azureedge.net/dcos/stable"
 		}
 	}
 	return ""
