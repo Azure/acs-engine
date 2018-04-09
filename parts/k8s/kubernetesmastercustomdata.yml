@@ -382,7 +382,7 @@ runcmd:
 - /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - systemctl daemon-reload
-- systemctl restart etcd
+- retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - retrycmd_if_failure 5 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
@@ -397,7 +397,7 @@ runcmd:
 - touch /opt/azure/containers/dockerinstall.complete
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 - systemctl daemon-reload
-- systemctl restart docker
+- retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
