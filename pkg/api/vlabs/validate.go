@@ -486,6 +486,32 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
 			}
 		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false)
+			if version == "" {
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+
+			sv, err := semver.NewVersion(version)
+			if err != nil {
+				return fmt.Errorf("could not validate version %s", version)
+			}
+			minVersion := "1.10.0"
+			cons, err := semver.NewConstraint("<" + minVersion)
+			if err != nil {
+				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+			}
+			if cons.Check(sv) {
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+					minVersion, version)
+			}
+		}
+
 		if agentPoolProfile.OSType == Windows {
 			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
 				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
