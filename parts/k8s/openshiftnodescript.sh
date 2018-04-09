@@ -7,11 +7,6 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
     SERVICE_TYPE=atomic-openshift
 fi
 
-# TODO: remove this once we generate the registry certificate
-cat >>/etc/sysconfig/docker <<'EOF'
-INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'
-EOF
-
 systemctl restart docker.service
 
 {{if eq .Role "infra"}}
@@ -26,9 +21,6 @@ rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
-
-# TODO: when enabling secure registry, may need:
-# ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
 systemctl enable ${SERVICE_TYPE}-node.service

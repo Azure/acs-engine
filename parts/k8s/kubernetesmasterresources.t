@@ -115,7 +115,7 @@
       "name": "[concat(variables('storageAccountBaseName'), 'registry')]",
       "location": "[variables('location')]",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+        "accountType": "Standard_LRS"
       }
     },
 {{end}}

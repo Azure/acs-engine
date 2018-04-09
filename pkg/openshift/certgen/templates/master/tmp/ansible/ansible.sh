@@ -11,10 +11,13 @@ done
 
 oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-selector": ""}}}'
 
-oc adm registry --images="$IMAGE_BASE-\${component}:\${version}" --selector='region=infra'
+# FIXME - This should be handled by the openshift-ansible playbooks to ensure
+#         a directory it needs to write to exists before attempting to write
+#         to it
+mkdir -p /etc/origin/master/named_certificates
 
 # Deploy the router reusing relevant parts from openshift-ansible
-ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local deploy-router.yml -i azure-local-master-inventory.yml
+ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local deploy-router-registry.yml -i azure-local-master-inventory.yml
 
 oc create -f - <<'EOF'
 kind: Project
