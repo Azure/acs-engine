@@ -400,6 +400,7 @@ function ensureK8s() {
         echo "k8s cluster is not healthy after $i seconds"
         exit 3
     fi
+    ensurePodSecurityPolicy
     for i in {1..1800}; do
         nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
             if [ $nodes -eq $TOTAL_NODES ]
@@ -570,7 +571,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureK8s
-    ensurePodSecurityPolicy
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
