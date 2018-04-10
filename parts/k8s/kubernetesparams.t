@@ -28,6 +28,12 @@
       },
       "type": "int"
     },
+    "waitForNodesReady": {
+      "metadata": {
+        "description": "Wait for Nodes Ready in CSE"
+      },
+      "type": "string"
+    },
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"

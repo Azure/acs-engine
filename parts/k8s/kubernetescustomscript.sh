@@ -353,6 +353,9 @@ function ensureK8s() {
         exit 3
     fi
     ensurePodSecurityPolicy
+}
+
+function ensureNodes() {
     for i in {1..1800}; do
         nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
             if [ $nodes -eq $TOTAL_NODES ]
@@ -523,6 +526,9 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureK8s
+    if [[ $WAIT_FOR_NODES_READY == "true" ]]; then
+        ensureNodes
+    fi
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
