@@ -2,6 +2,7 @@ package azure
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -274,7 +275,7 @@ func (a *Account) SetResourceGroup(name string) error {
 	}
 	if len(out) == 0 {
 		log.Printf("Resource group %s does not exist\n", name)
-		return nil
+		return errors.New("Resource group not found")
 	}
 	a.ResourceGroup = ResourceGroup{}
 	err = json.Unmarshal(out, &a.ResourceGroup)

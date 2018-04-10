@@ -67,17 +67,14 @@ func main() {
 		log.Printf("Error while trying to set storage account connection string: %s\n", err)
 	}
 
-	// TODO: create storage account if it doesn't exist
-
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
 		provision := true
 		rg := cfg.SoakClusterName
 		err = acct.SetResourceGroup(rg)
 		if err != nil {
-			log.Fatalf("Error while trying to set RG:%s\n", err)
-		}
-		if err == nil {
+			log.Printf("Error while trying to set RG:%s\n", err)
+		} else {
 			// set expiration time to 7 days = 168h for now
 			d, err := time.ParseDuration("168h")
 			if err != nil {

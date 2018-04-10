@@ -85,13 +85,11 @@ func (cli *CLIProvisioner) provision() error {
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
-	if cli.Config.SoakClusterName == "" {
-		cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
-		util.PrintCommand(cmd)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
-		}
+	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
