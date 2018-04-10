@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Azure/acs-engine/pkg/certgen/templates"
-	"github.com/Azure/acs-engine/pkg/filesystem"
+	"github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"golang.org/x/crypto/bcrypt"
 )
 

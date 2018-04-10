@@ -14,7 +14,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/filesystem"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 )
 
 type authKeyID struct {

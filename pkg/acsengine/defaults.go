@@ -10,9 +10,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
-	"github.com/Azure/acs-engine/pkg/certgen"
-	"github.com/Azure/acs-engine/pkg/filesystem"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/Azure/acs-engine/pkg/openshift/certgen"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"github.com/Masterminds/semver"
 )
 

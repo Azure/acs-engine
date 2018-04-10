@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/filesystem"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"gopkg.in/yaml.v2"
 )
 

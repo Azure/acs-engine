@@ -7,7 +7,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/Azure/acs-engine/pkg/filesystem"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 )
 
 // Config represents an OpenShift configuration
