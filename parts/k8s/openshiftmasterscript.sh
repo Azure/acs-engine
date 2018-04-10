@@ -43,6 +43,19 @@ chmod 1777 /tmp
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
 
+# FIXME: It is horrible that we're installing az.  Try to avoid adding
+# additional functionality in this script that requires it.  One route to remove
+# this code is to bake this script into the base image, then pass in parameters
+# such as the registry storage account name and key direct from ARM.
+rpm -i https://packages.microsoft.com/yumrepos/azure-cli/azure-cli-2.0.31-1.el7.x86_64.rpm
+
+set +x
+. <(sed -e 's/: */=/' /etc/azure/azure.conf)
+az login --service-principal -u "$aadClientId" -p "$aadClientSecret" --tenant "$aadTenantId" &>/dev/null
+REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$(az storage account list -g "$resourceGroup" --query "[?ends_with(name, 'registry')].name" -o tsv)
+REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$(az storage account keys list -g "$resourceGroup" -n "$REGISTRY_STORAGE_AZURE_ACCOUNTNAME" --query "[?keyName == 'key1'].value" -o tsv)
+set -x
+
 ###
 # retrieve the public ip via dns for the router public ip and sub it in for the routingConfig.subdomain
 ###

@@ -592,6 +592,9 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
+	if p.OrchestratorProfile.OrchestratorType == OpenShift {
+		return true
+	}
 	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
 		return true
 	}

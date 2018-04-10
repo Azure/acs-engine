@@ -109,6 +109,15 @@
             "name": "Basic"
         }
     },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "[variables('apiVersionStorage')]",
+      "name": "[concat(variables('storageAccountBaseName'), 'registry')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+      }
+    },
 {{end}}
 {{if .MasterProfile.IsManagedDisks}}
     {
