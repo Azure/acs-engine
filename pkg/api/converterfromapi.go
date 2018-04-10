@@ -642,6 +642,7 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
 	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
+
 	if api.Registry != "" {
 		vlabs.Registry = api.Registry
 	}
@@ -653,6 +654,9 @@ func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 	if api.RegistryPass != "" {
 		vlabs.RegistryPass = api.RegistryPass
 	}
+	vlabs.DcosRepositoryURL = api.DcosRepositoryURL
+	vlabs.DcosClusterPackageListID = api.DcosClusterPackageListID
+	vlabs.DcosProviderPackageID = api.DcosProviderPackageID
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
