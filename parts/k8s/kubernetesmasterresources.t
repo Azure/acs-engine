@@ -247,7 +247,7 @@
 {{end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic0')]",
       "properties": {
         "ipConfigurations": [
           {
@@ -323,7 +323,7 @@
   {{end}}
         ],
         "location": "[variables('location')]",
-        "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+        "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic0')]",
         "properties": {
           "ipConfigurations": [
             {
@@ -600,7 +600,7 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic0')]"
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
@@ -609,7 +609,7 @@
       "tags":
       {
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "clusterName" : "[variables('clusterName')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
         "poolName" : "master"
       },
@@ -630,7 +630,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex(variables('masterOffset'))))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '-nic0'))]"
             }
           ]
         },
@@ -661,7 +661,7 @@
               "createOption": "Empty"
               ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
-              ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+              ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'_EtcdDisk')]"
               {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"

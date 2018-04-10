@@ -443,6 +443,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	cloudSpecConfig := GetCloudSpecConfig(location)
 
 	// Master Parameters
+	addValue(parametersMap, "clusterName", cs.Properties.Name)
 	addValue(parametersMap, "location", location)
 
 	// Identify Master distro

@@ -4,12 +4,12 @@
 {{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
-    "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
+    "{{.Name}}AvailabilitySet": "[concat(variables('clusterName'), '-{{.Name}}-availabilityset')]",
 {{if .IsWindows}}
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
-    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
+    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('clusterName'), add(900,variables('{{.Name}}Index')))]",
 {{else}}
-    "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]",
+    "{{.Name}}VMNamePrefix": "[concat(variables('clusterName'), '-{{.Name}}-')]",
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
 {{if .IsCustomVNET}}
