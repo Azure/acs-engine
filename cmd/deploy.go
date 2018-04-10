@@ -147,11 +147,9 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 func autofillApimodel(dc *deployCmd) {
 	var err error
 
-	if dc.containerService.Properties.LinuxProfile != nil {
-		if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
-			log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
-			dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
-		}
+	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
+		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
+		dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
 	}
 
 	if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
@@ -183,13 +181,15 @@ func autofillApimodel(dc *deployCmd) {
 		}
 	}
 
-	if dc.containerService.Properties.LinuxProfile != nil && (dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
+	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "") {
-		translator := &i18n.Translator{
-			Locale: dc.locale,
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
+		creator := &acsengine.SSHCreator{
+			Translator: &i18n.Translator{
+				Locale: dc.locale,
+			},
 		}
-		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
+		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}

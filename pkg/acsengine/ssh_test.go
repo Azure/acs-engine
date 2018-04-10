@@ -3,10 +3,6 @@ package acsengine
 import (
 	"math/rand"
 	"testing"
-
-	"github.com/Azure/acs-engine/pkg/helpers"
-
-	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 func TestCreateSSH(t *testing.T) {
@@ -67,11 +63,11 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 -----END RSA PRIVATE KEY-----
 `
 
-	translator := &i18n.Translator{
-		Locale: nil,
+	creator := &SSHCreator{
+		Translator: nil,
 	}
 
-	privateKey, publicKey, err := helpers.CreateSSH(rg, translator)
+	privateKey, publicKey, err := creator.CreateSSH(rg)
 	if err != nil {
 		t.Fatalf("failed to generate SSH: %s", err)
 	}
