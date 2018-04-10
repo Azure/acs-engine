@@ -108,12 +108,20 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 
 // SetSSHKeyPermissions will change the ssh file permission to 0600
 func (c *Config) SetSSHKeyPermissions() error {
-	filepath := c.GetSSHKeyPath() + "*"
-	cmd := exec.Command("chmod", "0600", filepath)
+	privateKey := c.GetSSHKeyPath()
+	cmd := exec.Command("chmod", "0600", privateKey)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to change ssh key permission at %s: %s\n", filepath, out)
+		log.Printf("Error while trying to change private ssh key permissions at %s: %s\n", privateKey, out)
+		return err
+	}
+	publicKey := c.GetSSHKeyPath() + ".pub"
+	cmd = exec.Command("chmod", "0600", publicKey)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change public ssh key permissions at %s: %s\n", publicKey, out)
 		return err
 	}
 	return nil
