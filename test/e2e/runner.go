@@ -99,6 +99,8 @@ func main() {
 				log.Printf("Deleting Storage files:%s\n", rg)
 				sa.DeleteStorageFiles(cfg.SoakClusterName)
 				cfg.Name = ""
+			} else {
+				cfg.SetSSHKeyPermissions()
 			}
 		}
 	}

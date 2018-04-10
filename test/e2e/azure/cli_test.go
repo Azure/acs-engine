@@ -56,3 +56,12 @@ func TestHasClusterExpired(t *testing.T) {
 		t.Fatalf("Resource group does not exist: expected %t but got %t", expected, result)
 	}
 }
+
+// TODO
+func TestCreateFileShare(t *testing.T)
+
+func TestUploadOutputToStorage(t *testing.T) {}
+
+func TestDownloadOutputFromStorage(t *testing.T) {}
+
+func TestDeleteStorageFiles(t *testing.T) {}

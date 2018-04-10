@@ -7,10 +7,12 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -102,6 +104,19 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 		return "", err
 	}
 	return string(contents), nil
+}
+
+// SetSSHKeyPermissions will change the ssh file permission to 0600
+func (c *Config) SetSSHKeyPermissions() error {
+	filepath := c.GetSSHKeyPath() + "*"
+	cmd := exec.Command("chmod", "0600", filepath)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change ssh key permission at %s: %s\n", filepath, out)
+		return err
+	}
+	return nil
 }
 
 // IsKubernetes will return true if the ORCHESTRATOR env var is set to kubernetes or not set at all
