@@ -242,6 +242,11 @@ type CloudProviderConfig struct {
 	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
+// KubernetesDebug enables debug features
+type KubernetesDebug struct {
+	WaitForNodes bool `json:"waitForNodes,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -283,6 +288,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	Debug                        *KubernetesDebug  `json:"debug,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

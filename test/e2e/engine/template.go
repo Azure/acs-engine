@@ -127,6 +127,11 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		}
 	}
 
+	// Enable cluster debug features
+	cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug = &vlabs.KubernetesDebug{
+		WaitForNodes: true,
+	}
+
 	return &Engine{
 		Config:            config,
 		ClusterDefinition: cs,

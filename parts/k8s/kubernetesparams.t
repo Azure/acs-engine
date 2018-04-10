@@ -29,10 +29,11 @@
       "type": "int"
     },
     "waitForNodesReady": {
+      "defaultValue": false,
       "metadata": {
         "description": "Wait for Nodes Ready in CSE"
       },
-      "type": "string"
+      "type": "bool"
     },
     "etcdServerCertificate": {
       "metadata": {

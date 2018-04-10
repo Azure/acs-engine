@@ -475,6 +475,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.Debug == nil {
+			a.OrchestratorProfile.KubernetesConfig.Debug = &api.KubernetesDebug{
+				WaitForNodes: false,
+			}
+		}
+
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager
