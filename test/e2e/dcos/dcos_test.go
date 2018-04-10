@@ -69,6 +69,7 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			port, err := cluster.InstallMarathonApp(marathonPath, 5*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 
+
 			// Need to have a wait for ready check here
 			cmd := fmt.Sprintf("curl -sI http://marathon-lb.marathon.mesos:%v/", port)
 			out, err := cluster.Connection.ExecuteWithRetries(cmd, 5*time.Second, cfg.Timeout)
