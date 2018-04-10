@@ -1,10 +1,8 @@
 package dcos
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/test/e2e/config"
@@ -63,7 +61,7 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			Expect(version).To(Equal(expectedVersion))
 		})
 
-		It("should be able to install marathon", func() {
+		/*It("should be able to install marathon", func() {
 			err = cluster.InstallMarathonLB()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -76,7 +74,7 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			out, err := cluster.Connection.ExecuteWithRetries(cmd, 5*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(out).To(MatchRegexp("^HTTP/1.1 200 OK"))
-		})
+		})*/
 
 	})
 })
