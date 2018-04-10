@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 ///////////////////////////////////////////////////////////
@@ -209,6 +210,10 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig: &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(false),
+			EnableSecureKubelet: helpers.PointerToBool(false),
+		},
 	}
 }
 
@@ -309,6 +314,7 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
 	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
+	properties.OrchestratorProfile.KubernetesConfig = convertV20180331AgentPoolOnlyKubernetesConfig(obj.EnableRBAC)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -347,6 +353,20 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 	return &WindowsProfile{
 		AdminUsername: obj.AdminUsername,
 		AdminPassword: obj.AdminPassword,
+	}
+}
+
+func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
+	if enableRBAC == nil || *enableRBAC == true {
+		// We want default behavior to be true
+		return &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(true),
+			EnableSecureKubelet: helpers.PointerToBool(true),
+		}
+	}
+	return &KubernetesConfig{
+		EnableRbac:          helpers.PointerToBool(false),
+		EnableSecureKubelet: helpers.PointerToBool(false),
 	}
 }
 
