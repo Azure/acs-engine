@@ -186,12 +186,10 @@ func autofillApimodel(dc *deployCmd) {
 	if dc.containerService.Properties.LinuxProfile != nil && (dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "") {
-		creator := &acsengine.SSHCreator{
-			Translator: &i18n.Translator{
-				Locale: dc.locale,
-			},
+		translator := &i18n.Translator{
+			Locale: dc.locale,
 		}
-		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}
