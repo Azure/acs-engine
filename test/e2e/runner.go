@@ -62,6 +62,10 @@ func main() {
 	sa.Name = "acsesoaktests" + cfg.Location
 	sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
 	sa.ResourceGroup.Location = cfg.Location
+	err = sa.SetConnectionString()
+	if err != nil {
+		log.Printf("Error while trying to set storage account connection string: %s\n", err)
+	}
 
 	// TODO: create storage account if it doesn't exist
 
@@ -83,16 +87,20 @@ func main() {
 		}
 		if provision {
 			log.Printf("Soak cluster %s does not exist or has expired\n", rg)
-			log.Printf("Deleting Group:%s\n", rg)
+			log.Printf("Deleting Resource Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
+			log.Printf("Deleting Storage files:%s\n", rg)
+			sa.DeleteStorageFiles(cfg.SoakClusterName)
 			cfg.Name = ""
 		} else {
 			log.Printf("Soak cluster %s exists, downloading output files from storage...\n", rg)
 			err = sa.DownloadOutputFromStorage(cfg.SoakClusterName, "_output")
 			if err != nil {
-				log.Printf("Error while trying to download _output dir:%s, will provision a new cluster.\n", err)
-				log.Printf("Deleting Group:%s\n", rg)
+				log.Printf("Error while trying to download _output dir: %s, will provision a new cluster.\n", err)
+				log.Printf("Deleting Resource Group:%s\n", rg)
 				acct.DeleteGroup(rg, true)
+				log.Printf("Deleting Storage files:%s\n", rg)
+				sa.DeleteStorageFiles(cfg.SoakClusterName)
 				cfg.Name = ""
 			}
 		}
@@ -107,6 +115,10 @@ func main() {
 			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
 		if cfg.SoakClusterName != "" {
+			err = sa.CreateFileShare(cfg.SoakClusterName)
+			if err != nil {
+				log.Printf("Error while trying to create file share:%s\n", err)
+			}
 			err = sa.UploadOutputToStorage(filepath.Join(cfg.CurrentWorkingDir, "_output"), cfg.SoakClusterName)
 			if err != nil {
 				log.Fatalf("Error while trying to upload _output dir:%s\n", err)

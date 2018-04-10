@@ -45,6 +45,7 @@ func TestHasClusterExpired(t *testing.T) {
 	}
 
 	a.ResourceGroup.Name = "thisrgdoesntexist"
+	a.ResourceGroup.Tags = map[string]string{}
 	d, err = time.ParseDuration("1s")
 	if err != nil {
 		t.Fatalf("unexpected error parsing duration: %s", err)

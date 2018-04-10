@@ -297,12 +297,20 @@ func (a *Account) HasClusterExpired(d time.Duration) bool {
 	return time.Since(t) > d
 }
 
-// UploadOutputToStorage will upload the output directory to storage
-func (sa *StorageAccount) UploadOutputToStorage(source, destination string) error {
-	err := sa.SetConnectionString()
+// CreateFileShare will create a file share in a storage account if it doesn't already exist
+func (sa *StorageAccount) CreateFileShare(name string) error {
+	cmd := exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Error while trying to create file share: %s", out)
 		return err
 	}
+	return nil
+}
+
+// UploadOutputToStorage will upload the output directory to storage
+func (sa *StorageAccount) UploadOutputToStorage(source, destination string) error {
 	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -315,10 +323,6 @@ func (sa *StorageAccount) UploadOutputToStorage(source, destination string) erro
 
 // DownloadOutputFromStorage will download the output directory from storage
 func (sa *StorageAccount) DownloadOutputFromStorage(source, destination string) error {
-	err := sa.SetConnectionString()
-	if err != nil {
-		return err
-	}
 	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -342,6 +346,18 @@ func (sa *StorageAccount) SetConnectionString() error {
 	if err != nil {
 		log.Printf("Error unmarshalling account json:%s\n", err)
 		log.Printf("JSON:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// DeleteStorageFiles deletes files from an Azure storage file share
+func (sa *StorageAccount) DeleteStorageFiles(source string) error {
+	cmd := exec.Command("az", "storage", "file", "delete-batch", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to delete files from %s: %s", source, out)
 		return err
 	}
 	return nil
