@@ -98,4 +98,28 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 		t.Error("EnableRBAC expected to be true")
 	}
 
+	kc = &KubernetesConfig{
+		EnableRbac:          common.BoolPtr(true),
+		EnableSecureKubelet: common.BoolPtr(false),
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if !*enableRBAC {
+		t.Error("EnableRBAC expected to be true")
+	}
+
+	kc = &KubernetesConfig{
+		EnableRbac:          common.BoolPtr(true),
+		EnableSecureKubelet: nil,
+	}
+	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if !*enableRBAC {
+		t.Error("EnableRBAC expected to be true")
+	}
+
 }
