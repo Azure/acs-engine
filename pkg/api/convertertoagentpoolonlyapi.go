@@ -73,10 +73,6 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
 	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
-	properties.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
-		EnableRbac:          common.BoolPtr(false),
-		EnableSecureKubelet: common.BoolPtr(false),
-	}
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -213,6 +209,10 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig: &KubernetesConfig{
+			EnableRbac:          common.BoolPtr(false),
+			EnableSecureKubelet: common.BoolPtr(false),
+		},
 	}
 }
 

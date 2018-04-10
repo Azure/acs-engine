@@ -37,6 +37,26 @@ func TestConvertFromV20180331AddonProfile(t *testing.T) {
 	}
 }
 
+func TestConvertV20170831AgentPoolOnlyOrchestratorProfile_KubernetesConfig(t *testing.T) {
+	op := convertV20170831AgentPoolOnlyOrchestratorProfile("1.8.9")
+	if op == nil {
+		t.Error("OrchestratorProfile expected not to be nil")
+	}
+
+	if op.KubernetesConfig == nil {
+		t.Error("OrchestratorProfile.KubernetesConfig expected not to be nil")
+	}
+
+	if op.KubernetesConfig.EnableRbac == nil || *op.KubernetesConfig.EnableRbac == true {
+		t.Error("OrchestratorProfile.KubernetesConfig.EnableRbac expected to be *false")
+	}
+
+	if op.KubernetesConfig.EnableSecureKubelet == nil || *op.KubernetesConfig.EnableSecureKubelet == true {
+		t.Error("OrchestratorProfile.KubernetesConfig.EnableSecureKubelet expected to be *false")
+	}
+
+}
+
 func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 	var kc *KubernetesConfig
 	kc = convertV20180331AgentPoolOnlyKubernetesConfig(common.BoolPtr(true))
