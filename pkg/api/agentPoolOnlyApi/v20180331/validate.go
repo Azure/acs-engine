@@ -198,7 +198,7 @@ func validateVNET(a *Properties) error {
 
 				// TODO: validate IP address pre-allocation does not exceed VnetSubnetCidr capacity
 
-				// validate subsricption, resource group and vnet are the same among subnets
+				// validate subscription, resource group and vnet are the same among subnets
 				subnetSubscription, subnetResourceGroup, subnetVnet, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
 				if err != nil {
 					return ErrorParsingSubnetID

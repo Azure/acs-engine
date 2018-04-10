@@ -34,11 +34,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p := []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -55,11 +55,11 @@ func TestValidateVNET(t *testing.T) {
 
 	// NetworkProfile is nil
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -98,11 +98,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -126,11 +126,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -154,11 +154,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -182,11 +182,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -210,11 +210,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -238,11 +238,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -266,11 +266,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			MaxPods: maxPods2,
 		},
 	}
@@ -293,11 +293,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -321,11 +321,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1Bad,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -349,11 +349,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1WrongSubscription,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -377,11 +377,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1WrongResourceGroup,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
@@ -405,11 +405,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	p = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID1WrongVnet,
 			MaxPods:      maxPods1,
 		},
-		&AgentPoolProfile{
+		{
 			VnetSubnetID: vnetSubnetID2,
 			MaxPods:      maxPods2,
 		},
