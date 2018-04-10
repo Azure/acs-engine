@@ -54,7 +54,7 @@ const (
 
 const (
 	// KubernetesDefaultVersion is the default Kubernetes version
-	KubernetesDefaultVersion string = "1.8.9"
+	KubernetesDefaultVersion string = "1.8.11"
 )
 
 const (
