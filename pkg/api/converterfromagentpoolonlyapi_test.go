@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 func TestConvertToV20180331AddonProfile(t *testing.T) {
@@ -42,45 +43,58 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 	var kc *KubernetesConfig
 	kc = nil
 	enableRBAC := convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
-	if enableRBAC {
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if *enableRBAC {
 		t.Error("EnableRBAC expected to be false")
 	}
-	truePtr := true
-	falsePtr := false
 
 	kc = &KubernetesConfig{
 		EnableRbac:          nil,
-		EnableSecureKubelet: &truePtr,
+		EnableSecureKubelet: common.BoolPtr(true),
 	}
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
-	if enableRBAC {
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if *enableRBAC {
 		t.Error("EnableRBAC expected to be false")
 	}
 
 	kc = &KubernetesConfig{
-		EnableRbac:          &falsePtr,
-		EnableSecureKubelet: &truePtr,
+		EnableRbac:          common.BoolPtr(false),
+		EnableSecureKubelet: common.BoolPtr(true),
 	}
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
-	if enableRBAC {
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if *enableRBAC {
 		t.Error("EnableRBAC expected to be false")
 	}
 
 	kc = &KubernetesConfig{
-		EnableRbac:          &falsePtr,
-		EnableSecureKubelet: &falsePtr,
+		EnableRbac:          common.BoolPtr(false),
+		EnableSecureKubelet: common.BoolPtr(false),
 	}
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
-	if enableRBAC {
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if *enableRBAC {
 		t.Error("EnableRBAC expected to be false")
 	}
 
 	kc = &KubernetesConfig{
-		EnableRbac:          &truePtr,
-		EnableSecureKubelet: &truePtr,
+		EnableRbac:          common.BoolPtr(true),
+		EnableSecureKubelet: common.BoolPtr(true),
 	}
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
-	if !enableRBAC {
+	if enableRBAC == nil {
+		t.Error("EnableRBAC expected not to be nil")
+	}
+	if !*enableRBAC {
 		t.Error("EnableRBAC expected to be true")
 	}
 

@@ -350,10 +350,17 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 	}
 }
 
-func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC bool) *KubernetesConfig {
+func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
+	if enableRBAC == nil || *enableRBAC == true {
+		// We want default behavior to be true
+		return &KubernetesConfig{
+			EnableRbac:          common.BoolPtr(true),
+			EnableSecureKubelet: common.BoolPtr(true),
+		}
+	}
 	return &KubernetesConfig{
-		EnableRbac:          &enableRBAC,
-		EnableSecureKubelet: &enableRBAC,
+		EnableRbac:          common.BoolPtr(false),
+		EnableSecureKubelet: common.BoolPtr(false),
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 func TestConvertFromV20180331AddonProfile(t *testing.T) {
@@ -37,9 +38,8 @@ func TestConvertFromV20180331AddonProfile(t *testing.T) {
 }
 
 func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
-	enableRBAC := true
-	kc := convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC)
-
+	var kc *KubernetesConfig
+	kc = convertV20180331AgentPoolOnlyKubernetesConfig(common.BoolPtr(true))
 	if kc == nil {
 		t.Error("kubernetesConfig expected not to be nil")
 	}
@@ -64,10 +64,7 @@ func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 		t.Error("EnableSecureKubelet and EnableRbac expected to be same")
 	}
 
-	kc = nil
-	enableRBAC = false
-	kc = convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC)
-
+	kc = convertV20180331AgentPoolOnlyKubernetesConfig(common.BoolPtr(false))
 	if kc == nil {
 		t.Error("kubernetesConfig expected not to be nil")
 	}
@@ -86,6 +83,31 @@ func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 
 	if *kc.EnableSecureKubelet != false {
 		t.Error("EnableSecureKubelet expected to be false")
+	}
+
+	if *kc.EnableSecureKubelet != *kc.EnableRbac {
+		t.Error("EnableSecureKubelet and EnableRbac expected to be same")
+	}
+
+	kc = convertV20180331AgentPoolOnlyKubernetesConfig(nil)
+	if kc == nil {
+		t.Error("kubernetesConfig expected not to be nil")
+	}
+
+	if kc.EnableRbac == nil {
+		t.Error("EnableRbac expected not to be nil")
+	}
+
+	if *kc.EnableRbac != true {
+		t.Error("EnableRbac expected to be true")
+	}
+
+	if kc.EnableSecureKubelet == nil {
+		t.Error("EnableSecureKubelet expected not to be nil")
+	}
+
+	if *kc.EnableSecureKubelet != true {
+		t.Error("EnableSecureKubelet expected to be true")
 	}
 
 	if *kc.EnableSecureKubelet != *kc.EnableRbac {
