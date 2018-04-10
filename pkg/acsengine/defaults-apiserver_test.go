@@ -32,6 +32,28 @@ func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 	}
 }
 
+func TestAPIServerConfigEnableEncryptionWithExternalKms(t *testing.T) {
+	// Test EnableEncryptionWithExternalKms = true
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = helpers.PointerToBool(true)
+	setAPIServerConfig(cs)
+	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--experimental-encryption-provider-config"] != "/etc/kubernetes/encryption-config.yaml" {
+		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableEncryptionWithExternalKms=true: %s",
+			a["--experimental-encryption-provider-config"])
+	}
+
+	// Test EnableEncryptionWithExternalKms = false
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = helpers.PointerToBool(false)
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if _, ok := a["--experimental-encryption-provider-config"]; ok {
+		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableEncryptionWithExternalKms=false: %s",
+			a["--experimental-encryption-provider-config"])
+	}
+}
+
 func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 	// Test EnableAggregatedAPIs = true
 	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
