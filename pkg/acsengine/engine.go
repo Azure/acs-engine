@@ -43,7 +43,7 @@ const (
 
 const (
 	dcosCustomData188    = "dcos/dcoscustomdata188.t"
-	dcosCustomData190    = "dcos/dcoscustomdata190.t"
+	dcosCustomData198    = "dcos/dcoscustomdata198.t"
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
 	dcosCustomData111    = "dcos/dcoscustomdata111.t"
 	dcosProvision        = "dcos/dcosprovision.sh"
@@ -717,8 +717,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			switch properties.OrchestratorProfile.OrchestratorVersion {
 			case api.DCOSVersion1Dot8Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
-			case api.DCOSVersion1Dot9Dot0:
-				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
+			case api.DCOSVersion1Dot9Dot8:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS198BootstrapDownloadURL
 			case api.DCOSVersion1Dot10Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			case api.DCOSVersion1Dot11Dot0:
@@ -894,7 +894,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot0
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot8
 		},
 		"IsDCOS110": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
@@ -1830,14 +1830,14 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 			case 5:
 				return "f286ad9d3641da5abb622e4a8781f73ecd8492fa"
 			}
-		case api.DCOSVersion1Dot9Dot0:
+		case api.DCOSVersion1Dot9Dot8:
 			switch masterCount {
 			case 1:
-				return "bcc883b7a3191412cf41824bdee06c1142187a0b"
+				return "e8b0e3fc4a16394dc6dd5b19fc54bf1543bff429"
 			case 3:
-				return "dcff7e24c0c1827bebeb7f1a806f558054481b33"
+				return "2d36c3f570d9dd7d187c699f9a322ed9d95e7dfa"
 			case 5:
-				return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
+				return "c03c9587f88929f310b80af4f448b7b51654f1c8"
 			}
 		case api.DCOSVersion1Dot8Dot8:
 			switch masterCount {
@@ -1860,6 +1860,8 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 			return "https://dcosio.azureedge.net/dcos/stable/1.11.0"
 		case api.DCOSVersion1Dot10Dot0:
 			return "https://dcosio.azureedge.net/dcos/stable/1.10.0"
+		case api.DCOSVersion1Dot9Dot8:
+			return "https://dcosio.azureedge.net/dcos/stable/1.9.8"
 		default:
 			return "https://dcosio.azureedge.net/dcos/stable"
 		}
@@ -2347,8 +2349,8 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
 		switch orchestratorVersion {
 		case api.DCOSVersion1Dot8Dot8:
 			yamlFilename = dcosCustomData188
-		case api.DCOSVersion1Dot9Dot0:
-			yamlFilename = dcosCustomData190
+		case api.DCOSVersion1Dot9Dot8:
+			yamlFilename = dcosCustomData198
 		case api.DCOSVersion1Dot10Dot0:
 			yamlFilename = dcosCustomData110
 		case api.DCOSVersion1Dot11Dot0:
