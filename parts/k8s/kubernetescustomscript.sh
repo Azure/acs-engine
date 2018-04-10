@@ -526,7 +526,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureK8s
-    if [[ $WAIT_FOR_NODES_READY == "true" ]]; then
+    if [[ $WAIT_FOR_NODES_READY == "True" ]]; then
         ensureNodes
     fi
 fi
