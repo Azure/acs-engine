@@ -52,6 +52,25 @@ ensureDockerInstallCompleted()
     fi
 }
 
+configAddons() {
+    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
+        configClusterAutoscalerAddon
+    fi
+    echo `date`,`hostname`, configAddonsDone>>/opt/m
+}
+
+configClusterAutoscalerAddon() {
+    echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
+    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
+}
+
 echo `date`,`hostname`, startscript>>/opt/m
 
 if [ -f /var/run/reboot-required ]; then
@@ -122,6 +141,9 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
     mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
+
+    echo `date`,`hostname`, configAddonsStart>>/opt/m
+    configAddons
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
@@ -238,24 +260,6 @@ function configNetworkPlugin() {
     elif [[ "${NETWORK_POLICY}" = "flannel" ]] ; then
         configCNINetworkPolicy
     fi
-}
-
-function configAddons() {
-    configClusterAutoscalerAddon
-
-    # if [[ "${CLUSTER_AUTOSCALER_ADDON}" = true ]]; then
-    #     configClusterAutoscalerAddon
-    # fi
-}
-
-function configClusterAutoscalerAddon() {
-    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 }
 
 function installClearContainersRuntime() {

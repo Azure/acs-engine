@@ -493,6 +493,13 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerEnabled": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerEnabled"}}
+      "metadata": {
+        "description": "Cluster autoscaler status"
+      },
+      "type": "bool"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
