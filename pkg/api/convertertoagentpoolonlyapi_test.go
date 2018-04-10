@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
-	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func TestConvertFromV20180331AddonProfile(t *testing.T) {
@@ -59,7 +59,7 @@ func TestConvertV20170831AgentPoolOnlyOrchestratorProfile_KubernetesConfig(t *te
 
 func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 	var kc *KubernetesConfig
-	kc = convertV20180331AgentPoolOnlyKubernetesConfig(common.BoolPtr(true))
+	kc = convertV20180331AgentPoolOnlyKubernetesConfig(helpers.PointerToBool(true))
 	if kc == nil {
 		t.Error("kubernetesConfig expected not to be nil")
 	}
@@ -84,7 +84,7 @@ func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 		t.Error("EnableSecureKubelet and EnableRbac expected to be same")
 	}
 
-	kc = convertV20180331AgentPoolOnlyKubernetesConfig(common.BoolPtr(false))
+	kc = convertV20180331AgentPoolOnlyKubernetesConfig(helpers.PointerToBool(false))
 	if kc == nil {
 		t.Error("kubernetesConfig expected not to be nil")
 	}

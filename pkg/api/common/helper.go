@@ -51,8 +51,3 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 	}
 	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
 }
-
-// BoolPtr convert a bool to *bool
-func BoolPtr(b bool) *bool {
-	return &b
-}

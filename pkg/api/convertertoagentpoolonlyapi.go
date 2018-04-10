@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 ///////////////////////////////////////////////////////////
@@ -210,8 +211,8 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 		KubernetesConfig: &KubernetesConfig{
-			EnableRbac:          common.BoolPtr(false),
-			EnableSecureKubelet: common.BoolPtr(false),
+			EnableRbac:          helpers.PointerToBool(false),
+			EnableSecureKubelet: helpers.PointerToBool(false),
 		},
 	}
 }
@@ -358,13 +359,13 @@ func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *Kubernetes
 	if enableRBAC == nil || *enableRBAC == true {
 		// We want default behavior to be true
 		return &KubernetesConfig{
-			EnableRbac:          common.BoolPtr(true),
-			EnableSecureKubelet: common.BoolPtr(true),
+			EnableRbac:          helpers.PointerToBool(true),
+			EnableSecureKubelet: helpers.PointerToBool(true),
 		}
 	}
 	return &KubernetesConfig{
-		EnableRbac:          common.BoolPtr(false),
-		EnableSecureKubelet: common.BoolPtr(false),
+		EnableRbac:          helpers.PointerToBool(false),
+		EnableSecureKubelet: helpers.PointerToBool(false),
 	}
 }
 
