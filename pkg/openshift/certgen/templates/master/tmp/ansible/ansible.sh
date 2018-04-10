@@ -28,7 +28,7 @@ EOF
 oc process -f /usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-template.yaml \
 	-p API_SERVER_CONFIG="$(sed -e s/127.0.0.1/{{ .ExternalMasterHostname }}/g </usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-config.yaml)" \
 	-p NODE_SELECTOR='{"node-role.kubernetes.io/master":"true"}' \
-	-p IMAGE="$IMAGE_BASE-web-console:v3.9.11" \
+	-p IMAGE="$IMAGE_BASE-web-console:v$VERSION" \
 	| oc create -f -
 
 oc create -f - <<'EOF'
@@ -73,7 +73,7 @@ oc adm policy add-cluster-role-to-user admin system:serviceaccount:kube-service-
 oc process -f service-catalog.yaml \
   -p CA_HASH="$(base64 -w0 </etc/origin/service-catalog/ca.crt | sha1sum | cut -d' ' -f1)" \
   -p ETCD_SERVER="$HOSTNAME" \
-	-p IMAGE="$IMAGE_BASE-service-catalog:v3.9.11" \
+	-p IMAGE="$IMAGE_BASE-service-catalog:v$VERSION" \
   | oc create -f -
 oc rollout status -n kube-service-catalog daemonset apiserver
 
@@ -87,7 +87,7 @@ metadata:
 EOF
 
 oc process -f /usr/share/ansible/openshift-ansible/roles/template_service_broker/files/apiserver-template.yaml \
-	-p IMAGE="$IMAGE_BASE-template-service-broker:v3.9.11" \
+	-p IMAGE="$IMAGE_BASE-template-service-broker:v$VERSION" \
 	-p NODE_SELECTOR='{"region":"infra"}' \
 	| oc create -f -
 oc process -f /usr/share/ansible/openshift-ansible/roles/template_service_broker/files/rbac-template.yaml | oc auth reconcile -f -
@@ -99,11 +99,12 @@ while true; do
   sleep 10
 done
 
-for file in /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v3.9/db-templates/*.json \
-    /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v3.9/image-streams/*-rhel7.json \
-	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v3.9/quickstart-templates/*.json \
-	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v3.9/xpaas-streams/*.json \
-	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v3.9/xpaas-templates/*.json; do
+MAJORVERSION="${VERSION%.*}"
+for file in /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v$MAJORVERSION/db-templates/*.json \
+    /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v$MAJORVERSION/image-streams/*-rhel7.json \
+	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v$MAJORVERSION/quickstart-templates/*.json \
+	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v$MAJORVERSION/xpaas-streams/*.json \
+	  /usr/share/ansible/openshift-ansible/roles/openshift_examples/files/examples/v$MAJORVERSION/xpaas-templates/*.json; do
 	oc create -n openshift -f $file
 done
 

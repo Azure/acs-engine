@@ -2,12 +2,14 @@
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
+
 SERVICE_TYPE=origin
 IMAGE_BASE=openshift/origin
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
 	IMAGE_BASE=registry.reg-aws.openshift.com:443/openshift3/ose
 fi
+VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 
 # TODO: remove this once we generate the registry certificate
 cat >>/etc/sysconfig/docker <<'EOF'
@@ -132,8 +134,9 @@ docker run \
 	-v /root/.kube:/opt/app-root/src/.kube:z \
 	-w /opt/app-root/src \
 	-e IMAGE_BASE="$IMAGE_BASE" \
+	-e VERSION="$VERSION" \
 	-e HOSTNAME="$(hostname)" \
-	"$IMAGE_BASE-ansible:v3.9.11" \
+	"$IMAGE_BASE-ansible:v$VERSION" \
 	/opt/app-root/src/ansible.sh
 
 exit 0
