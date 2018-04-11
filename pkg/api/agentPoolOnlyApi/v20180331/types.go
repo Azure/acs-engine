@@ -31,7 +31,7 @@ type ManagedCluster struct {
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	KubernetesVersion       string                   `json:"kubernetesVersion"`
-	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
+	DNSPrefix               string                   `json:"dnsPrefix,omitempty"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
