@@ -1,46 +1,57 @@
 {{if .IsStorageAccount}}
-    {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('{{.Name}}StorageAccountsCount')]",
-        "name": "loop"
-      },
-      {{if not IsHostedMaster}}
-        {{if not IsPrivateCluster}}
-          "dependsOn": [
-            "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-          ],
-        {{end}}
-      {{end}}
-      "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
+  {
+    "apiVersion": "[variables('apiVersionStorage')]",
+    "copy": {
+      "count": "[variables('{{.Name}}StorageAccountsCount')]",
+      "name": "loop"
     },
-    {{if .HasDisks}}
-    {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('{{.Name}}StorageAccountsCount')]",
-        "name": "datadiskLoop"
-      },
-      {{if not IsHostedMaster}}
-        {{if not IsPrivateCluster}}
-          "dependsOn": [
-            "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-          ],
-        {{end}}
+    {{if not IsHostedMaster}}
+      {{if not IsPrivateCluster}}
+        "dependsOn": [
+          "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+        ],
       {{end}}
-      "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
+    {{end}}
+    "location": "[variables('location')]",
+    "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
+    "properties": {
+      "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
     },
+    "type": "Microsoft.Storage/storageAccounts"
+  },
+  {{if .HasDisks}}
+  {
+    "apiVersion": "[variables('apiVersionStorage')]",
+    "copy": {
+      "count": "[variables('{{.Name}}StorageAccountsCount')]",
+      "name": "datadiskLoop"
+    },
+    {{if not IsHostedMaster}}
+      {{if not IsPrivateCluster}}
+        "dependsOn": [
+          "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+        ],
+      {{end}}
+    {{end}}
+    "location": "[variables('location')]",
+    "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
+    "properties": {
+      "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+    },
+    "type": "Microsoft.Storage/storageAccounts"
+  },
+  {{end}}
 {{end}}
+{{if UseManagedIdentity}}
+  {
+    "apiVersion": "2014-10-01-preview",
+    "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
+    "type": "Microsoft.Authorization/roleAssignments",
+    "properties": {
+      "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
+      "principalId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix')), '2017-03-30', 'Full').identity.principalId]"
+    }
+  },
 {{end}}
   {
     "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
@@ -173,6 +184,21 @@
                 }
               }
             }
+            {{if UseManagedIdentity}}
+            ,{
+              "name": "managedIdentityExtension",
+              "properties": {
+                "publisher": "Microsoft.ManagedIdentity",
+                "type": "ManagedIdentityExtensionForLinux",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "port": 50343
+                },
+                "protectedSettings": {}
+              }
+            }
+            {{end}}
           ]
         }
       }
