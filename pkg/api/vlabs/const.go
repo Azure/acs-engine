@@ -91,3 +91,10 @@ const (
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
 	DefaultNetworkPolicyWindows = "azure"
 )
+
+const (
+	// AgentPoolProfileRoleEmpty is the empty role
+	AgentPoolProfileRoleEmpty AgentPoolProfileRole = ""
+	// AgentPoolProfileRoleInfra is the infra role
+	AgentPoolProfileRoleInfra AgentPoolProfileRole = "infra"
+)

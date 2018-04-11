@@ -43,7 +43,7 @@
           "name": "YOUR IMAGE",
           "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
         },
-        "isOpenShiftInfra": true,
+        "role": "infra",
         "name": "infra",
         "storageProfile": "ManagedDisks",
         "vmSize": "Standard_D4s_v3"

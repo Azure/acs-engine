@@ -14,7 +14,7 @@ EOF
 
 systemctl restart docker.service
 
-{{if .IsInfra}}
+{{if eq .Role "infra"}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{else}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/${SERVICE_TYPE}-node

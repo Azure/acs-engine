@@ -1749,10 +1749,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			b := &bytes.Buffer{}
 			t.Execute(b, struct {
 				ConfigBundle string
-				IsInfra      bool
+				Role         api.AgentPoolProfileRole
 			}{
 				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]),
-				IsInfra:      profile.IsOpenShiftInfra,
+				Role:         profile.Role,
 			})
 			return b.String()
 		},

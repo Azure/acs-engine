@@ -31,7 +31,7 @@
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
-{{if $.IsOpenShiftInfra }}
+{{if eq $.Role "infra"}}
               ,
               "loadBalancerBackendAddressPools": [
                 {

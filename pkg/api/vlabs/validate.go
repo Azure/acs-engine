@@ -425,6 +425,21 @@ func (a *Properties) Validate(isUpdate bool) error {
 			return fmt.Errorf("Only AvailabilityProfile: AvailabilitySet is supported for Orchestrator 'OpenShift'")
 		}
 
+		validRoles := []AgentPoolProfileRole{AgentPoolProfileRoleEmpty}
+		if a.OrchestratorProfile.OrchestratorType == OpenShift {
+			validRoles = append(validRoles, AgentPoolProfileRoleInfra)
+		}
+		var found bool
+		for _, validRole := range validRoles {
+			if agentPoolProfile.Role == validRole {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("Role %q is not supported for Orchestrator %s", agentPoolProfile.Role, a.OrchestratorProfile.OrchestratorType)
+		}
+
 		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
