@@ -28,6 +28,7 @@ type Config struct {
 	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
+	Debug                 bool   `envconfig:"E2E_DEBUG" default:"true"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -129,9 +130,11 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 	// Enable cluster debug features
 	if cfg.IsKubernetes() {
-		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil {
-			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug = &vlabs.KubernetesDebug{
-				WaitForNodes: true,
+		if config.Debug {
+			if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil {
+				cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug = &vlabs.KubernetesDebug{
+					WaitForNodes: true,
+				}
 			}
 		}
 	}
