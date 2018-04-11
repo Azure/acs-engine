@@ -57,7 +57,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -65,7 +65,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 }
