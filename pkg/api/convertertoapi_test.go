@@ -153,6 +153,22 @@ func TestKubernetesVlabsDefaults(t *testing.T) {
 	}
 }
 
+func TestConvertKubernetesDebugToAPI(t *testing.T) {
+	v := &vlabs.KubernetesConfig{
+		Debug: map[string]string{
+			"waitForNodes": "true",
+		},
+	}
+	a := &KubernetesConfig{}
+	convertKubernetesDebugToAPI(v, a)
+	for key, val := range a.Debug {
+		if v.Debug[key] != val {
+			t.Fatalf("got unexpected kubernetes debug config value for %s: %s, expected %s",
+				key, v.Debug[key], val)
+		}
+	}
+}
+
 func makeKubernetesProperties() *Properties {
 	ap := &Properties{}
 	ap.OrchestratorProfile = &OrchestratorProfile{}

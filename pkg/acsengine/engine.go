@@ -681,7 +681,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if cs.Properties.HostedMasterProfile == nil {
 			addValue(parametersMap, "totalNodes", cs.Properties.TotalNodes())
 			if cs.Properties.OrchestratorProfile.KubernetesConfig.Debug != nil {
-				addValue(parametersMap, "waitForNodesReady", cs.Properties.OrchestratorProfile.KubernetesConfig.Debug.WaitForNodes)
+				addValue(parametersMap, "waitForNodesReady", cs.Properties.OrchestratorProfile.KubernetesConfig.Debug["waitForNodes"])
 			}
 		}
 

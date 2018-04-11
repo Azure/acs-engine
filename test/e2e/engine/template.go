@@ -132,8 +132,10 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 	if cfg.IsKubernetes() {
 		if config.Debug {
 			if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil {
-				cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug = &vlabs.KubernetesDebug{
-					WaitForNodes: true,
+				if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug == nil {
+					cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.Debug = map[string]string{
+						"waitForNodes": "true",
+					}
 				}
 			}
 		}

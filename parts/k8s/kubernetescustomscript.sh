@@ -301,7 +301,7 @@ function ensureDocker() {
 
 function ensureKubelet() {
     systemctlEnableAndCheck kubelet
-    retrycmd_if_failure 10 1 10 systemctl daemon-reload && systemctl restart kubelet
+    retrycmd_if_failure 10d 1 10 systemctl daemon-reload && systemctl restart kubelet
     retrycmd_if_failure 10 1 3 systemctl status kubelet | grep 'active (running)'
 }
 
@@ -524,7 +524,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureK8s
-    if [[ $WAIT_FOR_NODES_READY == "True" ]]; then
+    if [[ $WAIT_FOR_NODES_READY == "true" ]]; then
         ensureNodes
     fi
 fi

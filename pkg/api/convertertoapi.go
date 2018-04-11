@@ -739,9 +739,9 @@ func convertPrivateJumpboxProfileToAPI(v *vlabs.PrivateJumpboxProfile, a *Privat
 }
 
 func convertKubernetesDebugToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
-	if v.Debug != nil {
-		a.Debug = &KubernetesDebug{}
-		a.Debug.WaitForNodes = v.Debug.WaitForNodes
+	a.Debug = map[string]string{}
+	for key, val := range v.Debug {
+		a.Debug[key] = val
 	}
 }
 

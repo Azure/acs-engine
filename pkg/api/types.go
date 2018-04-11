@@ -244,11 +244,6 @@ type KubernetesConfigDeprecated struct {
 	CtrlMgrRouteReconciliationPeriod string `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
 }
 
-// KubernetesDebug enables debug features
-type KubernetesDebug struct {
-	WaitForNodes bool `json:"waitForNodes,omitempty"`
-}
-
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -296,7 +291,7 @@ type KubernetesConfig struct {
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
-	Debug                            *KubernetesDebug  `json:"debug,omitempty"`
+	Debug                            map[string]string `json:"debug,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

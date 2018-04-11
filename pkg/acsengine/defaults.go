@@ -476,8 +476,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.Debug == nil {
-			a.OrchestratorProfile.KubernetesConfig.Debug = &api.KubernetesDebug{
-				WaitForNodes: false,
+			a.OrchestratorProfile.KubernetesConfig.Debug = map[string]string{
+				"waitForNodes": "false",
 			}
 		}
 
@@ -491,6 +491,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		setAPIServerConfig(cs)
 		// Configure scheduler
 		setSchedulerConfig(cs)
+		// Configure kubernetes debug
+		setKubernetesDebugConfig(cs)
 
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {

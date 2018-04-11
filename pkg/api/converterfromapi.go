@@ -752,9 +752,9 @@ func convertPrivateJumpboxProfileToVlabs(api *PrivateJumpboxProfile, vlabsProfil
 }
 
 func convertKubernetesDebugToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
-	if a.Debug != nil {
-		v.Debug = &vlabs.KubernetesDebug{}
-		v.Debug.WaitForNodes = a.Debug.WaitForNodes
+	v.Debug = map[string]string{}
+	for key, val := range a.Debug {
+		v.Debug[key] = val
 	}
 }
 
