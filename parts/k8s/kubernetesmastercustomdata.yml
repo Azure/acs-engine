@@ -291,7 +291,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
-    sed -i "s|docker.service|docker.service kms.service|g" "/etc/systemd/system/kubelet.service"
+    sed -i "s|# Required|Requires=kms.service|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
@@ -417,11 +417,6 @@ runcmd:
 - /usr/lib/apt/apt.systemd.daily
 {{if EnableAggregatedAPIs}}
 - bash /etc/kubernetes/generate-proxy-certs.sh
-{{end}}
-{{if EnableDataEncryptionAtRestWithExternalKms}}
-- bash /etc/kubernetes/externalKms.sh
-- systemctl daemon-reload
-- systemctl restart kubelet.service
 {{end}}
 - retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
 - apt-mark unhold walinuxagent

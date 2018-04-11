@@ -466,7 +466,7 @@ echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
-if [[ ! -z "${MASTER_NODE}" ]]; then
+if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
     echo `date`,`hostname`, ensureKMSStart>>/opt/m
     ensureKMS
 fi
