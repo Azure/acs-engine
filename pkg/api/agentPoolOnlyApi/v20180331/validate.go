@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -169,7 +170,11 @@ func validateVNET(a *Properties) error {
 		}
 
 		// validate DNSServiceIP is not the first IP in ServiceCidr. The first IP is reserved for redirect svc.
-		if dnsServiceIP.String() == strings.TrimSuffix(serviceCidr.IP.String(), "0")+"1" {
+		kubernetesServiceIP, err := common.CidrStringFirstIP(n.ServiceCidr)
+		if err != nil {
+			return ErrorInvalidServiceCidr
+		}
+		if dnsServiceIP.String() == kubernetesServiceIP.String() {
 			return ErrorDNSServiceIPAlreadyUsed
 		}
 
