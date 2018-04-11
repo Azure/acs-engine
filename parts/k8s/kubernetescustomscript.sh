@@ -301,10 +301,8 @@ function ensureDocker() {
 
 function ensureKubelet() {
     systemctlEnableAndCheck kubelet
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart kubelet
-    fi
+    retrycmd_if_failure 10 1 10 systemctl daemon-reload && systemctl restart kubelet
+    retrycmd_if_failure 10 1 3 systemctl status kubelet | grep 'active (running)'
 }
 
 function extractHyperkube(){
