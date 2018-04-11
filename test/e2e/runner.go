@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
@@ -56,19 +57,75 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 	}
-	// Only provision a cluster if there isnt a name present
-	if cfg.Name == "" {
-		if cfg.SoakClusterName != "" {
-			rg := cfg.SoakClusterName
-			log.Printf("Deleting Group:%s\n", rg)
-			acct.DeleteGroup(rg, true)
+
+	sa := new(azure.StorageAccount)
+
+	// Soak test specific setup
+	if cfg.SoakClusterName != "" {
+		sa.Name = "acsesoaktests" + cfg.Location
+		sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
+		sa.ResourceGroup.Location = cfg.Location
+		err = sa.CreateStorageAccount()
+		if err != nil {
+			log.Fatalf("Error while trying to create storage account: %s\n", err)
 		}
+		err = sa.SetConnectionString()
+		if err != nil {
+			log.Fatalf("Error while trying to set storage account connection string: %s\n", err)
+		}
+		provision := true
+		rg := cfg.SoakClusterName
+		err = acct.SetResourceGroup(rg)
+		if err != nil {
+			log.Printf("Error while trying to set RG:%s\n", err)
+		} else {
+			// set expiration time to 7 days = 168h for now
+			d, err := time.ParseDuration("168h")
+			if err != nil {
+				log.Fatalf("Unexpected error parsing duration: %s", err)
+			}
+			provision = acct.IsClusterExpired(d)
+		}
+		if provision || cfg.ForceDeploy {
+			log.Printf("Soak cluster %s does not exist or has expired\n", rg)
+			log.Printf("Deleting Resource Group:%s\n", rg)
+			acct.DeleteGroup(rg, true)
+			log.Printf("Deleting Storage files:%s\n", rg)
+			sa.DeleteFiles(cfg.SoakClusterName)
+			cfg.Name = ""
+		} else {
+			log.Printf("Soak cluster %s exists, downloading output files from storage...\n", rg)
+			err = sa.DownloadFiles(cfg.SoakClusterName, "_output")
+			if err != nil {
+				log.Printf("Error while trying to download _output dir: %s, will provision a new cluster.\n", err)
+				log.Printf("Deleting Resource Group:%s\n", rg)
+				acct.DeleteGroup(rg, true)
+				log.Printf("Deleting Storage files:%s\n", rg)
+				sa.DeleteFiles(cfg.SoakClusterName)
+				cfg.Name = ""
+			} else {
+				cfg.SetSSHKeyPermissions()
+			}
+		}
+	}
+	// Only provision a cluster if there isn't a name present
+	if cfg.Name == "" {
 		err = cliProvisioner.Run()
 		rgs = cliProvisioner.ResourceGroups
 		eng = cliProvisioner.Engine
 		if err != nil {
 			teardown()
 			log.Fatalf("Error while trying to provision cluster:%s", err)
+		}
+		if cfg.SoakClusterName != "" {
+			err = sa.CreateFileShare(cfg.SoakClusterName)
+			if err != nil {
+				log.Printf("Error while trying to create file share:%s\n", err)
+			}
+			err = sa.UploadFiles(filepath.Join(cfg.CurrentWorkingDir, "_output"), cfg.SoakClusterName)
+			if err != nil {
+				log.Fatalf("Error while trying to upload _output dir:%s\n", err)
+			}
 		}
 	} else {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
@@ -81,7 +138,6 @@ func main() {
 		if err != nil {
 			teardown()
 			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)
-
 		}
 		eng = &engine.Engine{
 			Config:            engCfg,
