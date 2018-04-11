@@ -50,12 +50,17 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.10.0":        true,
 }
 
+// GetDefaultKubernetesVersion returns the default Kubernetes version, that is the latest patch of the default release
+func GetDefaultKubernetesVersion() string {
+	return GetLatestPatchVersion(KubernetesDefaultRelease, GetAllSupportedKubernetesVersions())
+}
+
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
 func GetSupportedKubernetesVersion(version string) string {
 	if k8sVersion := version; AllKubernetesSupportedVersions[k8sVersion] {
 		return k8sVersion
 	}
-	return KubernetesDefaultVersion
+	return GetDefaultKubernetesVersion()
 }
 
 // GetAllSupportedKubernetesVersions returns a slice of all supported Kubernetes versions
@@ -214,9 +219,9 @@ func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, 
 	switch orchType {
 	case Kubernetes:
 		if hasWindows {
-			return GetAllSupportedKubernetesVersionsWindows(), string(KubernetesDefaultVersion)
+			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersion()
 		}
-		return GetAllSupportedKubernetesVersions(), string(KubernetesDefaultVersion)
+		return GetAllSupportedKubernetesVersions(), GetDefaultKubernetesVersion()
 
 	case DCOS:
 		return AllDCOSSupportedVersions, DCOSDefaultVersion

@@ -127,7 +127,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 						OrchestratorType:    Kubernetes,
 						OrchestratorVersion: ver,
 					},
-					Default:  ver == common.KubernetesDefaultVersion,
+					Default:  ver == common.GetDefaultKubernetesVersion(),
 					Upgrades: upgrades,
 				})
 		}
@@ -154,7 +154,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 					OrchestratorType:    Kubernetes,
 					OrchestratorVersion: csOrch.OrchestratorVersion,
 				},
-				Default:  csOrch.OrchestratorVersion == common.KubernetesDefaultVersion,
+				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(),
 				Upgrades: upgrades,
 			})
 	}

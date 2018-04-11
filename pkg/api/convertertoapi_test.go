@@ -86,7 +86,7 @@ func TestOrchestratorVersion(t *testing.T) {
 		},
 	}
 	cs := ConvertV20170701ContainerService(v20170701cs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -111,7 +111,7 @@ func TestOrchestratorVersion(t *testing.T) {
 		},
 	}
 	cs = ConvertVLabsContainerService(vlabscs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
