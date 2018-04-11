@@ -29,6 +29,7 @@ type Config struct {
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
 	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
+	ForceDeploy       bool   `envconfig:"FORCE_DEPLOY"`
 }
 
 const (

@@ -15,6 +15,16 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+// Storage provides access to StorageAccount objects
+type Storage interface {
+	CreateStorageAccount() error
+	SetConnectionString() error
+	CreateFileShare(name string) error
+	UploadFiles(source, destination string) error
+	DownloadFiles(source, destination string) error
+	DeleteFiles(source string) error
+}
+
 // Account represents an Azure account
 type Account struct {
 	User           *User  `json:"user"`
@@ -287,8 +297,8 @@ func (a *Account) SetResourceGroup(name string) error {
 	return nil
 }
 
-// HasClusterExpired will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
-func (a *Account) HasClusterExpired(d time.Duration) bool {
+// IsClusterExpired will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
+func (a *Account) IsClusterExpired(d time.Duration) bool {
 	tag, err := strconv.ParseInt(a.ResourceGroup.Tags["now"], 10, 64)
 	if err != nil {
 		log.Printf("Error parsing RG now tag:%s\n", err)
@@ -298,37 +308,13 @@ func (a *Account) HasClusterExpired(d time.Duration) bool {
 	return time.Since(t) > d
 }
 
-// CreateFileShare will create a file share in a storage account if it doesn't already exist
-func (sa *StorageAccount) CreateFileShare(name string) error {
-	cmd := exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+// CreateStorageAccount will create a new Azure Storage Account
+func (sa *StorageAccount) CreateStorageAccount() error {
+	cmd := exec.Command("az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to create file share: %s", out)
-		return err
-	}
-	return nil
-}
-
-// UploadOutputToStorage will upload the output directory to storage
-func (sa *StorageAccount) UploadOutputToStorage(source, destination string) error {
-	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying upload files to file share:%s\n", out)
-		return err
-	}
-	return nil
-}
-
-// DownloadOutputFromStorage will download the output directory from storage
-func (sa *StorageAccount) DownloadOutputFromStorage(source, destination string) error {
-	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying download files from %s in storage account %s: %s\n", source, sa.Name, out)
+		log.Printf("Error while trying to create storage account: %s", out)
 		return err
 	}
 	return nil
@@ -352,8 +338,44 @@ func (sa *StorageAccount) SetConnectionString() error {
 	return nil
 }
 
-// DeleteStorageFiles deletes files from an Azure storage file share
-func (sa *StorageAccount) DeleteStorageFiles(source string) error {
+// CreateFileShare will create a file share in a storage account if it doesn't already exist
+func (sa *StorageAccount) CreateFileShare(name string) error {
+	cmd := exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to create file share: %s", out)
+		return err
+	}
+	return nil
+}
+
+// UploadFiles will upload the output directory to storage
+func (sa *StorageAccount) UploadFiles(source, destination string) error {
+	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying upload files to file share:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// DownloadFiles will download the output directory from storage
+func (sa *StorageAccount) DownloadFiles(source, destination string) error {
+	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying download files from %s in storage account %s: %s\n", source, sa.Name, out)
+		return err
+	}
+	return nil
+}
+
+// DeleteFiles deletes files from an Azure storage file share
+func (sa *StorageAccount) DeleteFiles(source string) error {
 	cmd := exec.Command("az", "storage", "file", "delete-batch", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()

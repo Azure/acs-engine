@@ -59,16 +59,20 @@ func main() {
 	}
 
 	sa := new(azure.StorageAccount)
-	sa.Name = "acsesoaktests" + cfg.Location
-	sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
-	sa.ResourceGroup.Location = cfg.Location
-	err = sa.SetConnectionString()
-	if err != nil {
-		log.Printf("Error while trying to set storage account connection string: %s\n", err)
-	}
 
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
+		sa.Name = "acsesoaktests" + cfg.Location
+		sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
+		sa.ResourceGroup.Location = cfg.Location
+		err = sa.CreateStorageAccount()
+		if err != nil {
+			log.Fatalf("Error while trying to create storage account: %s\n", err)
+		}
+		err = sa.SetConnectionString()
+		if err != nil {
+			log.Fatalf("Error while trying to set storage account connection string: %s\n", err)
+		}
 		provision := true
 		rg := cfg.SoakClusterName
 		err = acct.SetResourceGroup(rg)
@@ -80,24 +84,24 @@ func main() {
 			if err != nil {
 				log.Fatalf("Unexpected error parsing duration: %s", err)
 			}
-			provision = acct.HasClusterExpired(d)
+			provision = acct.IsClusterExpired(d)
 		}
-		if provision {
+		if provision || cfg.ForceDeploy {
 			log.Printf("Soak cluster %s does not exist or has expired\n", rg)
 			log.Printf("Deleting Resource Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
 			log.Printf("Deleting Storage files:%s\n", rg)
-			sa.DeleteStorageFiles(cfg.SoakClusterName)
+			sa.DeleteFiles(cfg.SoakClusterName)
 			cfg.Name = ""
 		} else {
 			log.Printf("Soak cluster %s exists, downloading output files from storage...\n", rg)
-			err = sa.DownloadOutputFromStorage(cfg.SoakClusterName, "_output")
+			err = sa.DownloadFiles(cfg.SoakClusterName, "_output")
 			if err != nil {
 				log.Printf("Error while trying to download _output dir: %s, will provision a new cluster.\n", err)
 				log.Printf("Deleting Resource Group:%s\n", rg)
 				acct.DeleteGroup(rg, true)
 				log.Printf("Deleting Storage files:%s\n", rg)
-				sa.DeleteStorageFiles(cfg.SoakClusterName)
+				sa.DeleteFiles(cfg.SoakClusterName)
 				cfg.Name = ""
 			} else {
 				cfg.SetSSHKeyPermissions()
@@ -118,7 +122,7 @@ func main() {
 			if err != nil {
 				log.Printf("Error while trying to create file share:%s\n", err)
 			}
-			err = sa.UploadOutputToStorage(filepath.Join(cfg.CurrentWorkingDir, "_output"), cfg.SoakClusterName)
+			err = sa.UploadFiles(filepath.Join(cfg.CurrentWorkingDir, "_output"), cfg.SoakClusterName)
 			if err != nil {
 				log.Fatalf("Error while trying to upload _output dir:%s\n", err)
 			}
