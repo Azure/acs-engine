@@ -32,14 +32,14 @@
       "type": "string"
     },
     "agentWindowsOffer": {
-      "defaultValue": "WindowsServer",
+      "defaultValue": "WindowsServerSemiAnnual",
       "metadata": {
         "description": "The offer of windows image for the agent virtual machines."
       },
       "type": "string"
     },
     "agentWindowsSku": {
-      "defaultValue": "2016-Datacenter-with-Containers",
+      "defaultValue": "Datacenter-Core-1709-with-Containers-smalldisk",
       "metadata": {
         "description": "The SKU of windows image for the agent virtual machines."
       },
