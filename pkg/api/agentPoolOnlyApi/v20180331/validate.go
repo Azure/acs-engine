@@ -178,31 +178,17 @@ func validateVNET(a *Properties) error {
 			return ErrorDNSServiceIPAlreadyUsed
 		}
 
+		if a.AgentPoolProfiles == nil {
+			return ErrorNilAgentPoolProfile
+		}
+
 		// validate custom VNET logic
-		if n.isCustomVNET() {
+		if isCustomVNET(a.AgentPoolProfiles) {
 			var subscription string
 			var resourceGroup string
 			var vnet string
 
-			if a.AgentPoolProfiles == nil {
-				return ErrorNilAgentPoolProfile
-			}
-
 			for _, agentPool := range a.AgentPoolProfiles {
-				if !agentPool.IsCustomVNET() {
-					return ErrorAgentPoolNoSubnet
-				}
-
-				// TODO: validate VnetSubnetCidr
-
-				// TODO: validate dockerBridgeCidr is not within VnetSubnetCidr
-
-				// TODO: validate ServiceCidr does not overlap with VnetSubnetCidr
-
-				// TODO: validate VnetSubnetCidr does n ot overlap with other VnetSubnetCidr
-
-				// TODO: validate IP address pre-allocation does not exceed VnetSubnetCidr capacity
-
 				// validate subscription, resource group and vnet are the same among subnets
 				subnetSubscription, subnetResourceGroup, subnetVnet, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
 				if err != nil {
@@ -233,6 +219,8 @@ func validateVNET(a *Properties) error {
 					}
 				}
 			}
+		} else {
+			return ErrorAgentPoolNoSubnet
 		}
 
 	} else if string(n.NetworkPlugin) == string(Kubenet) {
@@ -246,9 +234,15 @@ func validateVNET(a *Properties) error {
 	return nil
 }
 
-func (n *NetworkProfile) isCustomVNET() bool {
-	// use ServiceCidr check to decide if Custom VNET is triggered
-	return n.ServiceCidr != ""
+func isCustomVNET(a []*AgentPoolProfile) bool {
+
+	for _, agentPool := range a {
+		if !agentPool.IsCustomVNET() {
+			return false
+		}
+	}
+
+	return true
 }
 
 // GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
