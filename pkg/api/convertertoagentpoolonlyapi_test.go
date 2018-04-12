@@ -1,11 +1,63 @@
 package api
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
+
+func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
+	kubernetesVersion := "1.7.9"
+	networkPlugin := v20180331.Azure
+	serviceCIDR := "10.0.0.0/8"
+	dnsServiceIP := "10.0.0.10"
+	dockerBridgeSubnet := "172.17.0.1/16"
+
+	p := &v20180331.NetworkProfile{
+		NetworkPlugin:    networkPlugin,
+		ServiceCidr:      serviceCIDR,
+		DNSServiceIP:     dnsServiceIP,
+		DockerBridgeCidr: dockerBridgeSubnet,
+	}
+
+	api := convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p, nil)
+
+	if api.OrchestratorVersion != kubernetesVersion {
+		t.Error("error in orchestrator profile kubernetesVersion conversion")
+	}
+
+	if api.KubernetesConfig.NetworkPolicy != string(networkPlugin) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.ServiceCIDR != string(serviceCIDR) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DNSServiceIP != string(dnsServiceIP) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DockerBridgeSubnet != string(dockerBridgeSubnet) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+}
+
+func TestConvertV20180331AgentPoolOnlyAgentPoolProfile(t *testing.T) {
+	maxPods := 25
+	availabilityProfile := "availabilityProfile"
+
+	p := &v20180331.AgentPoolProfile{
+		MaxPods: maxPods,
+	}
+	api := convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile)
+
+	if api.KubernetesConfig.KubeletConfig["--max-pods"] != strconv.Itoa(maxPods) {
+		t.Error("error in agent pool profile max pods conversion")
+	}
+}
 
 func TestConvertFromV20180331AddonProfile(t *testing.T) {
 	addonName := "AddonFoo"
