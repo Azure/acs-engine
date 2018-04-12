@@ -99,7 +99,7 @@ func GetVersionsGt(versions []string, version string, inclusive, preReleases boo
 	return ret
 }
 
-// GetVersionsLt returns a list of versions less than than a semver string given a list of versions
+// GetVersionsLt  returns a list of versions less than than a semver string given a list of versions
 // inclusive=true means that we test for equality as well
 // preReleases=true means that we include pre-release versions in the list
 func GetVersionsLt(versions []string, version string, inclusive, preReleases bool) []string {
