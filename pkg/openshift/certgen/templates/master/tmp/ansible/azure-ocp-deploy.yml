@@ -12,3 +12,8 @@
       import_role:
         name: openshift_hosted
         tasks_from: registry.yml
+
+    - name: Import openshift_web_console role from openshift-ansbile to deploy web console
+      import_role:
+        name: openshift_web_console
+

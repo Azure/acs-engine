@@ -1,4 +1,6 @@
 ---
+# FIXME: Anything below in all-caps has it's value replaced by sed in the
+#        openshiftmasterscript.sh which is not ideal, we should fix that.
 localmaster:
   hosts:
     localhost
@@ -6,10 +8,17 @@ localmaster:
     ansible_connection: local
     ansible_python_interpreter: /usr/bin/python2
 
-    oreg_url_master: 'TEMPIMAGEBASE-${component}:${version}'
+    openshift_is_containerized: False
 
-    # The value of TEMPROUTERIP will be substituted during the acs-engine ARM
-    # Deployment process with the correct ip address
+    openshift_image_tag: "vVERSION"
+
+    # NOTE: This changes in 3.10+ and it's all combined into a single variable
+    #       under the name openshift_web_console_image_name
+    openshift_web_console_prefix: "registry.reg-aws.openshift.com:443/openshift3/"
+    openshift_web_console_image_name: "ose-web-console"
+    openshift_web_console_version: "vVERSION"
+
+    oreg_url_master: 'TEMPIMAGEBASE-${component}:${version}'
     openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
 
     # FIXME
@@ -43,6 +52,9 @@ localmaster:
     openshift_hosted_router_replicas: 1
     openshift_hosted_registry_replicas: 1
 
+
+    openshift_web_console_install: True
+
     openshift_deployment_type: 'openshift-enterprise'
 
     # NOTE: Do not define openshift_hosted_router_replicas so that the task file
@@ -50,6 +62,15 @@ localmaster:
     # autopopulate it using the openshift_hosted_router_selector and querying
     # the number of infra nodes
 
+    # NOTE: The variables below are internal to openshift-ansible and we're
+    #       providing them here to avoid the incurred cost of fact finding
     openshift:
       common:
         config_base: /etc/origin/
+      master:
+        public_console_url: "https://{{ .ExternalMasterHostname }}:8443/console"
+        public_api_url: "https://{{ .ExternalMasterHostname }}:8443"
+
+oo_masters_to_config:
+  hosts:
+    localhost

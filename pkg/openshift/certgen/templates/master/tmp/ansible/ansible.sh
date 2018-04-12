@@ -17,22 +17,7 @@ oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-sele
 mkdir -p /etc/origin/master/named_certificates
 
 # Deploy the router reusing relevant parts from openshift-ansible
-ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local deploy-router-registry.yml -i azure-local-master-inventory.yml
-
-oc create -f - <<'EOF'
-kind: Project
-apiVersion: v1
-metadata:
-  name: openshift-web-console
-  annotations:
-    openshift.io/node-selector: ""
-EOF
-
-oc process -f /usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-template.yaml \
-	-p API_SERVER_CONFIG="$(sed -e s/127.0.0.1/{{ .ExternalMasterHostname }}/g </usr/share/ansible/openshift-ansible/roles/openshift_web_console/files/console-config.yaml)" \
-	-p NODE_SELECTOR='{"node-role.kubernetes.io/master":"true"}' \
-	-p IMAGE="$IMAGE_BASE-web-console:v$VERSION" \
-	| oc create -f -
+ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local azure-ocp-deploy.yml -i azure-local-master-inventory.yml
 
 oc create -f - <<'EOF'
 kind: Project

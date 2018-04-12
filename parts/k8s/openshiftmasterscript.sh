@@ -61,6 +61,7 @@ routerLBIP=$(dig +short $routerLBHost)
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
     sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|TEMPIMAGEBASE|$IMAGE_BASE|" $i
     sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
+    sed -i "s|VERSION|${VERSION}|g" $i
 done
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
