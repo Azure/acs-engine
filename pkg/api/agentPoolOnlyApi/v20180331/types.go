@@ -41,7 +41,26 @@ type Properties struct {
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	NodeResourceGroup       string                   `json:"nodeResourceGroup,omitempty"`
 	EnableRBAC              *bool                    `json:"enableRBAC,omitempty"`
+	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
 }
+
+// NetworkProfile represents network related definitions
+type NetworkProfile struct {
+	NetworkPlugin    NetworkPlugin `json:"networkPlugin,omitempty"`
+	ServiceCidr      string        `json:"serviceCidr,omitempty"`
+	DNSServiceIP     string        `json:"dnsServiceIP,omitempty"`
+	DockerBridgeCidr string        `json:"dockerBridgeCidr,omitempty"`
+}
+
+// NetworkPlugin represnets types of network plugin
+type NetworkPlugin string
+
+const (
+	// Azure represents Azure CNI network plugin
+	Azure NetworkPlugin = "azure"
+	// Kubenet represents Kubenet network plugin
+	Kubenet NetworkPlugin = "kubenet"
+)
 
 // AddonProfile represents an addon for managed cluster
 type AddonProfile struct {
@@ -152,6 +171,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
+	MaxPods        int    `json:"maxPods,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
