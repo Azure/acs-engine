@@ -22,12 +22,6 @@
       "type": "string"
     },
 {{else}}
-    "totalNodes": {
-      "metadata": {
-        "description": "Number of nodes (masters + agents) in the cluster"
-      },
-      "type": "int"
-    },
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
