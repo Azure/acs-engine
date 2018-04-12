@@ -7,19 +7,19 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_DS2_v2"
+      "vmSize": "Standard_DS2_v2",
+      "extensions": [
+        {
+          "name": "prometheus-grafana-k8s"
+        }
+      ]
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_DS2_v2",
-        "availabilityProfile": "AvailabilitySet",
-        "extensions": [
-          {
-            "name": "prometheus-grafana-k8s"
-          }
-        ]
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
