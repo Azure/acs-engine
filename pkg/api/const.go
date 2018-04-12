@@ -12,6 +12,8 @@ const (
 	Kubernetes string = "Kubernetes"
 	// SwarmMode is the string constant for the Swarm Mode orchestrator type
 	SwarmMode string = "SwarmMode"
+	// OpenShift is the string constant for the OpenShift orchestrator type
+	OpenShift string = "OpenShift"
 )
 
 // the OSTypes supported by vlabs
@@ -113,4 +115,11 @@ const (
 	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
+)
+
+const (
+	// AgentPoolProfileRoleEmpty is the empty role
+	AgentPoolProfileRoleEmpty AgentPoolProfileRole = ""
+	// AgentPoolProfileRoleInfra is the infra role
+	AgentPoolProfileRoleInfra AgentPoolProfileRole = "infra"
 )

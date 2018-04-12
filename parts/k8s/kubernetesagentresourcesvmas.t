@@ -31,6 +31,14 @@
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
+{{if eq $.Role "infra"}}
+              ,
+              "loadBalancerBackendAddressPools": [
+                {
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                }
+              ]
+{{end}}
             }
           }
           {{if lt $seq $.IPAddressCount}},{{end}}
@@ -160,7 +168,9 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+          {{if not IsOpenShift}}
           {{GetKubernetesAgentCustomData .}}
+          {{end}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
@@ -270,7 +280,11 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
+        {{if IsOpenShift }}
+          "script": "{{ Base64 (OpenShiftGetNodeSh .) }}"
+        {{else}}
           "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+        {{end}}
         }
       }
     }

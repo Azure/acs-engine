@@ -13,7 +13,7 @@ import (
 const (
 	rootName             = "acs-engine"
 	rootShortDescription = "ACS-Engine deploys and manages container orchestrators in Azure"
-	rootLongDescription  = "ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure"
+	rootLongDescription  = "ACS-Engine deploys and manages Kubernetes, OpenShift, Swarm Mode, and DC/OS clusters in Azure"
 )
 
 var (

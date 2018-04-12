@@ -77,6 +77,26 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		t.Errorf("should not have failed on version with v prefix")
 	}
 
+	o = &OrchestratorProfile{
+		OrchestratorType:    OpenShift,
+		OrchestratorVersion: "v1.0",
+	}
+
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should have failed on old version")
+	}
+	if err := o.Validate(true); err != nil {
+		t.Errorf("should not have failed on old version")
+	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: "v1.9.0",
+		OpenShiftConfig:     &OpenShiftConfig{},
+	}
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should have failed on OpenShift config specified with non OpenShift orchestrator type")
+	}
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {

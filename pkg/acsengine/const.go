@@ -1,6 +1,10 @@
 package acsengine
 
 const (
+	// DefaultOpenShiftMasterSubnet is the default value for master subnet for Openshift.
+	DefaultOpenShiftMasterSubnet = "10.0.0.0/24"
+	// DefaultOpenShiftFirstConsecutiveStaticIP is the default static ip address for master 0 for Openshift.
+	DefaultOpenShiftFirstConsecutiveStaticIP = "10.0.0.11"
 	// DefaultMasterSubnet specifies the default master subnet for DCOS or Swarm
 	DefaultMasterSubnet = "172.16.0.0/24"
 	// DefaultFirstConsecutiveStaticIP specifies the static IP address on master 0 for DCOS or Swarm
@@ -100,6 +104,8 @@ const (
 	DefaultGeneratorCode = "acsengine"
 	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOrchestratorName = "k8s"
+	// DefaultOpenshiftOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOpenshiftOrchestratorName = "ocp"
 	// DefaultEtcdVersion specifies the default etcd version to install
 	DefaultEtcdVersion = "3.2.16"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
