@@ -217,14 +217,10 @@ function installClearContainersRuntime() {
 	apt-get update && apt-get install --no-install-recommends -y \
 		cc-runtime
 
-	# Load systemd changes
-	echo "Loading changes to systemd service files..."
-	systemctl daemon-reload
-
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	systemctlEnableAndCheck cc-proxy
-	retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart cc-proxy
+	systemctlEnableAndStart cc-proxy
+    
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
@@ -252,8 +248,6 @@ function setupContainerd() {
 	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
-
-	systemctl daemon-reload
 }
 
 function ensureContainerd() {
@@ -263,13 +257,13 @@ function ensureContainerd() {
 			# Enable and start cri-containerd service
 			# Make sure this is done after networking plugins are installed
 			echo "Enabling and starting cri-containerd service..."
-			systemctl enable containerd
-			retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart containerd
+			systemctlEnableAndStart containerd
 		fi
 	fi
 }
 
-function systemctlEnableAndCheck() {
+function systemctlEnableAndStart() {
+    retrycmd_if_failure 10 1 3 systemctl daemon-reload
     systemctl enable $1
     systemctl is-enabled $1
     enabled=$?
@@ -289,42 +283,29 @@ function systemctlEnableAndCheck() {
         echo "$1 could not be enabled by systemctl"
         exit 5
     fi
+    systemctl_restart 100 1 10 $1
+    retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
 }
 
 function ensureDocker() {
-    systemctlEnableAndCheck docker
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 900 1 60 systemctl daemon-reload && systemctl restart docker
-    fi
+    systemctlEnableAndStart docker
 }
 
 function ensureKubelet() {
-    systemctlEnableAndCheck kubelet
-    retrycmd_if_failure 10d 1 10 systemctl daemon-reload && systemctl restart kubelet
-    retrycmd_if_failure 10 1 3 systemctl status kubelet --no-pager -l > /var/log/azure/kubelet-status.log
+    systemctlEnableAndStart kubelet
 }
 
 function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
-    systemctlEnableAndCheck hyperkube-extract
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart hyperkube-extract
-    fi
+    systemctlEnableAndStart hyperkube-extract
 }
 
 function ensureJournal(){
-    systemctl daemon-reload
-    systemctlEnableAndCheck systemd-journald.service
+    systemctlEnableAndStart systemd-journald
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart systemd-journald.service
-    fi
 }
 
 function ensureK8s() {
