@@ -30,11 +30,12 @@ WORKDIR /gopath/src/github.com/Azure/acs-engine
 ADD Makefile test.mk versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/acs-engine/
 RUN make bootstrap
 
-# https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.0-preview2-download.md
-RUN echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
+# https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.1.2-sdk-download.md
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
+    && mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
+    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' \
     && apt-get update \
-    && apt-get -y install dotnet-sdk-2.0.0-preview2-006497
+    && apt-get -y install dotnet-sdk-2.1.2
 
 # See: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install-on-debianubuntu-with-apt-get
 RUN apt-get update \
