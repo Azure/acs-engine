@@ -183,7 +183,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() {
 		if !cli.IsPrivate() {
 			cli.Config.SetKubeConfig()
-			log.Println("Waiting on nodes to go into ready state...")
+			log.Printf("Waiting for %d nodes to go into ready state...\n", cli.Engine.NodeCount())
 			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 			if !ready {
 				return errors.New("Error: Not all nodes in a healthy state")

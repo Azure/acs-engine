@@ -71,15 +71,19 @@ type List struct {
 // AreAllReady returns a bool depending on cluster state
 func AreAllReady(nodeCount int) bool {
 	list, _ := Get()
-	if list != nil && len(list.Nodes) == nodeCount {
+	if list != nil {
+		var numReadyNodes int
 		for _, node := range list.Nodes {
 			for _, condition := range node.Status.Conditions {
-				if condition.Type == "KubeletReady" && condition.Status == "false" {
-					return false
+				if condition.Type == "KubeletReady" && condition.Status == "true" {
+					numReadyNodes++
 				}
 			}
 		}
-		return true
+		log.Printf("%d nodes are Ready...\n", numReadyNodes)
+		if numReadyNodes == nodeCount {
+			return true
+		}
 	}
 	return false
 }
