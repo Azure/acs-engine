@@ -94,6 +94,7 @@ provisioner: kubernetes.io/azure-disk
 parameters:
   skuName: Premium_LRS
   location: {{ .Location }}
+  kind: managed
 EOF
 
 oc create configmap node-config-master --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/master-config.yaml
