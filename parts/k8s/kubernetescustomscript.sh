@@ -224,7 +224,9 @@ function installClearContainersRuntime() {
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndCheck cc-proxy
-	retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart cc-proxy
+	systemctl_restart 100 1 10 cc-proxy
+    retrycmd_if_failure 10 1 3 systemctl status cc-proxy --no-pager -l > /var/log/azure/cc-proxy-status.log
+    
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
@@ -263,8 +265,9 @@ function ensureContainerd() {
 			# Enable and start cri-containerd service
 			# Make sure this is done after networking plugins are installed
 			echo "Enabling and starting cri-containerd service..."
-			systemctl enable containerd
-			retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart containerd
+			systemctlEnableAndCheck containerd
+			systemctl_restart 100 1 10 containerd
+            retrycmd_if_failure 10 1 3 systemctl status containerd --no-pager -l > /var/log/azure/containerd-status.log
 		fi
 	fi
 }
@@ -293,25 +296,21 @@ function systemctlEnableAndCheck() {
 
 function ensureDocker() {
     systemctlEnableAndCheck docker
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 900 1 60 systemctl daemon-reload && systemctl restart docker
-    fi
+    systemctl_restart 900 1 60 docker
+    retrycmd_if_failure 10 1 3 systemctl status docker --no-pager -l > /var/log/azure/docker-status.log
 }
 
 function ensureKubelet() {
     systemctlEnableAndCheck kubelet
-    retrycmd_if_failure 10d 1 10 systemctl daemon-reload && systemctl restart kubelet
+    systemctl_restart 100 1 10 kubelet
     retrycmd_if_failure 10 1 3 systemctl status kubelet --no-pager -l > /var/log/azure/kubelet-status.log
 }
 
 function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndCheck hyperkube-extract
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart hyperkube-extract
-    fi
+    systemctl_restart 100 1 10 hyperkube-extract
+    retrycmd_if_failure 10 1 3 systemctl status hyperkube-extract --no-pager -l > /var/log/azure/hyperkube-extract-status.log
 }
 
 function ensureJournal(){
@@ -321,10 +320,8 @@ function ensureJournal(){
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 100 1 10 systemctl daemon-reload && systemctl restart systemd-journald.service
-    fi
+    systemctl_restart 100 1 10 systemd-journald.service
+    retrycmd_if_failure 10 1 3 systemctl status systemd-journald.service --no-pager -l > /var/log/azure/systemd-journald-status.log
 }
 
 function ensureK8s() {
