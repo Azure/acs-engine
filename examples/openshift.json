@@ -4,22 +4,22 @@
     "orchestratorProfile": {
       "orchestratorType": "OpenShift",
       "openShiftConfig": {
-        "clusterUsername": "demo",
-        "clusterPassword": "demo"
+        "clusterUsername": "",
+        "clusterPassword": ""
       }
     },
     "azProfile": {
-      "tenantId": "YOUR TENANT ID",
-      "subscriptionId": "YOUR SUBSCRIPTION ID",
-      "resourceGroup": "YOUR RESOURCE GROUP",
-      "location": "YOUR LOCATION"
+      "tenantId": "",
+      "subscriptionId": "",
+      "resourceGroup": "",
+      "location": ""
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "YOUR DNS PREFIX",
+      "dnsPrefix": "",
       "imageReference": {
-        "name": "YOUR IMAGE",
-        "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+        "name": "",
+        "resourceGroup": ""
       },
       "storageProfile": "ManagedDisks",
       "vmSize": "Standard_D4s_v3"
@@ -29,8 +29,8 @@
         "availabilityProfile": "AvailabilitySet",
         "count": 1,
         "imageReference": {
-          "name": "YOUR IMAGE",
-          "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+          "name": "",
+          "resourceGroup": ""
         },
         "name": "compute",
         "storageProfile": "ManagedDisks",
@@ -40,8 +40,8 @@
         "availabilityProfile": "AvailabilitySet",
         "count": 1,
         "imageReference": {
-          "name": "YOUR IMAGE",
-          "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+          "name": "",
+          "resourceGroup": ""
         },
         "role": "infra",
         "name": "infra",
@@ -54,14 +54,14 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "YOUR KEY"
+            "keyData": ""
           }
         ]
       }
     },
     "servicePrincipalProfile": {
-      "clientId": "YOUR CLIENTID",
-      "secret": "YOUR SECRET"
+      "clientId": "",
+      "secret": ""
     }
   }
 }
