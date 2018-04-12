@@ -263,7 +263,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.HasLinuxAgents() {
 				By("Creating a nginx deployment")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				serviceName := "ingress-nginx"
+				serviceName := fmt.Sprintf("ingress-nginx-%v", r.Intn(99999))
 				deploymentName := fmt.Sprintf("ingress-nginx-%s-%v", cfg.Name, r.Intn(99999))
 				deploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "--labels=app="+serviceName)
 				Expect(err).NotTo(HaveOccurred())
