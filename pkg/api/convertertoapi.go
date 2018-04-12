@@ -640,7 +640,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	convertAPIServerConfigToAPI(vlabs, api)
 	convertSchedulerConfigToAPI(vlabs, api)
 	convertPrivateClusterToAPI(vlabs, api)
-	convertKubernetesDebugToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -736,13 +735,6 @@ func convertPrivateJumpboxProfileToAPI(v *vlabs.PrivateJumpboxProfile, a *Privat
 	a.PublicKey = v.PublicKey
 	a.Username = v.Username
 	a.StorageProfile = v.StorageProfile
-}
-
-func convertKubernetesDebugToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
-	a.Debug = map[string]string{}
-	for key, val := range v.Debug {
-		a.Debug[key] = val
-	}
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

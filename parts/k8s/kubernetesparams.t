@@ -22,19 +22,6 @@
       "type": "string"
     },
 {{else}}
-    "totalNodes": {
-      "metadata": {
-        "description": "Number of nodes (masters + agents) in the cluster"
-      },
-      "type": "int"
-    },
-    "waitForNodesReady": {
-      "defaultValue": "false",
-      "metadata": {
-        "description": "Wait for Nodes Ready in CSE"
-      },
-      "type": "string"
-    },
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"

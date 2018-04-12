@@ -678,12 +678,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "jumpboxPublicKey", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey)
 			addValue(parametersMap, "jumpboxStorageProfile", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile)
 		}
-		if cs.Properties.HostedMasterProfile == nil {
-			addValue(parametersMap, "totalNodes", cs.Properties.TotalNodes())
-			if cs.Properties.OrchestratorProfile.KubernetesConfig.Debug != nil {
-				addValue(parametersMap, "waitForNodesReady", cs.Properties.OrchestratorProfile.KubernetesConfig.Debug["waitForNodes"])
-			}
-		}
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {

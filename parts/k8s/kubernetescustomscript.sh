@@ -302,7 +302,7 @@ function ensureDocker() {
 function ensureKubelet() {
     systemctlEnableAndCheck kubelet
     retrycmd_if_failure 10d 1 10 systemctl daemon-reload && systemctl restart kubelet
-    retrycmd_if_failure 10 1 3 systemctl status kubelet | grep 'active (running)'
+    retrycmd_if_failure 10 1 3 systemctl status kubelet --no-pager -l > /var/log/azure/kubelet-status.log
 }
 
 function extractHyperkube(){
@@ -351,39 +351,6 @@ function ensureK8s() {
         exit 3
     fi
     ensurePodSecurityPolicy
-}
-
-function ensureNodes() {
-    for i in {1..1800}; do
-        nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
-            if [ $nodes -eq $TOTAL_NODES ]
-            then
-                echo "all nodes are participating, took $i seconds"
-                nodesActive=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesActive -ne 0 ]
-    then
-        echo "still waiting for active nodes after $i seconds"
-        exit 3
-    fi
-    for i in {1..600}; do
-        notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
-            if [ $notReady -eq 0 ]
-            then
-                echo "all nodes are Ready, took $i seconds"
-                nodesReady=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesReady -ne 0 ]
-    then
-        echo "still waiting for Ready nodes after $i seconds"
-        exit 3
-    fi
 }
 
 function ensureEtcd() {
@@ -524,9 +491,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureK8s
-    if [[ $WAIT_FOR_NODES_READY == "true" ]]; then
-        ensureNodes
-    fi
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then

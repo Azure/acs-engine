@@ -693,7 +693,6 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	convertAPIServerConfigToVlabs(api, vlabs)
 	convertSchedulerConfigToVlabs(api, vlabs)
 	convertPrivateClusterToVlabs(api, vlabs)
-	convertKubernetesDebugToVlabs(api, vlabs)
 }
 
 func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
@@ -749,13 +748,6 @@ func convertPrivateJumpboxProfileToVlabs(api *PrivateJumpboxProfile, vlabsProfil
 	vlabsProfile.PublicKey = api.PublicKey
 	vlabsProfile.Username = api.Username
 	vlabsProfile.StorageProfile = api.StorageProfile
-}
-
-func convertKubernetesDebugToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
-	v.Debug = map[string]string{}
-	for key, val := range a.Debug {
-		v.Debug[key] = val
-	}
 }
 
 func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {

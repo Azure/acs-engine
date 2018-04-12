@@ -283,7 +283,6 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	Debug                        map[string]string `json:"debug,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
