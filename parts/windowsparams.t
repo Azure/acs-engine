@@ -23,4 +23,25 @@
         "description": "The source of the generalized blob which will be used to create a custom windows image for the agent virtual machines."
       },
       "type": "string"
+    },
+    "agentWindowsPublisher": {
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": {
+        "description": "The publisher of windows image for the agent virtual machines."
+      },
+      "type": "string"
+    },
+    "agentWindowsOffer": {
+      "defaultValue": "WindowsServer",
+      "metadata": {
+        "description": "The offer of windows image for the agent virtual machines."
+      },
+      "type": "string"
+    },
+    "agentWindowsSku": {
+      "defaultValue": "2016-Datacenter-with-Containers",
+      "metadata": {
+        "description": "The SKU of windows image for the agent virtual machines."
+      },
+      "type": "string"
     }

@@ -820,6 +820,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if properties.WindowsProfile.WindowsImageSourceURL != "" {
 			addValue(parametersMap, "agentWindowsSourceUrl", properties.WindowsProfile.WindowsImageSourceURL)
 		}
+		if properties.WindowsProfile.WindowsPublisher != "" {
+			addValue(parametersMap, "agentWindowsPublisher", properties.WindowsProfile.WindowsPublisher)
+		}
+		if properties.WindowsProfile.WindowsOffer != "" {
+			addValue(parametersMap, "agentWindowsOffer", properties.WindowsProfile.WindowsOffer)
+		}
+		if properties.WindowsProfile.WindowsSku != "" {
+			addValue(parametersMap, "agentWindowsSku", properties.WindowsProfile.WindowsSku)
+		}
 		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeConfigs[k8sVersion]["windowszip"])
