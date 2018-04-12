@@ -15,7 +15,7 @@
     },
 {{end}}
 {{if IsHostedMaster}}
-    "kubernetesEndpoint": {
+    "kubernetesEndpoint": { 
       "metadata": {
         "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
       },
