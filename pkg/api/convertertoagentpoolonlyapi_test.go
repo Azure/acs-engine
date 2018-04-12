@@ -22,7 +22,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		DockerBridgeCidr: dockerBridgeSubnet,
 	}
 
-	api := convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p)
+	api := convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p, nil)
 
 	if api.OrchestratorVersion != kubernetesVersion {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
