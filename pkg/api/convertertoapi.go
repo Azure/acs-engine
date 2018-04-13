@@ -511,6 +511,9 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 	api.AdminPassword = vlabs.AdminPassword
 	api.ImageVersion = vlabs.ImageVersion
 	api.WindowsImageSourceURL = vlabs.WindowsImageSourceURL
+	api.WindowsPublisher = vlabs.WindowsPublisher
+	api.WindowsOffer = vlabs.WindowsOffer
+	api.WindowsSku = vlabs.WindowsSku
 	api.Secrets = []KeyVaultSecrets{}
 	for _, s := range vlabs.Secrets {
 		secret := &KeyVaultSecrets{}
