@@ -11,11 +11,6 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 
-# TODO: remove this once we generate the registry certificate
-cat >>/etc/sysconfig/docker <<'EOF'
-INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'
-EOF
-
 systemctl restart docker.service
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
@@ -43,6 +38,20 @@ chmod 1777 /tmp
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
 
+# FIXME: It is horrible that we're installing az.  Try to avoid adding
+# additional functionality in this script that requires it.  One route to remove
+# this code is to bake this script into the base image, then pass in parameters
+# such as the registry storage account name and key direct from ARM.
+rpm -i https://packages.microsoft.com/yumrepos/azure-cli/azure-cli-2.0.31-1.el7.x86_64.rpm
+
+set +x
+. <(sed -e 's/: */=/' /etc/azure/azure.conf)
+az login --service-principal -u "$aadClientId" -p "$aadClientSecret" --tenant "$aadTenantId" &>/dev/null
+REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$(az storage account list -g "$resourceGroup" --query "[?ends_with(name, 'registry')].name" -o tsv)
+REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$(az storage account keys list -g "$resourceGroup" -n "$REGISTRY_STORAGE_AZURE_ACCOUNTNAME" --query "[?keyName == 'key1'].value" -o tsv)
+az logout
+set -x
+
 ###
 # retrieve the public ip via dns for the router public ip and sub it in for the routingConfig.subdomain
 ###
@@ -50,11 +59,10 @@ routerLBHost="{{.RouterLBHostname}}"
 routerLBIP=$(dig +short $routerLBHost)
 
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
-	sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|TEMPIMAGEBASE|$IMAGE_BASE|" $i
+    sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|TEMPIMAGEBASE|$IMAGE_BASE|" $i
+    sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
+    sed -i "s|VERSION|${VERSION}|g" $i
 done
-
-# TODO: when enabling secure registry, may need:
-# ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
 for unit in etcd.service ${SERVICE_TYPE}-master-api.service ${SERVICE_TYPE}-master-controllers.service; do
@@ -86,6 +94,7 @@ provisioner: kubernetes.io/azure-disk
 parameters:
   skuName: Premium_LRS
   location: {{ .Location }}
+  kind: managed
 EOF
 
 oc create configmap node-config-master --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/master-config.yaml

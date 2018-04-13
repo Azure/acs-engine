@@ -1,0 +1,19 @@
+- name: Deploy the local OpenShift Router and Registry
+  hosts: localmaster
+  gather_facts: false
+
+  tasks:
+    - name: Import and use router task file from openshift-ansible openshift_hosted role
+      import_role:
+        name: openshift_hosted
+        tasks_from: router.yml
+
+    - name: Import and use registry task file from openshift-ansible openshift_hosted role
+      import_role:
+        name: openshift_hosted
+        tasks_from: registry.yml
+
+    - name: Import openshift_web_console role from openshift-ansbile to deploy web console
+      import_role:
+        name: openshift_web_console
+
