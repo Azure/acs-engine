@@ -54,12 +54,14 @@ $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
+$global:VmType = "{{WrapAsVariable "vmType"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
 $global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
+$global:PrimaryScaleSetName = "{{WrapAsVariable "primaryScaleSetName"}}"
 $global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
 $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 $global:KubeNetwork = "l2bridge"
@@ -105,7 +107,7 @@ function Resize-OSDrive()
     $size = (Get-Partition -DriveLetter $osDrive).Size
     $maxSize = (Get-PartitionSupportedSize -DriveLetter $osDrive).SizeMax
     if ($size -lt $maxSize)
-    { 
+    {
         Resize-Partition -DriveLetter $osDrive -Size $maxSize
     }
 }
@@ -188,11 +190,13 @@ Write-AzureConfig()
     "aadClientSecret": "$AADClientSecret",
     "resourceGroup": "$global:ResourceGroup",
     "location": "$Location",
+    "vmType": "$global:VmType",
     "subnetName": "$global:SubnetName",
     "securityGroupName": "$global:SecurityGroupName",
     "vnetName": "$global:VNetName",
     "routeTableName": "$global:RouteTableName",
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
+    "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
     "useInstanceMetadata": $global:UseInstanceMetadata
 }
@@ -287,7 +291,7 @@ Set-NetworkConfig
         Set-AzureNetworkPolicy
     }
 }
- 
+
 function
 Write-KubernetesStartFiles($podCIDR)
 {
@@ -332,7 +336,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
-`$global:NetworkPolicy="$global:NetworkPolicy" 
+`$global:NetworkPolicy="$global:NetworkPolicy"
 
 "@
 
@@ -346,7 +350,7 @@ $KubeletCommandLine
 "@
     } else {
         $kubeStartStr += @"
-        
+
 function
 Get-DefaultGateway(`$CIDR)
 {
@@ -468,7 +472,7 @@ try
 
     `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
     # New network has been created, Kubeproxy service has to be restarted
-    Restart-Service Kubeproxy   
+    Restart-Service Kubeproxy
 
     Start-Sleep 10
     # Add route to all other POD networks
@@ -479,11 +483,11 @@ try
 catch
 {
     Write-Error `$_
-} 
+}
 
 "@
     }
-    
+
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
