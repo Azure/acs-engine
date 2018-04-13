@@ -108,7 +108,7 @@ func writeCert(fs filesystem.Filesystem, filename string, cert *x509.Certificate
 		return err
 	}
 
-	return fs.WriteFile(filename, b, 0666)
+	return fs.WriteFile(filename, b, 0644)
 }
 
 func privateKeyAsBytes(key *rsa.PrivateKey) ([]byte, error) {
@@ -144,7 +144,7 @@ func writePublicKey(fs filesystem.Filesystem, filename string, key *rsa.PublicKe
 		return err
 	}
 
-	return fs.WriteFile(filename, buf.Bytes(), 0666)
+	return fs.WriteFile(filename, buf.Bytes(), 0644)
 }
 
 // PrepareMasterCerts creates the master certs
@@ -462,7 +462,7 @@ func (c *Config) WriteMasterCerts(fs filesystem.Filesystem) error {
 		}
 	}
 
-	return fs.WriteFile("etc/origin/master/ca.serial.txt", []byte(fmt.Sprintf("%02X\n", c.serial.Get())), 0666)
+	return fs.WriteFile("etc/origin/master/ca.serial.txt", []byte(fmt.Sprintf("%02X\n", c.serial.Get())), 0644)
 }
 
 // WriteBootstrapCerts writes the node bootstrap certs

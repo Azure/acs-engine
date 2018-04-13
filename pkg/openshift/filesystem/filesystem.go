@@ -8,16 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 )
-
-var umask int
-
-func init() {
-	umask = syscall.Umask(0)
-	syscall.Umask(umask)
-}
 
 // Filesystem provides methods which are runnable on a bare filesystem or a
 // tar.gz file
@@ -52,7 +44,7 @@ func (f *filesystem) mkdirAll(name string, perm os.FileMode) error {
 }
 
 func (f *filesystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	err := f.mkdirAll(filepath.Dir(filepath.Join(f.name, filename)), 0777)
+	err := f.mkdirAll(filepath.Dir(filepath.Join(f.name, filename)), 0755)
 	if err != nil {
 		return err
 	}
@@ -95,7 +87,7 @@ func (t *tgzfile) mkdirAll(name string, perm os.FileMode) error {
 		}
 		err := t.tw.WriteHeader(&tar.Header{
 			Name:     name,
-			Mode:     int64(int(perm) &^ umask),
+			Mode:     int64(perm),
 			ModTime:  t.now,
 			Typeflag: tar.TypeDir,
 			Uname:    "root",
@@ -110,14 +102,14 @@ func (t *tgzfile) mkdirAll(name string, perm os.FileMode) error {
 }
 
 func (t *tgzfile) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	err := t.mkdirAll(filepath.Dir(filename), 0777)
+	err := t.mkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		return err
 	}
 
 	err = t.tw.WriteHeader(&tar.Header{
 		Name:     filename,
-		Mode:     int64(int(perm) &^ umask),
+		Mode:     int64(perm),
 		Size:     int64(len(data)),
 		ModTime:  t.now,
 		Typeflag: tar.TypeReg,
