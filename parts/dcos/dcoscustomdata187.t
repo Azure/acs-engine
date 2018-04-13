@@ -118,7 +118,7 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
   permissions: '0644'
-- content: '["dcos-config--setup_DCOSGUID", "dcos-metadata--setup_DCOSGUID"]
+- content: '["dcos-config--setup_{{{dcosProviderPackageID}}}", "dcos-metadata--setup_{{{dcosProviderPackageID}}}"]
 
     '
   owner: root

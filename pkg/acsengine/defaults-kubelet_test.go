@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -151,4 +152,24 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 		}
 	}
 
+}
+
+func TestKubeletMaxPods(t *testing.T) {
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated) {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyAzure, k["--max-pods"])
+	}
+
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyNone
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPods) {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyNone, k["--max-pods"])
+	}
 }

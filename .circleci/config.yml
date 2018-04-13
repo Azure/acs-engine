@@ -8,7 +8,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -24,8 +24,8 @@ jobs:
           name: Run linting rules
           command: make test-style
       - run:
-          name: Build binaries
-          command: make build-binary
+          name: Build cross-architectural binaries
+          command: make build-cross
       - run:
           name: Run unit tests
           command: make test
@@ -34,7 +34,7 @@ jobs:
   swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -61,7 +61,7 @@ jobs:
   dcos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -84,7 +84,7 @@ jobs:
   swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -111,7 +111,7 @@ jobs:
   k8s-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -137,10 +137,38 @@ jobs:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
+  k8s-linux-default-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: quay.io/deis/go-dev:v1.9.1
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export TIMEOUT=10m' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+      - run:
+          name: compile
+          command: make build-binary
+      - run:
+          name: ginkgo k8s e2e tests
+          command: make test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -168,7 +196,7 @@ jobs:
   k8s-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -197,7 +225,7 @@ jobs:
   k8s-1.10-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -226,7 +254,7 @@ jobs:
   k8s-1.8-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -255,7 +283,7 @@ jobs:
   k8s-windows-1.8-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -283,7 +311,7 @@ jobs:
   k8s-windows-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -311,7 +339,7 @@ jobs:
   k8s-windows-1.10-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.9.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -341,6 +369,12 @@ workflows:
   build_and_test_pr:
     jobs:
       - test:
+          filters:
+            branches:
+              ignore: master
+      - k8s-linux-default-e2e:
+          requires:
+            - test
           filters:
             branches:
               ignore: master

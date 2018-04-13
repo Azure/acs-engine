@@ -40,6 +40,15 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
+	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+}
+
+// AzProfile holds the azure context for where the cluster resides
+type AzProfile struct {
+	TenantID       string `json:"tenantId,omitempty"`
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ResourceGroup  string `json:"resourceGroup,omitempty"`
+	Location       string `json:"location,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -129,6 +138,9 @@ type WindowsProfile struct {
 	AdminPassword         string            `json:"adminPassword,omitempty"`
 	ImageVersion          string            `json:"imageVersion,omitempty"`
 	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
+	WindowsPublisher      string            `json:"WindowsPublisher"`
+	WindowsOffer          string            `json:"WindowsOffer"`
+	WindowsSku            string            `json:"WindowsSku"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
@@ -157,6 +169,7 @@ type OrchestratorProfile struct {
 	OrchestratorRelease string            `json:"orchestratorRelease,omitempty"`
 	OrchestratorVersion string            `json:"orchestratorVersion,omitempty"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OpenShiftConfig     *OpenShiftConfig  `json:"openshiftConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
@@ -181,6 +194,8 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 		o.OrchestratorType = Kubernetes
 	case strings.EqualFold(orchestratorType, SwarmMode):
 		o.OrchestratorType = SwarmMode
+	case strings.EqualFold(orchestratorType, OpenShift):
+		o.OrchestratorType = OpenShift
 	default:
 		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
@@ -287,11 +302,24 @@ type KubernetesConfig struct {
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
-	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
-	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
-	Registry                string `json:"registry,omitempty"`
-	RegistryUser            string `json:"registryUser,omitempty"`
-	RegistryPass            string `json:"registryPassword,omitempty"`
+	DcosBootstrapURL         string `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                 string `json:"registry,omitempty"`
+	RegistryUser             string `json:"registryUser,omitempty"`
+	RegistryPass             string `json:"registryPassword,omitempty"`
+	DcosRepositoryURL        string `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
+	DcosClusterPackageListID string `json:"dcosClusterPackageListID,omitempty"` // all three of these items
+	DcosProviderPackageID    string `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+}
+
+// OpenShiftConfig holds configuration for OpenShift
+type OpenShiftConfig struct {
+	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+
+	// ClusterUsername and ClusterPassword are temporary before AAD
+	// authentication is enabled, and will be removed subsequently.
+	ClusterUsername string `json:"clusterUsername,omitempty"`
+	ClusterPassword string `json:"clusterPassword,omitempty"`
 }
 
 // NetworkAccessProfile describes inbound traffic rules for network access.
@@ -330,6 +358,7 @@ type MasterProfile struct {
 	Extensions               []Extension                 `json:"extensions"`
 	Distro                   Distro                      `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig           `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference             `json:"imageReference,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -338,6 +367,12 @@ type MasterProfile struct {
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ImageReference represents a reference to an Image resource in Azure.
+type ImageReference struct {
+	Name          string `json:"name,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
 // ClassicAgentPoolProfileType represents types of classic profiles
@@ -364,20 +399,22 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string            `json:"name" validate:"required"`
-	Count               int               `json:"count" validate:"required,min=1,max=100"`
-	VMSize              string            `json:"vmSize" validate:"required"`
-	OSDiskSizeGB        int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	DNSPrefix           string            `json:"dnsPrefix,omitempty"`
-	OSType              OSType            `json:"osType,omitempty"`
-	Ports               []int             `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
-	AvailabilityProfile string            `json:"availabilityProfile"`
-	StorageProfile      string            `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	DiskSizesGB         []int             `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
-	VnetSubnetID        string            `json:"vnetSubnetID,omitempty"`
-	IPAddressCount      int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro              Distro            `json:"distro,omitempty"`
-	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	Name                string               `json:"name" validate:"required"`
+	Count               int                  `json:"count" validate:"required,min=1,max=100"`
+	VMSize              string               `json:"vmSize" validate:"required"`
+	OSDiskSizeGB        int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	DNSPrefix           string               `json:"dnsPrefix,omitempty"`
+	OSType              OSType               `json:"osType,omitempty"`
+	Ports               []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	AvailabilityProfile string               `json:"availabilityProfile"`
+	StorageProfile      string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB         []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
+	VnetSubnetID        string               `json:"vnetSubnetID,omitempty"`
+	IPAddressCount      int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro              Distro               `json:"distro,omitempty"`
+	KubernetesConfig    *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef            *ImageReference      `json:"imageReference,omitempty"`
+	Role                AgentPoolProfileRole `json:"role,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -387,6 +424,9 @@ type AgentPoolProfile struct {
 	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
 }
+
+// AgentPoolProfileRole represents an agent role
+type AgentPoolProfileRole string
 
 // AADProfile specifies attributes for AAD integration
 type AADProfile struct {

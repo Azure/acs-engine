@@ -59,12 +59,21 @@ type Properties struct {
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
+	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
 }
 
 // AddonProfile represents an addon for managed cluster
 type AddonProfile struct {
 	Enabled bool              `json:"enabled"`
 	Config  map[string]string `json:"config"`
+}
+
+// AzProfile holds the azure context for where the cluster resides
+type AzProfile struct {
+	TenantID       string `json:"tenantId,omitempty"`
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ResourceGroup  string `json:"resourceGroup,omitempty"`
+	Location       string `json:"location,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -136,6 +145,9 @@ type WindowsProfile struct {
 	AdminPassword         string            `json:"adminPassword"`
 	ImageVersion          string            `json:"imageVersion"`
 	WindowsImageSourceURL string            `json:"windowsImageSourceURL"`
+	WindowsPublisher      string            `json:"windowsPublisher"`
+	WindowsOffer          string            `json:"windowsOffer"`
+	WindowsSku            string            `json:"windowsSku"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
@@ -165,6 +177,7 @@ type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
 	OrchestratorVersion string            `json:"orchestratorVersion"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OpenShiftConfig     *OpenShiftConfig  `json:"openshiftConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
@@ -295,11 +308,28 @@ type KubernetesConfig struct {
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
-	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
-	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
-	Registry                string `json:"registry,omitempty"`
-	RegistryUser            string `json:"registryUser,omitempty"`
-	RegistryPass            string `json:"registryPassword,omitempty"`
+	DcosBootstrapURL         string `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                 string `json:"registry,omitempty"`
+	RegistryUser             string `json:"registryUser,omitempty"`
+	RegistryPass             string `json:"registryPassword,omitempty"`
+	DcosRepositoryURL        string `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
+	DcosClusterPackageListID string `json:"dcosClusterPackageListID,omitempty"` // all three of these items
+	DcosProviderPackageID    string `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+}
+
+// OpenShiftConfig holds configuration for OpenShift
+type OpenShiftConfig struct {
+	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+
+	// ClusterUsername and ClusterPassword are temporary before AAD
+	// authentication is enabled, and will be removed subsequently.
+	ClusterUsername string `json:"clusterUsername,omitempty"`
+	ClusterPassword string `json:"clusterPassword,omitempty"`
+
+	ConfigBundles          map[string][]byte `json:"-"`
+	ExternalMasterHostname string            `json:"-"`
+	RouterLBHostname       string            `json:"-"`
 }
 
 // NetworkAccessProfile describes inbound traffic rules for network access.
@@ -322,6 +352,7 @@ type MasterNetworkAccessProfile struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
+<<<<<<< HEAD
 	Count                    int                         `json:"count"`
 	DNSPrefix                string                      `json:"dnsPrefix"`
 	VMSize                   string                      `json:"vmSize"`
@@ -339,11 +370,36 @@ type MasterProfile struct {
 	Extensions               []Extension                 `json:"extensions"`
 	Distro                   Distro                      `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig           `json:"kubernetesConfig,omitempty"`
+=======
+	Count                    int               `json:"count"`
+	DNSPrefix                string            `json:"dnsPrefix"`
+	VMSize                   string            `json:"vmSize"`
+	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string            `json:"subnet"`
+	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
+	StorageProfile           string            `json:"storageProfile,omitempty"`
+	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool              `json:"oauthEnabled"`
+	PreprovisionExtension    *Extension        `json:"preProvisionExtension"`
+	Extensions               []Extension       `json:"extensions"`
+	Distro                   Distro            `json:"distro,omitempty"`
+	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+>>>>>>> 6bd506cd0749b021c1dc9ce70aaa736bbd2c11fe
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ImageReference represents a reference to an Image resource in Azure.
+type ImageReference struct {
+	Name          string `json:"name,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
 // ExtensionProfile represents an extension definition
@@ -367,27 +423,32 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
-	Subnet              string `json:"subnet"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
-	Distro              Distro `json:"distro,omitempty"`
+	Name                string               `json:"name"`
+	Count               int                  `json:"count"`
+	VMSize              string               `json:"vmSize"`
+	OSDiskSizeGB        int                  `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix           string               `json:"dnsPrefix,omitempty"`
+	OSType              OSType               `json:"osType,omitempty"`
+	Ports               []int                `json:"ports,omitempty"`
+	AvailabilityProfile string               `json:"availabilityProfile"`
+	StorageProfile      string               `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int                `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string               `json:"vnetSubnetID,omitempty"`
+	Subnet              string               `json:"subnet"`
+	IPAddressCount      int                  `json:"ipAddressCount,omitempty"`
+	Distro              Distro               `json:"distro,omitempty"`
+	Role                AgentPoolProfileRole `json:"role,omitempty"`
 
 	FQDN                  string            `json:"fqdn,omitempty"`
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
 	KubernetesConfig      *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	ImageRef              *ImageReference   `json:"imageReference,omitempty"`
 }
+
+// AgentPoolProfileRole represents an agent role
+type AgentPoolProfileRole string
 
 // DiagnosticsProfile setting to enable/disable capturing
 // diagnostics for VMs hosting container cluster.
@@ -569,6 +630,9 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
+	if p.OrchestratorProfile.OrchestratorType == OpenShift {
+		return true
+	}
 	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
 		return true
 	}
@@ -581,6 +645,18 @@ func (p *Properties) HasStorageAccountDisks() bool {
 		return true
 	}
 	return false
+}
+
+// TotalNodes returns the total number of nodes in the cluster configuration
+func (p *Properties) TotalNodes() int {
+	var totalNodes int
+	if p.MasterProfile != nil {
+		totalNodes = p.MasterProfile.Count
+	}
+	for _, pool := range p.AgentPoolProfiles {
+		totalNodes = totalNodes + pool.Count
+	}
+	return totalNodes
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -676,6 +752,11 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
+}
+
+// IsOpenShift returns true if this template is for OpenShift orchestrator
+func (o *OrchestratorProfile) IsOpenShift() bool {
+	return o.OrchestratorType == OpenShift
 }
 
 // IsDCOS returns true if this template is for DCOS orchestrator

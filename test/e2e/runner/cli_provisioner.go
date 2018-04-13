@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/dcos"
@@ -84,13 +85,11 @@ func (cli *CLIProvisioner) provision() error {
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
-	if cli.Config.SoakClusterName == "" {
-		cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
-		util.PrintCommand(cmd)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
-		}
+	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
@@ -182,17 +181,27 @@ func (cli *CLIProvisioner) generateName() string {
 
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() {
-		cli.Config.SetKubeConfig()
-		log.Println("Waiting on nodes to go into ready state...")
-		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if !ready {
-			return errors.New("Error: Not all nodes in a healthy state")
+		if !cli.IsPrivate() {
+			cli.Config.SetKubeConfig()
+			log.Println("Waiting on nodes to go into ready state...")
+			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
+			if !ready {
+				return errors.New("Error: Not all nodes in a healthy state")
+			}
+			version, err := node.Version()
+			if err != nil {
+				log.Printf("Ready nodes did not return a version: %s", err)
+			}
+			log.Printf("Testing a Kubernetes %s cluster...\n", version)
+		} else {
+			log.Println("This cluster is private")
+			if cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile == nil {
+				// TODO: add "bring your own jumpbox to e2e"
+				return errors.New("Error: cannot test a private cluster without provisioning a jumpbox")
+			}
+			log.Printf("Testing a Kubernetes private cluster...")
+			// TODO: create SSH connection and get nodes and k8s version
 		}
-		version, err := node.Version()
-		if err != nil {
-			log.Printf("Ready nodes did not return a version: %s", err)
-		}
-		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {
@@ -222,7 +231,8 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	agentFiles := []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
 		"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
 		"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/provision.sh",
-		"/opt/azure/provision-ps.log", "/var/log/azure/dnsdump.pcap"}
+		"/opt/azure/provision-ps.log", "/var/log/azure/kubelet-status.log", "/var/log/azure/hyperkube-extract-status.log",
+		"/var/log/azure/docker-status.log", "/var/log/azure/systemd-journald-status.log"}
 	masterFiles := agentFiles
 	masterFiles = append(masterFiles, "/opt/azure/containers/mountetcd.sh", "/opt/azure/containers/setup-etcd.sh", "/opt/azure/containers/setup-etcd.log")
 	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
@@ -258,4 +268,12 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	}
 
 	return nil
+}
+
+// IsPrivate will return true if the cluster has no public IPs
+func (cli *CLIProvisioner) IsPrivate() bool {
+	if cli.Config.IsKubernetes() && cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
+		return true
+	}
+	return false
 }

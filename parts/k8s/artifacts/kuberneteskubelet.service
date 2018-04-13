@@ -1,7 +1,6 @@
 [Unit]
 Description=Kubelet
-Requires=docker.service
-After=docker.service
+ConditionPathExists=/usr/local/bin/kubelet
 
 [Service]
 Restart=always
@@ -17,28 +16,7 @@ ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
 ExecStartPre=/sbin/sysctl -w net.ipv4.tcp_retries2=8
 ExecStartPre=-/sbin/ebtables -t nat --list
 ExecStartPre=-/sbin/iptables -t nat --list
-ExecStart=/usr/bin/docker run \
-  --net=host \
-  --pid=host \
-  --privileged \
-  --rm \
-  --volume=/:/rootfs:ro,shared \
-  --volume=/dev:/dev \
-  --volume=/sys:/sys:ro \
-  --volume=/var/run:/var/run:rw \
-  --volume=/var/lib/cni/:/var/lib/cni:rw \
-  --volume=/sbin/apparmor_parser/:/sbin/apparmor_parser:rw \
-  --volume=/var/lib/docker/:/var/lib/docker:rw,shared \
-  --volume=/var/lib/containers/:/var/lib/containers:rw \
-  --volume=/var/lib/kubelet/:/var/lib/kubelet:rw,shared \
-  --volume=/var/log:/var/log:rw \
-  --volume=/etc/kubernetes/:/etc/kubernetes:ro \
-  --volume=/srv/kubernetes/:/srv/kubernetes:ro $DOCKER_OPTS \
-  --volume=/var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \
-  --volume=/etc/kubernetes/volumeplugins:/etc/kubernetes/volumeplugins:rw \
-    ${KUBELET_IMAGE} \
-      /hyperkube kubelet \
-        --containerized \
+ExecStart=/usr/local/bin/kubelet \
         --enable-server \
         --node-labels="${KUBELET_NODE_LABELS}" \
         --v=2 \

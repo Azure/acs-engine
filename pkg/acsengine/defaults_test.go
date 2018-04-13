@@ -326,6 +326,63 @@ func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_6_0(t *testing.T)
 	}
 }
 
+func TestEtcdDiskSize(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.8.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSize {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSize)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT3Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT3Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 6
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT10Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT10Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 16
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT20Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT20Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 50
+	customEtcdDiskSize := "512"
+	properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = customEtcdDiskSize
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != customEtcdDiskSize {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, customEtcdDiskSize)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,

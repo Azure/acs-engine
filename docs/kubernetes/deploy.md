@@ -39,15 +39,15 @@ Run `acs-engine deploy` with the appropriate arguments:
 ```
 $ acs-engine deploy --subscription-id 51ac25de-afdg-9201-d923-8d8e8e8e8e8e \
     --dns-prefix contoso-apple --location westus2 \
-    --auto-suffix --api-model examples/kubernetes.json
+    --api-model examples/kubernetes.json
 
-WARN[0005] apimodel: missing masterProfile.dnsPrefix will use "contoso-apple-59769a59"
-WARN[0005] --resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: contoso-apple-59769a59
+WARN[0005] apimodel: missing masterProfile.dnsPrefix will use "contoso-apple"
+WARN[0005] --resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: contoso-apple
 WARN[0008] apimodel: ServicePrincipalProfile was empty, creating application...
 WARN[0017] created application with applicationID (7e2d433f-d039-48b8-87dc-83fa4dfa38d4) and servicePrincipalObjectID (db6167e1-aeed-407a-b218-086589759442).
 WARN[0017] apimodel: ServicePrincipalProfile was empty, assigning role to application...
-INFO[0034] Starting ARM Deployment (contoso-apple-59769a59-1423145182). This will take some time...
-INFO[0393] Finished ARM Deployment (contoso-apple-59769a59-1423145182).
+INFO[0034] Starting ARM Deployment (contoso-apple-1423145182). This will take some time...
+INFO[0393] Finished ARM Deployment (contoso-apple-1423145182).
 ```
 
 `acs-engine` will output Azure Resource Manager (ARM) templates, SSH keys, and a kubeconfig file in `_output/contoso-apple-59769a59` directory:
@@ -66,6 +66,8 @@ kubernetes-dashboard is running at https://contoso-apple-59769a59.westus2.clouda
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
+
+Administrative note: By default, the directory where acs-engine stores cluster configuration (`_output/contoso-apple` above) won't be overwritten as a result of subsequent attempts to deploy a cluster using the same `--dns-prefix`) To re-use the same resource group name repeatedly, include the `--force-overwrite` command line option with your `acs-engine deploy` command. On a related note, include an `--auto-suffix` option to append a randomly generated suffix to the dns-prefix to form the resource group name, for example if your workflow requires a common prefix across multiple cluster deployments. Using the `--auto-suffix` pattern appends a compressed timestamp to ensure a unique cluster name (and thus ensure that each deployment's configuration artifacts will be stored locally under a discrete `_output/<resource-group-name>/` directory).
 
 **Note**: If the cluster is using an existing VNET please see the [Custom VNET](features.md#feat-custom-vnet) feature documentation for additional steps that must be completed after cluster provisioning.
 

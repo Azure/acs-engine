@@ -1,0 +1,76 @@
+---
+# FIXME: Anything below in all-caps has it's value replaced by sed in the
+#        openshiftmasterscript.sh which is not ideal, we should fix that.
+localmaster:
+  hosts:
+    localhost
+  vars:
+    ansible_connection: local
+    ansible_python_interpreter: /usr/bin/python2
+
+    openshift_is_containerized: False
+
+    openshift_image_tag: "vVERSION"
+
+    # NOTE: This changes in 3.10+ and it's all combined into a single variable
+    #       under the name openshift_web_console_image_name
+    openshift_web_console_prefix: "registry.reg-aws.openshift.com:443/openshift3/"
+    openshift_web_console_image_name: "ose-web-console"
+    openshift_web_console_version: "vVERSION"
+
+    oreg_url_master: 'TEMPIMAGEBASE-${component}:${version}'
+    openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
+
+    # FIXME
+    # This should be type=infra, but we have to live with region=infra for now
+    # because of legacy reasons
+    openshift_router_selector: 'region=infra'
+    openshift_registry_selector: 'region=infra'
+
+    # Set Azure specific data for hosted registry
+    openshift_hosted_registry_storage_provider: "azure_blob"
+    openshift_hosted_registry_storage_kind: "object"
+    openshift_hosted_registry_storage_azure_blob_accountname: 'REGISTRY_STORAGE_AZURE_ACCOUNTNAME'
+    openshift_hosted_registry_storage_azure_blob_accountkey: 'REGISTRY_STORAGE_AZURE_ACCOUNTKEY'
+    openshift_hosted_registry_storage_azure_blob_container: "registry"
+    openshift_hosted_registry_storage_azure_blob_realm: "core.windows.net"
+
+    # FIXME
+    #
+    # Hard code this for now.
+    #
+    # Currently the cluster state at deployment time does not have the nodes
+    # registered to the master with labels applied and ready to be queried
+    # against at the point in time in the deploy that the playbooks run. Also,
+    # the router replica count default "falls back" to 1 appropriately where as
+    # the registry replica logic does not. There was also discussion about if
+    # it's appropriate to do this with replicas == infra nodes because it's
+    # perfectly feasible to have an infra node count higher than the desired
+    # replicas.
+    #
+    # Revisit later (possibly a daemonset or $other)
+    openshift_hosted_router_replicas: 1
+    openshift_hosted_registry_replicas: 1
+
+
+    openshift_web_console_install: True
+
+    openshift_deployment_type: 'openshift-enterprise'
+
+    # NOTE: Do not define openshift_hosted_router_replicas so that the task file
+    # router.yml inside the openshift_hosted role from openshift-ansible will
+    # autopopulate it using the openshift_hosted_router_selector and querying
+    # the number of infra nodes
+
+    # NOTE: The variables below are internal to openshift-ansible and we're
+    #       providing them here to avoid the incurred cost of fact finding
+    openshift:
+      common:
+        config_base: /etc/origin/
+      master:
+        public_console_url: "https://{{ .ExternalMasterHostname }}:8443/console"
+        public_api_url: "https://{{ .ExternalMasterHostname }}:8443"
+
+oo_masters_to_config:
+  hosts:
+    localhost

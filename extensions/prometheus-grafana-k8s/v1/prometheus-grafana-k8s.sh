@@ -246,7 +246,7 @@ install_grafana() {
     echo $(date) " - Installing the Grafana Helm chart"
     helm install \
         --name $GF_RELEASE_NAME \
-        --version 0.6.2 \
+        --version 0.8.5 \
         --namespace $NAMESPACE stable/grafana $(storageclass_param)
 
     GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"

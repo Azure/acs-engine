@@ -3,6 +3,9 @@ package api
 import (
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
+	"k8s.io/apimachinery/pkg/api/equality"
+
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
@@ -86,7 +89,7 @@ func TestOrchestratorVersion(t *testing.T) {
 		},
 	}
 	cs := ConvertV20170701ContainerService(v20170701cs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -111,7 +114,7 @@ func TestOrchestratorVersion(t *testing.T) {
 		},
 	}
 	cs = ConvertVLabsContainerService(vlabscs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -150,6 +153,61 @@ func TestKubernetesVlabsDefaults(t *testing.T) {
 	}
 	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicyWindows {
 		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicyWindows, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+	}
+}
+
+func TestConvertVLabsOrchestratorProfile(t *testing.T) {
+	tests := map[string]struct {
+		props  *vlabs.Properties
+		expect *OrchestratorProfile
+	}{
+		"nilOpenShiftConfig": {
+			props: &vlabs.Properties{
+				OrchestratorProfile: &vlabs.OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+			},
+			expect: &OrchestratorProfile{
+				OrchestratorType:    OpenShift,
+				OrchestratorVersion: common.OpenShiftDefaultVersion,
+			},
+		},
+		"setOpenShiftConfig": {
+			props: &vlabs.Properties{
+				OrchestratorProfile: &vlabs.OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &vlabs.OpenShiftConfig{
+						KubernetesConfig: &vlabs.KubernetesConfig{
+							NetworkPolicy:    "azure",
+							ContainerRuntime: "docker",
+						},
+					},
+				},
+			},
+			expect: &OrchestratorProfile{
+				OrchestratorType:    OpenShift,
+				OrchestratorVersion: common.OpenShiftDefaultVersion,
+				KubernetesConfig: &KubernetesConfig{
+					NetworkPolicy:    "azure",
+					ContainerRuntime: "docker",
+				},
+				OpenShiftConfig: &OpenShiftConfig{
+					KubernetesConfig: &KubernetesConfig{
+						NetworkPolicy:    "azure",
+						ContainerRuntime: "docker",
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Logf("running scenario %q", name)
+		actual := &OrchestratorProfile{}
+		convertVLabsOrchestratorProfile(test.props, actual)
+		if !equality.Semantic.DeepEqual(test.expect, actual) {
+			t.Errorf(spew.Sprintf("Expected:\n%+v\nGot:\n%+v", test.expect, actual))
+		}
 	}
 }
 

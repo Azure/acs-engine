@@ -24,4 +24,5 @@
     "{{.Name}}osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
     "{{.Name}}osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
     "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]",
-
+    "{{.Name}}osImageName": "[parameters('{{.Name}}osImageName')]",
+    "{{.Name}}osImageResourceGroup": "[parameters('{{.Name}}osImageResourceGroup')]",

@@ -31,15 +31,36 @@ type ManagedCluster struct {
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	KubernetesVersion       string                   `json:"kubernetesVersion"`
-	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
+	DNSPrefix               string                   `json:"dnsPrefix,omitempty"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
+	NodeResourceGroup       string                   `json:"nodeResourceGroup,omitempty"`
+	EnableRBAC              *bool                    `json:"enableRBAC,omitempty"`
+	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
 }
+
+// NetworkProfile represents network related definitions
+type NetworkProfile struct {
+	NetworkPlugin    NetworkPlugin `json:"networkPlugin,omitempty"`
+	ServiceCidr      string        `json:"serviceCidr,omitempty"`
+	DNSServiceIP     string        `json:"dnsServiceIP,omitempty"`
+	DockerBridgeCidr string        `json:"dockerBridgeCidr,omitempty"`
+}
+
+// NetworkPlugin represnets types of network plugin
+type NetworkPlugin string
+
+const (
+	// Azure represents Azure CNI network plugin
+	Azure NetworkPlugin = "azure"
+	// Kubenet represents Kubenet network plugin
+	Kubenet NetworkPlugin = "kubenet"
+)
 
 // AddonProfile represents an addon for managed cluster
 type AddonProfile struct {
@@ -150,6 +171,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
+	MaxPods        int    `json:"maxPods,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because

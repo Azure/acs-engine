@@ -7,10 +7,12 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -27,6 +29,7 @@ type Config struct {
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
 	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
+	ForceDeploy       bool   `envconfig:"FORCE_DEPLOY"`
 }
 
 const (
@@ -102,6 +105,27 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 		return "", err
 	}
 	return string(contents), nil
+}
+
+// SetSSHKeyPermissions will change the ssh file permission to 0600
+func (c *Config) SetSSHKeyPermissions() error {
+	privateKey := c.GetSSHKeyPath()
+	cmd := exec.Command("chmod", "0600", privateKey)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change private ssh key permissions at %s: %s\n", privateKey, out)
+		return err
+	}
+	publicKey := c.GetSSHKeyPath() + ".pub"
+	cmd = exec.Command("chmod", "0600", publicKey)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change public ssh key permissions at %s: %s\n", publicKey, out)
+		return err
+	}
+	return nil
 }
 
 // IsKubernetes will return true if the ORCHESTRATOR env var is set to kubernetes or not set at all

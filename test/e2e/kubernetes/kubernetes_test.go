@@ -265,7 +265,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				serviceName := "ingress-nginx"
 				deploymentName := fmt.Sprintf("ingress-nginx-%s-%v", cfg.Name, r.Intn(99999))
-				_, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "--labels=app="+serviceName)
+				deploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "--labels=app="+serviceName)
 				Expect(err).NotTo(HaveOccurred())
 
 				s, err := service.CreateServiceFromFile(filepath.Join(WorkloadDir, "ingress-nginx-ilb.yaml"), serviceName, "default")
@@ -289,6 +289,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						Expect(pass).To(BeTrue())
 					}
 				}
+				By("Cleaning up after ourselves")
+				err = curlDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = deploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = s.Delete()
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
