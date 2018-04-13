@@ -352,7 +352,6 @@ type MasterNetworkAccessProfile struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-<<<<<<< HEAD
 	Count                    int                         `json:"count"`
 	DNSPrefix                string                      `json:"dnsPrefix"`
 	VMSize                   string                      `json:"vmSize"`
@@ -370,25 +369,7 @@ type MasterProfile struct {
 	Extensions               []Extension                 `json:"extensions"`
 	Distro                   Distro                      `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig           `json:"kubernetesConfig,omitempty"`
-=======
-	Count                    int               `json:"count"`
-	DNSPrefix                string            `json:"dnsPrefix"`
-	VMSize                   string            `json:"vmSize"`
-	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string            `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string            `json:"subnet"`
-	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
-	StorageProfile           string            `json:"storageProfile,omitempty"`
-	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool              `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension        `json:"preProvisionExtension"`
-	Extensions               []Extension       `json:"extensions"`
-	Distro                   Distro            `json:"distro,omitempty"`
-	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
->>>>>>> 6bd506cd0749b021c1dc9ce70aaa736bbd2c11fe
+	ImageRef                 *ImageReference             `json:"imageReference,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376

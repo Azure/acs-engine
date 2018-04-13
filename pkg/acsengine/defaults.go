@@ -578,8 +578,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 						DestinationPortRange:     "443",
 					}
 
-					if a.MasterProfile.IsOpenShift {
-						a.MasterProfile.NetworkAccessProfile.TLS.DestinationPortRange = 443
+					if a.OrchestratorProfile.IsOpenShift() {
+						a.MasterProfile.NetworkAccessProfile.TLS.DestinationPortRange = "8443"
 					}
 				}
 			} else {
