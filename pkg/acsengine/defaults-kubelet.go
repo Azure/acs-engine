@@ -12,18 +12,17 @@ func setKubeletConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 	staticLinuxKubeletConfig := map[string]string{
-		"--address":                         "0.0.0.0",
-		"--allow-privileged":                "true",
-		"--anonymous-auth":                  "false",
-		"--authorization-mode":              "Webhook",
-		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
-		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cluster-dns":                     o.KubernetesConfig.DNSServiceIP,
-		"--cgroups-per-qos":                 "true",
-		"--enforce-node-allocatable":        "pods",
-		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
-		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
-		"--keep-terminated-pod-volumes":     "false",
+		"--address":                     "0.0.0.0",
+		"--allow-privileged":            "true",
+		"--anonymous-auth":              "false",
+		"--authorization-mode":          "Webhook",
+		"--client-ca-file":              "/etc/kubernetes/certs/ca.crt",
+		"--pod-manifest-path":           "/etc/kubernetes/manifests",
+		"--cluster-dns":                 o.KubernetesConfig.DNSServiceIP,
+		"--cgroups-per-qos":             "true",
+		"--enforce-node-allocatable":    "pods",
+		"--kubeconfig":                  "/var/lib/kubelet/kubeconfig",
+		"--keep-terminated-pod-volumes": "false",
 	}
 
 	staticWindowsKubeletConfig := make(map[string]string)
@@ -33,19 +32,20 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
-		"--cluster-domain":               "cluster.local",
-		"--network-plugin":               "cni",
-		"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
-		"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
-		"--node-status-update-frequency": KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
-		"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
-		"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
-		"--cloud-provider":               "azure",
-		"--cloud-config":                 "/etc/kubernetes/azure.json",
-		"--event-qps":                    DefaultKubeletEventQPS,
-		"--cadvisor-port":                DefaultKubeletCadvisorPort,
+		"--cluster-domain":                  "cluster.local",
+		"--network-plugin":                  "cni",
+		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
+		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
+		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
+		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
+		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
+		"--non-masquerade-cidr":             o.KubernetesConfig.ClusterSubnet,
+		"--cloud-provider":                  "azure",
+		"--cloud-config":                    "/etc/kubernetes/azure.json",
+		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
+		"--event-qps":                       DefaultKubeletEventQPS,
+		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -60,6 +60,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Override default --network-plugin?
 	if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
 	// We don't support user-configurable values for the following,

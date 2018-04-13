@@ -139,7 +139,7 @@
 {{end}}
         "[variables('masterLbID')]",
         "[concat(variables('masterSshPort22InboundNatRuleIdPrefix'),'0')]",
-        "[concat(variables('masterSshInboundNatRuleIdPrefix'),copyIndex())]"        
+        "[concat(variables('masterSshInboundNatRuleIdPrefix'),copyIndex())]"
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
@@ -250,7 +250,7 @@
             ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'vhds/', variables('masterVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
             }
-{{end}}           
+{{end}}
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}

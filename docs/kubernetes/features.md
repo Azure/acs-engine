@@ -133,7 +133,9 @@ When using Azure integrated networking the maxPods setting will be set to 30 by 
 
 ```
       "kubernetesConfig": {
-        "maxPods": 50
+        "kubeletConfig": {
+          "--max-pods": "50"
+        }
       }
 ```
 
@@ -169,9 +171,9 @@ Per default Calico still allows all communication within the cluster. Using Kube
 
 Using the default configuration, Kubernetes allows communication between all
 Pods within a cluster. To ensure that Pods can only be accessed by authorized
-Pods, a policy enforcement is needed. To enable policy enforcement using Cilium refer to the 
-[cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) 
-document under networkPolicy. There is also a reference cluster definition available 
+Pods, a policy enforcement is needed. To enable policy enforcement using Cilium refer to the
+[cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig)
+document under networkPolicy. There is also a reference cluster definition available
 [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-cilium.json).
 
 This will deploy a Cilium agent to every instance of the cluster
@@ -186,7 +188,7 @@ cilium-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agent
 cilium-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
 ```
 
-Per default Cilium still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, 
+Per default Cilium still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API,
 you can define stricter policies. Good resources to get information about that are:
 
 * [Cilum Network Policy Docs](https://cilium.readthedocs.io/en/latest/kubernetes/policy/#k8s-policy)

@@ -128,7 +128,7 @@ func NewCluster(cfg *config.Config, eng *engine.Engine) (*Cluster, error) {
 // InstallDCOSClient will download and place in the path the dcos client
 func (c *Cluster) InstallDCOSClient() error {
 
-	out, err := c.Connection.Execute("curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos")
+	out, err := c.Connection.Execute("curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.10/dcos")
 	if err != nil {
 		log.Printf("Error downloading DCOS cli:%s\n", err)
 		log.Printf("Output:%s\n", out)
@@ -140,9 +140,9 @@ func (c *Cluster) InstallDCOSClient() error {
 		log.Printf("Output:%s\n", out)
 		return err
 	}
-	out, err = c.Connection.Execute("./dcos config set core.dcos_url http://localhost:80")
+	out, err = c.Connection.Execute("./dcos cluster setup http://localhost:80")
 	if err != nil {
-		log.Printf("Error while trying set core.dcos_url:%s\n", err)
+		log.Printf("Error while trying dcos cluster setup:%s\n", err)
 		log.Printf("Output:%s\n", out)
 		return err
 	}

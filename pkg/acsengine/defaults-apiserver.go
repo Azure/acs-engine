@@ -23,7 +23,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
 		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
-		"--etcd-quorum-read":           "true",
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
@@ -78,12 +77,12 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	if cs.Properties.HasAadProfile() {
 		defaultAPIServerConfig["--oidc-username-claim"] = "oid"
 		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
-		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
+		defaultAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
-		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
+		defaultAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
 	}
 
 	// Audit Policy configuration

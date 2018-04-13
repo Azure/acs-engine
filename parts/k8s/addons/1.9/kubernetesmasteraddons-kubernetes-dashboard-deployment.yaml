@@ -8,18 +8,52 @@ metadata:
   name: kubernetes-dashboard
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kubernetes-dashboard
+  name: kubernetes-dashboard-minimal
+  namespace: kube-system
+  labels:
+    k8s-app: kubernetes-dashboard
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["kubernetes-dashboard-key-holder"]
+  verbs: ["get", "update", "delete"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: ["kubernetes-dashboard-settings"]
+  verbs: ["get", "update"]
+- apiGroups: [""]
+  resources: ["services"]
+  resourceNames: ["heapster"]
+  verbs: ["proxy"]
+- apiGroups: [""]
+  resources: ["services/proxy"]
+  resourceNames: ["heapster", "http:heapster:", "https:heapster:"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubernetes-dashboard-minimal
+  namespace: kube-system
   labels:
     k8s-app: kubernetes-dashboard
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
+  kind: Role
+  name: kubernetes-dashboard-minimal
 subjects:
 - kind: ServiceAccount
   name: kubernetes-dashboard
@@ -61,7 +95,7 @@ spec:
         k8s-app: kubernetes-dashboard
     spec:
       containers:
-      - args: 
+      - args:
         - --auto-generate-certificates
         - --heapster-host=http://heapster.kube-system:80
         image: <kubernetesDashboardSpec>

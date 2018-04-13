@@ -1,0 +1,182 @@
+    , {
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "location": "[variables('location')]",
+      "name": "[variables('bootstrapAvailabilitySet')]",
+      "properties": {
+        "platformFaultDomainCount": "1",
+        "platformUpdateDomainCount": "3",
+        "managed": "true"
+      },
+      "type": "Microsoft.Compute/availabilitySets"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "name": "[variables('bootstrapNSGName')]",
+      "properties": {
+        "securityRules": [
+            {
+                "properties": {
+                    "priority": 201,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "destinationPortRange": "2222",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "protocol": "Tcp",
+                    "description": "Allow SSH",
+                    "sourceAddressPrefix": "*"
+                },
+                "name": "sshPort22"
+            },
+            {
+                "properties": {
+                    "priority": 200,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "destinationPortRange": "22",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "protocol": "Tcp",
+                    "description": "Allow SSH",
+                    "sourceAddressPrefix": "*"
+                },
+                "name": "ssh"
+            }
+        ]
+      },
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('bootstrapCount')]",
+        "name": "nicLoopNode"
+      },
+      "dependsOn": [
+        "[variables('bootstrapNSGID')]"
+{{if not .MasterProfile.IsCustomVNET}}        
+         , "[variables('vnetID')]"
+{{end}}
+      ],
+      "location": "[variables('location')]",
+      "name": "[concat(variables('bootstrapVMNamePrefix'), 'nic-', copyIndex())]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipConfigNode",
+            "properties": {
+              "privateIPAddress": "[concat(variables('bootstrapFirstAddrPrefix'), copyIndex(int(variables('bootstrapFirstAddrOctet4'))))]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('bootstrapVnetSubnetID')]"
+              }
+            }
+          }
+        ]
+        ,"networkSecurityGroup": {
+          "id": "[variables('bootstrapNSGID')]"
+        }
+      },
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+{{if .MasterProfile.IsManagedDisks}}
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+{{else}}
+      "apiVersion": "[variables('apiVersionDefault')]",
+{{end}}
+      "copy": {
+        "count": "[variables('bootstrapCount')]",
+        "name": "vmLoopNode"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('bootstrapVMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Compute/availabilitySets/',variables('bootstrapAvailabilitySet'))]",
+{{if .MasterProfile.IsStorageAccount}}
+        "[variables('bootstrapStorageAccountName')]",
+{{end}}
+        "[variables('masterStorageAccountExhibitorName')]"
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acsengine-', variables('bootstrapVMNamePrefix'), copyIndex())]"
+      },
+      "location": "[variables('location')]",
+      "name": "[concat(variables('bootstrapVMNamePrefix'), copyIndex())]",
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('bootstrapAvailabilitySet'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[variables('bootstrapVMSize')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('bootstrapVMNamePrefix'), 'nic-', copyIndex()))]"
+            }
+          ]
+        },
+        "osProfile": {
+          "adminUsername": "[variables('adminUsername')]",
+          "computername": "[concat(variables('bootstrapVMNamePrefix'), copyIndex())]",
+          {{GetDCOSMasterCustomData}}
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "true",
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "keyData": "[variables('sshRSAPublicKey')]",
+                        "path": "[variables('sshKeyPath')]"
+                    }
+                ]
+            }
+          }
+          {{if .LinuxProfile.HasSecrets}}
+          ,
+          "secrets": "[variables('linuxProfileSecrets')]"
+          {{end}}
+        },
+        "storageProfile": {
+          "imageReference": {
+            "offer": "[variables('osImageOffer')]",
+            "publisher": "[variables('osImagePublisher')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
+          },
+          "osDisk": {
+            "caching": "ReadWrite"
+            ,"createOption": "FromImage"
+{{if .MasterProfile.IsStorageAccount}}
+            ,"name": "[concat(variables('bootstrapVMNamePrefix'), copyIndex(),'-osdisk')]"
+            ,"vhd": {
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('bootstrapStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('bootstrapVMNamePrefix'),copyIndex(),'-osdisk.vhd')]"
+            }
+{{end}}
+{{if ne .MasterProfile.OSDiskSizeGB 0}}
+            ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
+{{end}}
+          }
+        }
+      },
+      "type": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1))]"
+      ],
+      "location": "[variables('location')]",
+      "name": "[concat(variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/waitforleader')]",
+      "properties": {
+        "autoUpgradeMinorVersion": true,
+        "publisher": "Microsoft.OSTCExtensions",
+        "settings": {
+          "commandToExecute": "sh -c 'until ping -c1 leader.mesos;do echo waiting for leader.mesos;sleep 15;done;echo leader.mesos up'"
+        },
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.4"
+      },
+      "type": "Microsoft.Compute/virtualMachines/extensions"
+    }{{WriteLinkedTemplatesForExtensions}}

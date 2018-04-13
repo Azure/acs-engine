@@ -35,6 +35,7 @@ type deployCmd struct {
 	dnsPrefix         string
 	autoSuffix        bool
 	outputDirectory   string // can be auto-determined from clusterDefinition
+	forceOverwrite    bool
 	caCertificatePath string
 	caPrivateKeyPath  string
 	classicMode       bool
@@ -75,6 +76,7 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
 	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
 	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
+	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 
 	addAuthFlags(&dc.authArgs, f)
 
@@ -147,9 +149,11 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 func autofillApimodel(dc *deployCmd) {
 	var err error
 
-	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
-		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
-		dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
+	if dc.containerService.Properties.LinuxProfile != nil {
+		if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
+			log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
+			dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
+		}
 	}
 
 	if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
@@ -172,6 +176,10 @@ func autofillApimodel(dc *deployCmd) {
 		dc.outputDirectory = path.Join("_output", dc.containerService.Properties.MasterProfile.DNSPrefix)
 	}
 
+	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
+		log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
+	}
+
 	if dc.resourceGroup == "" {
 		dnsPrefix := dc.containerService.Properties.MasterProfile.DNSPrefix
 		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dnsPrefix)
@@ -181,15 +189,13 @@ func autofillApimodel(dc *deployCmd) {
 		}
 	}
 
-	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
+	if dc.containerService.Properties.LinuxProfile != nil && (dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
-		creator := &acsengine.SSHCreator{
-			Translator: &i18n.Translator{
-				Locale: dc.locale,
-			},
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "") {
+		translator := &i18n.Translator{
+			Locale: dc.locale,
 		}
-		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}

@@ -161,7 +161,7 @@
             "computerNamePrefix": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs')]",
             "adminUsername": "[variables('windowsAdminUsername')]",
             "adminPassword": "[variables('windowsAdminPassword')]",
-            {{GetDCOSWindowsAgentCustomData .}}           
+            {{GetDCOSWindowsAgentCustomData .}}
             {{if HasWindowsSecrets}}
               ,
               "secrets": "[variables('windowsProfileSecrets')]"

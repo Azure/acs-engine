@@ -28,8 +28,8 @@ func Test_GetSupportedKubernetesVersion(t *testing.T) {
 	}
 
 	defaultVersion := GetSupportedKubernetesVersion("")
-	if defaultVersion != KubernetesDefaultVersion {
-		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", KubernetesDefaultVersion, defaultVersion)
+	if defaultVersion != GetDefaultKubernetesVersion() {
+		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", GetDefaultKubernetesVersion(), defaultVersion)
 	}
 }
 
@@ -222,7 +222,7 @@ func TestGetVersionsBetween(t *testing.T) {
 
 func Test_GetValidPatchVersion(t *testing.T) {
 	v := GetValidPatchVersion(Kubernetes, "")
-	if v != KubernetesDefaultVersion {
+	if v != GetDefaultKubernetesVersion() {
 		t.Errorf("It is not the default Kubernetes version")
 	}
 
@@ -314,7 +314,7 @@ func TestGetMaxVersion(t *testing.T) {
 
 func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	version := RationalizeReleaseAndVersion(Kubernetes, "", "", false)
-	if version != KubernetesDefaultVersion {
+	if version != GetDefaultKubernetesVersion() {
 		t.Errorf("It is not the default Kubernetes version")
 	}
 

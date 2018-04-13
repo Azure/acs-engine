@@ -1,4 +1,4 @@
-The steps listed on this page describe a way to modify a running Kubernetes cluster deployed with `acs-engine` on Azure. These steps are only tested with changes targeting actually Azure resources. Changes made to Kubernetes configuration are not tested yet. 
+The steps listed on this page describe a way to modify a running Kubernetes cluster deployed with `acs-engine` on Azure. These steps are only tested with changes targeting actually Azure resources. Changes made to Kubernetes configuration are not tested yet.
 
 ## `generate` and `deploy`
 
@@ -6,7 +6,7 @@ These are the common steps (unless described otherwise) you'll have to run after
 
 * Modify the apimodel.json file located in the `_output/<clustername>` folder
 * Run `acs-engine generate --api-model _output/<clustername>/apimodel.json`. This wil update the `azuredeploy*` files needed for the new ARM deployment. These files are also located in the `_output` folder.
-* Apply the changes by manually starting an ARM deployment. From within the  `_output/<clustername>` run 
+* Apply the changes by manually starting an ARM deployment. From within the  `_output/<clustername>` run
 
         az group deployment --template-file azuredeploy.json --parameters azuredeploy.parameters.json --resource-group "<my-resource-group>"
 
@@ -22,7 +22,7 @@ These are the common steps (unless described otherwise) you'll have to run after
 
 ### Adding a node pool
 
-Add (or copy) an entry in the `agentPoolProfiles` array. 
+Add (or copy) an entry in the `agentPoolProfiles` array.
 
 ### Removing a node pool
 
@@ -34,7 +34,7 @@ Add (or copy) an entry in the `agentPoolProfiles` array.
 
 ### Resizing a node pool
 
-Use the `acs-engine scale` command 
+Use the `acs-engine scale` command
 
     acs-engine scale   --location westeurope --subscription-id "xxx" --resource-group "<my-resource-group" \
     --deployment-dir ./_output/<clustername> --node-pool <nodepool name> --new-node-count <desired number of nodes> --master-FQDN <fqdn of the master lb>

@@ -15,6 +15,8 @@ const (
 	Kubernetes string = "Kubernetes"
 	// SwarmMode is the string constant for the Swarm Mode orchestrator type
 	SwarmMode string = "SwarmMode"
+	// OpenShift is the string constant for the OpenShift orchestrator type
+	OpenShift string = "OpenShift"
 )
 
 // the OSTypes supported by vlabs
@@ -87,5 +89,12 @@ const (
 	// DefaultNetworkPolicy defines the network policy to use by default
 	DefaultNetworkPolicy = "azure"
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = "none"
+	DefaultNetworkPolicyWindows = "azure"
+)
+
+const (
+	// AgentPoolProfileRoleEmpty is the empty role
+	AgentPoolProfileRoleEmpty AgentPoolProfileRole = ""
+	// AgentPoolProfileRoleInfra is the infra role
+	AgentPoolProfileRoleInfra AgentPoolProfileRole = "infra"
 )

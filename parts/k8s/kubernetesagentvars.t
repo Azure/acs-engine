@@ -9,7 +9,7 @@
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
     "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
 {{else}}
-    "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
+    "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]",
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
 {{if .IsCustomVNET}}
@@ -24,4 +24,5 @@
     "{{.Name}}osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
     "{{.Name}}osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
     "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]",
-
+    "{{.Name}}osImageName": "[parameters('{{.Name}}osImageName')]",
+    "{{.Name}}osImageResourceGroup": "[parameters('{{.Name}}osImageResourceGroup')]",

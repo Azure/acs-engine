@@ -31,7 +31,7 @@ Now you can inspect one of the Windows agents with `docker node inspect <hostnam
 
 ##Limitations
 
-As the [Windows Server Containers documentation](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/swarm-mode#limitations) states, at the moment there are a few limitations to Swarm Mode with Windows hosts. 
+As the [Windows Server Containers documentation](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/swarm-mode#limitations) states, at the moment there are a few limitations to Swarm Mode with Windows hosts.
 
 The most important is that the routing mesh is not available for Windows Server at the moment, but you can publish ports on the host (`docker service create --publish mode=host`)
 

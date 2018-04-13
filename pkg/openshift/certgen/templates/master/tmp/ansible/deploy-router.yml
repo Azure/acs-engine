@@ -1,0 +1,9 @@
+- name: Deploy the local OpenShift Router
+  hosts: localmaster
+  gather_facts: false
+
+  tasks:
+    - name: Import and use router task file from openshift-ansible openshift_hosted role
+      import_role:
+        name: openshift_hosted
+        tasks_from: router.yml

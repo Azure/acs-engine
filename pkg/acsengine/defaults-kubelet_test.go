@@ -1,10 +1,39 @@
 package acsengine
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
+
+func TestKubeletConfigDefaults(t *testing.T) {
+	cs := createContainerService("testcluster", "1.8.6", 3, 2)
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	// TODO test all default config values
+	for key, val := range map[string]string{"--azure-container-registry-config": "/etc/kubernetes/azure.json"} {
+		if k[key] != val {
+			t.Fatalf("got unexpected kubelet config value for %s: %s, expected %s",
+				key, k[key], val)
+		}
+	}
+
+	cs = createContainerService("testcluster", "1.8.6", 3, 2)
+	// TODO test all default overrides
+	overrideVal := "/etc/override"
+	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig = map[string]string{
+		"--azure-container-registry-config": overrideVal,
+	}
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	for key, val := range map[string]string{"--azure-container-registry-config": overrideVal} {
+		if k[key] != val {
+			t.Fatalf("got unexpected kubelet config value for %s: %s, expected %s",
+				key, k[key], val)
+		}
+	}
+}
 
 func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = true
@@ -27,6 +56,46 @@ func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 			k["--cloud-provider"])
 	}
 
+}
+
+func TestKubeletConfigCloudConfig(t *testing.T) {
+	// Test default value and custom value for --cloud-config
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--cloud-config"] != "/etc/kubernetes/azure.json" {
+		t.Fatalf("got unexpected '--cloud-config' kubelet config default value: %s",
+			k["--cloud-config"])
+	}
+
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--cloud-config"] = "custom.json"
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--cloud-config"] != "custom.json" {
+		t.Fatalf("got unexpected '--cloud-config' kubelet config default value: %s",
+			k["--cloud-config"])
+	}
+}
+
+func TestKubeletConfigAzureContainerRegistryCofig(t *testing.T) {
+	// Test default value and custom value for --azure-container-registry-config
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--azure-container-registry-config"] != "/etc/kubernetes/azure.json" {
+		t.Fatalf("got unexpected '--azure-container-registry-config' kubelet config default value: %s",
+			k["--azure-container-registry-config"])
+	}
+
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--azure-container-registry-config"] = "custom.json"
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--azure-container-registry-config"] != "custom.json" {
+		t.Fatalf("got unexpected '--azure-container-registry-config' kubelet config default value: %s",
+			k["--azure-container-registry-config"])
+	}
 }
 
 func TestKubeletConfigNetworkPolicy(t *testing.T) {
@@ -83,4 +152,24 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 		}
 	}
 
+}
+
+func TestKubeletMaxPods(t *testing.T) {
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated) {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyAzure, k["--max-pods"])
+	}
+
+	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyNone
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPods) {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyNone, k["--max-pods"])
+	}
 }

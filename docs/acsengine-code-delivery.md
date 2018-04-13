@@ -32,7 +32,7 @@ The following steps constitute ACS Engine delivery pipeline
      --parameters @azuredeploy.parameters.json
 ```
   5. Create a pull request (PR) from github.com/Azure/acs-engine portal.
-  6. The PR triggers a Jenkins job that 
+  6. The PR triggers a Jenkins job that
   + applies the changes to the HEAD of the master branch
   + generates multiple ARM templates for different deployment scenarios
   + simultaneously provisions the clusters based on generated templates in Azure

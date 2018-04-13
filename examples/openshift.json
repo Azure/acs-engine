@@ -1,0 +1,67 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "OpenShift",
+      "openShiftConfig": {
+        "clusterUsername": "demo",
+        "clusterPassword": "demo"
+      }
+    },
+    "azProfile": {
+      "tenantId": "YOUR TENANT ID",
+      "subscriptionId": "YOUR SUBSCRIPTION ID",
+      "resourceGroup": "YOUR RESOURCE GROUP",
+      "location": "YOUR LOCATION"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "YOUR DNS PREFIX",
+      "imageReference": {
+        "name": "YOUR IMAGE",
+        "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+      },
+      "storageProfile": "ManagedDisks",
+      "vmSize": "Standard_D4s_v3"
+    },
+    "agentPoolProfiles": [
+      {
+        "availabilityProfile": "AvailabilitySet",
+        "count": 1,
+        "imageReference": {
+          "name": "YOUR IMAGE",
+          "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+        },
+        "name": "compute",
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D4s_v3"
+      },
+      {
+        "availabilityProfile": "AvailabilitySet",
+        "count": 1,
+        "imageReference": {
+          "name": "YOUR IMAGE",
+          "resourceGroup": "YOUR IMAGE RESOURCE GROUP"
+        },
+        "role": "infra",
+        "name": "infra",
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D4s_v3"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "cloud-user",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "YOUR KEY"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "YOUR CLIENTID",
+      "secret": "YOUR SECRET"
+    }
+  }
+}

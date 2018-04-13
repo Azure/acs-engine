@@ -162,6 +162,11 @@ func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration
 
 // CreateServiceFromFile will create a Service from file with a name
 func CreateServiceFromFile(filename, name, namespace string) (*Service, error) {
+	svc, err := Get(name, namespace)
+	if err == nil {
+		log.Printf("Service %s already exists\n", name)
+		return svc, nil
+	}
 	cmd := exec.Command("kubectl", "create", "-f", filename)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -169,7 +174,7 @@ func CreateServiceFromFile(filename, name, namespace string) (*Service, error) {
 		log.Printf("Error trying to create Service %s:%s\n", name, string(out))
 		return nil, err
 	}
-	svc, err := Get(name, namespace)
+	svc, err = Get(name, namespace)
 	if err != nil {
 		log.Printf("Error while trying to fetch Service %s:%s\n", name, err)
 		return nil, err

@@ -69,13 +69,13 @@ runcmd: PREPROVISION_EXTENSION
   - --now
   - lxc-net.service
 - - tar
-  - czf 
+  - czf
   - /etc/docker.tar.gz
   - -C
   - /tmp/xtoph
   - .docker
-- - rm 
-  - -rf 
+- - rm
+  - -rf
   - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
@@ -130,7 +130,7 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/bootstrap-id
   permissions: '0644'
-- content: '["dcos-config--setup_DCOSGUID", "dcos-metadata--setup_DCOSGUID"]
+- content: '["dcos-config--setup_{{{dcosProviderPackageID}}}", "dcos-metadata--setup_{{{dcosProviderPackageID}}}"]
 
     '
   owner: root

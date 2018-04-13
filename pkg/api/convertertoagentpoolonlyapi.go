@@ -2,11 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 ///////////////////////////////////////////////////////////
@@ -209,6 +211,10 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig: &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(false),
+			EnableSecureKubelet: helpers.PointerToBool(false),
+		},
 	}
 }
 
@@ -308,7 +314,8 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
+	kubernetesConfig := convertV20180331AgentPoolOnlyKubernetesConfig(obj.EnableRBAC)
+	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion, obj.NetworkProfile, kubernetesConfig)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -317,6 +324,7 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
 	}
+
 	if obj.WindowsProfile != nil {
 		properties.WindowsProfile = convertV20180331AgentPoolOnlyWindowsProfile(obj.WindowsProfile)
 	}
@@ -349,10 +357,36 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 	}
 }
 
-func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
+func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
+	if enableRBAC == nil || *enableRBAC == true {
+		// We want default behavior to be true
+		return &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(true),
+			EnableSecureKubelet: helpers.PointerToBool(true),
+		}
+	}
+	return &KubernetesConfig{
+		EnableRbac:          helpers.PointerToBool(false),
+		EnableSecureKubelet: helpers.PointerToBool(false),
+	}
+}
+
+func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, networkProfile *v20180331.NetworkProfile, kubernetesConfig *KubernetesConfig) *OrchestratorProfile {
+	if kubernetesConfig == nil {
+		kubernetesConfig = &KubernetesConfig{}
+	}
+
+	if networkProfile != nil {
+		kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+		kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+		kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+		kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+	}
+
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig:    kubernetesConfig,
 	}
 }
 
@@ -365,6 +399,10 @@ func convertV20180331AgentPoolOnlyAgentPoolProfile(v20180331 *v20180331.AgentPoo
 	api.OSType = OSType(v20180331.OSType)
 	api.StorageProfile = v20180331.StorageProfile
 	api.VnetSubnetID = v20180331.VnetSubnetID
+	kubernetesConfig := &KubernetesConfig{
+		KubeletConfig: map[string]string{"--max-pods": strconv.Itoa(v20180331.MaxPods)},
+	}
+	api.KubernetesConfig = kubernetesConfig
 	api.Subnet = v20180331.GetSubnet()
 	api.AvailabilityProfile = availabilityProfile
 	return api
