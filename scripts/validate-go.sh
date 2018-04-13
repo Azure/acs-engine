@@ -43,7 +43,6 @@ gometalinter \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
   --exclude pkg/openshift/certgen/templates/bindata.go \
-  --exclude pkg/openshift/certgen/novalidate.go \
   ./... || exit_code=1
 
 echo
@@ -59,7 +58,6 @@ gometalinter \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
   --exclude pkg/openshift/certgen/templates/bindata.go \
-  --exclude pkg/openshift/certgen/novalidate.go \
   ./... || exit_code=1
 
 exit $exit_code
