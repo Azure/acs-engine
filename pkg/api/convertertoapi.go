@@ -527,16 +527,14 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = "1.6.9"
 	} else if api.OrchestratorType == DCOS {
-		// TODO restore 1.9.0 here
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot8
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
-		// TODO restore 1.9.0 here
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot8
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
 }
 
@@ -545,8 +543,7 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = common.GetDefaultKubernetesVersion()
 	} else if api.OrchestratorType == DCOS {
-		// TODO restore 1.9.0 here
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot8
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
 }
 
