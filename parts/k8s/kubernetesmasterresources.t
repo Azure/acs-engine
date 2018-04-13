@@ -297,11 +297,6 @@
             "properties": {
               "access": "Allow",
               "description": "Allow kube-apiserver (tls) traffic to master",
-<<<<<<< HEAD
-=======
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": {{if IsOpenShift}}"8443-8443"{{else}}"443-443"{{end}},
->>>>>>> 6bd506cd0749b021c1dc9ce70aaa736bbd2c11fe
               "direction": "Inbound",
               "priority": 100,
               "protocol": "Tcp",
