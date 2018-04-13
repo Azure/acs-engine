@@ -55,7 +55,7 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 			return err
 		}
 
-		err = fs.WriteFile(strings.TrimPrefix(name, "master/"), b.Bytes(), 0666)
+		err = fs.WriteFile(strings.TrimPrefix(name, "master/"), b.Bytes(), 0644)
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
 			return err
 		}
 
-		err = fs.WriteFile(strings.TrimPrefix(name, "node/"), b.Bytes(), 0666)
+		err = fs.WriteFile(strings.TrimPrefix(name, "node/"), b.Bytes(), 0644)
 		if err != nil {
 			return err
 		}
