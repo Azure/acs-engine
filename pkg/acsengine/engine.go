@@ -46,6 +46,7 @@ const (
 
 const (
 	dcosCustomData188    = "dcos/dcoscustomdata188.t"
+	dcosCustomData190    = "dcos/dcoscustomdata190.t"
 	dcosCustomData198    = "dcos/dcoscustomdata198.t"
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
 	dcosCustomData111    = "dcos/dcoscustomdata111.t"
@@ -730,6 +731,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			switch properties.OrchestratorProfile.OrchestratorVersion {
 			case api.DCOSVersion1Dot8Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
+			case api.DCOSVersion1Dot9Dot0:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
 			case api.DCOSVersion1Dot9Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS198BootstrapDownloadURL
 			case api.DCOSVersion1Dot10Dot0:
@@ -916,7 +919,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot8
+				(cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot0 ||
+					cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot8)
 		},
 		"IsDCOS110": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
@@ -1888,6 +1892,14 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 			case 5:
 				return "f286ad9d3641da5abb622e4a8781f73ecd8492fa"
 			}
+		case api.DCOSVersion1Dot9Dot0:
+			switch masterCount {
+			case 1:
+				return "bcc883b7a3191412cf41824bdee06c1142187a0b"
+			case 3:
+				return "dcff7e24c0c1827bebeb7f1a806f558054481b33"
+			case 5:
+				return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 		case api.DCOSVersion1Dot9Dot8:
 			switch masterCount {
 			case 1:
@@ -2407,6 +2419,8 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
 		switch orchestratorVersion {
 		case api.DCOSVersion1Dot8Dot8:
 			yamlFilename = dcosCustomData188
+		case api.DCOSVersion1Dot9Dot0:
+			yamlFilename = dcosCustomData190
 		case api.DCOSVersion1Dot9Dot8:
 			yamlFilename = dcosCustomData198
 		case api.DCOSVersion1Dot10Dot0:
