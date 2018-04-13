@@ -1900,6 +1900,7 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 				return "dcff7e24c0c1827bebeb7f1a806f558054481b33"
 			case 5:
 				return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
+			}
 		case api.DCOSVersion1Dot9Dot8:
 			switch masterCount {
 			case 1:
