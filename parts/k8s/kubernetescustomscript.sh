@@ -217,19 +217,26 @@ function installClearContainersRuntime() {
 	apt-get update && apt-get install --no-install-recommends -y \
 		cc-runtime
 
+	# Install the systemd service and socket files.
+	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "${repo_uri}/cc-proxy.service.in" | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "${repo_uri}/cc-proxy.socket.in" | sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
+
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy
-    
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
 function installContainerd() {
 	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
-	local download_uri="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+	local CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
-	curl -sSL "$download_uri" | tar -xz -C /
+    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+    retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+	rm -f "$CONTAINERD_TGZ_TMP"
 
 	echo "Successfully installed cri-containerd..."
 	setupContainerd;
