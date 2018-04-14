@@ -60,6 +60,10 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
 
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
 	if p != nil {
 		t.Error("error in orchestrator profile networkProfile conversion")
 	}
