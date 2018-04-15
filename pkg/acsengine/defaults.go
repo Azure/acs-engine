@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"crypto/rand"
+	"encoding/base64"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -458,6 +460,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			default:
 				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 			}
+		}
+
+		if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+		  if "" == a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey {
+		    a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey = generateEtcdEncryptionKey()
+		  }
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
@@ -1011,4 +1019,10 @@ func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.Orches
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+}
+
+func generateEtcdEncryptionKey() string {
+  b := make([]byte, 32)
+  rand.Read(b)
+  return base64.URLEncoding.EncodeToString(b)
 }
