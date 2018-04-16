@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# This script runs on every Kubernetes VM
+# Exit codes represent the following:
+# | exit code number | meaning |
+# | 3 | Timeout waiting for docker install to finish |
+# | 4 | Service could not be enabled by systemctl |
+# | 5 | Service could not be started by systemctl |
+# | 6 | Timeout waiting for cloud-init runcmd to complete |
+# | 7 | Timeout waiting for a file |
+# | 8 | Etcd data dir not found |
+# | 9 | Timeout waiting for etcd to be accessible |
+# | 10 | Timeout waiting for k8s cluster to be healthy|
+
 set -x
 source /opt/azure/containers/provision_source.sh
 
@@ -25,7 +37,7 @@ ensureRunCommandCompleted()
     echo "waiting for runcmd to finish"
     wait_for_file 900 1 /opt/azure/containers/runcmd.complete
     if [ ! -f /opt/azure/containers/runcmd.complete ]; then
-        echo "Timeout waiting for runcmd to complete"
+        echo "Timeout waiting for cloud-init runcmd to complete"
         exit 6
     fi
 }
