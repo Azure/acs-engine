@@ -17,7 +17,7 @@
       "secret": "myServicePrincipalClientSecret"
     },
     "networkProfile": {
-      "networkPlugin": "none"
+      "networkPlugin": "kubenet"
     }
   }
 }

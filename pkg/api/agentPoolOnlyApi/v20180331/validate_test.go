@@ -124,25 +124,9 @@ func TestValidateVNET(t *testing.T) {
 		t.Errorf("Failed to validate VNET: %s", ErrorInvalidNetworkProfile)
 	}
 
-	// AgentPoolProfiles is nil
+	// NetworkPlugin is not azure or kubenet
 	n = &NetworkProfile{
-		NetworkPlugin:    NetworkPlugin("azure"),
-		ServiceCidr:      serviceCidr,
-		DNSServiceIP:     dNSServiceIP,
-		DockerBridgeCidr: dockerBridgeCidr,
-	}
-
-	a = &Properties{
-		NetworkProfile: n,
-	}
-
-	if err := validateVNET(a); err != ErrorNilAgentPoolProfile {
-		t.Errorf("Failed to throw error, %s", ErrorNilAgentPoolProfile)
-	}
-
-	// NetworkPlugin is not azure or kubenet or none
-	n = &NetworkProfile{
-		NetworkPlugin:    NetworkPlugin("notsupport"),
+		NetworkPlugin:    NetworkPlugin("none"),
 		ServiceCidr:      serviceCidr,
 		DNSServiceIP:     dNSServiceIP,
 		DockerBridgeCidr: dockerBridgeCidr,

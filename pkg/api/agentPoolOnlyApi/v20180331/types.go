@@ -59,7 +59,7 @@ const (
 	// Azure represents Azure CNI network plugin
 	Azure NetworkPlugin = "azure"
 	// Kubenet represents Kubenet network plugin
-	Kubenet NetworkPlugin = "none"
+	Kubenet NetworkPlugin = "kubenet"
 )
 
 // AddonProfile represents an addon for managed cluster

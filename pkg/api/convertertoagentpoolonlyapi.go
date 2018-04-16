@@ -377,7 +377,11 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	}
 
 	if networkProfile != nil {
-		kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+		if networkProfile.NetworkPlugin == v20180331.Kubenet {
+			kubernetesConfig.NetworkPolicy = "none"
+		} else {
+			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+		}
 		kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 		kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
 		kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr

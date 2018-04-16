@@ -2,9 +2,6 @@ package v20180331
 
 import "fmt"
 
-// ErrorNilAgentPoolProfile error
-var ErrorNilAgentPoolProfile = fmt.Errorf("Agent pool profile can not be nil")
-
 // ErrorInvalidNetworkProfile error
 var ErrorInvalidNetworkProfile = fmt.Errorf("ServiceCidr, DNSServiceIP, DockerBridgeCidr should all be empty or neither should be empty")
 

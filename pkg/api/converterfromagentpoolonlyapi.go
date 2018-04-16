@@ -191,7 +191,12 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 		k := orchestratorProfile.KubernetesConfig
 		if k.NetworkPolicy != "" || k.ServiceCIDR != "" || k.DNSServiceIP != "" || k.DockerBridgeSubnet != "" {
 			networkProfile = &v20180331.NetworkProfile{}
-			networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPolicy)
+			// ACS-E uses "none" in the un-versioned model to represent kubenet.
+			if k.NetworkPolicy == "none" {
+				networkProfile.NetworkPlugin = v20180331.Kubenet
+			} else {
+				networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPolicy)
+			}
 			networkProfile.ServiceCidr = k.ServiceCIDR
 			networkProfile.DNSServiceIP = k.DNSServiceIP
 			networkProfile.DockerBridgeCidr = k.DockerBridgeSubnet

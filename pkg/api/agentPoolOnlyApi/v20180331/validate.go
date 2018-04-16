@@ -192,8 +192,6 @@ func validateVNET(a *Properties) error {
 		if e := validateAgentPoolVNET(a.AgentPoolProfiles); e != nil {
 			return e
 		}
-	} else {
-		return ErrorNilAgentPoolProfile
 	}
 
 	return nil
