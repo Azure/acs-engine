@@ -4,6 +4,7 @@ debug
 _output/
 _input/
 .vscode
+.idea
 .DS_Store
 test/user.env
 user.env
