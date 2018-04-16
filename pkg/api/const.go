@@ -27,6 +27,8 @@ const (
 	Ubuntu Distro = "ubuntu"
 	RHEL   Distro = "rhel"
 	CoreOS Distro = "coreos"
+	// Supported distros by OpenShift
+	OpenShift39RHEL Distro = "openshift39_rhel"
 )
 
 const (
