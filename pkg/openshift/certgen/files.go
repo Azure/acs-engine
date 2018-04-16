@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,11 +33,11 @@ func (c *Config) PrepareMasterFiles() error {
 
 // WriteMasterFiles writes the templated master config
 func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
-	for _, name := range getAssets() {
+	for _, name := range templates.AssetNames() {
 		if !strings.HasPrefix(name, "master/") {
 			continue
 		}
-		tb := assetMustExist(name)
+		tb := templates.MustAsset(name)
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
@@ -66,12 +67,12 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 
 // WriteNodeFiles writes the templated node config
 func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
-	for _, name := range getAssets() {
+	for _, name := range templates.AssetNames() {
 		if !strings.HasPrefix(name, "node/") {
 			continue
 		}
 
-		tb := assetMustExist(name)
+		tb := templates.MustAsset(name)
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
