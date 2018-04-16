@@ -106,34 +106,6 @@ oc create configmap node-config-infra --namespace openshift-node --from-file=nod
 systemctl enable ${SERVICE_TYPE}-node.service
 systemctl start ${SERVICE_TYPE}-node.service &
 
-# TODO: run a CSR auto-approver
-# https://github.com/kargakis/acs-engine/issues/46
-csrs=($(oc get csr -o name))
-while [[ ${#csrs[@]} != "3" ]]; do
-	sleep 2
-	csrs=($(oc get csr -o name))
-	if [[ ${#csrs[@]} == "3" ]]; then
-		break
-	fi
-done
-
-for csr in ${csrs[@]}; do
-	oc adm certificate approve $csr
-done
-
-csrs=($(oc get csr -o name))
-while [[ ${#csrs[@]} != "6" ]]; do
-	sleep 2
-	csrs=($(oc get csr -o name))
-	if [[ ${#csrs[@]} == "6" ]]; then
-		break
-	fi
-done
-
-for csr in ${csrs[@]}; do
-	oc adm certificate approve $csr
-done
-
 chmod +x /tmp/ansible/ansible.sh
 docker run \
 	--rm \

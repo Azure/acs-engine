@@ -199,6 +199,8 @@ func (c *Config) PrepareMasterKubeConfigs() error {
 		},
 	}
 
+	c.Master.kubeconfigs["etc/origin/node/bootstrap.kubeconfig"] = c.Master.kubeconfigs["etc/origin/master/admin.kubeconfig"]
+
 	return nil
 }
 

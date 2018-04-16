@@ -86,7 +86,12 @@ func (c *Config) WriteMaster(fs filesystem.Filesystem) error {
 		return err
 	}
 
-	return c.WriteNode(fs)
+	err = c.WriteBootstrapCerts(fs)
+	if err != nil {
+		return err
+	}
+
+	return c.WriteNodeFiles(fs)
 }
 
 // WriteNode writes the config files for bootstrapping a node to a Filesystem.
