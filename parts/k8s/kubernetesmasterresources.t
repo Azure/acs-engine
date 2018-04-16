@@ -159,9 +159,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
 {{if not IsAzureCNI}}
-        ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
 {{end}}
       ],
@@ -177,10 +175,7 @@
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnet')]",
-              "networkSecurityGroup": {
-                "id": "[variables('nsgID')]"
-              }
+              "addressPrefix": "[variables('subnet')]"
 {{if not IsAzureCNI}}
               ,
               "routeTable": {
@@ -387,9 +382,8 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-{{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
-{{else}}
+{{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]",
 {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
@@ -448,11 +442,9 @@
         ,
         "enableIPForwarding": true
 {{end}}
-{{if .MasterProfile.IsCustomVNET}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         }
-{{end}}
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
@@ -464,11 +456,10 @@
           "name": "nicLoopNode"
         },
         "dependsOn": [
-  {{if .MasterProfile.IsCustomVNET}}
           "[variables('nsgID')]"
-  {{else}}
-          "[variables('vnetID')]"
-  {{end}}
+{{if not .MasterProfile.IsCustomVNET}}
+          ,"[variables('vnetID')]"
+{{end}}
   {{if gt .MasterProfile.Count 1}}
           ,"[variables('masterInternalLbName')]"
   {{end}}
@@ -517,11 +508,9 @@
           ,
           "enableIPForwarding": true
   {{end}}
-  {{if .MasterProfile.IsCustomVNET}}
           ,"networkSecurityGroup": {
             "id": "[variables('nsgID')]"
           }
-  {{end}}
         },
         "type": "Microsoft.Network/networkInterfaces"
       },
