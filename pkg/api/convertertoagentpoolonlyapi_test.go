@@ -54,19 +54,19 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != "" {
+	if api.KubernetesConfig.NetworkPolicy != "none" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.ServiceCIDR != "" {
+	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.DNSServiceIP != "" {
+	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.DockerBridgeSubnet != "" {
+	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -85,15 +85,15 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.ServiceCIDR != "" {
+	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.DNSServiceIP != "" {
+	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.DockerBridgeSubnet != "" {
+	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 }
