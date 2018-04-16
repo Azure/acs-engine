@@ -740,6 +740,92 @@
       "type": "Microsoft.Network/loadBalancers"
     },
 {{end}}
+{{if EnableEncryptionWithExternalKms}}
+     {
+       "type": "Microsoft.KeyVault/vaults",
+       "name": "[variables('clusterKeyVaultName')]",
+       "apiVersion": "[variables('apiVersionKeyVault')]",
+       "location": "[variables('location')]",
+       {{ if UseManagedIdentity}}
+       "dependsOn": 
+       [
+          {{$max := .MasterProfile.Count}}
+          {{$c := subtract $max 1}}
+          {{range $i := loop 0 $max}}
+            {{if (lt $i $c)}}
+                "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}')]",
+                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}', 'vmidentity')))]",
+            {{else}}
+                {{ if (lt $i $max)}}
+                "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}')]",
+                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}', 'vmidentity')))]"
+                {{end}}
+            {{end}}
+          {{end}}
+        ],
+       {{end}}
+       "properties": {
+         "enabledForDeployment": "false",
+         "enabledForDiskEncryption": "false",
+         "enabledForTemplateDeployment": "false",
+         "tenantId": "[variables('tenantID')]",
+ {{if not UseManagedIdentity}}
+         "accessPolicies": [
+           {
+             "tenantId": "[variables('tenantID')]",
+             "objectId": "[variables('servicePrincipalObjectId')]",
+             "permissions": {
+               "keys": ["create", "encrypt", "decrypt", "get", "list"]
+             }
+           }
+         ],
+ {{else}}
+         "accessPolicies": 
+         [
+          {{$max := .MasterProfile.Count}}
+          {{$c := subtract $max 1}}
+          {{range $i := loop 0 $max}}
+            {{if (lt $i $c)}}
+            {
+                "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}'), '2017-03-30', 'Full').identity.principalId]",
+                "permissions": {
+                "keys": [
+                    "create",
+                    "encrypt",
+                    "decrypt",
+                    "get",
+                    "list"
+                ]
+                },
+                "tenantId": "[variables('tenantID')]"
+            },
+            {{else}}
+                {{ if (lt $i $max)}}
+                {
+                    "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), '{{$i}}'), '2017-03-30', 'Full').identity.principalId]",
+                    "permissions": {
+                    "keys": [
+                        "create",
+                        "encrypt",
+                        "decrypt",
+                        "get",
+                        "list"
+                    ]
+                    },
+                    "tenantId": "[variables('tenantID')]"
+                }
+                {{end}}
+            {{end}}
+          {{end}}
+         ],
+ {{end}}
+         "sku": {
+           "name": "[variables('clusterKeyVaultSku')]",
+           "family": "A"
+         }
+       }
+     },
+ {{end}}
     {
     {{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",

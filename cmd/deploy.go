@@ -236,6 +236,7 @@ func autofillApimodel(dc *deployCmd) {
 			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
 				ClientID: applicationID,
 				Secret:   secret,
+				ObjectID: servicePrincipalObjectID,
 			}
 		}
 	}

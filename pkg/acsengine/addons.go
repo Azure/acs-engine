@@ -130,7 +130,22 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 	}
 }
 
-func kubernetesArtifactSettingsInit(profile *api.Properties) []kubernetesFeatureSetting {
+func kubernetesArtifactSettingsInitMaster(profile *api.Properties) []kubernetesFeatureSetting {
+	return []kubernetesFeatureSetting{
+		{
+			"kuberneteskubelet.service",
+			"kubelet.service",
+			true,
+		},
+		{
+			"kubernetesazurekms.service",
+			"kms.service",
+			true,
+		},
+	}
+}
+
+func kubernetesArtifactSettingsInitAgent(profile *api.Properties) []kubernetesFeatureSetting {
 	return []kubernetesFeatureSetting{
 		{
 			"kuberneteskubelet.service",

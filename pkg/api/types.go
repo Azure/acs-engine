@@ -80,6 +80,7 @@ type AzProfile struct {
 type ServicePrincipalProfile struct {
 	ClientID          string             `json:"clientId"`
 	Secret            string             `json:"secret,omitempty"`
+	ObjectID          string             `json:"objectId,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
@@ -283,6 +284,7 @@ type KubernetesConfig struct {
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
 	EnableDataEncryptionAtRest       *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	EnableEncryptionWithExternalKms  *bool             `json:"enableEncryptionWithExternalKms,omitempty"`
 	EnablePodSecurityPolicy          *bool             `json:"enablePodSecurityPolicy,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`

@@ -708,6 +708,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretVersion)
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+				if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && !properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && properties.ServicePrincipalProfile.ObjectID != "" {
+					addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
+				}
 			}
 		}
 
@@ -1192,7 +1195,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			str = substituteConfigString(str,
-				kubernetesArtifactSettingsInit(profile),
+				kubernetesArtifactSettingsInitMaster(profile),
 				"k8s/artifacts",
 				"/etc/systemd/system",
 				"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
@@ -1218,7 +1221,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			str = substituteConfigString(str,
-				kubernetesArtifactSettingsInit(cs.Properties),
+				kubernetesArtifactSettingsInitAgent(cs.Properties),
 				"k8s/artifacts",
 				"/etc/systemd/system",
 				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
@@ -1728,6 +1731,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnableDataEncryptionAtRest": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest)
 		},
+		"EnableEncryptionWithExternalKms": func() bool {
+			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms)
+		},
 		"EnableAggregatedAPIs": func() bool {
 			if cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
 				return true
@@ -1790,6 +1796,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				s = append(s, i)
 			}
 			return s
+		},
+		"subtract": func(a, b int) int {
+			return a - b
 		},
 	}
 }

@@ -148,7 +148,10 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
+    "providerKeyName": "k8s",
+    "providerKeyVersion": ""
 }
 EOF
 
@@ -296,6 +299,13 @@ function systemctlEnableAndStart() {
 
 function ensureDocker() {
     systemctlEnableAndStart docker
+}
+function ensureKMS() {
+    systemctlEnableAndCheck kms
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kms
+    fi
 }
 
 function ensureKubelet() {
@@ -463,6 +473,10 @@ echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
+if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
+    echo `date`,`hostname`, ensureKMSStart>>/opt/m
+    ensureKMS
+fi
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
 echo `date`,`hostname`, ensureJournalStart>>/opt/m

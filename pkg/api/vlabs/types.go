@@ -58,6 +58,7 @@ type AzProfile struct {
 type ServicePrincipalProfile struct {
 	ClientID          string             `json:"clientId,omitempty"`
 	Secret            string             `json:"secret,omitempty"`
+	ObjectID          string             `json:"objectId,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
@@ -260,44 +261,45 @@ type CloudProviderConfig struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                string            `json:"clusterSubnet,omitempty"`
-	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
-	ServiceCidr                  string            `json:"serviceCidr,omitempty"`
-	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
-	ContainerRuntime             string            `json:"containerRuntime,omitempty"`
-	MaxPods                      int               `json:"maxPods,omitempty"`
-	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
-	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
-	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
-	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
-	CustomCcmImage               string            `json:"customCcmImage,omitempty"`
-	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
-	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
-	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
-	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
-	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
-	PrivateCluster               *PrivateCluster   `json:"privateCluster,omitempty"`
-	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
-	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
-	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
-	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
-	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
-	EnablePodSecurityPolicy      *bool             `json:"enablePodSecurityPolicy,omitempty"`
-	Addons                       []KubernetesAddon `json:"addons,omitempty"`
-	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
-	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
-	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
-	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
-	SchedulerConfig              map[string]string `json:"schedulerConfig,omitempty"`
-	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int               `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	KubernetesImageBase             string            `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                   string            `json:"clusterSubnet,omitempty"`
+	DNSServiceIP                    string            `json:"dnsServiceIP,omitempty"`
+	ServiceCidr                     string            `json:"serviceCidr,omitempty"`
+	NetworkPolicy                   string            `json:"networkPolicy,omitempty"`
+	ContainerRuntime                string            `json:"containerRuntime,omitempty"`
+	MaxPods                         int               `json:"maxPods,omitempty"`
+	DockerBridgeSubnet              string            `json:"dockerBridgeSubnet,omitempty"`
+	UseManagedIdentity              bool              `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage            string            `json:"customHyperkubeImage,omitempty"`
+	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
+	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
+	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
+	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
+	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`
+	EnableAggregatedAPIs            bool              `json:"enableAggregatedAPIs,omitempty"`
+	PrivateCluster                  *PrivateCluster   `json:"privateCluster,omitempty"`
+	GCHighThreshold                 int               `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                  int               `json:"gclowthreshold,omitempty"`
+	EtcdVersion                     string            `json:"etcdVersion,omitempty"`
+	EtcdDiskSizeGB                  string            `json:"etcdDiskSizeGB,omitempty"`
+	EnableDataEncryptionAtRest      *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	EnableEncryptionWithExternalKms *bool             `json:"enableEncryptionWithExternalKms,omitempty"`
+	EnablePodSecurityPolicy         *bool             `json:"enablePodSecurityPolicy,omitempty"`
+	Addons                          []KubernetesAddon `json:"addons,omitempty"`
+	KubeletConfig                   map[string]string `json:"kubeletConfig,omitempty"`
+	ControllerManagerConfig         map[string]string `json:"controllerManagerConfig,omitempty"`
+	CloudControllerManagerConfig    map[string]string `json:"cloudControllerManagerConfig,omitempty"`
+	APIServerConfig                 map[string]string `json:"apiServerConfig,omitempty"`
+	SchedulerConfig                 map[string]string `json:"schedulerConfig,omitempty"`
+	CloudProviderBackoff            bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries     int               `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter      float64           `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration    int               `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent    float64           `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit          bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS       float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
