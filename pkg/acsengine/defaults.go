@@ -2,13 +2,13 @@ package acsengine
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net"
 	"sort"
 	"strconv"
 	"strings"
-	"crypto/rand"
-	"encoding/base64"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -463,9 +463,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-		  if "" == a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey {
-		    a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey = generateEtcdEncryptionKey()
-		  }
+			if "" == a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey {
+				a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey = generateEtcdEncryptionKey()
+			}
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
@@ -1022,7 +1022,7 @@ func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 }
 
 func generateEtcdEncryptionKey() string {
-  b := make([]byte, 32)
-  rand.Read(b)
-  return base64.URLEncoding.EncodeToString(b)
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
 }
