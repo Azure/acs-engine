@@ -49,7 +49,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"tiller":             "tiller:v2.8.1",
 		"rescheduler":        "rescheduler:v0.3.1",
 		"aci-connector":      "virtual-kubelet:latest",
-		"cluster-autoscaler": "cluster-autoscaler:v1.2.0",
+		"cluster-autoscaler": "cluster-autoscaler:v1.2.1",
 		"nodestatusfreq":     DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":    DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":        DefaultKubernetesCtrlMgrPodEvictionTimeout,
