@@ -74,6 +74,7 @@ const (
 	dcosBaseFile                  = "dcos/dcosbase.t"
 	dcosParams                    = "dcos/dcosparams.t"
 	dcosMasterResources           = "dcos/dcosmasterresources.t"
+	dcosBootstrapResources        = "dcos/dcosbootstrapresources.t"
 	dcosMasterVars                = "dcos/dcosmastervars.t"
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
@@ -106,7 +107,7 @@ const (
 )
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
+var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosBootstrapResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -344,6 +345,18 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
+func generateIPList(count int, firstAddr string) (string, error) {
+	ipaddr := net.ParseIP(firstAddr).To4()
+	if ipaddr == nil {
+		return "", fmt.Errorf("IPAddr '%s' is an invalid IP address", firstAddr)
+	}
+	//lbIP := net.IP{ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3] }
+	for i := byte(0); i < byte(count); i++ {
+		fmt.Printf("GENERATEIP addr = %d %d %d %d\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]+i)
+	}
+	return "IPLIST", nil
+}
+
 func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
@@ -445,6 +458,42 @@ func GetCloudTargetEnv(location string) string {
 	default:
 		return azurePublicCloud
 	}
+}
+
+func getDCOSBootstrapURL(cs *api.ContainerService) string {
+	properties := cs.Properties
+	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+	dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
+	switch properties.OrchestratorProfile.OrchestratorType {
+	case api.DCOS:
+		switch properties.OrchestratorProfile.OrchestratorVersion {
+		case api.DCOSVersion1Dot8Dot8:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
+		case api.DCOSVersion1Dot9Dot0:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
+		case api.DCOSVersion1Dot10Dot0:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
+		case api.DCOSVersion1Dot11Dot0:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS111BootstrapDownloadURL
+		}
+	}
+
+	if properties.OrchestratorProfile.DcosConfig != nil {
+		if properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL != "" {
+			dcosBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL
+		}
+	}
+	return dcosBootstrapURL
+}
+
+func getDCOSClusterPackageList(cs *api.ContainerService) string {
+	properties := cs.Properties
+	if properties.OrchestratorProfile.DcosConfig != nil {
+		if properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID != "" {
+			return properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID
+		}
+	}
+	return ""
 }
 
 func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string) (paramsMap, error) {
@@ -917,6 +966,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedMaster": func() bool {
 			return cs.Properties.HostedMasterProfile != nil
 		},
+		"IsDCOS18": func() bool {
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot8Dot8
+		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
 				(cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot0 ||
@@ -1076,6 +1129,53 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
+		"GetDCOSMasterIPList": func() string {
+			fmt.Printf("Get Master Node IP List\n")
+			pkglist, _ := generateIPList(cs.Properties.MasterProfile.Count,
+				cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			return pkglist
+		},
+		"GetDCOSBootstrapNodeIPList": func() string {
+			// Returns a list of <count> ip consecutive addresses where the last address
+			// is the highest non-broadcast address on the master subnet. We choose the highest
+			// addresses so as not to collide with the masters, who start from 5
+			//
+			iplist := "DIDN:T GET BOOTSTRP IP LIST"
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil {
+				if cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
+					//count   := cs.Properties.OrchestratorProfile,DcosConfig.BootstrapNodeProfile.Count
+					//firstip := cs.Properties.OrchestratorProfile,DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP
+					fmt.Printf("Get Bootstrap Node IP List\n")
+					//pkglist, _ := generateIPList(count, firstip)
+					iplist = "GOT BOOTSTRAP IP LISTi" //pkglist
+				}
+			}
+			return iplist
+
+		},
+		"GetBootstrapHTTPSourceAddressPrefix": func() string {
+			return fmt.Sprintf("%s", "BOOTSTRAPHTTPSOURCEADDRESSPREFIX")
+		},
+		"GetDCOSBootstrapNodeCustomData": func() string {
+			/*
+				bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
+				bootstrapPreprovisionExtension := ""
+				if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+					masterPreprovisionExtension += "\n"
+					masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
+				}
+
+				str := getSingleLineDCOSCustomData(
+					cs.Properties.OrchestratorProfile.OrchestratorType,
+					cs.Properties.OrchestratorProfile.OrchestratorVersion,
+					getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
+					cs.Properties.BootstrapProfile.Count, bootstrapProvisionScript,
+					bootstraipAttributeContents, bootstrapPreprovisionExtension)
+
+				return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
+			*/
+			return "BOOTSTRAP NODE CUSTOM DATA"
+		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
@@ -1088,6 +1188,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorVersion,
+				getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
 				cs.Properties.MasterProfile.Count, masterProvisionScript,
 				masterAttributeContents, masterPreprovisionExtension)
 
@@ -1105,6 +1206,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorVersion,
+				getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
 				cs.Properties.MasterProfile.Count, agentProvisionScript,
 				attributeContents, agentPreprovisionExtension)
 
@@ -2412,7 +2514,7 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
+func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion, bootstrapURL, clusterPackageList string,
 	masterCount int, provisionContent, attributeContents, preProvisionExtensionContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
@@ -2447,6 +2549,7 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
 	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
+	fmt.Printf("yaml = %s", yamlStr)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
