@@ -24,12 +24,20 @@ ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
     wait_for_file 900 1 /opt/azure/containers/runcmd.complete
+    if [ ! -f /opt/azure/containers/runcmd.complete ]; then
+        echo "Timeout waiting for runcmd to complete"
+        exit 6
+    fi
 }
 
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
     wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
+    if [ ! -f /opt/azure/containers/dockerinstall.complete ]; then
+        echo "Timeout waiting for docker install to finish"
+        exit 3
+    fi
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
@@ -159,6 +167,11 @@ function ensureFilepath() {
         return
     fi
     wait_for_file 600 1 $1
+    if [ ! -f $1 ]; then
+        echo "Timeout waiting for $1"
+        exit 7
+    fi
+    
 }
 
 function setKubeletOpts () {
@@ -281,10 +294,16 @@ function systemctlEnableAndStart() {
     if [ $enabled -ne 0 ]
     then
         echo "$1 could not be enabled by systemctl"
-        exit 5
+        exit 4
     fi
     systemctl_restart 100 1 10 $1
     retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    systemctl is-active $1
+    if [ $? -ne 0 ]
+    then
+        echo "$1 could not be started"
+        exit 5
+    fi
 }
 
 function ensureDocker() {
@@ -329,7 +348,7 @@ function ensureK8s() {
     if [ $k8sHealthy -ne 0 ]
     then
         echo "k8s cluster is not healthy after $i seconds"
-        exit 3
+        exit 10
     fi
     ensurePodSecurityPolicy
 }
@@ -349,7 +368,7 @@ function ensureEtcd() {
     if [ $etcdIsRunning -ne 0 ]
     then
         echo "Etcd not accessible after $i seconds"
-        exit 3
+        exit 9
     fi
 }
 
@@ -375,7 +394,7 @@ function ensureEtcdDataDir() {
     fi
 
    echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 4
+   exit 8
 }
 
 function ensurePodSecurityPolicy(){
@@ -461,7 +480,6 @@ ensureKubelet
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
-
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
