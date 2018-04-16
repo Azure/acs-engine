@@ -14,11 +14,11 @@ localmaster:
 
     # NOTE: This changes in 3.10+ and it's all combined into a single variable
     #       under the name openshift_web_console_image_name
-    openshift_web_console_prefix: "registry.reg-aws.openshift.com:443/openshift3/"
-    openshift_web_console_image_name: "ose-web-console"
+    openshift_web_console_prefix: "IMAGE_PREFIX/"
+    openshift_web_console_image_name: "IMAGE_TYPE-web-console"
     openshift_web_console_version: "vVERSION"
 
-    oreg_url_master: 'TEMPIMAGEBASE-${component}:${version}'
+    oreg_url_master: 'IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}'
     openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
 
     # FIXME
@@ -52,10 +52,17 @@ localmaster:
     openshift_hosted_router_replicas: 1
     openshift_hosted_registry_replicas: 1
 
+    openshift_prometheus_state: "present"
+    openshift_prometheus_image_version: "vVERSION"
+    openshift_prometheus_proxy_image_version: 'vVERSION'
+    openshift_prometheus_alertmanager_image_version: 'vVERSION'
+    openshift_prometheus_alertbuffer_image_version: 'vVERSION'
+    openshift_prometheus_node_exporter_image_version: 'vVERSION'
 
     openshift_web_console_install: True
 
-    openshift_deployment_type: 'openshift-enterprise'
+    openshift_prometheus_image_prefix: "IMAGE_PREFIX/"
+    openshift_deployment_type: 'ANSIBLE_DEPLOY_TYPE'
 
     # NOTE: Do not define openshift_hosted_router_replicas so that the task file
     # router.yml inside the openshift_hosted role from openshift-ansible will

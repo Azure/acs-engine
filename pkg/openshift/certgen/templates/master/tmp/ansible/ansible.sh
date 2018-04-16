@@ -34,6 +34,7 @@ metadata:
     openshift.io/node-selector: ""
 EOF
 
+
 oc create secret generic -n kube-service-catalog apiserver-ssl \
   --from-file=tls.crt=/etc/origin/service-catalog/apiserver.crt \
   --from-file=tls.key=/etc/origin/service-catalog/apiserver.key
