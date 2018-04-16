@@ -310,8 +310,8 @@ function systemctlEnableAndStart() {
     fi
     systemctl_restart 100 1 10 $1
     retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
-    systemctl is-active $1
-    if [ $? -ne 0 ]
+    systemctl is-failed $1
+    if [ $? -eq 0 ]
     then
         echo "$1 could not be started"
         exit 5
