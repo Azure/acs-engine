@@ -25,7 +25,7 @@ func TestValidateVNET(t *testing.T) {
 	maxPods1 := 20
 	maxPods2 := 50
 
-	// happy case
+	// all network profile fields have values, should pass
 	n := &NetworkProfile{
 		NetworkPlugin:    NetworkPlugin("azure"),
 		ServiceCidr:      serviceCidr,
@@ -53,7 +53,7 @@ func TestValidateVNET(t *testing.T) {
 		t.Errorf("Failed to validate VNET: %s", err)
 	}
 
-	// NetworkProfile is nil
+	// no network profile, this is prior v20180331 case, should pass
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
@@ -69,29 +69,64 @@ func TestValidateVNET(t *testing.T) {
 		AgentPoolProfiles: p,
 	}
 
-	if err := validateVNET(a); err != ErrorNilNetworkProfile {
-		t.Errorf("Failed to throw error, %s", ErrorNilNetworkProfile)
+	if err := validateVNET(a); err != nil {
+		t.Errorf("Failed to validate VNET: %s", err)
 	}
 
-	// AgentPoolProfiles is nil
+	// network profile has only NetworkPlugin field, should pass
 	n = &NetworkProfile{
-		NetworkPlugin:    NetworkPlugin("azure"),
-		ServiceCidr:      serviceCidr,
-		DNSServiceIP:     dNSServiceIP,
-		DockerBridgeCidr: dockerBridgeCidr,
+		NetworkPlugin: NetworkPlugin("azure"),
+	}
+
+	p = []*AgentPoolProfile{
+		{
+			VnetSubnetID: vnetSubnetID1,
+			MaxPods:      maxPods1,
+		},
+		{
+			VnetSubnetID: vnetSubnetID2,
+			MaxPods:      maxPods2,
+		},
 	}
 
 	a = &Properties{
-		NetworkProfile: n,
+		NetworkProfile:    n,
+		AgentPoolProfiles: p,
 	}
 
-	if err := validateVNET(a); err != ErrorNilAgentPoolProfile {
-		t.Errorf("Failed to throw error, %s", ErrorNilAgentPoolProfile)
+	if err := validateVNET(a); err != nil {
+		t.Errorf("Failed to validate VNET: %s", err)
+	}
+
+	// network profile has NetworkPlugin and ServiceCidr field, should fail
+	n = &NetworkProfile{
+		NetworkPlugin: NetworkPlugin("azure"),
+		ServiceCidr:   serviceCidr,
+	}
+
+	p = []*AgentPoolProfile{
+		{
+			VnetSubnetID: vnetSubnetID1,
+			MaxPods:      maxPods1,
+		},
+		{
+			VnetSubnetID: vnetSubnetID2,
+			MaxPods:      maxPods2,
+		},
+	}
+
+	a = &Properties{
+		NetworkProfile:    n,
+		AgentPoolProfiles: p,
+	}
+
+	if err := validateVNET(a); err != ErrorInvalidNetworkProfile {
+		t.Errorf("Failed to validate VNET: %s", ErrorInvalidNetworkProfile)
 	}
 
 	// NetworkPlugin is not azure or kubenet
 	n = &NetworkProfile{
-		NetworkPlugin:    NetworkPlugin("notsupport"),
+		NetworkPlugin:    NetworkPlugin("none"),
 		ServiceCidr:      serviceCidr,
 		DNSServiceIP:     dNSServiceIP,
 		DockerBridgeCidr: dockerBridgeCidr,
@@ -257,7 +292,7 @@ func TestValidateVNET(t *testing.T) {
 		t.Errorf("Failed to throw error, %s", ErrorDNSServiceIPAlreadyUsed)
 	}
 
-	// NetworkPlugin = Azure, Agent pool does not have subnet defined
+	// NetworkPlugin = Azure, at least one agent pool does not have subnet defined
 	n = &NetworkProfile{
 		NetworkPlugin:    NetworkPlugin("azure"),
 		ServiceCidr:      serviceCidr,
@@ -280,36 +315,8 @@ func TestValidateVNET(t *testing.T) {
 		AgentPoolProfiles: p,
 	}
 
-	if err := validateVNET(a); err != ErrorAgentPoolNoSubnet {
-		t.Errorf("Failed to throw error, %s", ErrorAgentPoolNoSubnet)
-	}
-
-	// NetworkPlugin = Kubenet, with customization
-	n = &NetworkProfile{
-		NetworkPlugin:    NetworkPlugin("kubenet"),
-		ServiceCidr:      serviceCidr,
-		DNSServiceIP:     dNSServiceIP,
-		DockerBridgeCidr: dockerBridgeCidr,
-	}
-
-	p = []*AgentPoolProfile{
-		{
-			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
-		},
-		{
-			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
-		},
-	}
-
-	a = &Properties{
-		NetworkProfile:    n,
-		AgentPoolProfiles: p,
-	}
-
-	if err := validateVNET(a); err != ErrorKubenetNoCustomization {
-		t.Errorf("Failed to throw error, %s", ErrorKubenetNoCustomization)
+	if err := validateVNET(a); err != ErrorAtLeastAgentPoolNoSubnet {
+		t.Errorf("Failed to throw error, %s", ErrorAtLeastAgentPoolNoSubnet)
 	}
 
 	// NetworkPlugin = Azure, Failed to parse VnetSubnetID

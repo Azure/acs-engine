@@ -15,6 +15,7 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	dnsServiceIP := "10.0.0.10"
 	dockerBridgeSubnet := "172.17.0.1/16"
 
+	// all networkProfile related fields are defined in kubernetesConfig
 	kubernetesConfig := &KubernetesConfig{
 		NetworkPolicy:      networkPolicy,
 		ServiceCIDR:        serviceCIDR,
@@ -27,8 +28,8 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	}
 
 	var version string
-	p := &v20180331.NetworkProfile{}
-	convertOrchestratorProfileToV20180331AgentPoolOnly(api, &version, p)
+	var p *v20180331.NetworkProfile
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
 
 	if version != orchestratorVersion {
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
@@ -49,6 +50,55 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	if p.DockerBridgeCidr != dockerBridgeSubnet {
 		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
 	}
+
+	// none networkProfile related fields are defined in kubernetesConfig
+	kubernetesConfig = &KubernetesConfig{}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if p != nil {
+		t.Error("error in orchestrator profile networkProfile conversion")
+	}
+
+	// only networkProfile networkPolicy field is defined in kubernetesConfig
+	kubernetesConfig = &KubernetesConfig{
+		NetworkPolicy: networkPolicy,
+	}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if string(p.NetworkPlugin) != networkPolicy {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if p.ServiceCidr != "" {
+		t.Error("error in orchestrator profile serviceCidr conversion")
+	}
+
+	if p.DNSServiceIP != "" {
+		t.Error("error in orchestrator profile dnsServiceIP conversion")
+	}
+
+	if p.DockerBridgeCidr != "" {
+		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
+	}
+
 }
 
 func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
