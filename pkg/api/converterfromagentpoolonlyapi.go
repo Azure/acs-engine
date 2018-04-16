@@ -152,8 +152,7 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 
 	if api.OrchestratorProfile != nil {
 		p.EnableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(api.OrchestratorProfile.KubernetesConfig)
-		p.NetworkProfile = &v20180331.NetworkProfile{}
-		convertOrchestratorProfileToV20180331AgentPoolOnly(api.OrchestratorProfile, &p.KubernetesVersion, p.NetworkProfile)
+		p.KubernetesVersion, p.NetworkProfile = convertOrchestratorProfileToV20180331AgentPoolOnly(api.OrchestratorProfile)
 	}
 	if api.HostedMasterProfile != nil {
 		p.DNSPrefix = api.HostedMasterProfile.DNSPrefix
@@ -183,17 +182,28 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 	}
 }
 
-func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile, kubernetesVersion *string, networkProfile *v20180331.NetworkProfile) {
+func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile) (kubernetesVersion string, networkProfile *v20180331.NetworkProfile) {
 	if orchestratorProfile.OrchestratorVersion != "" {
-		*kubernetesVersion = orchestratorProfile.OrchestratorVersion
+		kubernetesVersion = orchestratorProfile.OrchestratorVersion
 	}
 
 	if orchestratorProfile.KubernetesConfig != nil {
-		networkProfile.NetworkPlugin = v20180331.NetworkPlugin(orchestratorProfile.KubernetesConfig.NetworkPolicy)
-		networkProfile.ServiceCidr = orchestratorProfile.KubernetesConfig.ServiceCIDR
-		networkProfile.DNSServiceIP = orchestratorProfile.KubernetesConfig.DNSServiceIP
-		networkProfile.DockerBridgeCidr = orchestratorProfile.KubernetesConfig.DockerBridgeSubnet
+		k := orchestratorProfile.KubernetesConfig
+		if k.NetworkPolicy != "" || k.ServiceCIDR != "" || k.DNSServiceIP != "" || k.DockerBridgeSubnet != "" {
+			networkProfile = &v20180331.NetworkProfile{}
+			// ACS-E uses "none" in the un-versioned model to represent kubenet.
+			if k.NetworkPolicy == "none" {
+				networkProfile.NetworkPlugin = v20180331.Kubenet
+			} else {
+				networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPolicy)
+			}
+			networkProfile.ServiceCidr = k.ServiceCIDR
+			networkProfile.DNSServiceIP = k.DNSServiceIP
+			networkProfile.DockerBridgeCidr = k.DockerBridgeSubnet
+		}
 	}
+
+	return kubernetesVersion, networkProfile
 }
 
 func convertLinuxProfileToV20180331AgentPoolOnly(api *LinuxProfile, obj *v20180331.LinuxProfile) {

@@ -15,6 +15,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 	dnsServiceIP := "10.0.0.10"
 	dockerBridgeSubnet := "172.17.0.1/16"
 
+	// all networkProfile fields are defined
 	p := &v20180331.NetworkProfile{
 		NetworkPlugin:    networkPlugin,
 		ServiceCidr:      serviceCIDR,
@@ -41,6 +42,58 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 	}
 
 	if api.KubernetesConfig.DockerBridgeSubnet != string(dockerBridgeSubnet) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	// no networkProfile is defined
+	p = nil
+
+	api = convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p, nil)
+
+	if api.OrchestratorVersion != kubernetesVersion {
+		t.Error("error in orchestrator profile kubernetesVersion conversion")
+	}
+
+	if api.KubernetesConfig.NetworkPolicy != "none" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	// only networkProfile NetworkPlugin fields is defined
+	p = &v20180331.NetworkProfile{
+		NetworkPlugin: networkPlugin,
+	}
+
+	api = convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p, nil)
+
+	if api.OrchestratorVersion != kubernetesVersion {
+		t.Error("error in orchestrator profile kubernetesVersion conversion")
+	}
+
+	if api.KubernetesConfig.NetworkPolicy != string(networkPlugin) {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 }

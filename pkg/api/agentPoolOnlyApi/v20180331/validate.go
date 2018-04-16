@@ -141,108 +141,120 @@ func validateVNET(a *Properties) error {
 
 	n := a.NetworkProfile
 
-	if n == nil {
-		return ErrorNilNetworkProfile
+	// validate network profile settings
+	if n != nil {
+		switch n.NetworkPlugin {
+		case Azure, Kubenet:
+			if n.ServiceCidr != "" && n.DNSServiceIP != "" && n.DockerBridgeCidr != "" {
+				// validate ServiceCidr
+				_, serviceCidr, err := net.ParseCIDR(n.ServiceCidr)
+				if err != nil {
+					return ErrorInvalidServiceCidr
+				}
+
+				// validate DNSServiceIP
+				dnsServiceIP := net.ParseIP(n.DNSServiceIP)
+				if dnsServiceIP == nil {
+					return ErrorInvalidDNSServiceIP
+				}
+
+				// validate DockerBridgeCidr
+				_, _, err = net.ParseCIDR(n.DockerBridgeCidr)
+				if err != nil {
+					return ErrorInvalidDockerBridgeCidr
+				}
+
+				// validate DNSServiceIP is within ServiceCidr
+				if !serviceCidr.Contains(dnsServiceIP) {
+					return ErrorDNSServiceIPNotInServiceCidr
+				}
+
+				// validate DNSServiceIP is not the first IP in ServiceCidr. The first IP is reserved for redirect svc.
+				kubernetesServiceIP, err := common.CidrStringFirstIP(n.ServiceCidr)
+				if err != nil {
+					return ErrorInvalidServiceCidr
+				}
+				if dnsServiceIP.String() == kubernetesServiceIP.String() {
+					return ErrorDNSServiceIPAlreadyUsed
+				}
+			} else if n.ServiceCidr == "" && n.DNSServiceIP == "" && n.DockerBridgeCidr == "" {
+				// this is a valid case, and no validation needed.
+			} else {
+				return ErrorInvalidNetworkProfile
+			}
+		default:
+			return ErrorInvalidNetworkPlugin
+		}
 	}
 
-	if string(n.NetworkPlugin) == string(Azure) {
-		// validate ServiceCidr
-		_, serviceCidr, err := net.ParseCIDR(n.ServiceCidr)
-		if err != nil {
-			return ErrorInvalidServiceCidr
+	// validate agent pool custom VNET settings
+	if a.AgentPoolProfiles != nil {
+		if e := validateAgentPoolVNET(a.AgentPoolProfiles); e != nil {
+			return e
 		}
-
-		// validate DNSServiceIP
-		dnsServiceIP := net.ParseIP(n.DNSServiceIP)
-		if dnsServiceIP == nil {
-			return ErrorInvalidDNSServiceIP
-		}
-
-		// validate DockerBridgeCidr
-		_, _, err = net.ParseCIDR(n.DockerBridgeCidr)
-		if err != nil {
-			return ErrorInvalidDockerBridgeCidr
-		}
-
-		// validate DNSServiceIP is within ServiceCidr
-		if !serviceCidr.Contains(dnsServiceIP) {
-			return ErrorDNSServiceIPNotInServiceCidr
-		}
-
-		// validate DNSServiceIP is not the first IP in ServiceCidr. The first IP is reserved for redirect svc.
-		kubernetesServiceIP, err := common.CidrStringFirstIP(n.ServiceCidr)
-		if err != nil {
-			return ErrorInvalidServiceCidr
-		}
-		if dnsServiceIP.String() == kubernetesServiceIP.String() {
-			return ErrorDNSServiceIPAlreadyUsed
-		}
-
-		if a.AgentPoolProfiles == nil {
-			return ErrorNilAgentPoolProfile
-		}
-
-		// validate custom VNET logic
-		if isCustomVNET(a.AgentPoolProfiles) {
-			var subscription string
-			var resourceGroup string
-			var vnet string
-
-			for _, agentPool := range a.AgentPoolProfiles {
-				// validate subscription, resource group and vnet are the same among subnets
-				subnetSubscription, subnetResourceGroup, subnetVnet, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
-				if err != nil {
-					return ErrorParsingSubnetID
-				}
-
-				if subscription == "" {
-					subscription = subnetSubscription
-				} else {
-					if subscription != subnetSubscription {
-						return ErrorSubscriptionNotMatch
-					}
-				}
-
-				if resourceGroup == "" {
-					resourceGroup = subnetResourceGroup
-				} else {
-					if resourceGroup != subnetResourceGroup {
-						return ErrorResourceGroupNotMatch
-					}
-				}
-
-				if vnet == "" {
-					vnet = subnetVnet
-				} else {
-					if vnet != subnetVnet {
-						return ErrorVnetNotMatch
-					}
-				}
-			}
-		} else {
-			return ErrorAgentPoolNoSubnet
-		}
-
-	} else if string(n.NetworkPlugin) == string(Kubenet) {
-		if n.ServiceCidr != "" || n.DNSServiceIP != "" || n.DockerBridgeCidr != "" {
-			return ErrorKubenetNoCustomization
-		}
-	} else {
-		return ErrorInvalidNetworkPlugin
 	}
 
 	return nil
 }
 
-func isCustomVNET(a []*AgentPoolProfile) bool {
+func validateAgentPoolVNET(a []*AgentPoolProfile) error {
 
-	for _, agentPool := range a {
-		if !agentPool.IsCustomVNET() {
-			return false
+	// validate custom VNET logic at agent pool level
+	if isCustomVNET(a) {
+		var subscription string
+		var resourceGroup string
+		var vnet string
+
+		for _, agentPool := range a {
+			// validate each agent pool has a subnet
+			if !agentPool.IsCustomVNET() {
+				return ErrorAtLeastAgentPoolNoSubnet
+			}
+
+			// validate subscription, resource group and vnet are the same among subnets
+			subnetSubscription, subnetResourceGroup, subnetVnet, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
+			if err != nil {
+				return ErrorParsingSubnetID
+			}
+
+			if subscription == "" {
+				subscription = subnetSubscription
+			} else {
+				if subscription != subnetSubscription {
+					return ErrorSubscriptionNotMatch
+				}
+			}
+
+			if resourceGroup == "" {
+				resourceGroup = subnetResourceGroup
+			} else {
+				if resourceGroup != subnetResourceGroup {
+					return ErrorResourceGroupNotMatch
+				}
+			}
+
+			if vnet == "" {
+				vnet = subnetVnet
+			} else {
+				if vnet != subnetVnet {
+					return ErrorVnetNotMatch
+				}
+			}
 		}
 	}
 
-	return true
+	return nil
+}
+
+// check agent pool subnet, return true as long as one agent pool has a subnet defined.
+func isCustomVNET(a []*AgentPoolProfile) bool {
+	for _, agentPool := range a {
+		if agentPool.IsCustomVNET() {
+			return true
+		}
+	}
+
+	return false
 }
 
 // GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
