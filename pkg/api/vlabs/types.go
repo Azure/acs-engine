@@ -324,7 +324,7 @@ type DcosConfig struct {
 	DcosRepositoryURL        string                `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
 	DcosClusterPackageListID string                `json:"dcosClusterPackageListID,omitempty"` // all three of these items
 	DcosProviderPackageID    string                `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
-	BootstrapNodeProfile     *BootstrapNodeProfile `json:"bootstrapNodeProfile"`
+	BootstrapNodeProfile     *BootstrapNodeProfile `json:"bootstrapNodeProfile,omitempty"`
 }
 
 // OpenShiftConfig holds configuration for OpenShift

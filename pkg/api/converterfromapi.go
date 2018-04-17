@@ -662,24 +662,37 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	vl.ClusterPassword = api.ClusterPassword
 }
 
-func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
-	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
-	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
+func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
+	vl.DcosBootstrapURL = api.DcosBootstrapURL
+	vl.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
 
 	if api.Registry != "" {
-		vlabs.Registry = api.Registry
+		vl.Registry = api.Registry
 	}
 
 	if api.RegistryUser != "" {
-		vlabs.RegistryUser = api.RegistryUser
+		vl.RegistryUser = api.RegistryUser
 	}
 
 	if api.RegistryPass != "" {
-		vlabs.RegistryPass = api.RegistryPass
+		vl.RegistryPass = api.RegistryPass
 	}
-	vlabs.DcosRepositoryURL = api.DcosRepositoryURL
-	vlabs.DcosClusterPackageListID = api.DcosClusterPackageListID
-	vlabs.DcosProviderPackageID = api.DcosProviderPackageID
+	vl.DcosRepositoryURL = api.DcosRepositoryURL
+	vl.DcosClusterPackageListID = api.DcosClusterPackageListID
+	vl.DcosProviderPackageID = api.DcosProviderPackageID
+
+	if api.BootstrapNodeProfile != nil {
+		vl.BootstrapNodeProfile = &vlabs.BootstrapNodeProfile{
+			Count:        api.BootstrapNodeProfile.Count,
+			VMSize:       api.BootstrapNodeProfile.VMSize,
+			OSDiskSizeGB: api.BootstrapNodeProfile.OSDiskSizeGB,
+			OAuthEnabled: api.BootstrapNodeProfile.OAuthEnabled,
+			//PreprovisionExtension:    api.BootstrapNodeProfile.PreprovisionExtension,
+			FirstConsecutiveStaticIP: api.BootstrapNodeProfile.FirstConsecutiveStaticIP,
+			Subnet:         api.BootstrapNodeProfile.Subnet,
+			StorageProfile: api.BootstrapNodeProfile.StorageProfile,
+		}
+	}
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {

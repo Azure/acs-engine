@@ -631,6 +631,19 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosRepositoryURL = vlabs.DcosRepositoryURL
 	api.DcosClusterPackageListID = vlabs.DcosClusterPackageListID
 	api.DcosProviderPackageID = vlabs.DcosProviderPackageID
+
+	if vlabs.BootstrapNodeProfile != nil {
+		api.BootstrapNodeProfile = &BootstrapNodeProfile{
+			Count:        vlabs.BootstrapNodeProfile.Count,
+			VMSize:       vlabs.BootstrapNodeProfile.VMSize,
+			OSDiskSizeGB: vlabs.BootstrapNodeProfile.OSDiskSizeGB,
+			OAuthEnabled: vlabs.BootstrapNodeProfile.OAuthEnabled,
+			//PreprovisionExtension:    vlabs.BootstrapNodeProfile.PreprovisionExtension,
+			FirstConsecutiveStaticIP: vlabs.BootstrapNodeProfile.FirstConsecutiveStaticIP,
+			Subnet:         vlabs.BootstrapNodeProfile.Subnet,
+			StorageProfile: vlabs.BootstrapNodeProfile.StorageProfile,
+		}
+	}
 }
 
 func convertVLabsOpenShiftConfig(vlabs *vlabs.OpenShiftConfig, api *OpenShiftConfig) {

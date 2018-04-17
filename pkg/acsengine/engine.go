@@ -49,9 +49,9 @@ const (
 	dcosCustomData190    = "dcos/dcoscustomdata190.t"
 	dcosCustomData198    = "dcos/dcoscustomdata198.t"
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
-	dcosCustomData111    = "dcos/dcoscustomdata111.t"
 	dcosProvision        = "dcos/dcosprovision.sh"
 	dcosWindowsProvision = "dcos/dcosWindowsProvision.ps1"
+	dcos2CustomData111   = "dcos/bstrap/dcoscustomdata111.t"
 )
 
 const (
@@ -74,8 +74,12 @@ const (
 	dcosBaseFile                  = "dcos/dcosbase.t"
 	dcosParams                    = "dcos/dcosparams.t"
 	dcosMasterResources           = "dcos/dcosmasterresources.t"
-	dcosBootstrapResources        = "dcos/dcosbootstrapresources.t"
 	dcosMasterVars                = "dcos/dcosmastervars.t"
+	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
+	dcos2BootstrapResources       = "dcos/bstrap/dcosbootstrapresources.t"
+	dcos2MasterVars               = "dcos/bstrap/dcosmastervars.t"
+	dcos2MasterResources          = "dcos/bstrap/dcosmasterresources.t"
+	bootstrapParams               = "dcos/bstrap/bootstrapparams.t"
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
@@ -107,7 +111,8 @@ const (
 )
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosBootstrapResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
+var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
+var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, bootstrapParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -174,6 +179,7 @@ func init() {
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := commonTemplateFiles
 	allFiles = append(allFiles, dcosTemplateFiles...)
+	allFiles = append(allFiles, dcos2TemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, openshiftTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
@@ -362,8 +368,14 @@ func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]
 	var baseFile string
 	switch properties.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
-		files = append(commonTemplateFiles, dcosTemplateFiles...)
-		baseFile = dcosBaseFile
+		switch properties.OrchestratorProfile.OrchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			files = append(commonTemplateFiles, dcos2TemplateFiles...)
+			baseFile = dcos2BaseFile
+		default:
+			files = append(commonTemplateFiles, dcosTemplateFiles...)
+			baseFile = dcosBaseFile
+		}
 	case api.Swarm:
 		files = append(commonTemplateFiles, swarmTemplateFiles...)
 		baseFile = swarmBaseFile
@@ -1138,6 +1150,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			return pkglist
 		},
+		"IsHostedBootstrap": func() bool {
+			return false
+		},
 		"GetDCOSBootstrapNodeIPList": func() string {
 			// Returns a list of <count> ip consecutive addresses where the last address
 			// is the highest non-broadcast address on the master subnet. We choose the highest
@@ -1159,7 +1174,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetBootstrapHTTPSourceAddressPrefix": func() string {
 			return fmt.Sprintf("%s", "BOOTSTRAPHTTPSOURCEADDRESSPREFIX")
 		},
-		"GetDCOSBootstrapNodeCustomData": func() string {
+		"GetDCOSBootstrapCustomData": func() string {
 			/*
 				bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
 				bootstrapPreprovisionExtension := ""
@@ -1177,7 +1192,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 				return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 			*/
-			return "BOOTSTRAP NODE CUSTOM DATA"
+			return "echo BOOTSTRAP_NODE_CUSTOM_DATA"
+		},
+		"GetDCOSBootstrapAllowedSizes": func() string {
+			return GetDCOSBootstrapAllowedSizes()
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
@@ -2538,7 +2556,7 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion, bootstra
 		case api.DCOSVersion1Dot10Dot0:
 			yamlFilename = dcosCustomData110
 		case api.DCOSVersion1Dot11Dot0:
-			yamlFilename = dcosCustomData111
+			yamlFilename = dcos2CustomData111
 		}
 	default:
 		// it is a bug to get here
@@ -2558,7 +2576,6 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion, bootstra
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
 	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
-	fmt.Printf("yaml = %s", yamlStr)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))

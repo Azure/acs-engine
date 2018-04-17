@@ -21,6 +21,7 @@
       {{template "windowsparams.t"}},
     {{end}}
     {{template "dcos/dcosparams.t" .}}
+    {{template "dcos/bstrap/bootstrapparams.t" .}}
     {{template "masterparams.t" .}}
   },
   "variables": {
@@ -39,7 +40,7 @@
         {{end}}
     {{end}}
 
-    {{template "dcos/dcosmastervars.t" .}}
+    {{template "dcos/bstrap/dcosmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}
@@ -57,7 +58,8 @@
         {{end}}
       {{end}}
     {{end}}
-    {{template "dcos/dcosmasterresources.t" .}}
+    {{template "dcos/bstrap/dcosbootstrapresources.t" .}}
+    {{template "dcos/bstrap/dcosmasterresources.t" .}}
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}

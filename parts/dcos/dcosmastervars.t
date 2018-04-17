@@ -110,7 +110,7 @@
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
-{{if not IsDCOS18}}
+{{if IsDCOS19}}
     "masterSshInboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'))]",
     "masterSshPort22InboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'))]",
     "masterLbInboundNatRules": [
@@ -142,29 +142,7 @@
                     "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'4')]"
                 }
             ]
-        ]
+        ],
 {{end}}
-{{if IsDCOS111}}
-    ,
-    "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
-    "bootstrapAvailabilitySet": "[concat(variables('orchestratorName'), '-bootstrap-availabilitySet-', variables('nameSuffix'))]", 
-    "bootstrapCount": 1,
-    "bootstrapEndpointDNSNamePrefix": "[tolower(parameters('bootstrapEndpointDNSNamePrefix'))]",
-    "bootstrapHttpSourceAddressPrefix": "{{GetBootstrapHTTPSourceAddressPrefix}}",
-    "bootstrapLbBackendPoolName": "[concat(variables('orchestratorName'), '-bootstrap-pool-', variables('nameSuffix'))]",
-    "bootstrapLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('bootstrapLbName'))]",
-    "bootstrapLbIPConfigID": "[concat(variables('bootstrapLbID'),'/frontendIPConfigurations/', variables('bootstrapLbIPConfigName'))]",
-    "bootstrapLbIPConfigName": "[concat(variables('orchestratorName'), '-bootstrap-lbFrontEnd-', variables('nameSuffix'))]",
-    "bootstraprLbName": "[concat(variables('orchestratorName'), '-bootstrap-lb-', variables('nameSuffix'))]",
-    "bootstraprNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('bootstrapNSGName'))]",
-    "bootstraprNSGName": "[concat(variables('orchestratorName'), '-bootstrap-nsg-', variables('nameSuffix'))]",
-    "apiVersionStorage": "2015-06-15",
-    "storageAccountType": "Standard_LRS",
-    "apiVersionBootstrapNode": "2016-04-30-preview",
-    "bootstrapVnetSubnetID": "[variables('bootstrapVnetSubnetID')]",
-    "bootstrapVMNamePrefix": "[concat(variables('orchestratorName'), '-bootstrap-', variables('nameSuffix'), '-')]",
-    "bootstrapVMNic": [
-      "[concat(variables('bootstrapVMNamePrefix'), 'nic-0')]"
-    ],
-    "bootstrapVMSize": "[parameters('bootstrapVMSize')]"
-{{end}}
+    "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]"
+
