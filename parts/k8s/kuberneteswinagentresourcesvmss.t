@@ -88,7 +88,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
-      "overprovision": true,
+      "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"
       },
