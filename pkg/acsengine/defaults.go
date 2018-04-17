@@ -720,7 +720,7 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 	}
 	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
 
-	return false, nil
+	return true, nil
 }
 
 type writeFn func(filesystem.Filesystem) error
