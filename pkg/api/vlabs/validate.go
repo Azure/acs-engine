@@ -513,6 +513,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if i == 0 {
+				continue
+			}
 			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
 				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
