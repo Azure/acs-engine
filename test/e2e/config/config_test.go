@@ -29,6 +29,12 @@ func TestSetRandomRegion(t *testing.T) {
 		},
 		{
 			config: Config{
+				Regions: nil,
+			},
+			expected: []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"},
+		},
+		{
+			config: Config{
 				Regions: []string{"antarctica", "northpole"},
 			},
 			expected: []string{"antarctica", "northpole"},
