@@ -9,7 +9,9 @@ while ! oc version &>/dev/null; do
   sleep 1
 done
 
-oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-selector": ""}}}'
+for project in default openshift-infra; do
+  oc patch project $project -p '{"metadata":{"annotations":{"openshift.io/node-selector": ""}}}'
+done
 
 # FIXME - This should be handled by the openshift-ansible playbooks to ensure
 #         a directory it needs to write to exists before attempting to write
@@ -17,7 +19,11 @@ oc patch project default -p '{"metadata":{"annotations":{"openshift.io/node-sele
 mkdir -p /etc/origin/master/named_certificates
 
 # Deploy the router reusing relevant parts from openshift-ansible
-ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ ansible-playbook -c local azure-ocp-deploy.yml -i azure-local-master-inventory.yml
+ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ \
+  ansible-playbook\
+  -M /usr/share/ansible/openshift-ansible/roles/lib_utils/library \
+  -c local azure-ocp-deploy.yml \
+  -i azure-local-master-inventory.yml
 
 oc create -f - <<'EOF'
 kind: Project

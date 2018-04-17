@@ -1,8 +1,12 @@
-- name: Deploy the local OpenShift Router and Registry
+- name: Deploy OpenShift infrastructure workload
   hosts: localmaster
   gather_facts: false
 
   tasks:
+    - name: Import openshift_bootstrap_autoapprover role from openshift-ansible to deploy node bootstrap auto approver
+      import_role:
+        name: openshift_bootstrap_autoapprover
+
     - name: Import and use router task file from openshift-ansible openshift_hosted role
       import_role:
         name: openshift_hosted
@@ -13,7 +17,6 @@
         name: openshift_hosted
         tasks_from: registry.yml
 
-    - name: Import openshift_web_console role from openshift-ansbile to deploy web console
+    - name: Import openshift_web_console role from openshift-ansible to deploy web console
       import_role:
         name: openshift_web_console
-
