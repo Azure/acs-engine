@@ -2,7 +2,9 @@ package acsengine
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path"
+	"path/filepath"
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
@@ -51,27 +53,28 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		return e
 	}
 
-	if certsGenerated {
-		properties := containerService.Properties
-		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			directory := path.Join(artifactsDir, "kubeconfig")
-			var locations []string
-			if containerService.Location != "" {
-				locations = []string{containerService.Location}
-			} else {
-				locations = AzureLocations
-			}
+	if !certsGenerated {
+		return nil
+	}
 
-			for _, location := range locations {
-				b, gkcerr := GenerateKubeConfig(properties, location)
-				if gkcerr != nil {
-					return gkcerr
-				}
-				if e := f.SaveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
-					return e
-				}
-			}
+	properties := containerService.Properties
+	if properties.OrchestratorProfile.IsKubernetes() {
+		directory := path.Join(artifactsDir, "kubeconfig")
+		var locations []string
+		if containerService.Location != "" {
+			locations = []string{containerService.Location}
+		} else {
+			locations = AzureLocations
+		}
 
+		for _, location := range locations {
+			b, gkcerr := GenerateKubeConfig(properties, location)
+			if gkcerr != nil {
+				return gkcerr
+			}
+			if e := f.SaveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
+				return e
+			}
 		}
 
 		if e := f.SaveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
@@ -120,7 +123,15 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 				return e
 			}
 		}
-
+	} else if properties.OrchestratorProfile.IsOpenShift() {
+		masterTarballPath := filepath.Join(artifactsDir, "master.tar.gz")
+		masterBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]
+		if err := ioutil.WriteFile(masterTarballPath, masterBundle, 0644); err != nil {
+			return err
+		}
+		nodeTarballPath := filepath.Join(artifactsDir, "node.tar.gz")
+		nodeBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]
+		return ioutil.WriteFile(nodeTarballPath, nodeBundle, 0644)
 	}
 
 	return nil
