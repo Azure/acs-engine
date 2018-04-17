@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-type MockStorage struct {
-	output string
-	err    error
-}
-
-//func (ms MockStorage) {}
-
 func TestIsClusterExpired(t *testing.T) {
 	cases := []struct {
 		rg             ResourceGroup
@@ -86,12 +79,3 @@ func TestIsClusterExpired(t *testing.T) {
 		}
 	}
 }
-
-// TODO
-// func TestStorageAccount(t *testing.T) {}
-
-// func TestUploadFiles(t *testing.T) {}
-
-// func TestDownloadFiles(t *testing.T) {}
-
-// func TestDeleteFiles(t *testing.T) {}
