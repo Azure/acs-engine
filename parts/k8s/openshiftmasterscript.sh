@@ -4,10 +4,14 @@
 # probably shouldn't be
 
 SERVICE_TYPE=origin
-IMAGE_BASE=openshift/origin
+IMAGE_TYPE="${SERVICE_TYPE}"
+IMAGE_PREFIX="openshift"
+ANSIBLE_DEPLOY_TYPE="origin"
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
-	IMAGE_BASE=registry.reg-aws.openshift.com:443/openshift3/ose
+	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
+	IMAGE_TYPE=ose
+	IMAGE_PREFIX="registry.reg-aws.openshift.com:443/openshift3"
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 
@@ -59,9 +63,9 @@ routerLBHost="{{.RouterLBHostname}}"
 routerLBIP=$(dig +short $routerLBHost)
 
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
-    sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|TEMPIMAGEBASE|$IMAGE_BASE|" $i
+    sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|IMAGE_PREFIX|$IMAGE_PREFIX|g; s|ANSIBLE_DEPLOY_TYPE|$ANSIBLE_DEPLOY_TYPE|g" $i
     sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
-    sed -i "s|VERSION|${VERSION}|g" $i
+    sed -i "s|VERSION|${VERSION}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
 done
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
@@ -114,10 +118,11 @@ docker run \
 	-v /tmp/ansible:/opt/app-root/src:z \
 	-v /root/.kube:/opt/app-root/src/.kube:z \
 	-w /opt/app-root/src \
-	-e IMAGE_BASE="$IMAGE_BASE" \
+	-e IMAGE_BASE="${IMAGE_PREFIX}/${IMAGE_TYPE}" \
 	-e VERSION="$VERSION" \
 	-e HOSTNAME="$(hostname)" \
-	"$IMAGE_BASE-ansible:v$VERSION" \
+	--network="host" \
+	"${IMAGE_PREFIX}/${IMAGE_TYPE}-ansible:v$VERSION" \
 	/opt/app-root/src/ansible.sh
 
 exit 0

@@ -20,3 +20,7 @@
     - name: Import openshift_web_console role from openshift-ansible to deploy web console
       import_role:
         name: openshift_web_console
+
+    - name: Import openshift_prometheus role from openshift-ansible to deploy prometheus
+      import_role:
+        name: openshift_prometheus
