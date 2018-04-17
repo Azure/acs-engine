@@ -28,11 +28,8 @@ jobs:
           name: Build cross-architectural binaries
           command: make build-cross
       - run:
-          name: Run unit tests
-          command: make test
-      - run:
-          name: Calculate coverage
-          command: go get github.com/mattn/goveralls && go test -v -cover -race -coverprofile=/home/ubuntu/coverage.out && /home/ubuntu/.go_workspace/bin/goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+          name: Run unit tests and calculate coverage
+          command: make coverage
       - store_test_results:
           path: test/junit
   swarm-e2e:
