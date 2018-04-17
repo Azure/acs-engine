@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# This script runs on every Kubernetes VM
+# Exit codes represent the following:
+# | exit code number | meaning |
+# | 20 | Timeout waiting for docker install to finish |
+# | 3 | Service could not be enabled by systemctl |
+# | 4 | Service could not be started by systemctl |
+# | 5 | Timeout waiting for cloud-init runcmd to complete |
+# | 6 | Timeout waiting for a file |
+# | 10 | Etcd data dir not found |
+# | 11 | Timeout waiting for etcd to be accessible |
+# | 30 | Timeout waiting for k8s cluster to be healthy|
+
 set -x
 source /opt/azure/containers/provision_source.sh
 
@@ -24,12 +36,20 @@ ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
     wait_for_file 900 1 /opt/azure/containers/runcmd.complete
+    if [ ! -f /opt/azure/containers/runcmd.complete ]; then
+        echo "Timeout waiting for cloud-init runcmd to complete"
+        exit 5
+    fi
 }
 
 ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
     wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
+    if [ ! -f /opt/azure/containers/dockerinstall.complete ]; then
+        echo "Timeout waiting for docker install to finish"
+        exit 20
+    fi
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
@@ -148,7 +168,10 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
+    "providerKeyName": "k8s",
+    "providerKeyVersion": ""
 }
 EOF
 
@@ -159,6 +182,11 @@ function ensureFilepath() {
         return
     fi
     wait_for_file 600 1 $1
+    if [ ! -f $1 ]; then
+        echo "Timeout waiting for $1"
+        exit 6
+    fi
+    
 }
 
 function setKubeletOpts () {
@@ -288,14 +316,27 @@ function systemctlEnableAndStart() {
     if [ $enabled -ne 0 ]
     then
         echo "$1 could not be enabled by systemctl"
-        exit 5
+        exit 3
     fi
     systemctl_restart 100 1 10 $1
     retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    systemctl is-failed $1
+    if [ $? -eq 0 ]
+    then
+        echo "$1 could not be started"
+        exit 4
+    fi
 }
 
 function ensureDocker() {
     systemctlEnableAndStart docker
+}
+function ensureKMS() {
+    systemctlEnableAndCheck kms
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kms
+    fi
 }
 
 function ensureKubelet() {
@@ -336,7 +377,7 @@ function ensureK8s() {
     if [ $k8sHealthy -ne 0 ]
     then
         echo "k8s cluster is not healthy after $i seconds"
-        exit 3
+        exit 30
     fi
     ensurePodSecurityPolicy
 }
@@ -356,7 +397,7 @@ function ensureEtcd() {
     if [ $etcdIsRunning -ne 0 ]
     then
         echo "Etcd not accessible after $i seconds"
-        exit 3
+        exit 11
     fi
 }
 
@@ -382,7 +423,7 @@ function ensureEtcdDataDir() {
     fi
 
    echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 4
+   exit 10
 }
 
 function ensurePodSecurityPolicy(){
@@ -463,12 +504,15 @@ echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
+if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
+    echo `date`,`hostname`, ensureKMSStart>>/opt/m
+    ensureKMS
+fi
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
-
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 

@@ -19,6 +19,15 @@ import (
 // for converting.
 ///////////////////////////////////////////////////////////
 
+const (
+	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
+	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
+	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
+	DefaultKubernetesDNSServiceIP = "10.0.0.10"
+	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
+	DefaultDockerBridgeSubnet = "172.17.0.1/16"
+)
+
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
@@ -214,6 +223,11 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 		KubernetesConfig: &KubernetesConfig{
 			EnableRbac:          helpers.PointerToBool(false),
 			EnableSecureKubelet: helpers.PointerToBool(false),
+			// set network default for un-versioned model
+			NetworkPolicy:      "none",
+			ServiceCIDR:        DefaultKubernetesServiceCIDR,
+			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
+			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
 		},
 	}
 }
@@ -377,10 +391,59 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	}
 
 	if networkProfile != nil {
-		kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
-		kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
-		kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
-		kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+		switch networkProfile.NetworkPlugin {
+		case v20180331.Azure:
+			kubernetesConfig.NetworkPolicy = "azure"
+
+			if networkProfile.ServiceCidr != "" {
+				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			} else {
+				kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+			}
+
+			if networkProfile.DNSServiceIP != "" {
+				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			} else {
+				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+			}
+
+			if networkProfile.DockerBridgeCidr != "" {
+				kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+			} else {
+				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+			}
+		case v20180331.Kubenet:
+			kubernetesConfig.NetworkPolicy = "none"
+
+			if networkProfile.ServiceCidr != "" {
+				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			} else {
+				kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+			}
+
+			if networkProfile.DNSServiceIP != "" {
+				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			} else {
+				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+			}
+
+			if networkProfile.DockerBridgeCidr != "" {
+				kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+			} else {
+				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+			}
+		default:
+			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+		}
+	} else {
+		// set network default for un-versioned model
+		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 	}
 
 	return &OrchestratorProfile{

@@ -111,6 +111,24 @@ write_files:
           - identity: {}
 {{end}}
 
+{{if EnableEncryptionWithExternalKms}}
+- path: "/etc/kubernetes/encryption-config.yaml"
+  permissions: "0444"
+  owner: "root"
+  content: |
+    kind: EncryptionConfig
+    apiVersion: v1
+    resources:
+      - resources:
+        - secrets
+        providers:
+        - kms:
+            name: azurekmsprovider
+            endpoint: unix:///opt/azurekms.socket
+            cachesize: 0
+        - identity: {}
+{{end}}
+
 MASTER_MANIFESTS_CONFIG_PLACEHOLDER
 
 MASTER_ADDONS_CONFIG_PLACEHOLDER
@@ -272,6 +290,9 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
+{{if EnableEncryptionWithExternalKms}}
+    sed -i "s|# Required|Requires=kms.service|g" "/etc/systemd/system/kubelet.service"
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
@@ -398,5 +419,6 @@ runcmd:
 - bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
 - retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
+- apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
 {{end}}

@@ -88,12 +88,13 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				if err != nil {
 					return err
 				}
+				minVersion := "1.7.0"
+
 				if o.KubernetesConfig.EnableAggregatedAPIs {
 					sv, err := semver.NewVersion(version)
 					if err != nil {
 						return fmt.Errorf("could not validate version %s", version)
 					}
-					minVersion := "1.7.0"
 					cons, err := semver.NewConstraint("<" + minVersion)
 					if err != nil {
 						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
@@ -108,22 +109,34 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 							return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
 						}
 					}
+				}
 
-					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						sv, err := semver.NewVersion(version)
-						if err != nil {
-							return fmt.Errorf("could not validate version %s", version)
-						}
-						cons, err := semver.NewConstraint("<" + minVersion)
-						if err != nil {
-							return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
-						}
-						if cons.Check(sv) {
-							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-								minVersion, o.OrchestratorVersion)
-						}
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+					sv, err := semver.NewVersion(version)
+					if err != nil {
+						return fmt.Errorf("could not validate version %s", version)
+					}
+					cons, err := semver.NewConstraint("<" + minVersion)
+					if err != nil {
+						return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+					}
+					if cons.Check(sv) {
+						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							minVersion, o.OrchestratorVersion)
+					}
+
+				}
+
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+					sv, _ := semver.NewVersion(version)
+					minVersion := "1.10.0"
+					cons, _ := semver.NewConstraint("<" + minVersion)
+					if cons.Check(sv) {
+						return fmt.Errorf("enableEncryptionWithExternalKms is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							minVersion, o.OrchestratorVersion)
 					}
 				}
+
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
@@ -391,6 +404,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
 				(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
 				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && len(a.ServicePrincipalProfile.ObjectID) == 0 {
+				return fmt.Errorf("the service principal object ID must be specified with Orchestrator %s when enableEncryptionWithExternalKms is true", a.OrchestratorProfile.OrchestratorType)
 			}
 
 			if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {

@@ -21,6 +21,8 @@ spec:
         - name: "msi"
           mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
           readOnly: true
+        - name: "sock"
+          mountPath: "/opt"
   volumes:
     - name: "etc-kubernetes"
       hostPath:
@@ -31,3 +33,6 @@ spec:
     - name: msi
       hostPath:
         path: "/var/lib/waagent/ManagedIdentity-Settings"
+    - name: "sock"
+      hostPath:
+        path: "/opt"

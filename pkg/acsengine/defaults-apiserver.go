@@ -56,6 +56,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
+	// Data Encryption at REST with external KMS configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
+	}
+
 	// Aggregated API configuration
 	if o.KubernetesConfig.EnableAggregatedAPIs || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
 		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"

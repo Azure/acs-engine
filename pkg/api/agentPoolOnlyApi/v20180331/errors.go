@@ -2,14 +2,11 @@ package v20180331
 
 import "fmt"
 
-// ErrorNilNetworkProfile error
-var ErrorNilNetworkProfile = fmt.Errorf("Network profile can not be nil")
-
-// ErrorNilAgentPoolProfile error
-var ErrorNilAgentPoolProfile = fmt.Errorf("Agent pool profile can not be nil")
+// ErrorInvalidNetworkProfile error
+var ErrorInvalidNetworkProfile = fmt.Errorf("ServiceCidr, DNSServiceIP, DockerBridgeCidr should all be empty or neither should be empty")
 
 // ErrorInvalidNetworkPlugin error
-var ErrorInvalidNetworkPlugin = fmt.Errorf("Network plugin should be either \"azure\" or \"kubenet\"")
+var ErrorInvalidNetworkPlugin = fmt.Errorf("Network plugin should be either Azure or Kubenet")
 
 // ErrorInvalidServiceCidr error
 var ErrorInvalidServiceCidr = fmt.Errorf("ServiceCidr is not a valid CIDR")
@@ -26,11 +23,8 @@ var ErrorDNSServiceIPNotInServiceCidr = fmt.Errorf("DNSServiceIP is not within S
 // ErrorDNSServiceIPAlreadyUsed error
 var ErrorDNSServiceIPAlreadyUsed = fmt.Errorf("DNSServiceIP can not be the first IP address in ServiceCidr")
 
-// ErrorAgentPoolNoSubnet error
-var ErrorAgentPoolNoSubnet = fmt.Errorf("Agent pool does not have subnet defined")
-
-// ErrorKubenetNoCustomization error
-var ErrorKubenetNoCustomization = fmt.Errorf("Kubenet does not support ServiceCidr or DNSServiceIP or DockerBridgeCidr customization")
+// ErrorAtLeastAgentPoolNoSubnet error
+var ErrorAtLeastAgentPoolNoSubnet = fmt.Errorf("At least one agent pool does not have subnet defined")
 
 // ErrorParsingSubnetID error
 var ErrorParsingSubnetID = fmt.Errorf("Failed to parse VnetSubnetID")
