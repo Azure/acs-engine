@@ -23,9 +23,8 @@ profile="${coverdir}/cover.out"
 hash goveralls 2>/dev/null || go get github.com/mattn/goveralls
 hash godir 2>/dev/null || go get github.com/Masterminds/godir
 
-# TODO this appears to run all unit tests, rather than just generate coverage data
 generate_cover_data() {
-  ginkgo -skipPackage test/e2e -cover -r .
+  ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes -cover -r .
   find . -type f -name "*.coverprofile" | while read -r file; do mv $file ${coverdir}; done
 
   echo "mode: $covermode" >"$profile"

@@ -17,6 +17,7 @@ jobs:
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export COVERALLS_TOKEN=${COVERALLS_TOKEN}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
@@ -27,8 +28,8 @@ jobs:
           name: Build cross-architectural binaries
           command: make build-cross
       - run:
-          name: Run unit tests
-          command: make test
+          name: Run unit tests and calculate coverage
+          command: make coverage
       - store_test_results:
           path: test/junit
   swarm-e2e:

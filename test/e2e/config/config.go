@@ -151,7 +151,7 @@ func (c *Config) IsSwarm() bool {
 // SetRandomRegion sets Location to a random region
 func (c *Config) SetRandomRegion() {
 	var regions []string
-	if c.Regions == nil {
+	if c.Regions == nil || len(c.Regions) == 0 {
 		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 	} else {
 		regions = c.Regions

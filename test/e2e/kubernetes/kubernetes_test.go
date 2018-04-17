@@ -514,7 +514,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		// TODO stabilize this test
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if eng.OrchestratorVersion1Dot8AndUp() {
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion ,"1.8") {
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())

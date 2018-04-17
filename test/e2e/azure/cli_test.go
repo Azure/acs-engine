@@ -7,61 +7,75 @@ import (
 )
 
 func TestIsClusterExpired(t *testing.T) {
-	rg := ResourceGroup{
-		Name:     "testRG",
-		Location: "test",
-		Tags: map[string]string{
-			"now": "799786800",
+	cases := []struct {
+		rg             ResourceGroup
+		a              Account
+		duration       string
+		expectedResult bool
+	}{
+		{
+			rg: ResourceGroup{
+				Name:     "testRG",
+				Location: "test",
+				Tags: map[string]string{
+					"now": "799786800",
+				},
+			},
+			a: Account{
+				User:           new(User),
+				TenantID:       "1234",
+				SubscriptionID: "1234",
+				ResourceGroup:  ResourceGroup{},
+				Deployment:     Deployment{},
+			},
+			duration:       "1h",
+			expectedResult: true,
+		},
+		{
+			rg: ResourceGroup{
+				Name:     "testRG",
+				Location: "test",
+				Tags: map[string]string{
+					"now": fmt.Sprintf("%v", time.Now().Unix()),
+				},
+			},
+			a: Account{
+				User:           new(User),
+				TenantID:       "1234",
+				SubscriptionID: "1234",
+				ResourceGroup:  ResourceGroup{},
+				Deployment:     Deployment{},
+			},
+			duration:       "300h",
+			expectedResult: false,
+		},
+		{
+			rg: ResourceGroup{
+				Name:     "thisRGDoesNotExist",
+				Location: "test",
+				Tags:     map[string]string{},
+			},
+			a: Account{
+				User:           new(User),
+				TenantID:       "1234",
+				SubscriptionID: "1234",
+				ResourceGroup:  ResourceGroup{},
+				Deployment:     Deployment{},
+			},
+			duration:       "1s",
+			expectedResult: true,
 		},
 	}
-	a := Account{
-		User:           new(User),
-		TenantID:       "1234",
-		SubscriptionID: "1234",
-		ResourceGroup:  rg,
-		Deployment:     Deployment{},
-	}
 
-	d, err := time.ParseDuration("1h")
-	if err != nil {
-		t.Fatalf("unexpected error parsing duration: %s", err)
-	}
-	expected := true
-	result := a.IsClusterExpired(d)
-	if expected != result {
-		t.Fatalf("Resource group should be older than 1h: expected %t but got %t", expected, result)
-	}
-
-	a.ResourceGroup.Tags["now"] = fmt.Sprintf("%v", time.Now().Unix())
-
-	d, err = time.ParseDuration("300h")
-	if err != nil {
-		t.Fatalf("unexpected error parsing duration: %s", err)
-	}
-	expected = false
-	result = a.IsClusterExpired(d)
-	if expected != result {
-		t.Fatalf("Resource group should not be older than 300h: expected %t but got %t", expected, result)
-	}
-
-	a.ResourceGroup.Name = "thisrgdoesntexist"
-	a.ResourceGroup.Tags = map[string]string{}
-	d, err = time.ParseDuration("1s")
-	if err != nil {
-		t.Fatalf("unexpected error parsing duration: %s", err)
-	}
-	expected = true
-	result = a.IsClusterExpired(d)
-	if expected != result {
-		t.Fatalf("Resource group does not exist: expected %t but got %t", expected, result)
+	for _, c := range cases {
+		c.a.ResourceGroup = c.rg
+		d, err := time.ParseDuration(c.duration)
+		if err != nil {
+			t.Fatalf("unexpected error parsing duration: %s", err)
+		}
+		result := c.a.IsClusterExpired(d)
+		if c.expectedResult != result {
+			t.Fatalf("IsClusterExpired returned unexpected result: expected %t but got %t", c.expectedResult, result)
+		}
 	}
 }
-
-// TODO
-// func TestStorageAccount(t *testing.T) {}
-
-// func TestUploadFiles(t *testing.T) {}
-
-// func TestDownloadFiles(t *testing.T) {}
-
-// func TestDeleteFiles(t *testing.T) {}
