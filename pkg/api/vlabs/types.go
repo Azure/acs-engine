@@ -328,6 +328,7 @@ type OpenShiftConfig struct {
 type MasterProfile struct {
 	Count                    int               `json:"count" validate:"required,eq=1|eq=3|eq=5"`
 	DNSPrefix                string            `json:"dnsPrefix" validate:"required"`
+	SubjectAltNames          []string          `json:"subjectAltNames"`
 	VMSize                   string            `json:"vmSize" validate:"required"`
 	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
