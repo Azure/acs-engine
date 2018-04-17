@@ -424,7 +424,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+	for i, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
@@ -509,6 +509,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if cons.Check(sv) {
 				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 					minVersion, version)
+			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
+				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
 		}
 
