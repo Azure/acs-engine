@@ -841,6 +841,7 @@ func convertMasterProfileToV20170701(api *MasterProfile, v20170701Profile *v2017
 func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterProfile) {
 	vlabsProfile.Count = api.Count
 	vlabsProfile.DNSPrefix = api.DNSPrefix
+	vlabsProfile.SubjectAltNames = api.SubjectAltNames
 	vlabsProfile.VMSize = api.VMSize
 	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VnetSubnetID = api.VnetSubnetID
