@@ -233,7 +233,7 @@ func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v
 	if api.KubernetesConfig != nil && api.KubernetesConfig.KubeletConfig != nil {
 		if maxPods, ok := api.KubernetesConfig.KubeletConfig["--max-pods"]; ok {
 			agentPoolMaxPods, _ := strconv.Atoi(maxPods)
-			p.MaxPods = agentPoolMaxPods
+			p.MaxPods = &agentPoolMaxPods
 		}
 	}
 }
