@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	// KubernetesMinMaxPods is the minimum valid value for MaxPods, necessary for running kube-system pods
 	KubernetesMinMaxPods = 5
 )
 
