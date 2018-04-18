@@ -114,7 +114,7 @@ func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
 	p := &v20180331.AgentPoolProfile{}
 	convertAgentPoolProfileToV20180331AgentPoolOnly(api, p)
 
-	if p.MaxPods != maxPods {
+	if *p.MaxPods != maxPods {
 		t.Error("error in agent pool profile max pods conversion")
 	}
 }

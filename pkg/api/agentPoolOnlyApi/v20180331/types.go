@@ -171,7 +171,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
-	MaxPods        int    `json:"maxPods,omitempty"`
+	MaxPods        *int   `json:"maxPods,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because

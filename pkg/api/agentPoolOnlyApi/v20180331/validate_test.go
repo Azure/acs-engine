@@ -24,6 +24,7 @@ func TestValidateVNET(t *testing.T) {
 
 	maxPods1 := 20
 	maxPods2 := 50
+	maxPodsTooSmall := 4
 
 	// all network profile fields have values, should pass
 	n := &NetworkProfile{
@@ -36,11 +37,11 @@ func TestValidateVNET(t *testing.T) {
 	p := []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -57,11 +58,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -81,11 +82,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -107,11 +108,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -135,11 +136,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -163,11 +164,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -191,11 +192,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -219,11 +220,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -247,11 +248,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -275,11 +276,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -303,10 +304,10 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
-			MaxPods: maxPods2,
+			MaxPods: &maxPods2,
 		},
 	}
 
@@ -317,6 +318,34 @@ func TestValidateVNET(t *testing.T) {
 
 	if err := validateVNET(a); err != ErrorAtLeastAgentPoolNoSubnet {
 		t.Errorf("Failed to throw error, %s", ErrorAtLeastAgentPoolNoSubnet)
+	}
+
+	// NetworkPlugin = Azure, max pods is less than 5
+	n = &NetworkProfile{
+		NetworkPlugin:    NetworkPlugin("azure"),
+		ServiceCidr:      serviceCidr,
+		DNSServiceIP:     dNSServiceIP,
+		DockerBridgeCidr: dockerBridgeCidr,
+	}
+
+	p = []*AgentPoolProfile{
+		{
+			VnetSubnetID: vnetSubnetID1,
+			MaxPods:      &maxPodsTooSmall,
+		},
+		{
+			VnetSubnetID: vnetSubnetID2,
+			MaxPods:      &maxPodsTooSmall,
+		},
+	}
+
+	a = &Properties{
+		NetworkProfile:    n,
+		AgentPoolProfiles: p,
+	}
+
+	if err := validateVNET(a); err != ErrorInvalidMaxPods {
+		t.Errorf("Failed to throw error, %s", ErrorInvalidMaxPods)
 	}
 
 	// NetworkPlugin = Azure, Failed to parse VnetSubnetID
@@ -330,11 +359,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1Bad,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -358,11 +387,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1WrongSubscription,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -386,11 +415,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1WrongResourceGroup,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
@@ -414,11 +443,11 @@ func TestValidateVNET(t *testing.T) {
 	p = []*AgentPoolProfile{
 		{
 			VnetSubnetID: vnetSubnetID1WrongVnet,
-			MaxPods:      maxPods1,
+			MaxPods:      &maxPods1,
 		},
 		{
 			VnetSubnetID: vnetSubnetID2,
-			MaxPods:      maxPods2,
+			MaxPods:      &maxPods2,
 		},
 	}
 
