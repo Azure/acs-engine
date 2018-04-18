@@ -894,7 +894,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if not UseMasterCustomImage}}
+          {{if and (not UseMasterCustomImage) IsKubernetes}}
           "dataDisks": [
             {
               "createOption": "Empty"
