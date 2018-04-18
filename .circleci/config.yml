@@ -17,7 +17,7 @@ jobs:
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
-          echo 'export COVERALLS_TOKEN=${COVERALLS_TOKEN}' >> $BASH_ENV
+          echo 'export COVERALLS_REPO_TOKEN=${COVERALLS_TOKEN}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
