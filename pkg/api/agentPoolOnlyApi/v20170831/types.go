@@ -34,7 +34,7 @@ type Properties struct {
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
