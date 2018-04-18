@@ -1,0 +1,42 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "osDiskVhdUri": "https://acstackimages.blob.core.windows.net/system/Microsoft.Compute/Images/acs-vhds/acstack-1523890681-osDisk.9b1e4c58-99fb-4a65-a8e4-3358ae4d1264.vhd",
+      "count": 1,
+      "dnsPrefix": "",
+      "storageProfile": "ManagedDisks",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "imageReference": {
+          "name": "stretch",
+          "resourceGroup": "debian"
+        },
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
