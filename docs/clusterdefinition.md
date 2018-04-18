@@ -32,7 +32,8 @@ Here are the valid values for the orchestrator types:
 |---|---|---|
 |kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
-|networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience,<br>`none` for not enforcing any network policy,<br>`calico` for Calico network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>`cilium` for cilium network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>See [network policy examples](../examples/networkpolicy) for more information|
+|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience, or <br>`"kubenet"` for k8s software networking implementation.|
+|networkPolicy|no|Specifies the network policy enforcement tool for the cluster (currently Linux-only). Valid values are:<br>`calico` for Calico network policy.<br>`cilium` for cilium network policy (Lin).<br>See [network policy examples](../examples/networkpolicy) for more information|
 |containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The only other option is `clear-containers`|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`|
@@ -41,6 +42,7 @@ Here are the valid values for the orchestrator types:
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |enableDataEncryptionAtRest|no|Enable [kubernetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
+|etcdEncryptionKey|no|Enryption key to be used if enableDataEncryptionAtRest is enabled. Defaults to a random, generated, key|
 |enablePodSecurityPolicy|no|Enable [kubernetes pod security policy](https://kubernetes.io/docs/concepts/policy/pod-security-policy/).This is currently a beta feature. (boolean - default == false)|
 |enableEncryptionWithExternalKms|no|Enable [kubernetes data encryption at rest with external KMS](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
 |etcdDiskSizeGB|no|Size in GB to assign to etcd data volume. Defaults (if no user value provided) are: 256 GB for clusters up to 3 nodes; 512 GB for clusters with between 4 and 10 nodes; 1024 GB for clusters with between 11 and 20 nodes; and 2048 GB for clusters with more than 20 nodes|
@@ -54,6 +56,7 @@ Here are the valid values for the orchestrator types:
 |cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config)|
 |apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config)|
 |schedulerConfig|no|Configure various runtime configuration for scheduler. See `schedulerConfig` [below](#feat-scheduler-config)|
+|customWindowsPackageURL|no|Configure custom windows Kubernetes release package URL for deployment on Windows|
 
 #### addons
 
@@ -167,14 +170,14 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--cloud-provider"|"azure"|
 |"--cluster-domain"|"cluster.local"|
 |"--pod-infra-container-image"|"pause-amd64:*version*"|
-|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPolicy": "none"`)|
+|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPlugin": "kubenet"`)|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
 |"--node-status-update-frequency"|"10s"|
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
-|"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option|
+|"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option for k8s versions before 1.11.0|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
 
@@ -411,7 +414,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |vmSize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/)|
 |publicKey|yes|The public SSH key used for authenticating access to the jumpbox.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB. Defaults to `30`|
-|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
+|storageProfile|no|Specifies the storage profile to use.  Valid values are [ManagedDisks](../examples/disks-managed) or [StorageAccount](../examples/disks-storageaccount). Defaults to `ManagedDisks`|
 |username|no|Describes the admin username to be used on the jumpbox. Defaults to `azureuser`|
 
 ### masterProfile
@@ -437,19 +440,20 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 
 |Name|Required|Description|
 |---|---|---|
-|availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default) and `AvailabilitySet`.  For Kubernetes clusters before k8s version 1.10, use `AvailabilitySet`. Otherwise, you should use `VirtualMachineScaleSets`, unless you need features such as dynamic attached disks|
+|availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default) and `AvailabilitySet`.  For Kubernetes clusters before version 1.10, use `AvailabilitySet`. Otherwise, you should use `VirtualMachineScaleSets`|
 |count|yes|Describes the node count|
 |diskSizesGB|no|Describes an array of up to 4 attached disk sizes.  Valid disk size values are between 1 and 1024|
 |dnsPrefix|Required if agents are to be exposed publically with a load balancer|The dns prefix that forms the FQDN to access the loadbalancer for this agent pool. This must be a unique name among all agent pools. Not supported for Kubernetes clusters|
 |name|yes|This is the unique name for the agent pool profile. The resources of the agent pool profile are derived from this name|
 |ports|only required if needed for exposing services publically|Describes an array of ports need for exposing publically.  A tcp probe is configured for each port and only opens to an agent node if the agent node is listening on that port.  A maximum of 150 ports may be specified. Not supported for Kubernetes clusters|
-|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
+|storageProfile|no|Specifies the storage profile to use.  Valid values are [ManagedDisks](../examples/disks-managed) or [StorageAccount](../examples/disks-storageaccount). Defaults to `ManagedDisks`|
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted to machines with at least 2 cores|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |imageReference.name|no|The name of a a Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
-|distro|no|Specifies agent pool(s) Operating System (Linux). Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|osType|no|Specifies the agent pool's Operating System. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
+|distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
 
 ### linuxProfile
 
