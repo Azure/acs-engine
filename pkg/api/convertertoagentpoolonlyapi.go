@@ -26,6 +26,10 @@ const (
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
+	// DefaultKubernetesMaxPodsKubenet is the maximum number of pods to run on a node for Kubenet.
+	DefaultKubernetesMaxPodsKubenet = "110"
+	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
+	DefaultKubernetesMaxPodsAzureCNI = "30"
 )
 
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
@@ -333,7 +337,7 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
-		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
+		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet, obj.NetworkProfile)
 	}
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
@@ -453,20 +457,32 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	}
 }
 
-func convertV20180331AgentPoolOnlyAgentPoolProfile(v20180331 *v20180331.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
+func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.AgentPoolProfile, availabilityProfile string, networkProfile *v20180331.NetworkProfile) *AgentPoolProfile {
 	api := &AgentPoolProfile{}
-	api.Name = v20180331.Name
-	api.Count = v20180331.Count
-	api.VMSize = v20180331.VMSize
-	api.OSDiskSizeGB = v20180331.OSDiskSizeGB
-	api.OSType = OSType(v20180331.OSType)
-	api.StorageProfile = v20180331.StorageProfile
-	api.VnetSubnetID = v20180331.VnetSubnetID
+	api.Name = agentPoolProfile.Name
+	api.Count = agentPoolProfile.Count
+	api.VMSize = agentPoolProfile.VMSize
+	api.OSDiskSizeGB = agentPoolProfile.OSDiskSizeGB
+	api.OSType = OSType(agentPoolProfile.OSType)
+	api.StorageProfile = agentPoolProfile.StorageProfile
+	api.VnetSubnetID = agentPoolProfile.VnetSubnetID
+	var maxPods string
+	// agentPoolProfile.MaxPods is 0 if maxPods field is not provided in API model
+	if agentPoolProfile.MaxPods == nil {
+		// default is kubenet
+		if networkProfile == nil || networkProfile.NetworkPlugin == v20180331.Kubenet {
+			maxPods = DefaultKubernetesMaxPodsKubenet
+		} else {
+			maxPods = DefaultKubernetesMaxPodsAzureCNI
+		}
+	} else {
+		maxPods = strconv.Itoa(*agentPoolProfile.MaxPods)
+	}
 	kubernetesConfig := &KubernetesConfig{
-		KubeletConfig: map[string]string{"--max-pods": strconv.Itoa(v20180331.MaxPods)},
+		KubeletConfig: map[string]string{"--max-pods": maxPods},
 	}
 	api.KubernetesConfig = kubernetesConfig
-	api.Subnet = v20180331.GetSubnet()
+	api.Subnet = agentPoolProfile.GetSubnet()
 	api.AvailabilityProfile = availabilityProfile
 	return api
 }

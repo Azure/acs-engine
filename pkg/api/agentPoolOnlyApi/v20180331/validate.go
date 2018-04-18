@@ -10,6 +10,10 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
+const (
+	KubernetesMinMaxPods = 5
+)
+
 var validate *validator.Validate
 
 func init() {
@@ -209,6 +213,10 @@ func validateAgentPoolVNET(a []*AgentPoolProfile) error {
 			// validate each agent pool has a subnet
 			if !agentPool.IsCustomVNET() {
 				return ErrorAtLeastAgentPoolNoSubnet
+			}
+
+			if agentPool.MaxPods != nil && *agentPool.MaxPods < KubernetesMinMaxPods {
+				return ErrorInvalidMaxPods
 			}
 
 			// validate subscription, resource group and vnet are the same among subnets
