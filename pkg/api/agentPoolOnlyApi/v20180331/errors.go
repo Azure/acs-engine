@@ -26,6 +26,9 @@ var ErrorDNSServiceIPAlreadyUsed = fmt.Errorf("DNSServiceIP can not be the first
 // ErrorAtLeastAgentPoolNoSubnet error
 var ErrorAtLeastAgentPoolNoSubnet = fmt.Errorf("At least one agent pool does not have subnet defined")
 
+// ErrorInvalidMaxPods error
+var ErrorInvalidMaxPods = fmt.Errorf("Max pods per node needs to be at least 5")
+
 // ErrorParsingSubnetID error
 var ErrorParsingSubnetID = fmt.Errorf("Failed to parse VnetSubnetID")
 
