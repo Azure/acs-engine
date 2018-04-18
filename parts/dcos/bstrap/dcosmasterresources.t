@@ -180,91 +180,26 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
-{{if IsDCOS19}}
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "dependsOn": [
-        "[variables('masterLbID')]"
-      ],
-      "location": "[resourceGroup().location]",
-
-      "name": "[concat(variables('masterLbName'), '/', 'SSHPort22-', variables('masterVMNamePrefix'), '0')]",
-      "properties": {
-        "backendPort": 2222,
-        "enableFloatingIP": false,
-        "frontendIPConfiguration": {
-          "id": "[variables('masterLbIPConfigID')]"
-        },
-        "frontendPort": "22",
-        "protocol": "tcp"
-      },
-      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
-    },
-{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
-{{if IsDCOS19}}
-            {
-                "properties": {
-                    "priority": 201,
-                    "access": "Allow",
-                    "direction": "Inbound",
-                    "destinationPortRange": "2222",
-                    "sourcePortRange": "*",
-                    "destinationAddressPrefix": "*",
-                    "protocol": "Tcp",
-                    "description": "Allow SSH",
-                    "sourceAddressPrefix": "*"
-                },
-                "name": "sshPort22"
-            },
-{{if .MasterProfile.OAuthEnabled}}
-            {
-                "name": "http",
-                "properties": {
-                    "protocol": "Tcp",
-                    "sourcePortRange": "*",
-                    "destinationPortRange": "80",
-                    "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",
-                    "destinationAddressPrefix": "*",
-                    "access": "Allow",
-                    "priority": 202,
-                    "direction": "Inbound"
-                }
-            },
-            {
-                "name": "https",
-                "properties": {
-                    "protocol": "Tcp",
-                    "sourcePortRange": "*",
-                    "destinationPortRange": "443",
-                    "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",
-                    "destinationAddressPrefix": "*",
-                    "access": "Allow",
-                    "priority": 203,
-                    "direction": "Inbound"
-                }
-            },
-{{end}}
-{{end}}
-            {
-                "properties": {
-                    "priority": 200,
-                    "access": "Allow",
-                    "direction": "Inbound",
-                    "destinationPortRange": "22",
-                    "sourcePortRange": "*",
-                    "destinationAddressPrefix": "*",
-                    "protocol": "Tcp",
-                    "description": "Allow SSH",
-                    "sourceAddressPrefix": "*"
-                },
-                "name": "ssh"
-            }
+          {
+              "properties": {
+                  "priority": 200,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "22",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "description": "Allow SSH",
+                  "sourceAddressPrefix": "*"
+              },
+              "name": "ssh"
+          }
         ]
       },
       "type": "Microsoft.Network/networkSecurityGroups"
@@ -281,9 +216,6 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
-{{if IsDCOS19}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),0)]",
-{{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
       "location": "[variables('location')]",
@@ -298,15 +230,11 @@
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
               ],
-{{if IsDCOS19}}
-              "loadBalancerInboundNatRules": "[variables('masterLbInboundNatRules')[copyIndex()]]",
-{{else}}
               "loadBalancerInboundNatRules": [
                 {
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ],
-{{end}}
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
@@ -338,7 +266,7 @@
         "[variables('masterStorageAccountName')]",
 {{end}}
         "[variables('masterStorageAccountExhibitorName')]",
-        ...
+        "[concat(variables('bootstrapVMNamePrefix'), '0')]"
       ],
       "tags":
       {

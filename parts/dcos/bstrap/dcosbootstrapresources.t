@@ -1,4 +1,4 @@
-    , {
+    {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "location": "[variables('location')]",
       "name": "[variables('bootstrapAvailabilitySet')]",
@@ -71,19 +71,22 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('bootstrapCount')]",
+        "name": "bootstrapLbLoopNode"
+      },
       "dependsOn": [
         "[variables('bootstrapLbID')]"
       ],
-      "location": "[resourceGroup().location]",
-
-      "name": "[concat(variables('bootstrapLbName'), '/', 'SSHPort22-', variables('bootstrapVMNamePrefix'), '0')]",
+      "location": "[variables('location')]",
+      "name": "[concat(variables('bootstrapLbName'), '/', 'bootstrapService-', variables('bootstrapVMNamePrefix'), copyIndex())]",
       "properties": {
-        "backendPort": 2222,
+        "backendPort": 8086,
         "enableFloatingIP": false,
         "frontendIPConfiguration": {
           "id": "[variables('bootstrapLbIPConfigID')]"
         },
-        "frontendPort": "22",
+        "frontendPort": "[copyIndex(2201)]",
         "protocol": "tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
@@ -94,20 +97,6 @@
       "name": "[variables('bootstrapNSGName')]",
       "properties": {
         "securityRules": [
-            {
-                "properties": {
-                    "priority": 201,
-                    "access": "Allow",
-                    "direction": "Inbound",
-                    "destinationPortRange": "2222",
-                    "sourcePortRange": "*",
-                    "destinationAddressPrefix": "*",
-                    "protocol": "Tcp",
-                    "description": "Allow SSH",
-                    "sourceAddressPrefix": "*"
-                },
-                "name": "sshPort22"
-            },
             {
                 "properties": {
                     "priority": 200,
@@ -121,6 +110,20 @@
                     "sourceAddressPrefix": "*"
                 },
                 "name": "ssh"
+            },
+            {
+                "properties": {
+                    "priority": 201,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "destinationPortRange": "8086",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "protocol": "Tcp",
+                    "description": "Allow bootstrap service",
+                    "sourceAddressPrefix": "*"
+                },
+                "name": "Port8086"
             }
         ]
       },
@@ -138,8 +141,8 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('bootstrapLbID')]",
-        "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSHPort22-',variables('bootstrapVMNamePrefix'),0)]",
-        "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'),copyIndex())]"
+        "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'),copyIndex())]",
+        "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'),copyIndex())]"
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('bootstrapVMNamePrefix'), 'nic-', copyIndex())]",
@@ -153,11 +156,18 @@
                   "id": "[concat(variables('bootstrapLbID'), '/backendAddressPools/', variables('bootstrapLbBackendPoolName'))]"
                 }
               ],
-              "loadBalancerInboundNatRules": "[variables('bootstrapLbInboundNatRules')[copyIndex()]]",
-              "privateIPAddress": "[concat(variables('bootstrapFirstAddrPrefix'), copyIndex(int(variables('bootstrapFirstAddrOctet4'))))]",
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'),copyIndex())]"
+                },
+                {
+                  "id": "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'),copyIndex())]"
+                }
+              ],
+              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), add(240,copyIndex()))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[variables('bootstrapVnetSubnetID')]"
+                "id": "[variables('masterVnetSubnetID')]"
               }
             }
           }

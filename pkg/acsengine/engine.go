@@ -76,10 +76,10 @@ const (
 	dcosMasterResources           = "dcos/dcosmasterresources.t"
 	dcosMasterVars                = "dcos/dcosmastervars.t"
 	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
+	dcos2BootstrapParams          = "dcos/bstrap/dcosbootstrapparams.t"
 	dcos2BootstrapResources       = "dcos/bstrap/dcosbootstrapresources.t"
 	dcos2MasterVars               = "dcos/bstrap/dcosmastervars.t"
 	dcos2MasterResources          = "dcos/bstrap/dcosmasterresources.t"
-	bootstrapParams               = "dcos/bstrap/bootstrapparams.t"
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
@@ -112,7 +112,7 @@ const (
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
-var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, bootstrapParams}
+var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -848,6 +848,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "dcosRepositoryURL", dcosRepositoryURL)
 		addValue(parametersMap, "dcosClusterPackageListID", dcosClusterPackageListID)
 		addValue(parametersMap, "dcosProviderPackageID", dcosProviderPackageID)
+
+		if properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
+			addValue(parametersMap, "bootstrapEndpointDNSNamePrefix", "bstrap-"+properties.MasterProfile.DNSPrefix)
+			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.VMSize)
+		}
 	}
 
 	// Agent parameters
@@ -1189,10 +1194,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
 					cs.Properties.BootstrapProfile.Count, bootstrapProvisionScript,
 					bootstraipAttributeContents, bootstrapPreprovisionExtension)
-
-				return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 			*/
-			return "echo BOOTSTRAP_NODE_CUSTOM_DATA"
+			str := ""
+			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSBootstrapAllowedSizes": func() string {
 			return GetDCOSBootstrapAllowedSizes()

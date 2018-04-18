@@ -18,24 +18,6 @@
       "type": "securestring"
       },
     {{end}}
-{{if not IsHostedBootstrap }}
-  {{if .MasterProfile.IsCustomVNET}}
-    "bootstrapVnetSubnetID": {
-      "metadata": {
-        "description": "Sets the vnet subnet of the bootstrap."
-      },
-      "type": "string"
-    },
-  {{else}}
-    "bootstrapSubnet": {
-      "defaultValue": "{{.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.Subnet}}",
-      "metadata": {
-        "description": "Sets the subnet of the bootstrap node(s)."
-      },
-      "type": "string"
-    },
-  {{end}}
-{{end}}
 {{if IsHostedBootstrap}}
     "bootstrapSubnet": {
       "defaultValue": "{{.HostedBootstrapProfile.Subnet}}",
