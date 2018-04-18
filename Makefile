@@ -145,7 +145,7 @@ ci: bootstrap test-style build test lint
 
 .PHONY: coverage
 coverage:
-	@scripts/ginkgo.coverage.sh
+	@scripts/ginkgo.coverage.sh --coveralls
 
 devenv:
 	./scripts/devenv.sh

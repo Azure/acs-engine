@@ -32,7 +32,7 @@ generate_cover_data() {
 }
 
 push_to_coveralls() {
-  goveralls -coverprofile="${profile}" -repotoken $COVERALLS_TOKEN
+  goveralls -coverprofile="${profile}" -repotoken $COVERALLS_TOKEN || echo "push to coveralls failed"
 }
 
 generate_cover_data
