@@ -857,6 +857,14 @@
         "type": "systemAssigned"
       },
       {{end}}
+      {{if HasPlan}}
+      "plan": {
+        "name": "[variables('planName')]",
+        "publisher": "[variables('planPublisher')]",
+        "promotionCode": "[variables('planPromotionCode')]",
+        "product": "[variables('planProduct')]"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"

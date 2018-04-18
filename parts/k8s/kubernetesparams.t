@@ -1,3 +1,31 @@
+    "planName": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The plan ID."
+      },
+      "type": "string"
+    },
+    "planPublisher": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The publisher ID."
+      },
+      "type": "string"
+    },
+    "planPromotionCode": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The promotion code."
+      },
+      "type": "string"
+    },
+    "planProduct": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The offer ID."
+      },
+      "type": "string"
+    },
 {{if .HasAadProfile}}
     "aadTenantId": {
       "defaultValue": "",

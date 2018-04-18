@@ -456,6 +456,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	// Master Parameters
 	addValue(parametersMap, "location", location)
 
+	if cs.Plan != nil {
+		addValue(parametersMap, "planName", cs.Plan.Name)
+		addValue(parametersMap, "planPublisher", cs.Plan.Publisher)
+		addValue(parametersMap, "planPromotionCode", cs.Plan.PromotionCode)
+		addValue(parametersMap, "planProduct", cs.Plan.Product)
+	}
+
 	// Identify Master distro
 	masterDistro := getMasterDistro(properties.MasterProfile)
 	if properties.MasterProfile != nil && properties.MasterProfile.ImageRef != nil {
@@ -1349,6 +1356,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				}
 			}
 			return false
+		},
+		"HasPlan": func() bool {
+			return cs.Plan != nil
 		},
 		"HasLinuxAgents": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
