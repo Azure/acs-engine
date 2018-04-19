@@ -81,8 +81,12 @@ func (a *Properties) Validate() error {
 		}
 	}
 
-	if e := a.LinuxProfile.Validate(); e != nil {
-		return e
+	// It may be nil when LinuxProfile is au-generated in newer api version
+	// hence the GET uwill not include this propery
+	if a.LinuxProfile != nil {
+		if e := a.LinuxProfile.Validate(); e != nil {
+			return e
+		}
 	}
 	if e := validateVNET(a); e != nil {
 		return e
