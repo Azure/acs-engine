@@ -128,7 +128,7 @@ spec:
         - /metrics-server
         - --source=kubernetes.summary_api:''
       nodeSelector:
-          beta.kubernetes.io/os: linux
+        beta.kubernetes.io/os: linux
 ---
 apiVersion: apiregistration.k8s.io/v1beta1
 kind: APIService
