@@ -29,6 +29,7 @@ const (
 	CoreOS Distro = "coreos"
 	// Supported distros by OpenShift
 	OpenShift39RHEL Distro = "openshift39_rhel"
+	OpenShiftCentOS Distro = "openshift39_centos"
 )
 
 const (

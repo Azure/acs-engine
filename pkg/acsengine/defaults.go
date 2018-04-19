@@ -91,6 +91,14 @@ var (
 		ImageVersion:   "latest",
 	}
 
+	//DefaultOpenShift39CentOSImageConfig is the OpenShift on CentOS distribution.
+	DefaultOpenShift39CentOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "origin-acsengine-preview",
+		ImageSku:       "centos7",
+		ImagePublisher: "redhat",
+		ImageVersion:   "latest",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
@@ -109,6 +117,7 @@ var (
 			api.CoreOS: DefaultCoreOSImageConfig,
 			// Image config supported for OpenShift
 			api.OpenShift39RHEL: DefaultOpenShift39RHELImageConfig,
+			api.OpenShiftCentOS: DefaultOpenShift39CentOSImageConfig,
 		},
 	}
 
