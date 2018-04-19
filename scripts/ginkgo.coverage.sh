@@ -26,18 +26,17 @@ hash godir 2>/dev/null || go get github.com/Masterminds/godir
 
 generate_cover_data() {
   ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes -cover -r .
+  echo "" > ${coveragetxt}  
+  find . -type f -name "*.coverprofile" | while read -r file;  do cat $file >> ${coveragetxt} && mv $file ${coverdir}; done
+  echo "mode: $covermode" >"$profile"
+  grep -h -v "^mode:" "$coverdir"/*.coverprofile >>"$profile"
 }
 
 push_to_coveralls() {
-  find . -type f -name "*.coverprofile" | while read -r file; do mv $file ${coverdir}; done
-  echo "mode: $covermode" >"$profile"
-  grep -h -v "^mode:" "$coverdir"/*.coverprofile >>"$profile"
   goveralls -coverprofile="${profile}" -service=circle-ci -repotoken $COVERALLS_REPO_TOKEN || echo "push to coveralls failed"
 }
 
 push_to_codecov() {
-  echo "" > ${coveragetxt}  
-  find . -type f -name "*.coverprofile" | while read -r file; do cat $file >> ${coveragetxt}; done
   bash <(curl -s https://codecov.io/bash) || echo "push to codecov failed"
 }
 
