@@ -33,5 +33,9 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 			*emc.Properties.EnableRBAC,
 			*mc.Properties.EnableRBAC)
 	}
+	if mc.Properties.NetworkProfile == nil {
+		// For update scenario, the default behavior is to use existing behavior
+		mc.Properties.NetworkProfile = emc.Properties.NetworkProfile
+	}
 	return nil
 }
