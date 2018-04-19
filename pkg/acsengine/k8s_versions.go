@@ -99,7 +99,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"kube-dns":        "k8s-dns-kube-dns-amd64:1.14.5",
 		"addon-manager":   "kube-addon-manager-amd64:v8.6",
 		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
-		"pause":           "pause-amd64:3.0",
+		"pause":           "pause-amd64:3.1",
 		"tiller":          "tiller:v2.8.1",
 		"rescheduler":     "rescheduler:v0.3.1",
 		"aci-connector":   "virtual-kubelet:latest",
