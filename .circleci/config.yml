@@ -230,7 +230,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.8-release-e2e:
-   <<: *defaults
+    <<: *defaults
     steps:
       - checkout
       - run: |
