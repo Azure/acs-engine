@@ -1,4 +1,15 @@
 version: 2
+
+
+# Docker environment.
+
+defaults: &defaults
+  working_directory: /go/src/github.com/Azure/acs-engine
+  docker:
+    - image: quay.io/deis/go-dev:v1.9.1
+  environment:
+    GOPATH: /go
+
 experimental:
   notify:
     branches:
@@ -6,18 +17,13 @@ experimental:
         - master
 jobs:
   test:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
-          echo 'export COVERALLS_REPO_TOKEN=${COVERALLS_TOKEN}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
@@ -28,16 +34,15 @@ jobs:
           name: Build cross-architectural binaries
           command: make build-cross
       - run:
-          name: Run unit tests and calculate coverage
-          command: make coverage
+          name: Run unit tests
+          command: make test
+      - run:
+        name: Upload coverage to codecov
+        command: bash <(curl -s https://codecov.io/bash)
       - store_test_results:
           path: test/junit
   swarm-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -60,11 +65,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   dcos-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -110,11 +111,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   k8s-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -139,11 +136,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-linux-default-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -167,11 +160,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -195,11 +184,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -224,11 +209,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.10-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -255,11 +236,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+   <<: *defaults
     steps:
       - checkout
       - run: |
@@ -284,11 +261,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -312,11 +285,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -340,11 +309,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.10-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
