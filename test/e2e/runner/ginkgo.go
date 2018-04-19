@@ -48,7 +48,7 @@ func (g *Ginkgo) Run() error {
 	err = cmd.Wait()
 	if err != nil {
 		g.Point.RecordTestError()
-		if g.Config.IsKubernetes() {
+		if g.Config.IsKubernetes() || g.Config.IsOpenShift() {
 			kubectl := exec.Command("kubectl", "get", "all", "--all-namespaces", "-o", "wide")
 			util.PrintCommand(kubectl)
 			kubectl.CombinedOutput()
