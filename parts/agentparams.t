@@ -48,6 +48,14 @@
       },
       "type": "string"
     },
+{{if HaveAvailabilityZones .}}
+    "{{.Name}}AvailabilityZones": {
+      "metadata": {
+        "description": "Agent availability zones"
+      },
+      "type": "array"
+    },
+{{end}}
     "{{.Name}}osImageName": {
       "defaultValue": "",
       "metadata": {

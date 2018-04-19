@@ -372,6 +372,7 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -436,6 +437,8 @@ type AgentPoolProfile struct {
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
 	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
+	SinglePlacementGroup  bool              `json:"singlePlacementGroup,omitempty"`
+	AvailabilityZones     []string          `json:"availabilityZones,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role

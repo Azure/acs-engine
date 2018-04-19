@@ -401,6 +401,12 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
 				return errors.New("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
+
+			if a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
+				if a.AgentPoolProfiles[i].AvailabilityZones != nil {
+					return fmt.Errorf("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
+				}
+			}
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == OpenShift {
