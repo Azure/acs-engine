@@ -671,7 +671,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			if clusterAutoscalerAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
 			} else {
-				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.ClusterAutoscalerImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
 			}
 		}
 		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
@@ -1731,7 +1731,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						if clusterAutoscalerAddon.Containers[aS].Image != "" {
 							val = clusterAutoscalerAddon.Containers[aS].Image
 						} else {
-							val = cloudSpecConfig.KubernetesSpecConfig.ClusterAutoscalerImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
+							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
 						}
 					}
 				case "kubernetesTillerSpec":
