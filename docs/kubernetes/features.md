@@ -7,6 +7,7 @@
 |Cilium Network Policy|Alpha|`vlabs`|[kubernetes-cilium.json](../../examples/networkpolicy/kubernetes-cilium.json)|[Description](#feat-cilium)|
 |Custom VNET|Beta|`vlabs`|[kubernetesvnet-azure-cni.json](../../examples/vnet/kubernetesvnet-azure-cni.json)|[Description](#feat-custom-vnet)|
 |Clear Containers Runtime|Alpha|`vlabs`|[kubernetes-clear-containers.json](../../examples/kubernetes-clear-containers.json)|[Description](#feat-clear-containers)|
+|Azure Key Vault Encryption|Alpha|`vlabs`|[kubernetes-keyvault-encryption.json](../../examples/kubernetes-config/kubernetes-keyvault-encryption.json)|[Description](#feat-keyvault-encryption)|
 
 <a name="feat-kubernetes-msi"></a>
 
@@ -343,4 +344,33 @@ To auto-provision a jumpbox with your acs-engine deployment use:
             "publicKey": "xxx"
           }
       }
+```
+
+<a name="feat-keyvault-encryption"></a>
+
+## Azure Key Vault Data Encryption
+
+Enabling Azure Key Vault Encryption configures acs-engine to create an Azure Key Vault in the same resource group as the Kubernetes cluster and configures Kubernetes to use a key from this Key Vault to encrypt and decrypt etcd data for the Kubernetes cluster.
+
+To enable this feature, add `encryptionWithExternalKms` in `kubernetesConfig` and `objectId` in `servicePrincipalProfile`:
+
+```json
+"kubernetesConfig": {
+  "enableEncryptionWithExternalKms": true
+}
+...
+
+"servicePrincipalProfile": {
+  "clientId": "",
+  "secret": "",
+  "objectId": ""
+}
+```
+
+> Note: `objectId` is the objectId of the service principal used to create the key vault and to be granted access to keys in this key vault.
+
+To get `objectId` of the service principal:
+
+```console
+az ad sp list --spn <YOUR SERVICE PRINCIPAL appId>
 ```
