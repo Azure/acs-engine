@@ -81,7 +81,7 @@ func (a *Properties) Validate() error {
 		}
 	}
 
-	// It may be nil when LinuxProfile is au-generated in newer api version
+	// It may be nil when LinuxProfile is auto-generated in newer api version
 	// hence the GET uwill not include this propery
 	if a.LinuxProfile != nil {
 		if e := a.LinuxProfile.Validate(); e != nil {
