@@ -40,7 +40,7 @@ var _ = Describe("v20180331 test suite", func() {
 					DNSPrefix:         "myaks",
 					KubernetesVersion: k8sVersions[0],
 					AgentPoolProfiles: []*v20180331.AgentPoolProfile{
-						&v20180331.AgentPoolProfile{
+						{
 							Name:           "agentpool1",
 							Count:          3,
 							VMSize:         "Standard_DS2_v2",
@@ -78,7 +78,7 @@ var _ = Describe("v20180331 test suite", func() {
 			model2 := v20180331.ManagedCluster{
 				Properties: &v20180331.Properties{
 					AddonProfiles: map[string]v20180331.AddonProfile{
-						"omsagent": v20180331.AddonProfile{
+						"omsagent": {
 							Enabled: true,
 						},
 					},
@@ -124,7 +124,7 @@ var _ = Describe("v20180331 test suite", func() {
 						DockerBridgeCidr: dockerBridgeCidr,
 					},
 					AgentPoolProfiles: []*v20180331.AgentPoolProfile{
-						&v20180331.AgentPoolProfile{
+						{
 							Name:           "agentpool1",
 							Count:          3,
 							VMSize:         "Standard_DS2_v2",
@@ -162,7 +162,7 @@ var _ = Describe("v20180331 test suite", func() {
 			model2 := v20180331.ManagedCluster{
 				Properties: &v20180331.Properties{
 					AddonProfiles: map[string]v20180331.AddonProfile{
-						"omsagent": v20180331.AddonProfile{
+						"omsagent": {
 							Enabled: true,
 						},
 					},
@@ -208,7 +208,7 @@ var _ = Describe("v20180331 test suite", func() {
 						DockerBridgeCidr: dockerBridgeCidr,
 					},
 					AgentPoolProfiles: []*v20180331.AgentPoolProfile{
-						&v20180331.AgentPoolProfile{
+						{
 							Name:           "agentpool1",
 							Count:          3,
 							VMSize:         "Standard_DS2_v2",
@@ -246,7 +246,7 @@ var _ = Describe("v20180331 test suite", func() {
 			model2 := v20180331.ManagedCluster{
 				Properties: &v20180331.Properties{
 					AgentPoolProfiles: []*v20180331.AgentPoolProfile{
-						&v20180331.AgentPoolProfile{
+						{
 							Name:           "agentpool1",
 							Count:          6,
 							VMSize:         "Standard_DS2_v2",
@@ -296,7 +296,7 @@ var _ = Describe("v20180331 test suite", func() {
 						DockerBridgeCidr: dockerBridgeCidr,
 					},
 					AgentPoolProfiles: []*v20180331.AgentPoolProfile{
-						&v20180331.AgentPoolProfile{
+						{
 							Name:           "agentpool1",
 							Count:          3,
 							VMSize:         "Standard_DS2_v2",
