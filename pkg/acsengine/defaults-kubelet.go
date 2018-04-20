@@ -83,6 +83,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 	}
 
+	// Get rid of values not supported in v1.10 clusters
+	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+		for _, key := range []string{"--pod-max-pids"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
 		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
