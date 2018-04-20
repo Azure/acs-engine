@@ -130,7 +130,10 @@
             "platformUpdateDomainCount": 3,
             "managed" : true
         },
-      "type": "Microsoft.Compute/availabilitySets"
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      }
     },
 {{else if .MasterProfile.IsStorageAccount}}
     {
@@ -920,11 +923,11 @@
             {{end}}
           },
           "osDisk": {
-						{{if .MasterProfile.UseMasterCustomVhd}}
-							"vhd": {
-								"uri": "[parameters('osDiskVhdUri')]"
-							},
-						{{end}}
+            {{if .MasterProfile.UseMasterCustomVhd}}
+              "vhd": {
+                "uri": "[parameters('osDiskVhdUri')]"
+              },
+            {{end}}
             "caching": "ReadWrite"
             ,"createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
