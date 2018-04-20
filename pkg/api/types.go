@@ -392,7 +392,7 @@ type AgentPoolProfile struct {
 	Name                string               `json:"name"`
 	Count               int                  `json:"count"`
 	VMSize              string               `json:"vmSize"`
-	OSDiskVhdURI        string               `json:"osDiskVhdUri,omitempty" validate:"uri"`
+	OSDiskVhdURI        string               `json:"osDiskVhdUri,omitempty"`
 	OSDiskSizeGB        int                  `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string               `json:"dnsPrefix,omitempty"`
 	OSType              OSType               `json:"osType,omitempty"`

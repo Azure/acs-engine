@@ -7,8 +7,9 @@ import (
 
 const exampleCustomHyperkubeImage = `example.azurecr.io/example/hyperkube-amd64:custom`
 
-const exampleAPIModel = `{
-    "apiVersion": "vlabs",
+const exampleAPIModel = `
+{
+  "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
@@ -16,7 +17,24 @@ const exampleAPIModel = `{
         "customHyperkubeImage": "` + exampleCustomHyperkubeImage + `"
       }
     },
-    "masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "subjectAltNames": [
+        "host1",
+        "host2"
+      ],
+      "osDiskVhdUri": "http://foo.vhd",
+      "vmSize": "Standard_D2_v2",
+      "osDiskSizeGB": 30,
+      "vnetSubnetID": "abcdef101",
+      "vnetCidr": "10.0.0.0/8",
+      "firstConsecutiveStaticIP": "10.0.0.10",
+      "ipAddressCount": 5,
+      "storageProfile": "ManagedDisks",
+      "HTTPSourceAddressPrefix": "foo.acs",
+      "oauthEnabled": true
+    },
     "agentPoolProfiles": [
       {
         "name": "linuxpool1",
@@ -36,7 +54,6 @@ const exampleAPIModel = `{
         "ipAddressCount": 50,
         "distro": "AcsOS",
         "role": "infra"
-
       }
     ],
 
