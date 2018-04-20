@@ -46,6 +46,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
 		"--event-qps":                       DefaultKubeletEventQPS,
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
+		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults

@@ -119,6 +119,7 @@ func TestSetMissingKubeletValues(t *testing.T) {
 		"--image-gc-low-threshold":       "7",
 		"--non-masquerade-cidr":          "8",
 		"--cloud-provider":               "9",
+		"--pod-max-pids":                 "10",
 	}
 	setMissingKubeletValues(config, defaultKubeletConfig)
 	for key, val := range defaultKubeletConfig {
@@ -144,6 +145,7 @@ func TestSetMissingKubeletValues(t *testing.T) {
 		"--image-gc-low-threshold":       "7",
 		"--non-masquerade-cidr":          "8",
 		"--cloud-provider":               "c",
+		"--pod-max-pids":                 "9",
 	}
 	setMissingKubeletValues(config, defaultKubeletConfig)
 	for key, val := range expectedResult {
