@@ -74,6 +74,8 @@ A quick way to scaffold out cloud-native and open source monitoring components i
 - [Prometheus](https://prometheus.io/) for metrics collection and storage
 - [Grafana](https://grafana.com/) for dashboard and visualizations
 
+The extension wires up these components together. Post-deplyoment of the Kubernetes cluster, you just have to retrieve Grafana username password secret and target your browser to the Grafana endpoint. There is already a pre-loaded Kubernetes cluster monitoring dashboard, so out-of-the-box you will have meaningful monitoring points with the extensibility that Prometheus and Grafana offer you.
+
 ## Grafana and Influx DB
 
 Another option to see stats is via Grafana and Influx DB. Grafana is a powerful dashboarding tool that can be used to visualize all types of data from various sources. InfluxDB is a database that is used to store time series data. Heapster is responsible for aggregating metrics across your cluster and ingesting them into InfluxDB. Then Grafana uses InfluxDB as it's datasource to visualize metrics.
