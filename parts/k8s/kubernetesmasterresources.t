@@ -392,9 +392,6 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
-{{if .MasterProfile.UseMasterCustomVhd}}
-      "[variables('osDiskVhdUri')]"
-{{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
 {{if gt .MasterProfile.Count 1}}
         ,"[variables('masterInternalLbName')]"
@@ -923,6 +920,11 @@
             {{end}}
           },
           "osDisk": {
+						{{if .MasterProfile.UseMasterCustomVhd}}
+							"vhd": {
+								"uri": "[parameters('osDiskVhdUri')]"
+							},
+						{{end}}
             "caching": "ReadWrite"
             ,"createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}

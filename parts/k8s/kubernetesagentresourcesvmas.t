@@ -10,9 +10,6 @@
 {{else}}
       "[variables('vnetID')]"
 {{end}}
-{{if .UseAgentCustomVhd}}
-      "[variables('osDiskVhdUri')]"
-{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
@@ -205,6 +202,11 @@
             {{end}}
           },
           "osDisk": {
+						{{if .UseAgentCustomVhd}}
+							"vhd": {
+								"uri": "[parameters('osDiskVhdUri')]"
+							},
+						{{end}}
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}
