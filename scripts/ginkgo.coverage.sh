@@ -49,7 +49,7 @@ case "${1-}" in
     ;;
   --coveralls)
 		if [ -z $COVERALLS_REPO_TOKEN ]; then
-			echo '$COVERALLS_TOKEN not set. Skipping pushing coverage report to coveralls.io'
+			echo '$COVERALLS_REPO_TOKEN not set. Skipping pushing coverage report to coveralls.io'
 			exit
 		fi
     push_to_coveralls
