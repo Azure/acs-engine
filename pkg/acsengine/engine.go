@@ -78,6 +78,7 @@ const (
 	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
 	dcos2BootstrapParams          = "dcos/bstrap/dcosbootstrapparams.t"
 	dcos2BootstrapResources       = "dcos/bstrap/dcosbootstrapresources.t"
+	dcos2BootstrapCustomdata      = "dcos/bstrap/dcosbootstrapcustomdata.t"
 	dcos2MasterVars               = "dcos/bstrap/dcosmastervars.t"
 	dcos2MasterResources          = "dcos/bstrap/dcosmasterresources.t"
 	iaasOutputs                   = "iaasoutputs.t"
@@ -351,16 +352,16 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
-func generateIPList(count int, firstAddr string) (string, error) {
+func generateIPList(count int, firstAddr string) []string {
 	ipaddr := net.ParseIP(firstAddr).To4()
 	if ipaddr == nil {
-		return "", fmt.Errorf("IPAddr '%s' is an invalid IP address", firstAddr)
+		panic(fmt.Sprintf("IPAddr '%s' is an invalid IP address", firstAddr))
 	}
-	//lbIP := net.IP{ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3] }
-	for i := byte(0); i < byte(count); i++ {
-		fmt.Printf("GENERATEIP addr = %d %d %d %d\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]+i)
+	ret := make([]string, count)
+	for i := 0; i < count; i++ {
+		ret[i] = fmt.Sprintf("%d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]+byte(i))
 	}
-	return "IPLIST", nil
+	return ret
 }
 
 func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
@@ -1149,12 +1150,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
-		"GetDCOSMasterIPList": func() string {
-			fmt.Printf("Get Master Node IP List\n")
-			pkglist, _ := generateIPList(cs.Properties.MasterProfile.Count,
-				cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
-			return pkglist
-		},
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
@@ -1180,22 +1175,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("%s", "BOOTSTRAPHTTPSOURCEADDRESSPREFIX")
 		},
 		"GetDCOSBootstrapCustomData": func() string {
-			/*
-				bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
-				bootstrapPreprovisionExtension := ""
-				if cs.Properties.MasterProfile.PreprovisionExtension != nil {
-					masterPreprovisionExtension += "\n"
-					masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
-				}
+			ipList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			for i, v := range ipList {
+				ipList[i] = "    - " + v
+			}
+			str := getSingleLineDCOSCustomData(
+				cs.Properties.OrchestratorProfile.OrchestratorType,
+				dcos2BootstrapCustomdata,
+				//getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
+				cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.Count,
+				map[string]string{
+					"MASTER_IP_LIST": strings.Join(ipList, "\n")})
 
-				str := getSingleLineDCOSCustomData(
-					cs.Properties.OrchestratorProfile.OrchestratorType,
-					cs.Properties.OrchestratorProfile.OrchestratorVersion,
-					getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
-					cs.Properties.BootstrapProfile.Count, bootstrapProvisionScript,
-					bootstraipAttributeContents, bootstrapPreprovisionExtension)
-			*/
-			str := ""
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSBootstrapAllowedSizes": func() string {
@@ -1203,6 +1194,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
+			// transform the provision script content
+			masterProvisionScript = strings.Replace(masterProvisionScript, "\r\n", "\n", -1)
+			masterProvisionScript = strings.Replace(masterProvisionScript, "\n", "\n\n    ", -1)
+
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
@@ -1212,15 +1207,22 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersion,
-				getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
-				cs.Properties.MasterProfile.Count, masterProvisionScript,
-				masterAttributeContents, masterPreprovisionExtension)
+				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
+				//getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
+				cs.Properties.MasterProfile.Count,
+				map[string]string{
+					"PROVISION_STR":          masterProvisionScript,
+					"ATTRIBUTES_STR":         masterAttributeContents,
+					"PREPROVISION_EXTENSION": masterPreprovisionExtension})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile, *cs.Properties.OrchestratorProfile)
+			// transform the provision script content
+			agentProvisionScript = strings.Replace(agentProvisionScript, "\r\n", "\n", -1)
+			agentProvisionScript = strings.Replace(agentProvisionScript, "\n", "\n\n    ", -1)
+
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
@@ -1230,10 +1232,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersion,
-				getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
-				cs.Properties.MasterProfile.Count, agentProvisionScript,
-				attributeContents, agentPreprovisionExtension)
+				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
+				//getDCOSBootstrapURL(cs), getDCOSClusterPackageList(cs),
+				cs.Properties.MasterProfile.Count,
+				map[string]string{
+					"PROVISION_STR":          agentProvisionScript,
+					"ATTRIBUTES_STR":         attributeContents,
+					"PREPROVISION_EXTENSION": agentPreprovisionExtension})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -2544,42 +2549,38 @@ touch /etc/mesosphere/roles/azure_master`
 
 }
 
-// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion, bootstrapURL, clusterPackageList string,
-	masterCount int, provisionContent, attributeContents, preProvisionExtensionContents string) string {
-	yamlFilename := ""
+func getDCOSCustomDataTemplate(orchestratorType, orchestratorVersion string) string {
 	switch orchestratorType {
 	case api.DCOS:
 		switch orchestratorVersion {
 		case api.DCOSVersion1Dot8Dot8:
-			yamlFilename = dcosCustomData188
+			return dcosCustomData188
 		case api.DCOSVersion1Dot9Dot0:
-			yamlFilename = dcosCustomData190
+			return dcosCustomData190
 		case api.DCOSVersion1Dot9Dot8:
-			yamlFilename = dcosCustomData198
+			return dcosCustomData198
 		case api.DCOSVersion1Dot10Dot0:
-			yamlFilename = dcosCustomData110
+			return dcosCustomData110
 		case api.DCOSVersion1Dot11Dot0:
-			yamlFilename = dcos2CustomData111
+			return dcos2CustomData111
 		}
 	default:
 		// it is a bug to get here
 		panic(fmt.Sprintf("BUG: invalid orchestrator %s", orchestratorType))
 	}
+	return ""
+}
 
+// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
+func getSingleLineDCOSCustomData(orchestratorType, yamlFilename string, masterCount int, replaceMap map[string]string) string {
 	b, err := Asset(yamlFilename)
 	if err != nil {
 		panic(fmt.Sprintf("BUG getting yaml custom data file: %s", err.Error()))
 	}
-
-	// transform the provision script content
-	provisionContent = strings.Replace(provisionContent, "\r\n", "\n", -1)
-	provisionContent = strings.Replace(provisionContent, "\n", "\n\n    ", -1)
-
 	yamlStr := string(b)
-	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
-	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
-	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
+	for k, v := range replaceMap {
+		yamlStr = strings.Replace(yamlStr, k, v, -1)
+	}
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))

@@ -262,12 +262,12 @@
         "[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/waitforleader')]",
+      "name": "[concat(variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/bootstrapready')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {
-          "commandToExecute": "sh -c 'until ping -c1 leader.mesos;do echo waiting for leader.mesos;sleep 15;done;echo leader.mesos up'"
+          "commandToExecute": "sh -c 'echo done > /tmp/bootstrap.log'"
         },
         "type": "CustomScriptForLinux",
         "typeHandlerVersion": "1.4"
