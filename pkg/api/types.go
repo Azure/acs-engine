@@ -339,6 +339,7 @@ type MasterProfile struct {
 	Count                    int               `json:"count"`
 	DNSPrefix                string            `json:"dnsPrefix"`
 	SubjectAltNames          []string          `json:"subjectAltNames"`
+	OSDiskVhdURI             string            `json:"osDiskVhdUri,omitempty"`
 	VMSize                   string            `json:"vmSize"`
 	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
@@ -391,6 +392,7 @@ type AgentPoolProfile struct {
 	Name                string               `json:"name"`
 	Count               int                  `json:"count"`
 	VMSize              string               `json:"vmSize"`
+	OSDiskVhdURI        string               `json:"osDiskVhdUri,omitempty" validate:"uri"`
 	OSDiskSizeGB        int                  `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string               `json:"dnsPrefix,omitempty"`
 	OSType              OSType               `json:"osType,omitempty"`
@@ -649,6 +651,13 @@ func (m *MasterProfile) IsCoreOS() bool {
 	return m.Distro == CoreOS
 }
 
+// UseMasterCustomVhd returns true if the customer is creating an OS Disk
+// from an existing VHD file
+func (m *MasterProfile) UseMasterCustomVhd() bool {
+	OSDiskVhdURI := m.OSDiskVhdURI
+	return len(OSDiskVhdURI) > 0
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -692,6 +701,13 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+// UseAgentCustomVhd returns true if the customer is creating an OS Disk
+// from an existing VHD file
+func (a *AgentPoolProfile) UseAgentCustomVhd() bool {
+	OSDiskVhdURI := a.OSDiskVhdURI
+	return len(OSDiskVhdURI) > 0
 }
 
 // HasSecrets returns true if the customer specified secrets to install

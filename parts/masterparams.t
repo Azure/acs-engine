@@ -80,6 +80,13 @@
       },
       "type": "string"
     },
+    "osDiskVhdUri": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The URI of VHD to use as source image for OS Disk."
+      },
+      "type": "string"
+    },
     "osImageName": {
       "defaultValue": "",
       "metadata": {

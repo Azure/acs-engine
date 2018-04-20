@@ -843,6 +843,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.DNSPrefix = api.DNSPrefix
 	vlabsProfile.SubjectAltNames = api.SubjectAltNames
 	vlabsProfile.VMSize = api.VMSize
+	vlabsProfile.OSDiskVhdURI = api.OSDiskVhdURI
 	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VnetSubnetID = api.VnetSubnetID
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
@@ -933,6 +934,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.Name = api.Name
 	p.Count = api.Count
 	p.VMSize = api.VMSize
+	p.OSDiskVhdURI = api.OSDiskVhdURI
 	p.OSDiskSizeGB = api.OSDiskSizeGB
 	p.DNSPrefix = api.DNSPrefix
 	p.OSType = vlabs.OSType(api.OSType)
