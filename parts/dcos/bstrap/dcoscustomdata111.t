@@ -81,7 +81,6 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, disable, --now, unscd.service ]
     - [ systemctl, stop, --now, unscd.service ]
     - /opt/azure/containers/provision.sh
-    - sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
     - service ssh restart
     - [ cp, -p, /etc/resolv.conf, /tmp/resolv.conf ]
     - [ rm, -f, /etc/resolv.conf ]

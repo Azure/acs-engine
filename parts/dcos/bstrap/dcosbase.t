@@ -21,7 +21,7 @@
       {{template "windowsparams.t"}},
     {{end}}
     {{template "dcos/dcosparams.t" .}}
-    {{template "dcos/bstrap/dcosbootstrapparams.t" .}},
+    {{template "dcos/bstrap/bootstrapparams.t" .}},
     {{template "masterparams.t" .}}
   },
   "variables": {
@@ -58,7 +58,7 @@
         {{end}}
       {{end}}
     {{end}}
-    {{template "dcos/bstrap/dcosbootstrapresources.t" .}},
+    {{template "dcos/bstrap/bootstrapresources.t" .}},
     {{template "dcos/bstrap/dcosmasterresources.t" .}}
   ],
   "outputs": {

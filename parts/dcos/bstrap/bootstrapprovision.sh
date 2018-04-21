@@ -25,8 +25,6 @@ curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb $UNZIP_DOWNLOAD_URL &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/4.deb $LIBLTDL_DOWNLOAD_URL &
 wait
 
-apt-get install docker.io
-
 for i in {1..300}; do
     dpkg -i /tmp/{1,2,3,4}.deb
     if [ "$?" = "0" ]
@@ -36,8 +34,3 @@ for i in {1..300}; do
     fi
     sleep 1
 done
-
-cd /opt/azure/
-curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
-bash dcos_generate_config.sh
-docker run -d -p 8086:80 -v $PWD/genconf/serve:/usr/share/nginx/html:ro nginx
