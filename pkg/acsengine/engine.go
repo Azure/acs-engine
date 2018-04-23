@@ -52,6 +52,7 @@ const (
 	dcosProvision        = "dcos/dcosprovision.sh"
 	dcosWindowsProvision = "dcos/dcosWindowsProvision.ps1"
 
+	dcos2Provision          = "dcos/bstrap/dcosprovision.sh"
 	dcos2BootstrapProvision = "dcos/bstrap/bootstrapprovision.sh"
 	dcos2CustomData111      = "dcos/bstrap/dcoscustomdata111.t"
 )
@@ -1155,24 +1156,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
-		"GetDCOSBootstrapNodeIPList": func() string {
-			// Returns a list of <count> ip consecutive addresses where the last address
-			// is the highest non-broadcast address on the master subnet. We choose the highest
-			// addresses so as not to collide with the masters, who start from 5
-			//
-			iplist := "DIDN:T GET BOOTSTRP IP LIST"
-			if cs.Properties.OrchestratorProfile.DcosConfig != nil {
-				if cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
-					//count   := cs.Properties.OrchestratorProfile,DcosConfig.BootstrapNodeProfile.Count
-					//firstip := cs.Properties.OrchestratorProfile,DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP
-					fmt.Printf("Get Bootstrap Node IP List\n")
-					//pkglist, _ := generateIPList(count, firstip)
-					iplist = "GOT BOOTSTRAP IP LISTi" //pkglist
-				}
-			}
-			return iplist
-
-		},
 		"GetBootstrapHTTPSourceAddressPrefix": func() string {
 			return fmt.Sprintf("%s", "BOOTSTRAPHTTPSOURCEADDRESSPREFIX")
 		},
@@ -1203,7 +1186,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return GetDCOSBootstrapAllowedSizes()
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript()
+			masterProvisionScript := getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
@@ -1227,7 +1210,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile, *cs.Properties.OrchestratorProfile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
@@ -2492,14 +2475,20 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.OrchestratorProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile) string {
 	// add the provision script
 
 	var scriptname string
-	if profile.OSType == api.Windows {
-		scriptname = dcosWindowsProvision
-	} else {
-		scriptname = dcosProvision
+
+	switch orchProfile.OrchestratorVersion {
+	case api.DCOSVersion1Dot11Dot0:
+		scriptname = dcos2Provision
+	default:
+		if profile.OSType == api.Windows {
+			scriptname = dcosWindowsProvision
+		} else {
+			scriptname = dcosProvision
+		}
 	}
 
 	bp, err1 := Asset(scriptname)
@@ -2512,16 +2501,27 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.
 		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
 	}
 
-	// the embedded roleFileContents
-	var roleFileContents string
-	if len(profile.Ports) > 0 {
-		// public agents
-		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
-	} else {
-		roleFileContents = "touch /etc/mesosphere/roles/slave"
+	switch scriptname {
+	case dcosProvision, dcosWindowsProvision:
+		// the embedded roleFileContents
+		var roleFileContents string
+		if len(profile.Ports) > 0 {
+			// public agents
+			roleFileContents = "touch /etc/mesosphere/roles/slave_public"
+		} else {
+			roleFileContents = "touch /etc/mesosphere/roles/slave"
+		}
+		provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	case dcos2Provision:
+		bootstrapIP := "172.16.0.240" //generateIPList(orchProfile.DcosConfig.BootstrapNodeProfile.Count,
+		//orchProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
+		provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
+		if len(profile.Ports) > 0 {
+			provisionScript = strings.Replace(provisionScript, "ROLENAME", "slave_public", -1)
+		} else {
+			provisionScript = strings.Replace(provisionScript, "ROLENAME", "slave", -1)
+		}
 	}
-	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
-
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
@@ -2548,22 +2548,37 @@ func getDCOSBootstrapProvisionScript() string {
 	return provisionScript
 }
 
-func getDCOSMasterProvisionScript() string {
+func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
+	var scriptname string
+	switch orchProfile.OrchestratorVersion {
+	case api.DCOSVersion1Dot11Dot0:
+		scriptname = dcos2Provision
+	default:
+		scriptname = dcosProvision
+	}
 	// add the provision script
-	bp, err := Asset(dcosProvision)
+	bp, err := Asset(scriptname)
 	if err != nil {
 		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
 	provisionScript := string(bp)
 	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+		panic(fmt.Sprintf("BUG: %s may not contain character '", scriptname))
 	}
 
-	// the embedded roleFileContents
-	roleFileContents := `touch /etc/mesosphere/roles/master
+	switch scriptname {
+	case dcosProvision:
+		// the embedded roleFileContents
+		roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
-	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+		provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	case dcos2Provision:
+		bootstrapIP := "172.16.0.240" //generateIPList(orchProfile.DcosConfig.BootstrapNodeProfile.Count,
+		//orchProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
+		provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
+		provisionScript = strings.Replace(provisionScript, "ROLENAME", "master", -1)
+	}
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")

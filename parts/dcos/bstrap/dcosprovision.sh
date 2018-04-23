@@ -37,3 +37,6 @@ for i in {1..300}; do
     fi
     sleep 1
 done
+
+curl -o $TMPDIR/dcos_install.sh http://BOOTSTRAP_IP:8086/dcos_install.sh
+$TMPDIR/dcos_install.sh ROLENAME
