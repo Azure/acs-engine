@@ -151,12 +151,11 @@
         "type": "systemAssigned"
       },
       {{end}}
-      {{if HasPlan}}
+      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
       "plan": {
-        "name": "[variables('planName')]",
-        "publisher": "[variables('planPublisher')]",
-        "promotionCode": "[variables('planPromotionCode')]",
-        "product": "[variables('planProduct')]"
+        "name": "[variables('{{.Name}}osImageSKU')]",
+        "publisher": "[variables('{{.Name}}osImagePublisher')]",
+        "product": "[variables('{{.Name}}osImageOffer')]"
       },
       {{end}}
       "properties": {

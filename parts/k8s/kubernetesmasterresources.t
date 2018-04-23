@@ -857,12 +857,11 @@
         "type": "systemAssigned"
       },
       {{end}}
-      {{if HasPlan}}
+      {{if and IsOpenShift (not UseMasterCustomImage)}}
       "plan": {
-        "name": "[variables('planName')]",
-        "publisher": "[variables('planPublisher')]",
-        "promotionCode": "[variables('planPromotionCode')]",
-        "product": "[variables('planProduct')]"
+        "name": "[variables('osImageSku')]",
+        "publisher": "[variables('osImagePublisher')]",
+        "product": "[variables('osImageOffer')]"
       },
       {{end}}
       "properties": {
