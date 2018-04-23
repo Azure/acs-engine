@@ -552,7 +552,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
 			if eng.HasGPUNodes() {
-				if eng.OrchestratorVersion1Dot8AndUp() {
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi-deviceplugin.yaml"), "nvidia-smi-deviceplugin", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
