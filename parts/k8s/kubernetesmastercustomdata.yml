@@ -264,8 +264,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}
-    ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
-    sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
+    sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml" 
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}

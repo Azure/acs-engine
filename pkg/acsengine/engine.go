@@ -692,6 +692,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
+		addValue(parametersMap, "etcdEncryptionKey", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey)
 		if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() {
 			addValue(parametersMap, "jumpboxVMName", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Name)
 			addValue(parametersMap, "jumpboxVMSize", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.VMSize)
@@ -1725,6 +1726,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
 				case "etcdVersion":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
+				case "etcdEncryptionKey":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey
 				case "etcdDiskSizeGB":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				case "jumpboxOSDiskSizeGB":

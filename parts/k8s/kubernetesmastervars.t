@@ -138,6 +138,9 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
+{{if EnableDataEncryptionAtRest}} 
+    "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
+{{end}}
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
