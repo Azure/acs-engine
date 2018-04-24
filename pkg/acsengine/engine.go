@@ -40,8 +40,8 @@ const (
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 	// OpenShift custom scripts
-	openshiftNodeScript   = "k8s/openshiftnodescript.sh"
-	openshiftMasterScript = "k8s/openshiftmasterscript.sh"
+	openshiftNodeScript   = "openshift/openshiftnodescript.sh"
+	openshiftMasterScript = "openshift/openshiftmasterscript.sh"
 )
 
 const (
@@ -1876,7 +1876,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
 		"OpenShiftGetMasterSh": func() string {
-			tb := MustAsset("k8s/openshiftmasterscript.sh")
+			tb := MustAsset("openshift/openshiftmasterscript.sh")
 			t := template.Must(template.New("master").Parse(string(tb)))
 			b := &bytes.Buffer{}
 			t.Execute(b, struct {
@@ -1893,7 +1893,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return b.String()
 		},
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) string {
-			tb := MustAsset("k8s/openshiftnodescript.sh")
+			tb := MustAsset("openshift/openshiftnodescript.sh")
 			t := template.Must(template.New("node").Parse(string(tb)))
 			b := &bytes.Buffer{}
 			t.Execute(b, struct {

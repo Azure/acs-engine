@@ -421,6 +421,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |---|---|---|
 |count|yes|Masters have count value of 1, 3, or 5 masters|
 |dnsPrefix|yes|The dns prefix for the master FQDN.  The master FQDN is used for SSH or commandline access. This must be a unique name. ([bring your own VNET examples](../examples/vnet))|
+|subjectAltNames|no|An array of fully qualified domain names using which a user can reach API server. These domains are added as Subject Alternative Names to the generated API server certificate. **NOTE**: These domains **will not** be automatically provisioned.|
 |firstConsecutiveStaticIP|only required when vnetSubnetId specified|The IP address of the first master.  IP Addresses will be assigned consecutively to additional master nodes|
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/). These are restricted to machines with at least 2 cores and 100GB of ephemeral disk space|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|

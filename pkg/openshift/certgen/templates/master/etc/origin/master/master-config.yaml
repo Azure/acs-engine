@@ -87,7 +87,7 @@ etcdStorageConfig:
   openShiftStoragePrefix: openshift.io
   openShiftStorageVersion: v1
 imageConfig:
-  format: TEMPIMAGEBASE-${component}:${version}
+  format: IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}
   latest: false
 kind: MasterConfig
 kubeletClientInfo:

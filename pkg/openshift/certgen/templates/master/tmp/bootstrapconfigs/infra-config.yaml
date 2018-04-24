@@ -8,7 +8,7 @@ dockerConfig:
   execHandlerName: ""
 iptablesSyncPeriod: "30s"
 imageConfig:
-  format: TEMPIMAGEBASE-${component}:${version}
+  format: IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}
   latest: False
 kind: NodeConfig
 kubeletArguments:

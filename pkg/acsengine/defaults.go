@@ -720,7 +720,7 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 	}
 	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
 
-	return false, nil
+	return true, nil
 }
 
 type writeFn func(filesystem.Filesystem) error
@@ -761,7 +761,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, nil
 	}
 
-	masterExtraFQDNs := FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix)
+	masterExtraFQDNs := append(FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix), a.MasterProfile.SubjectAltNames...)
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {

@@ -305,7 +305,9 @@ func (a *Account) IsClusterExpired(d time.Duration) bool {
 		return true
 	}
 	t := time.Unix(tag, 0)
-	return time.Since(t) > d
+	age := time.Since(t)
+	log.Printf("Cluster is %v hours old\n", int(age.Hours()))
+	return age > d
 }
 
 // CreateStorageAccount will create a new Azure Storage Account

@@ -99,15 +99,60 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 }
 
 func TestConvertV20180331AgentPoolOnlyAgentPoolProfile(t *testing.T) {
+	// standard case
 	maxPods := 25
+	maxPodsKubenet := 110
+	maxPodsAzure := 30
 	availabilityProfile := "availabilityProfile"
 
 	p := &v20180331.AgentPoolProfile{
-		MaxPods: maxPods,
+		MaxPods: &maxPods,
 	}
-	api := convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile)
+
+	n := &v20180331.NetworkProfile{
+		NetworkPlugin: "azure",
+	}
+
+	api := convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile, n)
 
 	if api.KubernetesConfig.KubeletConfig["--max-pods"] != strconv.Itoa(maxPods) {
+		t.Error("error in agent pool profile max pods conversion")
+	}
+
+	// legacy case
+	p = &v20180331.AgentPoolProfile{}
+
+	n = nil
+
+	api = convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile, n)
+
+	if api.KubernetesConfig.KubeletConfig["--max-pods"] != strconv.Itoa(maxPodsKubenet) {
+		t.Error("error in agent pool profile max pods conversion")
+	}
+
+	// network = kubenet, no maxPods specified
+	p = &v20180331.AgentPoolProfile{}
+
+	n = &v20180331.NetworkProfile{
+		NetworkPlugin: "kubenet",
+	}
+
+	api = convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile, n)
+
+	if api.KubernetesConfig.KubeletConfig["--max-pods"] != strconv.Itoa(maxPodsKubenet) {
+		t.Error("error in agent pool profile max pods conversion")
+	}
+
+	// network = azure, no maxPods specified
+	p = &v20180331.AgentPoolProfile{}
+
+	n = &v20180331.NetworkProfile{
+		NetworkPlugin: "azure",
+	}
+
+	api = convertV20180331AgentPoolOnlyAgentPoolProfile(p, availabilityProfile, n)
+
+	if api.KubernetesConfig.KubeletConfig["--max-pods"] != strconv.Itoa(maxPodsAzure) {
 		t.Error("error in agent pool profile max pods conversion")
 	}
 }

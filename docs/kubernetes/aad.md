@@ -4,7 +4,7 @@ This is walkthrough is to help you get start with Azure Active Directory(AAD) in
 
 [OpenID Connect](http://openid.net/connect/) is a simple identity layer built on top of the OAuth 2.0 protocol, and it is supported by both AAD and Kubernetes. Here we're going to use OpenID Connect as the communication protocol.
 
-Please also refer to [Azure Active Directory plugin for client authentication](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/plugin/pkg/client/auth/azure/README.md) in Kubernetes repo for more details abount OpenID Connect and AAD support in upstream.
+Please also refer to [Azure Active Directory plugin for client authentication](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/plugin/pkg/client/auth/azure/README.md) in Kubernetes repo for more details about OpenID Connect and AAD support in upstream.
 
 ## Prerequisites
 1. An Azure Active Directory tenant, will refer as `AAD Tenant`. You can use the tenant for your Azure subscription;
