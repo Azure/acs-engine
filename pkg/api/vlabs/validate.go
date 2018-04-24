@@ -533,7 +533,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if err != nil {
 				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 			}
-			if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
+			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
 				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && cons.Check(sv) {
 					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
 				}
