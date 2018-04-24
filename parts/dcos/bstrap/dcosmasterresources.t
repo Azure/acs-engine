@@ -265,8 +265,10 @@
 {{if .MasterProfile.IsStorageAccount}}
         "[variables('masterStorageAccountName')]",
 {{end}}
-        "[variables('masterStorageAccountExhibitorName')]",
-        "[concat(variables('bootstrapVMNamePrefix'), '0')]"
+        "[variables('masterStorageAccountExhibitorName')]"
+{{if not IsHostedBootstrap}}
+       ,"[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/extensions/bootstrapready')]"
+{{end}}
       ],
       "tags":
       {

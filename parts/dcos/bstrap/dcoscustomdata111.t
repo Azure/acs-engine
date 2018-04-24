@@ -40,6 +40,7 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, start, dcos-docker-install.service ]
     - [ systemctl, restart, systemd-journald.service ]
     - [ systemctl, restart, docker.service ]
+    - [ bash, /tmp/dcos/dcos_install.sh, ROLENAME ]
 write_files:
 - content: |
     [Unit]

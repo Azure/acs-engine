@@ -1,5 +1,7 @@
 #!/bin/bash
 
+retrycmd_if_failure() { retries=$1; wait=$2; timeout=$3; shift && shift && shift; for i in $(seq 1 $retries); do timeout $timeout ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+
 TMPDIR="/tmp/dcos"
 mkdir -p $TMPDIR
 
@@ -26,27 +28,8 @@ curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/1.deb $LIBIPSET_DOWNLOAD_URL &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/2.deb $IPSET_DOWNLOAD_URL &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/3.deb $UNZIP_DOWNLOAD_URL &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/4.deb $LIBLTDL_DOWNLOAD_URL &
+curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/dcos_install.sh http://BOOTSTRAP_IP:8086/dcos_install.sh &
 wait
 
-for i in {1..300}; do
-    dpkg -i $TMPDIR/{1,2,3,4}.deb
-    if [ "$?" = "0" ]
-    then
-        echo "succeeded"
-        break
-    fi
-    sleep 1
-done
-
-for i in {1..300}; do
-    apt-get install selinux-utils -y
-    if [ "$?" = "0" ]
-    then
-        echo "succeeded"
-        break
-    fi
-    sleep 15
-done
-
-curl -o $TMPDIR/dcos_install.sh http://BOOTSTRAP_IP:8086/dcos_install.sh
-bash $TMPDIR/dcos_install.sh ROLENAME
+retrycmd_if_failure 10 10 120 dpkg -i $TMPDIR/{1,2,3,4}.deb
+retrycmd_if_failure 10 10 120 apt-get install selinux-utils -y
