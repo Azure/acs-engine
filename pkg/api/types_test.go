@@ -7,22 +7,61 @@ import (
 
 const exampleCustomHyperkubeImage = `example.azurecr.io/example/hyperkube-amd64:custom`
 
-const exampleAPIModel = `{
-		"apiVersion": "vlabs",
-	"properties": {
-		"orchestratorProfile": {
-			"orchestratorType": "Kubernetes",
-			"kubernetesConfig": {
-				"customHyperkubeImage": "` + exampleCustomHyperkubeImage + `"
-			}
-		},
-		"masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
-		"agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
-		"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
-		"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
-		},
-		"servicePrincipalProfile": { "clientId": "", "secret": "" }
-	}
+const exampleAPIModel = `
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "customHyperkubeImage": "` + exampleCustomHyperkubeImage + `"
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "subjectAltNames": [
+        "host1",
+        "host2"
+      ],
+      "osDiskVhdUri": "http://foo.vhd",
+      "vmSize": "Standard_D2_v2",
+      "osDiskSizeGB": 30,
+      "vnetSubnetID": "abcdef101",
+      "vnetCidr": "10.0.0.0/8",
+      "firstConsecutiveStaticIP": "10.0.0.10",
+      "ipAddressCount": 5,
+      "storageProfile": "ManagedDisks",
+      "HTTPSourceAddressPrefix": "foo.acs",
+      "oauthEnabled": true
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "linuxpool1",
+        "count": 2,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "osDiskVhdUri": "http://foo.vhd",
+        "dnsPrefix": "foobardns",
+        "vmSize": "Standard_D2_v2",
+        "osDiskSizeGB": 30,
+        "osType": "Linux",
+        "ports": [3001, 3002],
+        "availabilityProfile": "myProfile",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [30, 40, 50, 100],
+        "vnetSubnetID": "abcdef101",
+        "ipAddressCount": 50,
+        "distro": "AcsOS",
+        "role": "infra"
+      }
+    ],
+
+    "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+    "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+    },
+    "servicePrincipalProfile": { "clientId": "", "secret": "" }
+  }
 }
 `
 

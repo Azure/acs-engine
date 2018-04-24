@@ -128,9 +128,12 @@
         {
             "platformFaultDomainCount": 2,
             "platformUpdateDomainCount": 3,
-		        "managed" : true
+            "managed" : true
         },
-      "type": "Microsoft.Compute/availabilitySets"
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      }
     },
 {{else if .MasterProfile.IsStorageAccount}}
     {
@@ -747,7 +750,7 @@
        "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
-       "dependsOn": 
+       "dependsOn":
        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -780,7 +783,7 @@
            }
          ],
  {{else}}
-         "accessPolicies": 
+         "accessPolicies":
          [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -920,6 +923,11 @@
             {{end}}
           },
           "osDisk": {
+            {{if .MasterProfile.UseMasterCustomVhd}}
+              "vhd": {
+                "uri": "[parameters('osDiskVhdUri')]"
+              },
+            {{end}}
             "caching": "ReadWrite"
             ,"createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}

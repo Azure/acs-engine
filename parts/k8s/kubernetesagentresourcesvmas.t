@@ -60,10 +60,13 @@
         {
             "platformFaultDomainCount": 2,
             "platformUpdateDomainCount": 3,
-		"managed" : "true"
+    "managed" : "true"
         },
 
-      "type": "Microsoft.Compute/availabilitySets"
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      }
     },
 {{else if .IsStorageAccount}}
     {
@@ -202,6 +205,11 @@
             {{end}}
           },
           "osDisk": {
+            {{if .UseAgentCustomVhd}}
+              "vhd": {
+                "uri": "[parameters('osDiskVhdUri')]"
+              },
+            {{end}}
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}

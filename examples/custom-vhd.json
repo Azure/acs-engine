@@ -1,0 +1,39 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "osDiskVhdUri": "https://acstackimages.blob.core.windows.net/system/Microsoft.Compute/Images/acs-vhds/acstack-1523890681-osDisk.9b1e4c58-99fb-4a65-a8e4-3358ae4d1264.vhd",
+      "count": 1,
+      "dnsPrefix": "",
+      "storageProfile": "ManagedDisks",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "osDiskVhdUri": "https://acstackimages.blob.core.windows.net/system/Microsoft.Compute/Images/acs-vhds/acstack-1523890681-osDisk.9b1e4c58-99fb-4a65-a8e4-3358ae4d1264.vhd",
+        "name": "agentpool1",
+        "count": 3,
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDXyIFBUfl7VnnJCmCQQf0jyxcTVr6ku0Zvz0nft/iD5J0ErXQjfPunj/hfW2qjRGVGfQn+wn0tVEqmWjqLKCagnr/+eA3EXFmMkPiyXtOh6yPLKgEW/b9s/ClgaaRaIL0NM0k4oIzLjGsYRNcwBVMnNa5hvUfo6FxSuA7a6CXsgT0aG78wfCFc/2oXcmBjddyAAC7NPcZVixu8lBRA7rTbldM1Q/CaCETym3s84NN9pgyIOsnkrYCb2MaTJiaLLyyRlZS4PTjL3OQ5U3ry3z9CWWIUHQcvVJxq4ZbtTAZKH5s9x5rGMTWusJXnUZtHWSW2WlLfngKPOIi2WkgzI2Yr"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "2e5142a5-e3c5-4d35-8073-72065118854e",
+      "secret": "b7b42317-5b9f-4937-8ee6-f95904888be3"
+    }
+  }
+}
