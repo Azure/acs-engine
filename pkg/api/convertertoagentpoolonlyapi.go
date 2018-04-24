@@ -376,8 +376,8 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 }
 
 func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
-	if enableRBAC == nil || *enableRBAC == true {
-		// We want default behavior to be true
+	if enableRBAC != nil && *enableRBAC == true {
+		// We set default behavior to be false
 		return &KubernetesConfig{
 			EnableRbac:          helpers.PointerToBool(true),
 			EnableSecureKubelet: helpers.PointerToBool(true),
