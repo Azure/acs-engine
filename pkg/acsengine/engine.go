@@ -78,11 +78,13 @@ const (
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
+	kubernetesAgentResourcesVMSS  = "k8s/kubernetesagentresourcesvmss.t"
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
 	kubernetesMasterResources     = "k8s/kubernetesmasterresources.t"
 	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
+	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
@@ -107,7 +109,7 @@ const (
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(kubernetesTemplateFiles, openshiftNodeScript, openshiftMasterScript)
@@ -1340,9 +1342,17 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
-		"AnyAgentUsesAvailablilitySets": func() bool {
+		"AnyAgentUsesAvailabilitySets": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
 				if agentProfile.IsAvailabilitySets() {
+					return true
+				}
+			}
+			return false
+		},
+		"AnyAgentUsesVirtualMachineScaleSets": func() bool {
+			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
+				if agentProfile.IsVirtualMachineScaleSets() {
 					return true
 				}
 			}
@@ -2635,7 +2645,6 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
 			agentPoolProfile.Name, agentPoolProfile.Name)
 		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
-
 	}
 
 	if strings.EqualFold(singleOrAll, "single") {

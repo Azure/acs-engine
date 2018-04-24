@@ -23,7 +23,7 @@
       "value": ""
     }
 {{end}}
-{{if AnyAgentUsesAvailablilitySets}}
+{{if AnyAgentUsesAvailabilitySets}}
     ,
     "agentStorageAccountSuffix": {
       "type": "string",
