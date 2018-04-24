@@ -1745,11 +1745,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnablePodSecurityPolicy": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
-		"OpenShiftGetMasterSh": func() string {
-			tb := MustAsset("openshift/openshiftmasterscript.sh")
-			t := template.Must(template.New("master").Parse(string(tb)))
+		"OpenShiftGetMasterSh": func() (string, error) {
+			tb := MustAsset(openshiftMasterScript)
+			t, err := template.New("master").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle           string
 				ExternalMasterHostname string
 				RouterLBHostname       string
@@ -1760,20 +1763,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
 				Location:               cs.Properties.AzProfile.Location,
 			})
-			return b.String()
+			return b.String(), err
 		},
-		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) string {
-			tb := MustAsset("openshift/openshiftnodescript.sh")
-			t := template.Must(template.New("node").Parse(string(tb)))
+		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
+			tb := MustAsset(openshiftNodeScript)
+			t, err := template.New("node").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle string
 				Role         api.AgentPoolProfileRole
 			}{
 				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]),
 				Role:         profile.Role,
 			})
-			return b.String()
+			return b.String(), err
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {

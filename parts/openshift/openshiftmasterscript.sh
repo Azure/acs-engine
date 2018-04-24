@@ -11,7 +11,7 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
 	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
 	IMAGE_TYPE=ose
-	IMAGE_PREFIX="registry.reg-aws.openshift.com:443/openshift3"
+	IMAGE_PREFIX="registry.access.redhat.com/openshift3"
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 
