@@ -318,6 +318,14 @@ type KubernetesConfig struct {
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CustomFiles                      *[]CustomFile     `json:"customFiles,omitempty"`
+}
+
+// CustomFile has source as the full absolute source path to a file and dest
+// is the full absolute desired destination path to put the file on a master node
+type CustomFile struct {
+	Source string `json:"source,omitempty"`
+	Dest   string `json:"dest,omitempty"`
 }
 
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster

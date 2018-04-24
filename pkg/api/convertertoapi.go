@@ -704,6 +704,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	convertAPIServerConfigToAPI(vlabs, api)
 	convertSchedulerConfigToAPI(vlabs, api)
 	convertPrivateClusterToAPI(vlabs, api)
+	convertCustomFilesToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -756,6 +757,18 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 			for key, val := range v.Addons[i].Config {
 				a.Addons[i].Config[key] = val
 			}
+		}
+	}
+}
+
+func convertCustomFilesToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	if v.CustomFiles != nil {
+		a.CustomFiles = &[]CustomFile{}
+		for i := range *v.CustomFiles {
+			*a.CustomFiles = append(*a.CustomFiles, CustomFile{
+				Dest:   (*v.CustomFiles)[i].Dest,
+				Source: (*v.CustomFiles)[i].Source,
+			})
 		}
 	}
 }

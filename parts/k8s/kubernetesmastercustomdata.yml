@@ -142,6 +142,8 @@ MASTER_MANIFESTS_CONFIG_PLACEHOLDER
 
 MASTER_ADDONS_CONFIG_PLACEHOLDER
 
+MASTER_CUSTOM_FILES_PLACEHOLDER
+
 - path: "/etc/systemd/system/hyperkube-extract.service"
   permissions: "0644"
   owner: "root"

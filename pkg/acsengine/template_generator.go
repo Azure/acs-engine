@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
+	log "github.com/sirupsen/logrus"
 )
 
 // TemplateGenerator represents the object that performs the template generation.
@@ -491,6 +492,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				"/etc/kubernetes/addons",
 				"MASTER_ADDONS_CONFIG_PLACEHOLDER",
 				profile.OrchestratorProfile.OrchestratorVersion)
+
+			// add custom files
+			customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
+			if err != nil {
+				log.Fatalf("Could not read custom files: %s", err.Error())
+			}
+			str = substituteConfigStringCustomFiles(str,
+				customFilesReader,
+				"MASTER_CUSTOM_FILES_PLACEHOLDER")
 
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
