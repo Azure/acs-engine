@@ -464,11 +464,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Applying a network policy to deny egress access")
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
 				Expect(err).NotTo(HaveOccurred())
+				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
 
 				By("Ensuring we no longer have outbound internet access from the nginx pods")
-				nginxPods, err := nginxDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(nginxPods)).ToNot(BeZero())
 				for _, nginxPod := range nginxPods {
 					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
 					Expect(err).Should(HaveOccurred())
@@ -478,8 +478,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
-				Expect(err).NotTo(HaveOccurred())
+				delErr := j.Delete()
+				if delErr != nil {
+					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+					fmt.Println(delErr)
+				}
+				Expect(delErr).NotTo(HaveOccurred())
 			} else {
 				Skip("Calico network policy was not provisioned for this Cluster Definition")
 			}
