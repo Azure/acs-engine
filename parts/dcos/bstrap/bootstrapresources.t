@@ -64,7 +64,7 @@
         "frontendIPConfiguration": {
           "id": "[variables('bootstrapLbIPConfigID')]"
         },
-        "frontendPort": "[copyIndex(2200)]",
+        "frontendPort": "[copyIndex(22)]",
         "protocol": "tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
@@ -86,7 +86,7 @@
         "frontendIPConfiguration": {
           "id": "[variables('bootstrapLbIPConfigID')]"
         },
-        "frontendPort": "[copyIndex(2201)]",
+        "frontendPort": "[copyIndex(8086)]",
         "protocol": "tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
@@ -267,7 +267,7 @@
         "autoUpgradeMinorVersion": true,
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {
-          "commandToExecute": "sh -c 'echo done > /tmp/bootstrap.log'"
+          "commandToExecute": "sh -c 'until curl -f http://172.16.0.240:8086/dcos_install.sh > /dev/null; do echo waiting for bootstrap node; sleep 15; done; echo bootstrap node up'"
         },
         "type": "CustomScriptForLinux",
         "typeHandlerVersion": "1.4"

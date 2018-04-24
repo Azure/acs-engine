@@ -38,5 +38,15 @@ for i in {1..300}; do
     sleep 1
 done
 
+for i in {1..300}; do
+    apt-get install selinux-utils -y
+    if [ "$?" = "0" ]
+    then
+        echo "succeeded"
+        break
+    fi
+    sleep 15
+done
+
 curl -o $TMPDIR/dcos_install.sh http://BOOTSTRAP_IP:8086/dcos_install.sh
-$TMPDIR/dcos_install.sh ROLENAME
+bash $TMPDIR/dcos_install.sh ROLENAME

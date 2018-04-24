@@ -40,7 +40,6 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, start, dcos-docker-install.service ]
     - [ systemctl, restart, systemd-journald.service ]
     - [ systemctl, restart, docker.service ]
-    - /opt/azure/dcos/init_role.sh
 write_files:
 - content: |
     [Unit]

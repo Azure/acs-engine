@@ -86,7 +86,7 @@ write_files:
   path: /opt/azure/dcos/genconf/ip-detect
   permissions: '0755'
 - content: |
-    bootstrap_url: {{{dcosBootstrapURL}}}
+    bootstrap_url: http://172.16.0.240:8086
     cluster_name: azure-dcos
     exhibitor_storage_backend: static
     master_discovery: static
