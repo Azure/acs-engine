@@ -115,6 +115,8 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 
 	if dc.location == "" {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	} else {
+		dc.location = NormalizeAzureRegion(dc.location);
 	}
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)

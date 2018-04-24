@@ -99,6 +99,8 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	if sc.location == "" {
 		cmd.Usage()
 		log.Fatal("--location must be specified")
+	} else {
+		sc.location = NormalizeAzureRegion(sc.location)
 	}
 
 	if sc.newDesiredAgentCount == 0 {
