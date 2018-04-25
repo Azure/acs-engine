@@ -103,7 +103,7 @@ MASTER_IP_LIST
 - content: |
     #!/bin/bash
     cd /opt/azure/dcos
-    curl -O https://downloads.dcos.io/dcos/stable/1.11.0/dcos_generate_config.sh
+    curl -O BOOTSTRAP_INSTALL_SCRIPT_URL
 
     bash dcos_generate_config.sh
     docker run -d -p 8086:80 -v $PWD/genconf/serve:/usr/share/nginx/html:ro nginx

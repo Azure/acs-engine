@@ -1,7 +1,7 @@
 {{if .OrchestratorProfile.DcosConfig.BootstrapNodeProfile}}
     ,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
-    "bootstrapAvailabilitySet": "[concat('bootstrap-availabilitySet-', variables('nameSuffix'))]", 
+    "bootstrapAvailabilitySet": "[concat('bootstrap-availabilitySet-', variables('nameSuffix'))]",
     "bootstrapCount": 1,
     "bootstrapEndpointDNSNamePrefix": "[tolower(parameters('bootstrapEndpointDNSNamePrefix'))]",
     "bootstrapHttpSourceAddressPrefix": "{{GetBootstrapHTTPSourceAddressPrefix}}",

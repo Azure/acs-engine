@@ -1184,9 +1184,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					strings.Replace(
 						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
-					"MASTER_IP_LIST":         strings.Join(masterIpList, "\n"),
-					"PREPROVISION_EXTENSION": bootstrapPreprovisionExtension,
-					"BOOTSTRAP_IP":           bootstrapIP})
+					"MASTER_IP_LIST":               strings.Join(masterIpList, "\n"),
+					"PREPROVISION_EXTENSION":       bootstrapPreprovisionExtension,
+					"BOOTSTRAP_IP":                 bootstrapIP,
+					"BOOTSTRAP_INSTALL_SCRIPT_URL": getDCOSBootstrapInstallScriptURL(cs.Properties.OrchestratorProfile)})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1215,12 +1216,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					"PROVISION_STR":
 					// transform the provision script content
 					strings.Replace(
-						strings.Replace(masterProvisionScript, "\r\n", "\n", -1),
+						strings.Replace(
+							strings.Replace(masterProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
+							"\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
 					"ATTRIBUTES_STR":         masterAttributeContents,
 					"PREPROVISION_EXTENSION": masterPreprovisionExtension,
-					"ROLENAME":               "master",
-					"BOOTSTRAP_IP":           bootstrapIP})
+					"ROLENAME":               "master"})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1250,12 +1252,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				map[string]string{
 					"PROVISION_STR": // transform the provision script content
 					strings.Replace(
-						strings.Replace(agentProvisionScript, "\r\n", "\n", -1),
+						strings.Replace(
+							strings.Replace(agentProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
+							"\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
 					"ATTRIBUTES_STR":         attributeContents,
 					"PREPROVISION_EXTENSION": agentPreprovisionExtension,
-					"ROLENAME":               agentRoleName,
-					"BOOTSTRAP_IP":           bootstrapIP})
+					"ROLENAME":               agentRoleName})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -2024,6 +2027,16 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 
 	parms := extensionProfile.ExtensionParameters
 	return parms
+}
+
+func getDCOSBootstrapInstallScriptURL(profile *api.OrchestratorProfile) string {
+	if profile.OrchestratorType == api.DCOS {
+		switch profile.OrchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			return "https://downloads.dcos.io/dcos/stable/1.11.0/dcos_generate_config.sh"
+		}
+	}
+	return ""
 }
 
 func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
