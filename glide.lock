@@ -1,5 +1,5 @@
-hash: 6ccf7505e5ada9ca2cbbfc77ca540b6ec59e0bd40d9392c79e29942386446685
-updated: 2018-04-06T09:25:41.745057-07:00
+hash: d3817832375df23ed63ab732dabbb73bd3b59896118b8965a1cfbf09815d4c27
+updated: 2018-04-25T16:03:39.306816-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -82,6 +82,8 @@ imports:
   - client/v2
   - models
   - pkg/escape
+- name: github.com/Jeffail/gabs
+  version: 2a3aa15961d5fee6047b8151b67ac2f08ba2c48c
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/juju/ratelimit
@@ -165,6 +167,8 @@ imports:
 - name: golang.org/x/crypto
   version: 122d919ec1efcfb58483215da23f815853e24b81
   subpackages:
+  - bcrypt
+  - blowfish
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
