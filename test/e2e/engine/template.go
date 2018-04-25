@@ -32,8 +32,9 @@ type Config struct {
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
 	EnableKMSEncryption   bool   `envconfig:"ENABLE_KMS_ENCRYPTION" default:"false"`
-	TenantID              string `envconfig:"TENANT_ID"`
+	Distro                string `envconfig:"DISTRO"`
 	SubscriptionID        string `envconfig:"SUBSCRIPTION_ID"`
+	TenantID              string `envconfig:"TENANT_ID"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -106,11 +107,11 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 			ClusterUsername: "test-user",
 			ClusterPassword: pass,
 		}
-		// TODO: Make distro flow from circleci/config.yaml
-		cs.ContainerService.Properties.MasterProfile.Distro = "openshift39_centos"
+		// master and agent config
+		cs.ContainerService.Properties.MasterProfile.Distro = vlabs.Distro(config.Distro)
 		cs.ContainerService.Properties.MasterProfile.ImageRef = nil
 		for i := range cs.ContainerService.Properties.AgentPoolProfiles {
-			cs.ContainerService.Properties.AgentPoolProfiles[i].Distro = "openshift39_centos"
+			cs.ContainerService.Properties.AgentPoolProfiles[i].Distro = vlabs.Distro(config.Distro)
 			cs.ContainerService.Properties.AgentPoolProfiles[i].ImageRef = nil
 		}
 	}

@@ -353,7 +353,7 @@ jobs:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
-  openshift-3.9-release-e2e:
+  openshift-3.9-rhel-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: registry.svc.ci.openshift.org/ci/acs-engine-tests:v3.9
@@ -363,6 +363,7 @@ jobs:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
+          echo 'export DISTRO=openshift39_rhel' >> $BASH_ENV
           echo 'export LOCATION=eastus' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=3.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/openshift.json' >> $BASH_ENV
