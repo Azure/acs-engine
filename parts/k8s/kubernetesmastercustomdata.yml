@@ -7,8 +7,10 @@ packages:
 {{end}}
 
 {{if not .UpgradeMode}}
+device_aliases:
+    etcddisk: /dev/disk/azure/scsi1/lun0
 disk_setup:
-  /dev/sdc:
+  etcddisk:
       table_type: gpt
       layout: true
       overwrite: false
@@ -16,7 +18,7 @@ disk_setup:
 fs_setup:
 - label: etcd_disk
   filesystem: ext4
-  device: /dev/sdc1
+  device: /dev/disk/azure/scsi1/lun0
   extra_opts:
     - "-F"
     - "-E"
@@ -24,7 +26,7 @@ fs_setup:
 {{end}}
 
 mounts:
-- - /dev/sdc1
+- - /dev/disk/azure/scsi1/lun0-part1
   - /var/lib/etcddisk
 
 write_files:
