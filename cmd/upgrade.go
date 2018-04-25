@@ -88,7 +88,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 		log.Fatal("--location must be specified")
 	} else {
-		uc.location = NormalizeAzureRegion(uc.location);
+		uc.location = NormalizeAzureRegion(uc.location)
 	}
 
 	if uc.timeoutInMinutes != -1 {
