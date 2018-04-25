@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -43,6 +44,11 @@ type upgradeCmd struct {
 	nameSuffix          string
 	agentPoolsToUpgrade []string
 	timeout             *time.Duration
+}
+
+// NormalizeAzureRegion returns a normalized Azure region with whilte spaces removed and converted to lower case
+func NormalizeAzureRegion(name string) string {
+	return strings.ToLower(strings.Replace(name, " ", "", -1))
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster

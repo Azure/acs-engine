@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
@@ -81,6 +82,11 @@ func newDeployCmd() *cobra.Command {
 	addAuthFlags(&dc.authArgs, f)
 
 	return deployCmd
+}
+
+// NormalizeAzureRegion returns a normalized Azure region with whilte spaces removed and converted to lower case
+func NormalizeAzureRegion(name string) string {
+	return strings.ToLower(strings.Replace(name, " ", "", -1))
 }
 
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
