@@ -881,7 +881,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-          {{if IsKubernetes}}
+          {{if not IsOpenShift}}
           {{GetKubernetesMasterCustomData .}}
           {{end}}
           "linuxConfiguration": {
@@ -901,7 +901,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if and (not UseMasterCustomImage) IsKubernetes}}
+          {{if and (not UseMasterCustomImage) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
