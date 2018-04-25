@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
@@ -20,6 +19,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
@@ -84,11 +84,6 @@ func newDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
-// NormalizeAzureRegion returns a normalized Azure region with whilte spaces removed and converted to lower case
-func NormalizeAzureRegion(name string) string {
-	return strings.ToLower(strings.Replace(name, " ", "", -1))
-}
-
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	var err error
 
@@ -122,7 +117,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	if dc.location == "" {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
-	dc.location = NormalizeAzureRegion(dc.location)
+	dc.location = helpers.NormalizeAzureRegion(dc.location)
 
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)

@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
@@ -100,7 +101,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 		log.Fatal("--location must be specified")
 	} else {
-		sc.location = NormalizeAzureRegion(sc.location)
+		sc.location = helpers.NormalizeAzureRegion(sc.location)
 	}
 
 	if sc.newDesiredAgentCount == 0 {
