@@ -35,10 +35,6 @@ oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
 ( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
 
-chown -R etcd:etcd /etc/etcd
-chmod 0600 /etc/origin/master/htpasswd
-chmod 1777 /tmp
-
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
 
