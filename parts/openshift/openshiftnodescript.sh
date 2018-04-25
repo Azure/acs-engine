@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
@@ -6,8 +6,6 @@ SERVICE_TYPE=origin
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
     SERVICE_TYPE=atomic-openshift
 fi
-
-systemctl restart docker.service
 
 {{if eq .Role "infra"}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-node
@@ -24,6 +22,4 @@ update-ca-trust
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
 systemctl enable ${SERVICE_TYPE}-node.service
-systemctl start ${SERVICE_TYPE}-node.service
-
-exit 0
+systemctl start ${SERVICE_TYPE}-node.service &
