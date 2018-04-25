@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
@@ -30,6 +31,7 @@ type generateCmd struct {
 	classicMode       bool
 	noPrettyPrint     bool
 	parametersOnly    bool
+	set               []string
 
 	// derived
 	containerService *api.ContainerService
@@ -57,11 +59,34 @@ func newGenerateCmd() *cobra.Command {
 	f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&gc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
+	f.StringArrayVar(&gc.set, "set", []string{}, "set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	f.BoolVar(&gc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.BoolVar(&gc.noPrettyPrint, "no-pretty-print", false, "skip pretty printing the output")
 	f.BoolVar(&gc.parametersOnly, "parameters-only", false, "only output parameters files")
 
 	return generateCmd
+}
+
+func mapValues(m map[string]string, values []string) {
+	if values == nil || len(values) == 0 {
+		return
+	}
+
+	for _, value := range values {
+		splittedValues := strings.Split(value, ",")
+		if len(splittedValues) > 1 {
+			mapValues(m, splittedValues)
+		} else {
+			keyValueSplitted := strings.Split(value, "=")
+			key := keyValueSplitted[0]
+			val := keyValueSplitted[1]
+			m[key] = val
+		}
+	}
+}
+
+func mergeValuesWithApiModel(apiModelPath string, m map[string]string) {
+
 }
 
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
@@ -88,6 +113,16 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
 		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
+	}
+
+	// if --set flag has been used
+	if gc.set != nil && len(gc.set) > 0 {
+		log.Infoln("--set flag has been used.")
+
+		m := make(map[string]string)
+		mapValues(m, gc.set)
+
+		// todo: update api model
 	}
 
 	apiloader := &api.Apiloader{
