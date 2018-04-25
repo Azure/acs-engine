@@ -230,3 +230,25 @@ func makeKubernetesPropertiesVlabs() *vlabs.Properties {
 	vp.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	return vp
 }
+
+func TestConvertCustomFilesToAPI(t *testing.T) {
+	expectedApiCustomFiles := []CustomFile{
+		CustomFile{
+			Source: "/test/source",
+			Dest:   "/test/dest",
+		},
+	}
+	apiKubeConfig := KubernetesConfig{}
+
+	vp := &vlabs.KubernetesConfig{}
+	vp.CustomFiles = &[]vlabs.CustomFile{
+		vlabs.CustomFile{
+			Source: "/test/source",
+			Dest:   "/test/dest",
+		},
+	}
+	convertCustomFilesToAPI(vp, &apiKubeConfig)
+	if !equality.Semantic.DeepEqual(&expectedApiCustomFiles, apiKubeConfig.CustomFiles) {
+		t.Fatalf("convertCustomFilesToApi conversion of vlabs.KubernetesConfig did not convert correctly")
+	}
+}

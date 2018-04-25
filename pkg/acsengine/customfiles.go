@@ -1,12 +1,21 @@
 package acsengine
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 )
+
+// CustomFileReader takes represents the source text of a file as an io.Reader and
+// the desired destination to add it to
+type CustomFileReader struct {
+	Source io.Reader
+	Dest   string
+}
 
 func kubernetesCustomFiles(profile *api.Properties) []api.CustomFile {
 	if profile.OrchestratorProfile.KubernetesConfig.CustomFiles != nil {
@@ -15,7 +24,22 @@ func kubernetesCustomFiles(profile *api.Properties) []api.CustomFile {
 	return []api.CustomFile{}
 }
 
-func substituteConfigStringCustomFiles(input string, customFiles []api.CustomFile, placeholder string) string {
+func customfilesIntoReaders(customFiles []api.CustomFile) ([]CustomFileReader, error) {
+	customFileReaders := make([]CustomFileReader, len(customFiles))
+	for idx, customFile := range customFiles {
+		file, err := os.Open(customFile.Source)
+		if err != nil {
+			return []CustomFileReader{}, err
+		}
+		customFileReaders[idx] = CustomFileReader{
+			Source: file,
+			Dest:   customFile.Dest,
+		}
+	}
+	return customFileReaders, nil
+}
+
+func substituteConfigStringCustomFiles(input string, customFiles []CustomFileReader, placeholder string) string {
 
 	var config string
 	for _, customFile := range customFiles {
@@ -27,25 +51,23 @@ func substituteConfigStringCustomFiles(input string, customFiles []api.CustomFil
 	return strings.Replace(input, placeholder, config, -1)
 }
 
-func buildConfigStringCustomFiles(sourceFile string, destinationFile string) string {
+func buildConfigStringCustomFiles(source io.Reader, destinationFile string) string {
 	contents := []string{
 		fmt.Sprintf("- path: %s", destinationFile),
 		"  permissions: \\\"0644\\\"",
 		"  encoding: gzip",
 		"  owner: \\\"root\\\"",
 		"  content: !!binary |",
-		fmt.Sprintf("    %s\\n\\n", getBase64CustomFile(sourceFile)),
+		fmt.Sprintf("    %s\\n\\n", getBase64CustomFile(source)),
 	}
 
 	return strings.Join(contents, "\\n")
 }
 
-func getBase64CustomFile(cfFilepath string) string {
-	dat, err := ioutil.ReadFile(cfFilepath)
-	if err != nil {
-		panic(fmt.Sprintf("Could not read custom file: %s", err.Error()))
-	}
-	csStr := string(dat)
-	csStr = strings.Replace(csStr, "\r\n", "\n", -1)
-	return getBase64CustomScriptFromStr(csStr)
+func getBase64CustomFile(source io.Reader) string {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(source)
+	cfStr := buf.String()
+	cfStr = strings.Replace(cfStr, "\r\n", "\n", -1)
+	return getBase64CustomScriptFromStr(cfStr)
 }
