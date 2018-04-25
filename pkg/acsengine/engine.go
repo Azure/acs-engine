@@ -1167,9 +1167,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDCOSBootstrapCustomData": func() string {
 			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
 			bootstrapPreprovisionExtension := ""
-			masterIpList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
-			for i, v := range masterIpList {
-				masterIpList[i] = "    - " + v
+			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			for i, v := range masterIPList {
+				masterIPList[i] = "    - " + v
 			}
 			bootstrapIP := generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
 
@@ -1184,7 +1184,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					strings.Replace(
 						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
-					"MASTER_IP_LIST":          strings.Join(masterIpList, "\n"),
+					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
 					"PREPROVISION_EXTENSION":  bootstrapPreprovisionExtension,
 					"BOOTSTRAP_IP":            bootstrapIP,
 					"BOOTSTRAP_INSTALLER_URL": getDCOSBootstrapInstallerURL(cs.Properties.OrchestratorProfile)})

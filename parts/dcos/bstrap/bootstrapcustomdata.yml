@@ -80,8 +80,9 @@ write_files:
   path: /etc/systemd/system/docker.socket
   permissions: '0644'
 - content: |
-    #!/bin/bash
-    curl -H Metadata:true "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-08-01&format=text"
+    #!/bin/sh
+
+    curl -H Metadata:true -fsSL "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text"
   owner: root
   path: /opt/azure/dcos/genconf/ip-detect
   permissions: '0755'
