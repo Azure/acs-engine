@@ -292,7 +292,11 @@ function
 Write-KubernetesStartFiles($podCIDR)
 {
     mkdir $global:VolumePluginDir
-    $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
+    $KUBELET_NODE_LABELS = "" 
+    # How do we access this for Agent nodes? 
+    # kubernetesagentcustomdata.yml
+    # func GetAgentKubernetesLabels in engine.go is what we want to use here.
+    $KubeletArgList = @(" --node-labels=`$KUBELET_NODE_LABELS --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
