@@ -230,9 +230,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 				}
 			}
-			if o.OpenShiftConfig == nil || o.OpenShiftConfig.ClusterUsername == "" || o.OpenShiftConfig.ClusterPassword == "" {
-				return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
+			if o.OpenShiftConfig == nil {
+				return fmt.Errorf("OpenShiftConfig must be specified for OpenShift orchestrator")
 			}
+			return o.OpenShiftConfig.Validate()
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 		}
@@ -277,6 +278,14 @@ func validateImageNameAndGroup(name, resourceGroup string) error {
 	}
 	if name != "" && resourceGroup == "" {
 		return errors.New("imageResourceGroup needs to be specified when imageName is provided")
+	}
+	return nil
+}
+
+// Validate OpenShiftConfig ensures that the OpenShiftConfig is valid.
+func (o *OpenShiftConfig) Validate() error {
+	if o.ClusterUsername == "" || o.ClusterPassword == "" {
+		return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
 	}
 	return nil
 }
