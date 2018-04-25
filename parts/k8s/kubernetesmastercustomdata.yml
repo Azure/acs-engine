@@ -8,7 +8,7 @@ packages:
 
 {{if not .UpgradeMode}}
 device_aliases:
-    etcddisk: /dev/disk/azure/scsi1/lun0
+  etcddisk: /dev/disk/azure/scsi1/lun0
 disk_setup:
   etcddisk:
       table_type: gpt
@@ -16,13 +16,13 @@ disk_setup:
       overwrite: false
 
 fs_setup:
-- label: etcd_disk
-  filesystem: ext4
-  device: /dev/disk/azure/scsi1/lun0
-  extra_opts:
-    - "-F"
-    - "-E"
-    - "lazy_itable_init=1,lazy_journal_init=1"
+  - label: etcd_disk
+    filesystem: ext4
+    device: /dev/disk/azure/scsi1/lun0
+    extra_opts:
+      - "-F"
+      - "-E"
+      - "lazy_itable_init=1,lazy_journal_init=1"
 {{end}}
 
 mounts:
