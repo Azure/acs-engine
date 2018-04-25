@@ -54,11 +54,6 @@ const (
 	scaleLongDescription  = "scale a deployed cluster"
 )
 
-// NormalizeAzureRegion returns a normalized Azure region with whilte spaces removed and converted to lower case
-func NormalizeAzureRegion(name string) string {
-	return strings.ToLower(strings.Replace(name, " ", "", -1))
-}
-
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
 func newScaleCmd() *cobra.Command {
 	sc := scaleCmd{}
