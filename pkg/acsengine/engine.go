@@ -1184,10 +1184,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					strings.Replace(
 						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
-					"MASTER_IP_LIST":               strings.Join(masterIpList, "\n"),
-					"PREPROVISION_EXTENSION":       bootstrapPreprovisionExtension,
-					"BOOTSTRAP_IP":                 bootstrapIP,
-					"BOOTSTRAP_INSTALL_SCRIPT_URL": getDCOSBootstrapInstallScriptURL(cs.Properties.OrchestratorProfile)})
+					"MASTER_IP_LIST":          strings.Join(masterIpList, "\n"),
+					"PREPROVISION_EXTENSION":  bootstrapPreprovisionExtension,
+					"BOOTSTRAP_IP":            bootstrapIP,
+					"BOOTSTRAP_INSTALLER_URL": getDCOSBootstrapInstallerURL(cs.Properties.OrchestratorProfile)})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -2029,7 +2029,7 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 	return parms
 }
 
-func getDCOSBootstrapInstallScriptURL(profile *api.OrchestratorProfile) string {
+func getDCOSBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
 	if profile.OrchestratorType == api.DCOS {
 		switch profile.OrchestratorVersion {
 		case api.DCOSVersion1Dot11Dot0:

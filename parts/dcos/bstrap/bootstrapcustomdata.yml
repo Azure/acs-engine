@@ -90,6 +90,7 @@ write_files:
     cluster_name: azure-dcos
     exhibitor_storage_backend: static
     master_discovery: static
+    oauth_enabled: false
     ip_detect_public_filename: genconf/ip-detect
     master_list:
 MASTER_IP_LIST
@@ -103,7 +104,7 @@ MASTER_IP_LIST
 - content: |
     #!/bin/bash
     cd /opt/azure/dcos
-    curl -O BOOTSTRAP_INSTALL_SCRIPT_URL
+    curl -O BOOTSTRAP_INSTALLER_URL
 
     bash dcos_generate_config.sh
     docker run -d -p 8086:80 -v $PWD/genconf/serve:/usr/share/nginx/html:ro nginx
