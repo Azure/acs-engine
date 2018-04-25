@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Jeffail/gabs"
 	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -85,8 +86,28 @@ func mapValues(m map[string]string, values []string) {
 	}
 }
 
-func mergeValuesWithApiModel(apiModelPath string, m map[string]string) {
+func mergeValuesWithApiModel(apiModelPath string, m map[string]string) (string, error) {
+	// load the apiModel file from path
+	fileContent, err := ioutil.ReadFile(apiModelPath)
+	if err != nil {
+		return "", err
+	}
 
+	// parse the json from file content
+	jsonObj, err := gabs.ParseJSON(fileContent)
+	if err != nil {
+		return "", err
+	}
+
+	// update api model definition with each value in the map
+	for k, v := range m {
+		log.Infoln(fmt.Sprintf("k: properties.%s, v: %s", k, v))
+		jsonObj.SetP(v, fmt.Sprint("properties.", k))
+	}
+
+	// todo: generate a new file
+
+	return apiModelPath, nil
 }
 
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
@@ -122,7 +143,11 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 		m := make(map[string]string)
 		mapValues(m, gc.set)
 
-		// todo: update api model
+		// update api model file with overriden values and get the new file path
+		gc.apimodelPath, err = mergeValuesWithApiModel(gc.apimodelPath, m)
+		if err != nil {
+			log.Warnln("Unable to merge --set flag values")
+		}
 	}
 
 	apiloader := &api.Apiloader{
