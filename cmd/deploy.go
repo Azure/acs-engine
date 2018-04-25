@@ -74,8 +74,8 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
-	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
-	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
+	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to (will use the DNS prefix from the apimodel if not specified)")
+	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to (required)")
 	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 
 	addAuthFlags(&dc.authArgs, f)
@@ -116,8 +116,8 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	if dc.location == "" {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
-	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
+
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
