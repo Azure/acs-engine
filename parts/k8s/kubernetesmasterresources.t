@@ -857,6 +857,13 @@
         "type": "systemAssigned"
       },
       {{end}}
+      {{if and IsOpenShift (not UseMasterCustomImage)}}
+      "plan": {
+        "name": "[variables('osImageSku')]",
+        "publisher": "[variables('osImagePublisher')]",
+        "product": "[variables('osImageOffer')]"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
@@ -894,7 +901,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if not UseMasterCustomImage}}
+          {{if and (not UseMasterCustomImage) IsKubernetes}}
           "dataDisks": [
             {
               "createOption": "Empty"
