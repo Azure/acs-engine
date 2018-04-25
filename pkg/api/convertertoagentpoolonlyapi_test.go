@@ -268,16 +268,16 @@ func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 		t.Error("EnableRbac expected not to be nil")
 	}
 
-	if *kc.EnableRbac != true {
-		t.Error("EnableRbac expected to be true")
+	if *kc.EnableRbac != false {
+		t.Error("EnableRbac expected to be false")
 	}
 
 	if kc.EnableSecureKubelet == nil {
 		t.Error("EnableSecureKubelet expected not to be nil")
 	}
 
-	if *kc.EnableSecureKubelet != true {
-		t.Error("EnableSecureKubelet expected to be true")
+	if *kc.EnableSecureKubelet != false {
+		t.Error("EnableSecureKubelet expected to be false")
 	}
 
 	if *kc.EnableSecureKubelet != *kc.EnableRbac {

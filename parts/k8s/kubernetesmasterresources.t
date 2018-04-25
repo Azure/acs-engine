@@ -857,6 +857,13 @@
         "type": "systemAssigned"
       },
       {{end}}
+      {{if and IsOpenShift (not UseMasterCustomImage)}}
+      "plan": {
+        "name": "[variables('osImageSku')]",
+        "publisher": "[variables('osImagePublisher')]",
+        "product": "[variables('osImageOffer')]"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
@@ -874,7 +881,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-          {{if IsKubernetes}}
+          {{if not IsOpenShift}}
           {{GetKubernetesMasterCustomData .}}
           {{end}}
           "linuxConfiguration": {
@@ -894,7 +901,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if not UseMasterCustomImage}}
+          {{if and (not UseMasterCustomImage) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
