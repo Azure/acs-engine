@@ -137,7 +137,7 @@
       },
       "dependsOn": [
         "[variables('bootstrapNSGID')]",
-{{if not .MasterProfile.IsCustomVNET}}        
+{{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]",
 {{end}}
         "[variables('bootstrapLbID')]",
@@ -164,7 +164,7 @@
                   "id": "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'),copyIndex())]"
                 }
               ],
-              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), add(240,copyIndex()))]",
+              "privateIPAddress": "[concat(variables('bootstrapFirstAddrPrefix'), copyIndex(int(variables('bootstrapFirstAddrOctet4'))))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('masterVnetSubnetID')]"
@@ -267,7 +267,7 @@
         "autoUpgradeMinorVersion": true,
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {
-          "commandToExecute": "sh -c 'until curl -f http://172.16.0.240:8086/dcos_install.sh > /dev/null; do echo waiting for bootstrap node; sleep 15; done; echo bootstrap node up'"
+          "commandToExecute": "[concat('/bin/bash -c \"until curl -f http://', variables('bootstrapFirstConsecutiveStaticIP'), ':8086/dcos_install.sh > /dev/null; do echo waiting for bootstrap node; sleep 15; done; echo bootstrap node up\"')]"
         },
         "type": "CustomScriptForLinux",
         "typeHandlerVersion": "1.4"

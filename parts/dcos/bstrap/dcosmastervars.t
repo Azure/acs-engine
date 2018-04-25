@@ -138,39 +138,3 @@
                 }
             ]
         ]
-{{if IsDCOS111}}
-    ,
-    "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
-    "bootstrapAvailabilitySet": "[concat(variables('orchestratorName'), '-bootstrap-availabilitySet-', variables('nameSuffix'))]", 
-    "bootstrapCount": 1,
-    "bootstrapEndpointDNSNamePrefix": "[tolower(parameters('bootstrapEndpointDNSNamePrefix'))]",
-    "bootstrapHttpSourceAddressPrefix": "{{GetBootstrapHTTPSourceAddressPrefix}}",
-    "bootstrapLbBackendPoolName": "[concat(variables('orchestratorName'), '-bootstrap-pool-', variables('nameSuffix'))]",
-    "bootstrapLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('bootstrapLbName'))]",
-    "bootstrapLbIPConfigID": "[concat(variables('bootstrapLbID'),'/frontendIPConfigurations/', variables('bootstrapLbIPConfigName'))]",
-    "bootstrapLbIPConfigName": "[concat(variables('orchestratorName'), '-bootstrap-lbFrontEnd-', variables('nameSuffix'))]",
-    "bootstrapLbName": "[concat(variables('orchestratorName'), '-bootstrap-lb-', variables('nameSuffix'))]",
-    "bootstrapNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('bootstrapNSGName'))]",
-    "bootstrapNSGName": "[concat(variables('orchestratorName'), '-bootstrap-nsg-', variables('nameSuffix'))]",
-    "bootstrapPublicIPAddressName": "[concat(variables('orchestratorName'), '-bootstrap-ip-', variables('bootstrapEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-    "apiVersionStorage": "2015-06-15",
-    "storageAccountType": "Standard_LRS",
-    "apiVersionBootstrapNode": "2016-04-30-preview",
-    "bootstrapVMNamePrefix": "[concat(variables('orchestratorName'), '-bootstrap-', variables('nameSuffix'), '-')]",
-    "bootstrapVMNic": [
-      "[concat(variables('bootstrapVMNamePrefix'), 'nic-0')]"
-    ],
-    "bootstrapSshInboundNatRuleIdPrefix": "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'))]",
-    "bootstrapServiceInboundNatRuleIdPrefix": "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'))]",
-    "bootstrapLbInboundNatRules": [
-      [
-        {
-          "id": "[concat(variables('bootstrapSshInboundNatRuleIdPrefix'),'0')]"
-        },
-        {
-          "id": "[concat(variables('bootstrapServiceInboundNatRuleIdPrefix'),'0')]"
-        }
-      ]
-    ],
-    "bootstrapVMSize": "[parameters('bootstrapVMSize')]"
-{{end}}

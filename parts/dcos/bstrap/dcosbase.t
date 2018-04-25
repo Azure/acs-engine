@@ -41,6 +41,7 @@
     {{end}}
 
     {{template "dcos/bstrap/dcosmastervars.t" .}}
+    {{template "dcos/bstrap/bootstrapvars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

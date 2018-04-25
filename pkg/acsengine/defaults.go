@@ -568,6 +568,17 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
 				a.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
 			}
+		} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
+			a.MasterProfile.Subnet = DefaultDCOSMasterSubnet
+			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
+			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
+			}
+			if a.OrchestratorProfile.DcosConfig != nil && a.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
+				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP) == 0 {
+					a.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP = DefaultDCOSBootstrapFirstConsecutiveStaticIP
+				}
+			}
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists

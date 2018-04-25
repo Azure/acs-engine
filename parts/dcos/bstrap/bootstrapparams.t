@@ -34,7 +34,7 @@
       "type": "string"
     },
 {{else}}
-    "firstConsecutiveStaticIP": {
+    "bootstrapFirstConsecutiveStaticIP": {
       "defaultValue": "{{.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP}}",
       "metadata": {
         "description": "Sets the static IP of the first bootstrap"

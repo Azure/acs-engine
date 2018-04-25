@@ -79,6 +79,7 @@ const (
 	dcosMasterResources           = "dcos/dcosmasterresources.t"
 	dcosMasterVars                = "dcos/dcosmastervars.t"
 	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
+	dcos2BootstrapVars            = "dcos/bstrap/bootstrapvars.t"
 	dcos2BootstrapParams          = "dcos/bstrap/bootstrapparams.t"
 	dcos2BootstrapResources       = "dcos/bstrap/bootstrapresources.t"
 	dcos2BootstrapCustomdata      = "dcos/bstrap/bootstrapcustomdata.yml"
@@ -116,7 +117,7 @@ const (
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
-var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapParams}
+var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -855,6 +856,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 		if properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
 			addValue(parametersMap, "bootstrapEndpointDNSNamePrefix", "bstrap-"+properties.MasterProfile.DNSPrefix)
+			addValue(parametersMap, "bootstrapFirstConsecutiveStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)
 			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.VMSize)
 		}
 	}
@@ -1160,15 +1162,17 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"GetBootstrapHTTPSourceAddressPrefix": func() string {
-			return fmt.Sprintf("%s", "BOOTSTRAPHTTPSOURCEADDRESSPREFIX")
+			return fmt.Sprintf("%s", "*")
 		},
 		"GetDCOSBootstrapCustomData": func() string {
 			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
 			bootstrapPreprovisionExtension := ""
-			ipList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
-			for i, v := range ipList {
-				ipList[i] = "    - " + v
+			masterIpList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			for i, v := range masterIpList {
+				masterIpList[i] = "    - " + v
 			}
+			bootstrapIP := generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				dcos2BootstrapCustomdata,
@@ -1180,8 +1184,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					strings.Replace(
 						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
-					"MASTER_IP_LIST":         strings.Join(ipList, "\n"),
-					"PREPROVISION_EXTENSION": bootstrapPreprovisionExtension})
+					"MASTER_IP_LIST":         strings.Join(masterIpList, "\n"),
+					"PREPROVISION_EXTENSION": bootstrapPreprovisionExtension,
+					"BOOTSTRAP_IP":           bootstrapIP})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1196,6 +1201,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				masterPreprovisionExtension += "\n"
 				masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
 			}
+			var bootstrapIP string
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
+				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
@@ -1209,7 +1219,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						"\n", "\n\n    ", -1),
 					"ATTRIBUTES_STR":         masterAttributeContents,
 					"PREPROVISION_EXTENSION": masterPreprovisionExtension,
-					"ROLENAME":               "master"})
+					"ROLENAME":               "master",
+					"BOOTSTRAP_IP":           bootstrapIP})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1221,12 +1232,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				agentPreprovisionExtension += "\n"
 				agentPreprovisionExtension += makeAgentExtensionScriptCommands(cs, profile)
 			}
-			var agentRoleName string
+			var agentRoleName, bootstrapIP string
 			if len(profile.Ports) > 0 {
 				agentRoleName = "slave_public"
 			} else {
 				agentRoleName = "slave"
 			}
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile != nil {
+				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
@@ -1239,7 +1254,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						"\n", "\n\n    ", -1),
 					"ATTRIBUTES_STR":         attributeContents,
 					"PREPROVISION_EXTENSION": agentPreprovisionExtension,
-					"ROLENAME":               agentRoleName})
+					"ROLENAME":               agentRoleName,
+					"BOOTSTRAP_IP":           bootstrapIP})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -2511,22 +2527,16 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
 	}
 
-	switch scriptname {
-	case dcosProvision, dcosWindowsProvision:
-		// the embedded roleFileContents
-		var roleFileContents string
-		if len(profile.Ports) > 0 {
-			// public agents
-			roleFileContents = "touch /etc/mesosphere/roles/slave_public"
-		} else {
-			roleFileContents = "touch /etc/mesosphere/roles/slave"
-		}
-		provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
-	case dcos2Provision:
-		bootstrapIP := "172.16.0.240" //generateIPList(orchProfile.DcosConfig.BootstrapNodeProfile.Count,
-		//orchProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
-		provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
+	// the embedded roleFileContents
+	var roleFileContents string
+	if len(profile.Ports) > 0 {
+		// public agents
+		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
+	} else {
+		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
+	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
@@ -2572,17 +2582,11 @@ func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
 		panic(fmt.Sprintf("BUG: %s may not contain character '", scriptname))
 	}
 
-	switch scriptname {
-	case dcosProvision:
-		// the embedded roleFileContents
-		roleFileContents := `touch /etc/mesosphere/roles/master
+	// the embedded roleFileContents
+	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
-		provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
-	case dcos2Provision:
-		bootstrapIP := "172.16.0.240" //generateIPList(orchProfile.DcosConfig.BootstrapNodeProfile.Count,
-		//orchProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP)[0]
-		provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
-	}
+	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
