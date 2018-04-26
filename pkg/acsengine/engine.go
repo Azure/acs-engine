@@ -842,7 +842,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
-			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeConfigs[k8sVersion]["windowszip"])
+			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
+			if kubeBinariesSASURL == "" {
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
+			}
+
+			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
 			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)

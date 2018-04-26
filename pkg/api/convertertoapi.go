@@ -667,6 +667,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.DockerEngineVersion = vlabs.DockerEngineVersion
 	api.CustomCcmImage = vlabs.CustomCcmImage
 	api.UseCloudControllerManager = vlabs.UseCloudControllerManager
+	api.CustomWindowsPackageURL = vlabs.CustomWindowsPackageURL
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
 	api.EnableRbac = vlabs.EnableRbac
 	api.EnableSecureKubelet = vlabs.EnableSecureKubelet

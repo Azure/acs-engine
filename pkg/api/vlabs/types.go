@@ -274,6 +274,7 @@ type KubernetesConfig struct {
 	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
 	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
+	CustomWindowsPackageURL         string            `json:"customWindowsPackageURL,omitempty"`
 	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`
