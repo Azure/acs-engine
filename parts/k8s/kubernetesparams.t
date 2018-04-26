@@ -623,6 +623,14 @@
       },
       "type": "int"
     },
+    # kubeletNodeLabels parameters need to exist in the template    
+    "kubeletNodeLabels": {
+      "defaultValue": "test",
+      "metadata": {
+        "description": "Role labels for Linux and Windows instances"
+      },
+      "type": "string"
+    },
     "vnetCidr": {
       "defaultValue": "10.0.0.0/8",
       "metadata": {
