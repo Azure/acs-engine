@@ -23,11 +23,11 @@ func TestIsRegionNormalized(t *testing.T) {
 		expectedResult: "westus"
 	},
 	{
-		input: "Eastern Africa"
+		input: "Eastern Africa",
 		expectedResult: "easternafrica"
 	},
 	{
-		input: ""
+		input: "",
 		expectedResult: ""
 	}
 
