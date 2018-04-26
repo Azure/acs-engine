@@ -232,8 +232,8 @@ func makeKubernetesPropertiesVlabs() *vlabs.Properties {
 }
 
 func TestConvertCustomFilesToAPI(t *testing.T) {
-	expectedApiCustomFiles := []CustomFile{
-		CustomFile{
+	expectedAPICustomFiles := []CustomFile{
+		{
 			Source: "/test/source",
 			Dest:   "/test/dest",
 		},
@@ -242,13 +242,13 @@ func TestConvertCustomFilesToAPI(t *testing.T) {
 
 	vp := &vlabs.KubernetesConfig{}
 	vp.CustomFiles = &[]vlabs.CustomFile{
-		vlabs.CustomFile{
+		{
 			Source: "/test/source",
 			Dest:   "/test/dest",
 		},
 	}
 	convertCustomFilesToAPI(vp, &apiKubeConfig)
-	if !equality.Semantic.DeepEqual(&expectedApiCustomFiles, apiKubeConfig.CustomFiles) {
+	if !equality.Semantic.DeepEqual(&expectedAPICustomFiles, apiKubeConfig.CustomFiles) {
 		t.Fatalf("convertCustomFilesToApi conversion of vlabs.KubernetesConfig did not convert correctly")
 	}
 }
