@@ -59,6 +59,9 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 	It("should be running the expected version", func() {
 		version, err := node.Version()
 		Expect(err).NotTo(HaveOccurred())
+		// normalize patch version to zero so we can support testing
+		// across centos and rhel deployments where patch versions diverge.
+		version = strings.Join(append(strings.Split(version, ".")[:2], "0"), ".")
 
 		var expectedVersion string
 		if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||
