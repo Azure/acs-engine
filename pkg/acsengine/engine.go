@@ -847,8 +847,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 			for _, agentProfile := range properties.AgentPoolProfiles {
-				properties.AzProfile.ResourceGroup
-				addValue(parametersMap, "kubeletNodeLabels", getAgentKubernetesLabels(agentProfile.Name, "variables('truncatedResourceGroup')"))
+				addValue(parametersMap, "kubeletNodeLabels", getAgentKubernetesLabels(agentProfile, "variables('truncatedResourceGroup')"))
 			}
 		}
 		for i, s := range properties.WindowsProfile.Secrets {
