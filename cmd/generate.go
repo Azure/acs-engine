@@ -62,6 +62,15 @@ func newGenerateCmd() *cobra.Command {
 			if err := gc.validate(cmd, args); err != nil {
 				log.Fatalf(fmt.Sprintf("error validating generateCmd: %s", err.Error()))
 			}
+
+			if err := gc.mergeAPIModel(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error merging API model in generateCmd: %s", err.Error()))
+			}
+
+			if err := gc.loadAPIModel(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error loading API model in generateCmd: %s", err.Error()))
+			}
+
 			return gc.run()
 		},
 	}
@@ -80,8 +89,6 @@ func newGenerateCmd() *cobra.Command {
 }
 
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
-	var caCertificateBytes []byte
-	var caKeyBytes []byte
 	var err error
 
 	gc.locale, err = i18n.LoadTranslations()
@@ -105,6 +112,12 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
 	}
 
+	return nil
+}
+
+func (gc *generateCmd) mergeAPIModel(cmd *cobra.Command, args []string) error {
+	var err error
+
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
 		m := make(map[string]setFlagValue)
@@ -118,6 +131,14 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", gc.apimodelPath))
 	}
+
+	return nil
+}
+
+func (gc *generateCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
+	var caCertificateBytes []byte
+	var caKeyBytes []byte
+	var err error
 
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{
@@ -157,6 +178,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
 		prop.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
+
 	return nil
 }
 
