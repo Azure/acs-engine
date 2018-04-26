@@ -424,6 +424,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && a.MasterProfile.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
 	for i, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
@@ -468,6 +472,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.StorageProfile != ManagedDisks {
+			return errors.New("OpenShift orchestrator supports only ManagedDisks")
 		}
 
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {

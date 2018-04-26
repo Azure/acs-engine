@@ -20,6 +20,8 @@ import (
 ///////////////////////////////////////////////////////////
 
 const (
+	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
+	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
@@ -229,6 +231,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
 			NetworkPolicy:      "none",
+			ClusterSubnet:      DefaultKubernetesClusterSubnet,
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
@@ -419,6 +422,8 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 		case v20180331.Kubenet:
 			kubernetesConfig.NetworkPolicy = "none"
 
+			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			} else {
@@ -445,6 +450,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	} else {
 		// set network default for un-versioned model
 		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
