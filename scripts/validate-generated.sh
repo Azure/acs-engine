@@ -19,9 +19,14 @@ cp -a "${DIR}/.." "${T}/"
 
 (cd "${T}/" && go generate ./...)
 
-if ! diff -I '.*bindataFileInfo.*' --exclude=.git -r "${DIR}/.." "${T}" 2>&1 ; then 
-	echo "go generate produced changes that were not already present"
-	exit 1
-fi
+
+GENERATED_FILES=("pkg/openshift/certgen/templates/bindata.go")
+
+for file in $GENERATED_FILES; do
+	if ! diff  -r "${DIR}/../${file}" "${T}/${file}" 2>&1 ; then
+		echo "go generate produced changes that were not already present"
+		exit 1
+	fi
+done
 
 echo "Generated assets have no material difference than what is committed."
