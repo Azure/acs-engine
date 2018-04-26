@@ -208,7 +208,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	}
 
 	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, kubeConfig, uc.resourceGroupName,
-		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade); err != nil {
+		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade, BuildTag); err != nil {
 		log.Fatalf("Error upgrading cluster: %v\n", err)
 	}
 
