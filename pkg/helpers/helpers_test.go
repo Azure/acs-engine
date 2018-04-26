@@ -36,7 +36,7 @@ func TestIsRegionNormalized(t *testing.T) {
 	for _, c := range cases {
 		result := NormalizeAzureRegion(c.input)
 		if c.expectedResult != result {
-			t.Fatalf("NormalizeAzureRegion returned unexpected result: expected %t but got %t", c.expectedResult, result)
+			t.Fatalf("NormalizeAzureRegion returned unexpected result: expected %d but got %d", c.expectedResult, result)
 		}
 	}
 }
