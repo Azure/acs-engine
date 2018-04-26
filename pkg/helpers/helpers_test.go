@@ -16,19 +16,19 @@ func TestIsRegionNormalized(t *testing.T) {
 		expectedResult string
 	}{
 		input: "westus",
-		expectedResult: "westus"
+		expectedResult: "westus",
 	},
 	{
 		input: "West US",
-		expectedResult: "westus"
+		expectedResult: "westus",
 	},
 	{
 		input: "Eastern Africa",
-		expectedResult: "easternafrica"
+		expectedResult: "easternafrica",
 	},
 	{
 		input: "",
-		expectedResult: ""
+		expectedResult: "",
 	}
 
 	for _, c := range cases {
