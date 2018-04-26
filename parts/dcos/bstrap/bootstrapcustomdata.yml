@@ -91,7 +91,7 @@ write_files:
     cluster_name: azure-dcos
     exhibitor_storage_backend: static
     master_discovery: static
-    oauth_enabled: false
+    oauth_enabled: BOOTSTRAP_OAUTH_ENABLED
     ip_detect_public_filename: genconf/ip-detect
     master_list:
 MASTER_IP_LIST

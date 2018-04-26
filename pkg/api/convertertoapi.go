@@ -562,7 +562,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		case DCOSVersion1Dot11Dot0, DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot8, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
 			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
-			api.OrchestratorVersion = DCOSDefaultVersion
+			api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 		}
 	default:
 		break
@@ -632,16 +632,14 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosClusterPackageListID = vlabs.DcosClusterPackageListID
 	api.DcosProviderPackageID = vlabs.DcosProviderPackageID
 
-	if vlabs.BootstrapNodeProfile != nil {
-		api.BootstrapNodeProfile = &BootstrapNodeProfile{
-			Count:        vlabs.BootstrapNodeProfile.Count,
-			VMSize:       vlabs.BootstrapNodeProfile.VMSize,
-			OSDiskSizeGB: vlabs.BootstrapNodeProfile.OSDiskSizeGB,
-			OAuthEnabled: vlabs.BootstrapNodeProfile.OAuthEnabled,
-			//PreprovisionExtension:    vlabs.BootstrapNodeProfile.PreprovisionExtension,
-			FirstConsecutiveStaticIP: vlabs.BootstrapNodeProfile.FirstConsecutiveStaticIP,
-			Subnet:         vlabs.BootstrapNodeProfile.Subnet,
-			StorageProfile: vlabs.BootstrapNodeProfile.StorageProfile,
+	if vlabs.BootstrapProfile != nil {
+		api.BootstrapProfile = &BootstrapProfile{
+			Count:                    vlabs.BootstrapProfile.Count,
+			VMSize:                   vlabs.BootstrapProfile.VMSize,
+			OSDiskSizeGB:             vlabs.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled:             vlabs.BootstrapProfile.OAuthEnabled,
+			FirstConsecutiveStaticIP: vlabs.BootstrapProfile.FirstConsecutiveStaticIP,
+			Subnet: vlabs.BootstrapProfile.Subnet,
 		}
 	}
 }

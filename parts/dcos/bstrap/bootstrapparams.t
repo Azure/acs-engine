@@ -26,7 +26,7 @@
       },
       "type": "string"
     },
-    "kubernetesEndpoint": {
+    "bootstrapEndpoint": {
       "defaultValue": "{{.HostedBootstrapProfile.FQDN}}",
       "metadata": {
         "description": "Sets the static IP of the first bootstrap"
@@ -35,7 +35,6 @@
     },
 {{else}}
     "bootstrapFirstConsecutiveStaticIP": {
-      "defaultValue": "{{.OrchestratorProfile.DcosConfig.BootstrapNodeProfile.FirstConsecutiveStaticIP}}",
       "metadata": {
         "description": "Sets the static IP of the first bootstrap"
       },
@@ -47,6 +46,12 @@
         "description": "The size of the Virtual Machine."
       },
       "type": "string"
+    },
+    "bootstrapCount": {
+      "metadata": {
+        "description": "The number of the Virtual Machines in the set."
+      },
+      "type": "int"
     },
 {{end}}
     "sshRSAPublicKey": {

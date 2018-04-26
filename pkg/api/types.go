@@ -308,29 +308,27 @@ type KubernetesConfig struct {
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
 }
 
-// BootstrapNodeProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
-type BootstrapNodeProfile struct {
-	Count                    int        `json:"count"`
-	VMSize                   string     `json:"vmSize"`
-	OSDiskSizeGB             int        `json:"osDiskSizeGB,omitempty"`
-	OAuthEnabled             bool       `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension `json:"preProvisionExtension"`
-	FirstConsecutiveStaticIP string     `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string     `json:"subnet"`
-	StorageProfile           string     `json:"storageProfile,omitempty"`
+// BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
+type BootstrapProfile struct {
+	Count                    int    `json:"count,omitempty"`
+	VMSize                   string `json:"vmSize,omitempty"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled,omitempty"`
+	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string `json:"subnet,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
-	DcosBootstrapURL         string                `json:"dcosBootstrapURL,omitempty"`
-	DcosWindowsBootstrapURL  string                `json:"dcosWindowsBootstrapURL,omitempty"`
-	Registry                 string                `json:"registry,omitempty"`
-	RegistryUser             string                `json:"registryUser,omitempty"`
-	RegistryPass             string                `json:"registryPassword,omitempty"`
-	DcosRepositoryURL        string                `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
-	DcosClusterPackageListID string                `json:"dcosClusterPackageListID,omitempty"` // all three of these items
-	DcosProviderPackageID    string                `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
-	BootstrapNodeProfile     *BootstrapNodeProfile `json:"bootstrapNodeProfile,omitempty"`
+	DcosBootstrapURL         string            `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string            `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                 string            `json:"registry,omitempty"`
+	RegistryUser             string            `json:"registryUser,omitempty"`
+	RegistryPass             string            `json:"registryPassword,omitempty"`
+	DcosRepositoryURL        string            `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
+	DcosClusterPackageListID string            `json:"dcosClusterPackageListID,omitempty"` // all three of these items
+	DcosProviderPackageID    string            `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+	BootstrapProfile         *BootstrapProfile `json:"bootstrapProfile,omitempty"`
 }
 
 // OpenShiftConfig holds configuration for OpenShift

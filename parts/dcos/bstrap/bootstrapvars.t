@@ -1,8 +1,9 @@
-{{if .OrchestratorProfile.DcosConfig.BootstrapNodeProfile}}
+{{if .OrchestratorProfile.DcosConfig.BootstrapProfile}}
     ,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
     "bootstrapAvailabilitySet": "[concat('bootstrap-availabilitySet-', variables('nameSuffix'))]",
-    "bootstrapCount": 1,
+    "bootstrapVMSize": "[parameters('bootstrapVMSize')]",
+    "bootstrapCount": "[parameters('bootstrapCount')]",
     "bootstrapEndpointDNSNamePrefix": "[tolower(parameters('bootstrapEndpointDNSNamePrefix'))]",
     "bootstrapHttpSourceAddressPrefix": "{{GetBootstrapHTTPSourceAddressPrefix}}",
     "bootstrapLbBackendPoolName": "[concat('bootstrap-pool-', variables('nameSuffix'))]",
@@ -29,7 +30,6 @@
         }
       ]
     ],
-    "bootstrapVMSize": "[parameters('bootstrapVMSize')]",
     "bootstrapFirstConsecutiveStaticIP": "[parameters('bootstrapFirstConsecutiveStaticIP')]",
     "bootstrapFirstAddrOctets": "[split(parameters('bootstrapFirstConsecutiveStaticIP'),'.')]",
     "bootstrapFirstAddrOctet4": "[variables('bootstrapFirstAddrOctets')[3]]",

@@ -681,16 +681,14 @@ func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
 	vl.DcosClusterPackageListID = api.DcosClusterPackageListID
 	vl.DcosProviderPackageID = api.DcosProviderPackageID
 
-	if api.BootstrapNodeProfile != nil {
-		vl.BootstrapNodeProfile = &vlabs.BootstrapNodeProfile{
-			Count:        api.BootstrapNodeProfile.Count,
-			VMSize:       api.BootstrapNodeProfile.VMSize,
-			OSDiskSizeGB: api.BootstrapNodeProfile.OSDiskSizeGB,
-			OAuthEnabled: api.BootstrapNodeProfile.OAuthEnabled,
-			//PreprovisionExtension:    api.BootstrapNodeProfile.PreprovisionExtension,
-			FirstConsecutiveStaticIP: api.BootstrapNodeProfile.FirstConsecutiveStaticIP,
-			Subnet:         api.BootstrapNodeProfile.Subnet,
-			StorageProfile: api.BootstrapNodeProfile.StorageProfile,
+	if api.BootstrapProfile != nil {
+		vl.BootstrapProfile = &vlabs.BootstrapProfile{
+			Count:                    api.BootstrapProfile.Count,
+			VMSize:                   api.BootstrapProfile.VMSize,
+			OSDiskSizeGB:             api.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled:             api.BootstrapProfile.OAuthEnabled,
+			FirstConsecutiveStaticIP: api.BootstrapProfile.FirstConsecutiveStaticIP,
+			Subnet: api.BootstrapProfile.Subnet,
 		}
 	}
 }
