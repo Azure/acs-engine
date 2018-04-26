@@ -245,7 +245,9 @@
 {{end}}
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
+    "acsengineVersion": "[parameters('acsengineVersion')]",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
+
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
 {{else}}
