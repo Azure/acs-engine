@@ -623,13 +623,6 @@
       },
       "type": "int"
     },
-    "kubeletNodeLabels": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "Role labels for Linux and Windows instances"
-      },
-      "type": "string"
-    },
     "vnetCidr": {
       "defaultValue": "10.0.0.0/8",
       "metadata": {

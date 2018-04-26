@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "",
+      "dnsPrefix": "jerg",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
@@ -14,22 +14,27 @@
         "name": "agentpool1",
         "count": 2,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"        
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {
         "publicKeys": [
           {
-            "keyData": ""
+            "keyData": "mykeys"
           }
         ]
       }
     },
     "servicePrincipalProfile": {
-      "clientId": "",
-      "secret": ""
+      "clientId": "1234",
+      "secret": "1234"
     }
   }
 }

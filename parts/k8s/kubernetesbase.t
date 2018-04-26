@@ -32,13 +32,6 @@
         },
         "type": "string"
       },
-      "kubeletNodeLabels": {
-        {{PopulateClassicModeDefaultValue "kubeletNodeLabels"}}
-        "metadata": {
-          "description": "Role labels for Linux and Windows instances"
-        },
-        "type": "string"
-      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
