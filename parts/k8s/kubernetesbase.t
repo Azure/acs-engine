@@ -32,7 +32,6 @@
         },
         "type": "string"
       },
-      # kubeletNodeLabels parameters need to exist in the template
       "kubeletNodeLabels": {
         {{PopulateClassicModeDefaultValue "kubeletNodeLabels"}}
         "metadata": {

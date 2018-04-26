@@ -623,9 +623,8 @@
       },
       "type": "int"
     },
-    # kubeletNodeLabels parameters need to exist in the template    
     "kubeletNodeLabels": {
-      "defaultValue": "test",
+      "defaultValue": "",
       "metadata": {
         "description": "Role labels for Linux and Windows instances"
       },
