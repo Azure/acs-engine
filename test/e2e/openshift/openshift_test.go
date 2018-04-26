@@ -95,7 +95,11 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 	})
 
 	It("should deploy a sample app and access it via a route", func() {
-		Expect(util.CreateFromTemplate("nginx-example", "openshift", "default")).NotTo(HaveOccurred())
+		err := util.CreateFromTemplate("nginx-example", "openshift", "default")
+		if err != nil && strings.Contains(err.Error(), "AlreadyExists") {
+			err = nil
+		}
+		Expect(err).NotTo(HaveOccurred())
 		Expect(util.WaitForDeploymentConfig("nginx-example", "default")).NotTo(HaveOccurred())
 		host, err := util.GetHost("nginx-example", "default")
 		Expect(err).NotTo(HaveOccurred())
