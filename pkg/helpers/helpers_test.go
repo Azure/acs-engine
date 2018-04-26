@@ -12,23 +12,25 @@ func TestPointerToBool(t *testing.T) {
 
 func TestIsRegionNormalized(t *testing.T) {
 	cases := []struct {
-		input string
+		input          string
 		expectedResult string
 	}{
-		input: "westus",
-		expectedResult: "westus",
-	},
-	{
-		input: "West US",
-		expectedResult: "westus",
-	},
-	{
-		input: "Eastern Africa",
-		expectedResult: "easternafrica",
-	},
-	{
-		input: "",
-		expectedResult: "",
+		{
+			input:          "westus",
+			expectedResult: "westus",
+		},
+		{
+			input:          "West US",
+			expectedResult: "westus",
+		},
+		{
+			input:          "Eastern Africa",
+			expectedResult: "easternafrica",
+		},
+		{
+			input:          "",
+			expectedResult: "",
+		},
 	}
 
 	for _, c := range cases {
