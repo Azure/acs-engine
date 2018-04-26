@@ -6,14 +6,11 @@ packages:
  - traceroute
 {{end}}
 
-{{if not .UpgradeMode}}
-device_aliases:
-  etcddisk: /dev/disk/azure/scsi1/lun0
 disk_setup:
-  etcddisk:
-      table_type: gpt
-      layout: true
-      overwrite: false
+  /dev/disk/azure/scsi1/lun0:
+    table_type: gpt
+    layout: true
+    overwrite: false
 
 fs_setup:
   - label: etcd_disk
@@ -23,11 +20,9 @@ fs_setup:
       - "-F"
       - "-E"
       - "lazy_itable_init=1,lazy_journal_init=1"
-{{end}}
 
-mounts:
-  - /dev/disk/azure/scsi1/lun0-part1
-  - /var/lib/etcddisk
+mounts: 
+  - [ /dev/disk/azure/scsi1/lun0-part1, /var/lib/etcddisk ]
 
 write_files:
 - path: "/opt/azure/containers/provision_source.sh"
