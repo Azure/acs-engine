@@ -1,6 +1,6 @@
-FROM alpine:3.6
+FROM alpine:3.7
 
-ARG ACSENGINE_VERSION
+ARG ACSENGINE_VERSION=0.16.0
 ARG BUILD_DATE
 
 # Metadata as defined at http://label-schema.org
@@ -17,15 +17,16 @@ LABEL maintainer="Microsoft" \
       org.label-schema.vcs-url="https://github.com/Azure/acs-engine.git" \
       org.label-schema.docker.cmd="docker run -v \${PWD}:/acs-engine/workspace -it --rm microsoft/acs-engine:$ACSENGINE_VERSION"
 
-RUN apk add --update bash curl && \
-    rm -rf /var/cache/apk/* 
-     
-RUN curl -L "https://github.com/Azure/acs-engine/releases/download/v${ACSENGINE_VERSION}/acs-engine-v${ACSENGINE_VERSION}-linux-amd64.tar.gz" | tar xvz -C ~ && \
-    chown -R root:root ~/acs-engine-v${ACSENGINE_VERSION}-linux-amd64 && \
-    ln -s ~/acs-engine-v${ACSENGINE_VERSION}-linux-amd64/acs-engine /usr/local/bin/acs-engine && \
-    chmod +x /usr/local/bin/acs-engine && \
-    echo 'PS1="acs-engine# "' > ~/.bashrc
+ADD "https://github.com/Azure/acs-engine/releases/download/v${ACSENGINE_VERSION}/acs-engine-v${ACSENGINE_VERSION}-linux-amd64.tar.gz" /tmp/acs-engine.tgz
+
+RUN mkdir /opt/ && \
+    tar xvzf /tmp/acs-engine.tgz -C /opt/ && \
+    rm /tmp/acs-engine.tgz && \
+    chown -R root:root /opt/acs-engine-v${ACSENGINE_VERSION}-linux-amd64 && \
+    ln -s /opt/acs-engine-v${ACSENGINE_VERSION}-linux-amd64/acs-engine /usr/local/bin/acs-engine && \
+    chmod +x /usr/local/bin/acs-engine
 
 WORKDIR /acs-engine/workspace
 
-CMD bash
+ENTRYPOINT [ "acs-engine" ]
+CMD [ "--help" ]
