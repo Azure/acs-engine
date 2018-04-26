@@ -846,8 +846,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
-			// aciConnectorAddon.Config["resourceGroup"]
 			for _, agentProfile := range properties.AgentPoolProfiles {
+				properties.AzProfile.ResourceGroup
 				addValue(parametersMap, "kubeletNodeLabels", getAgentKubernetesLabels(agentProfile.Name, "variables('truncatedResourceGroup')"))
 			}
 		}
