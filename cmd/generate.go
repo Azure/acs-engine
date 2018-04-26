@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -80,13 +81,13 @@ func mapValues(m map[string]string, values []string) {
 		} else {
 			keyValueSplitted := strings.Split(value, "=")
 			key := keyValueSplitted[0]
-			val := keyValueSplitted[1]
-			m[key] = val
+			stringValue := keyValueSplitted[1]
+			m[key] = stringValue
 		}
 	}
 }
 
-func mergeValuesWithApiModel(apiModelPath string, m map[string]string) (string, error) {
+func mergeValuesWithAPIModel(apiModelPath string, m map[string]string) (string, error) {
 	// load the apiModel file from path
 	fileContent, err := ioutil.ReadFile(apiModelPath)
 	if err != nil {
@@ -100,14 +101,28 @@ func mergeValuesWithApiModel(apiModelPath string, m map[string]string) (string, 
 	}
 
 	// update api model definition with each value in the map
-	for k, v := range m {
-		log.Infoln(fmt.Sprintf("k: properties.%s, v: %s", k, v))
-		jsonObj.SetP(v, fmt.Sprint("properties.", k))
+	for key, stringValue := range m {
+		// checks if the value is an integer
+		if asInteger, err := strconv.ParseInt(stringValue, 10, 64); err == nil {
+			jsonObj.SetP(asInteger, fmt.Sprint("properties.", key))
+		} else {
+			jsonObj.SetP(stringValue, fmt.Sprint("properties.", key))
+		}
 	}
 
 	// todo: generate a new file
+	tmpFile, err := ioutil.TempFile("", "mergedApiModel")
+	if err != nil {
+		return "", err
+	}
 
-	return apiModelPath, nil
+	tmpFileName := tmpFile.Name()
+	err = ioutil.WriteFile(tmpFileName, []byte(jsonObj.String()), os.ModeAppend)
+	if err != nil {
+		return "", err
+	}
+
+	return tmpFileName, nil
 }
 
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
@@ -138,16 +153,16 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
-		log.Infoln("--set flag has been used.")
-
 		m := make(map[string]string)
 		mapValues(m, gc.set)
 
 		// update api model file with overriden values and get the new file path
-		gc.apimodelPath, err = mergeValuesWithApiModel(gc.apimodelPath, m)
+		gc.apimodelPath, err = mergeValuesWithAPIModel(gc.apimodelPath, m)
 		if err != nil {
-			log.Warnln("Unable to merge --set flag values")
+			return fmt.Errorf(fmt.Sprintf("error merging --set values with the api model: %s", err.Error()))
 		}
+
+		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", gc.apimodelPath))
 	}
 
 	apiloader := &api.Apiloader{
