@@ -846,6 +846,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
+			// aciConnectorAddon.Config["resourceGroup"]
+			for _, agentProfile := range properties.AgentPoolProfiles {
+				addValue(parametersMap, "kubeletNodeLabels", getAgentKubernetesLabels(agentProfile.Name, "variables('truncatedResourceGroup')"))
+			}
 		}
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
@@ -919,6 +923,20 @@ func getStorageAccountType(sizeName string) (string, error) {
 	return "Standard_LRS", nil
 }
 
+func getAgentKubernetesLabels(profile *api.AgentPoolProfile, rg string) string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
+	if profile.StorageProfile == api.ManagedDisks {
+		storagetier, _ := getStorageAccountType(profile.VMSize)
+		buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
+	}
+	buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
+	for k, v := range profile.CustomNodeLabels {
+		buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
+	}
+	return buf.String()
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
@@ -962,19 +980,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			return buf.String()
 		},
-		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile, rg string) string {
-			var buf bytes.Buffer
-			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
-			if profile.StorageProfile == api.ManagedDisks {
-				storagetier, _ := getStorageAccountType(profile.VMSize)
-				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
-			}
-			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
-			for k, v := range profile.CustomNodeLabels {
-				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
-			}
-			return buf.String()
-		},
+		"GetAgentKubernetesLabels": getAgentKubernetesLabels,
 		"GetKubeletConfigKeyVals": func(kc *api.KubernetesConfig) string {
 			if kc == nil {
 				return ""
