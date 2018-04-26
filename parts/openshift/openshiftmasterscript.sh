@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
@@ -11,11 +11,9 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
 	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
 	IMAGE_TYPE=ose
-	IMAGE_PREFIX="registry.reg-aws.openshift.com:443/openshift3"
+	IMAGE_PREFIX="registry.access.redhat.com/openshift3"
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
-
-systemctl restart docker.service
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
@@ -125,5 +123,3 @@ docker run \
 	--network="host" \
 	"${IMAGE_PREFIX}/${IMAGE_TYPE}-ansible:v$VERSION" \
 	/opt/app-root/src/ansible.sh
-
-exit 0

@@ -88,11 +88,13 @@ const (
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
+	kubernetesAgentResourcesVMSS  = "k8s/kubernetesagentresourcesvmss.t"
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
 	kubernetesMasterResources     = "k8s/kubernetesmasterresources.t"
 	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
+	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
@@ -118,7 +120,7 @@ const (
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(kubernetesTemplateFiles, openshiftNodeScript, openshiftMasterScript)
@@ -528,6 +530,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
 		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
 	}
+	// TODO: Choose the correct image config based on the version
+	// for the openshift orchestrator
 	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
 	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
 	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
@@ -774,9 +778,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretVersion)
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
-				if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && !properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && properties.ServicePrincipalProfile.ObjectID != "" {
-					addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
-				}
+			}
+
+			if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && !properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && properties.ServicePrincipalProfile.ObjectID != "" {
+				addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
 			}
 		}
 
@@ -1488,9 +1493,17 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
-		"AnyAgentUsesAvailablilitySets": func() bool {
+		"AnyAgentUsesAvailabilitySets": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
 				if agentProfile.IsAvailabilitySets() {
+					return true
+				}
+			}
+			return false
+		},
+		"AnyAgentUsesVirtualMachineScaleSets": func() bool {
+			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
+				if agentProfile.IsVirtualMachineScaleSets() {
 					return true
 				}
 			}
@@ -1893,11 +1906,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnablePodSecurityPolicy": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
-		"OpenShiftGetMasterSh": func() string {
-			tb := MustAsset("openshift/openshiftmasterscript.sh")
-			t := template.Must(template.New("master").Parse(string(tb)))
+		"OpenShiftGetMasterSh": func() (string, error) {
+			tb := MustAsset(openshiftMasterScript)
+			t, err := template.New("master").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle           string
 				ExternalMasterHostname string
 				RouterLBHostname       string
@@ -1908,20 +1924,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
 				Location:               cs.Properties.AzProfile.Location,
 			})
-			return b.String()
+			return b.String(), err
 		},
-		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) string {
-			tb := MustAsset("openshift/openshiftnodescript.sh")
-			t := template.Must(template.New("node").Parse(string(tb)))
+		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
+			tb := MustAsset(openshiftNodeScript)
+			t, err := template.New("node").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle string
 				Role         api.AgentPoolProfileRole
 			}{
 				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]),
 				Role:         profile.Role,
 			})
-			return b.String()
+			return b.String(), err
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -2513,6 +2532,21 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
+func getDCOSBootstrapProvisionScript() string {
+	// add the provision script
+	bp, err := Asset(dcos2BootstrapProvision)
+	if err != nil {
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
+	}
+
+	provisionScript := string(bp)
+	if strings.Contains(provisionScript, "'") {
+		panic(fmt.Sprintf("BUG: %s may not contain character '", dcos2BootstrapProvision))
+	}
+
+	return provisionScript
+}
+
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile) string {
 	// add the provision script
 
@@ -2558,21 +2592,6 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 	}
 
 	return b.String()
-}
-
-func getDCOSBootstrapProvisionScript() string {
-	// add the provision script
-	bp, err := Asset(dcos2BootstrapProvision)
-	if err != nil {
-		panic(fmt.Sprintf("BUG: %s", err.Error()))
-	}
-
-	provisionScript := string(bp)
-	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcos2BootstrapProvision))
-	}
-
-	return provisionScript
 }
 
 func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
@@ -2811,7 +2830,6 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
 			agentPoolProfile.Name, agentPoolProfile.Name)
 		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
-
 	}
 
 	if strings.EqualFold(singleOrAll, "single") {

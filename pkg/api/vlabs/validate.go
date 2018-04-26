@@ -433,7 +433,11 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && a.MasterProfile.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
+	for i, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
@@ -479,6 +483,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
+		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.StorageProfile != ManagedDisks {
+			return errors.New("OpenShift orchestrator supports only ManagedDisks")
+		}
+
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -495,9 +503,73 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
 			}
 		}
+
+		// validation for VMSS for Kubernetes
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
-			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false)
+			if version == "" {
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+
+			sv, err := semver.NewVersion(version)
+			if err != nil {
+				return fmt.Errorf("could not validate version %s", version)
+			}
+			minVersion := "1.10.0"
+			cons, err := semver.NewConstraint("<" + minVersion)
+			if err != nil {
+				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+			}
+			if cons.Check(sv) {
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+					minVersion, version)
+			}
 		}
+
+		// validation for instanceMetadata using VMSS on Kubernetes
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false)
+			if version == "" {
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+
+			sv, err := semver.NewVersion(version)
+			if err != nil {
+				return fmt.Errorf("could not validate version %s", version)
+			}
+			minVersion := "1.10.2"
+			cons, err := semver.NewConstraint("<" + minVersion)
+			if err != nil {
+				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+			}
+			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
+				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && cons.Check(sv) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+				}
+			} else {
+				if cons.Check(sv) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+				}
+			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if i == 0 {
+				continue
+			}
+			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
+				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
+			}
+		}
+
 		if agentPoolProfile.OSType == Windows {
 			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
 				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)

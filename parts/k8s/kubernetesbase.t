@@ -54,9 +54,17 @@
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
       {{if .IsWindows}}
-        {{template "k8s/kuberneteswinagentresourcesvmas.t" .}}
+        {{if .IsVirtualMachineScaleSets}}
+          {{template "k8s/kuberneteswinagentresourcesvmss.t" .}}
+        {{else}}
+          {{template "k8s/kuberneteswinagentresourcesvmas.t" .}}
+        {{end}}
       {{else}}
-        {{template "k8s/kubernetesagentresourcesvmas.t" .}}
+        {{if .IsVirtualMachineScaleSets}}
+          {{template "k8s/kubernetesagentresourcesvmss.t" .}}
+        {{else}}
+          {{template "k8s/kubernetesagentresourcesvmas.t" .}}
+        {{end}}
       {{end}}
     {{end}}
     {{if not IsHostedMaster}}

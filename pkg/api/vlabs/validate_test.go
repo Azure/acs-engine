@@ -695,3 +695,156 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 		}
 	}
 }
+
+func TestOpenshiftValidate(t *testing.T) {
+	tests := []struct {
+		name string
+
+		properties *Properties
+		isUpgrade  bool
+
+		expectedErr error
+	}{
+		{
+			name: "valid",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: ManagedDisks,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: nil,
+		},
+		{
+			name: "invalid - masterProfile.storageProfile needs to be ManagedDisks",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: StorageAccount,
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: errors.New("OpenShift orchestrator supports only ManagedDisks"),
+		},
+		{
+			name: "invalid - agentPoolProfile[0].storageProfile needs to be ManagedDisks",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: ManagedDisks,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      StorageAccount,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: errors.New("OpenShift orchestrator supports only ManagedDisks"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("running scenario %q", test.name)
+
+		gotErr := test.properties.Validate(test.isUpgrade)
+		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
+		}
+	}
+}

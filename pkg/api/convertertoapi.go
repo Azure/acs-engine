@@ -559,7 +559,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		api.OrchestratorVersion = common.GetSupportedKubernetesVersion(v20170701cs.OrchestratorVersion)
 	case DCOS:
 		switch v20170701cs.OrchestratorVersion {
-		case DCOSVersion1Dot11Dot0, DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot8, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
+		case DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
 			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
 			api.OrchestratorVersion = DCOSVersion1Dot9Dot0
