@@ -77,6 +77,7 @@
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
 {{end}}
+    "kubeletNodeLabels": "[parameters('kubeletNodeLabels')]",
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
     "kubernetesCcmImageSpec": "[parameters('kubernetesCcmImageSpec')]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
