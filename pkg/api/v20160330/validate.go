@@ -111,10 +111,7 @@ func (a *Properties) Validate() error {
 			}
 		}
 	}
-	if e := a.LinuxProfile.Validate(); e != nil {
-		return e
-	}
-	return nil
+	return a.LinuxProfile.Validate()
 }
 
 func validateName(name string, label string) error {

@@ -37,9 +37,14 @@ func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL
 	if err != nil {
 		return err
 	}
+	return SafelyDrainNodeWithClient(client, logger, nodeName, timeout)
+}
 
+// SafelyDrainNodeWithClient safely drains a node so that it can be deleted from the cluster
+func SafelyDrainNodeWithClient(client armhelpers.KubernetesClient, logger *log.Entry, nodeName string, timeout time.Duration) error {
 	//Mark the node unschedulable
 	var node *v1.Node
+	var err error
 	for i := 0; i < cordonMaxRetries; i++ {
 		node, err = client.GetNode(nodeName)
 		if err != nil {
@@ -95,7 +100,7 @@ func mirrorPodFilter(pod v1.Pod) bool {
 
 func getControllerRef(pod *v1.Pod) *metav1.OwnerReference {
 	for _, ref := range pod.ObjectMeta.OwnerReferences {
-		if ref.Controller != nil && *ref.Controller == true {
+		if ref.Controller != nil && *ref.Controller {
 			return &ref
 		}
 	}

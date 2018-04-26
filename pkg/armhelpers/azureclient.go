@@ -17,7 +17,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -31,9 +30,6 @@ import (
 )
 
 const (
-	// AcsEngineClientID is the AAD ClientID for the CLI native application
-	AcsEngineClientID = "76e0feec-6b7f-41f0-81a7-b1b944520261"
-
 	// ApplicationDir is the name of the dir where the token is cached
 	ApplicationDir = ".acsengine"
 )
@@ -58,7 +54,6 @@ type AzureClient struct {
 	interfacesClient              network.InterfacesClient
 	groupsClient                  resources.GroupsClient
 	providersClient               resources.ProvidersClient
-	subscriptionsClient           subscriptions.GroupClient
 	virtualMachinesClient         compute.VirtualMachinesClient
 	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
 	disksClient                   disk.DisksClient
@@ -74,11 +69,14 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		return nil, err
 	}
 
+	// AcsEngineClientID is the AAD ClientID for the CLI native application
+	acsEngineClientID := getAcsEngineClientID(env.Name)
+
 	home, err := homedir.Dir()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
 	}
-	cachePath := filepath.Join(home, ApplicationDir, "cache", fmt.Sprintf("%s_%s.token.json", tenantID, AcsEngineClientID))
+	cachePath := filepath.Join(home, ApplicationDir, "cache", fmt.Sprintf("%s_%s.token.json", tenantID, acsEngineClientID))
 
 	rawToken, err := tryLoadCachedToken(cachePath)
 	if err != nil {
@@ -87,7 +85,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 
 	var armSpt *adal.ServicePrincipalToken
 	if rawToken != nil {
-		armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken, tokenCallback(cachePath))
+		armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.ServiceManagementEndpoint, *rawToken, tokenCallback(cachePath))
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +93,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		if err != nil {
 			log.Warnf("Refresh token failed. Will fallback to device auth. %q", err)
 		} else {
-			graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, armSpt.Token)
+			graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.GraphEndpoint, armSpt.Token)
 			if err != nil {
 				return nil, err
 			}
@@ -107,7 +105,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 
 	client := &autorest.Client{}
 
-	deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint)
+	deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, acsEngineClientID, env.ServiceManagementEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +115,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		return nil, err
 	}
 
-	armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *deviceToken, tokenCallback(cachePath))
+	armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.ServiceManagementEndpoint, *deviceToken, tokenCallback(cachePath))
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +123,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 
 	adRawToken := armSpt.Token
 	adRawToken.Resource = env.GraphEndpoint
-	graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, adRawToken)
+	graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.GraphEndpoint, adRawToken)
 	if err != nil {
 		return nil, err
 	}
@@ -250,6 +248,15 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 	}
 
 	return oauthConfig, tenantID, nil
+}
+
+func getAcsEngineClientID(envName string) string {
+	switch envName {
+	case "AzureUSGovernmentCloud":
+		return "e8b7f94b-85c9-47f4-964a-98dafd7fc2d8"
+	default:
+		return "76e0feec-6b7f-41f0-81a7-b1b944520261"
+	}
 }
 
 func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken, graphSpt *adal.ServicePrincipalToken) *AzureClient {

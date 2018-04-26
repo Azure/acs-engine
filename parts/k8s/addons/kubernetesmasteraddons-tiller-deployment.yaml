@@ -65,6 +65,8 @@ spec:
       - env:
         - name: TILLER_NAMESPACE
           value: kube-system
+        - name: TILLER_HISTORY_MAX
+          value: "<kubernetesTillerMaxHistory>"
         image: <kubernetesTillerSpec>
         livenessProbe:
           httpGet:

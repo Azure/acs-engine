@@ -56,16 +56,17 @@ const usage = `Usage:
 	-e <log-errors configuration file>
 `
 
-var logDir string
-var orchestratorRe *regexp.Regexp
-var enableMetrics bool
-var saName string
-var saKey string
-var sa promote.StorageAccount
-var subID string
-var rgPrefix string
-var orchestrator string
-var region string
+var (
+	logDir         string
+	orchestratorRe *regexp.Regexp
+	enableMetrics  bool
+	saName         string
+	saKey          string
+	sa             promote.StorageAccount
+	subID          string
+	rgPrefix       string
+	orchestrator   string
+)
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
@@ -176,7 +177,7 @@ func (m *TestManager) Run() error {
 						if err != nil {
 							fmt.Printf("Got error from RunPromoteToFailure: %#v\n", err)
 						}
-						if result == true {
+						if result {
 							success[index] = false
 						} else {
 							success[index] = true
@@ -604,6 +605,7 @@ func mainInternal() error {
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
 		case "brazilsouth": // canary region
+		case "francecentral": // not supported by sub
 		default:
 			regions = append(regions, region)
 		}

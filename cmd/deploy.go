@@ -35,10 +35,10 @@ type deployCmd struct {
 	dnsPrefix         string
 	autoSuffix        bool
 	outputDirectory   string // can be auto-determined from clusterDefinition
+	forceOverwrite    bool
 	caCertificatePath string
 	caPrivateKeyPath  string
 	classicMode       bool
-	noPrettyPrint     bool
 	parametersOnly    bool
 
 	// derived
@@ -74,8 +74,9 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
-	f.StringVar(&dc.resourceGroup, "resource-group", "", "resource group to deploy to")
-	f.StringVar(&dc.location, "location", "", "location to deploy to")
+	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
+	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
+	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 
 	addAuthFlags(&dc.authArgs, f)
 
@@ -111,14 +112,20 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 			Locale: dc.locale,
 		},
 	}
+
+	if dc.location == "" {
+		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	}
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
-	if dc.location == "" {
-		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	if dc.containerService.Location == "" {
+		dc.containerService.Location = dc.location
+	} else if dc.containerService.Location != dc.location {
+		return fmt.Errorf(fmt.Sprintf("--location does not match api model location"))
 	}
 
 	dc.client, err = dc.authArgs.getClient()
@@ -142,9 +149,11 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 func autofillApimodel(dc *deployCmd) {
 	var err error
 
-	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
-		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
-		dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
+	if dc.containerService.Properties.LinuxProfile != nil {
+		if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
+			log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
+			dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
+		}
 	}
 
 	if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
@@ -154,19 +163,21 @@ func autofillApimodel(dc *deployCmd) {
 		if dc.dnsPrefix == "" {
 			log.Fatalf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
 		}
+		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
+		dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
+	}
 
-		dnsPrefix := dc.dnsPrefix
-		if dc.autoSuffix {
-			suffix := strconv.FormatInt(time.Now().Unix(), 16)
-			dnsPrefix = dnsPrefix + "-" + suffix
-		}
-
-		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dnsPrefix)
-		dc.containerService.Properties.MasterProfile.DNSPrefix = dnsPrefix
+	if dc.autoSuffix {
+		suffix := strconv.FormatInt(time.Now().Unix(), 16)
+		dc.containerService.Properties.MasterProfile.DNSPrefix += "-" + suffix
 	}
 
 	if dc.outputDirectory == "" {
 		dc.outputDirectory = path.Join("_output", dc.containerService.Properties.MasterProfile.DNSPrefix)
+	}
+
+	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
+		log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
 	}
 
 	if dc.resourceGroup == "" {
@@ -178,15 +189,13 @@ func autofillApimodel(dc *deployCmd) {
 		}
 	}
 
-	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
+	if dc.containerService.Properties.LinuxProfile != nil && (dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
-		creator := &acsengine.SSHCreator{
-			Translator: &i18n.Translator{
-				Locale: dc.locale,
-			},
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "") {
+		translator := &i18n.Translator{
+			Locale: dc.locale,
 		}
-		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}
@@ -217,19 +226,17 @@ func autofillApimodel(dc *deployCmd) {
 			log.Warnf("created application with applicationID (%s) and servicePrincipalObjectID (%s).", applicationID, servicePrincipalObjectID)
 
 			log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
-			for {
-				err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
-				if err != nil {
-					log.Debugf("Failed to create role assignment (will retry): %q", err)
-					time.Sleep(3 * time.Second)
-					continue
-				}
-				break
+
+			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+			if err != nil {
+				log.Fatalf("apimodel: could not create or assign ServicePrincipal: %q", err)
+
 			}
 
 			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
 				ClientID: applicationID,
 				Secret:   secret,
+				ObjectID: servicePrincipalObjectID,
 			}
 		}
 	}
@@ -256,7 +263,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)

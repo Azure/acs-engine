@@ -7,6 +7,8 @@ import (
 	"log"
 	"os/exec"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // StorageClass is used to parse data from kubectl get storageclass
@@ -28,7 +30,9 @@ type Parameters struct {
 
 // CreateStorageClassFromFile will create a StorageClass from file with a name
 func CreateStorageClassFromFile(filename, name string) (*StorageClass, error) {
-	out, err := exec.Command("kubectl", "apply", "-f", filename).CombinedOutput()
+	cmd := exec.Command("kubectl", "apply", "-f", filename)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to create StorageClass %s:%s\n", name, string(out))
 		return nil, err
@@ -43,7 +47,9 @@ func CreateStorageClassFromFile(filename, name string) (*StorageClass, error) {
 
 // Get will return a StorageClass with a given name and namespace
 func Get(scName string) (*StorageClass, error) {
-	out, err := exec.Command("kubectl", "get", "storageclass", scName, "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "storageclass", scName, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, err
 	}

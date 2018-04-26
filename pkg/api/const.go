@@ -12,6 +12,8 @@ const (
 	Kubernetes string = "Kubernetes"
 	// SwarmMode is the string constant for the Swarm Mode orchestrator type
 	SwarmMode string = "SwarmMode"
+	// OpenShift is the string constant for the OpenShift orchestrator type
+	OpenShift string = "OpenShift"
 )
 
 // the OSTypes supported by vlabs
@@ -25,6 +27,9 @@ const (
 	Ubuntu Distro = "ubuntu"
 	RHEL   Distro = "rhel"
 	CoreOS Distro = "coreos"
+	// Supported distros by OpenShift
+	OpenShift39RHEL Distro = "openshift39_rhel"
+	OpenShiftCentOS Distro = "openshift39_centos"
 )
 
 const (
@@ -69,14 +74,18 @@ const (
 )
 
 const (
+	// DCOSVersion1Dot11Dot0 is the major.minor.patch string for 1.11.0 versions of DCOS
+	DCOSVersion1Dot11Dot0 string = "1.11.0"
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
 	DCOSVersion1Dot10Dot0 string = "1.10.0"
 	// DCOSVersion1Dot9Dot0 is the major.minor.patch string for 1.9.0 versions of DCOS
 	DCOSVersion1Dot9Dot0 string = "1.9.0"
+	// DCOSVersion1Dot9Dot8 is the major.minor.patch string for 1.9.8 versions of DCOS
+	DCOSVersion1Dot9Dot8 string = "1.9.8"
 	// DCOSVersion1Dot8Dot8 is the major.minor.patch string for 1.8.8 versions of DCOS
 	DCOSVersion1Dot8Dot8 string = "1.8.8"
 	// DCOSDefaultVersion is the default major.minor.patch version for DCOS
-	DCOSDefaultVersion string = DCOSVersion1Dot9Dot0
+	DCOSDefaultVersion string = DCOSVersion1Dot11Dot0
 )
 
 // To identify programmatically generated public agent pools
@@ -93,8 +102,12 @@ const (
 	DefaultReschedulerAddonEnabled = false
 	// DefaultRBACEnabled determines the acs-engine provided default for enabling kubernetes RBAC
 	DefaultRBACEnabled = true
+	// DefaultUseInstanceMetadata determines the acs-engine provided default for enabling Azure cloudprovider instance metadata service
+	DefaultUseInstanceMetadata = true
 	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
 	DefaultSecureKubeletEnabled = true
+	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon
+	DefaultMetricsServerAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
@@ -103,4 +116,15 @@ const (
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
+	DefaultMetricsServerAddonName = "metrics-server"
+	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
+	DefaultPrivateClusterEnabled = false
+)
+
+const (
+	// AgentPoolProfileRoleEmpty is the empty role
+	AgentPoolProfileRoleEmpty AgentPoolProfileRole = ""
+	// AgentPoolProfileRoleInfra is the infra role
+	AgentPoolProfileRoleInfra AgentPoolProfileRole = "infra"
 )

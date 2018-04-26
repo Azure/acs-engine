@@ -4,20 +4,18 @@ import (
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func setAPIServerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	staticLinuxAPIServerConfig := map[string]string{
-		"--address":                    "0.0.0.0",
+		"--bind-address":               "0.0.0.0",
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
 		"--anonymous-auth":             "false",
-		"--audit-log-maxage":           "30",
-		"--audit-log-maxbackup":        "10",
-		"--audit-log-maxsize":          "100",
-		"--audit-log-path":             "/var/log/apiserver/audit.log",
+		"--audit-log-path":             "/var/log/audit.log",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
@@ -25,7 +23,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
 		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
-		"--etcd-quorum-read":           "true",
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
@@ -39,13 +36,33 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--v":                          "4",
 	}
 
+	// Windows apiserver config overrides
+	// TODO placeholder for specific config overrides for Windows clusters
+	staticWindowsAPIServerConfig := make(map[string]string)
+	for key, val := range staticLinuxAPIServerConfig {
+		staticWindowsAPIServerConfig[key] = val
+	}
+
+	// Default apiserver config
+	defaultAPIServerConfig := map[string]string{
+		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
+		"--audit-log-maxage":    "30",
+		"--audit-log-maxbackup": "10",
+		"--audit-log-maxsize":   "100",
+	}
+
 	// Data Encryption at REST configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
+	// Data Encryption at REST with external KMS configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
+	}
+
 	// Aggregated API configuration
-	if o.KubernetesConfig.EnableAggregatedAPIs {
+	if o.KubernetesConfig.EnableAggregatedAPIs || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
 		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
 		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
 		staticLinuxAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"
@@ -63,40 +80,33 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// AAD configuration
 	if cs.Properties.HasAadProfile() {
-		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
-		staticLinuxAPIServerConfig["--oidc-groups-claim"] = "groups"
-		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
+		defaultAPIServerConfig["--oidc-username-claim"] = "oid"
+		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
+		defaultAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
-		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
+		defaultAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
 	}
 
-	staticWindowsAPIServerConfig := make(map[string]string)
-	for key, val := range staticLinuxAPIServerConfig {
-		staticWindowsAPIServerConfig[key] = val
-	}
-	// Windows apiserver config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
-
-	// Default apiserver config
-	defaultAPIServerConfig := map[string]string{
-		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
-		"--authorization-mode": "Node",
+	// Audit Policy configuration
+	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
+		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
 	}
 
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		defaultAPIServerConfig["--authorization-mode"] = "RBAC"
-		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+		if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
 			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+		} else {
+			defaultAPIServerConfig["--authorization-mode"] = "RBAC"
 		}
-	} else if !isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
-		// remove authorization-mode for 1.6 clusters without RBAC since Node authorization isn't supported
-		for _, key := range []string{"--authorization-mode"} {
-			delete(defaultAPIServerConfig, key)
-		}
+	}
+
+	// Pod Security Policy configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+		defaultAPIServerConfig["--admission-control"] = defaultAPIServerConfig["--admission-control"] + ",PodSecurityPolicy"
 	}
 
 	// If no user-configurable apiserver config values exists, use the defaults

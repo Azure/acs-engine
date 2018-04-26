@@ -2,10 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 ///////////////////////////////////////////////////////////
@@ -15,6 +18,19 @@ import (
 // All other functions are internal helper functions used
 // for converting.
 ///////////////////////////////////////////////////////////
+
+const (
+	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
+	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
+	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
+	DefaultKubernetesDNSServiceIP = "10.0.0.10"
+	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
+	DefaultDockerBridgeSubnet = "172.17.0.1/16"
+	// DefaultKubernetesMaxPodsKubenet is the maximum number of pods to run on a node for Kubenet.
+	DefaultKubernetesMaxPodsKubenet = "110"
+	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
+	DefaultKubernetesMaxPodsAzureCNI = "30"
+)
 
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
@@ -31,6 +47,24 @@ func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *Contain
 	}
 	c.Type = v20170831.Type
 	c.Properties = convertV20170831AgentPoolOnlyProperties(v20170831.Properties)
+	return c
+}
+
+// ConvertV20180331AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
+func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *ContainerService {
+	c := &ContainerService{}
+	c.ID = v20180331.ID
+	c.Location = NormalizeAzureRegion(v20180331.Location)
+	c.Name = v20180331.Name
+	if v20180331.Plan != nil {
+		c.Plan = convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range v20180331.Tags {
+		c.Tags[k] = v
+	}
+	c.Type = v20180331.Type
+	c.Properties = convertV20180331AgentPoolOnlyProperties(v20180331.Properties)
 	return c
 }
 
@@ -190,6 +224,15 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig: &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(false),
+			EnableSecureKubelet: helpers.PointerToBool(false),
+			// set network default for un-versioned model
+			NetworkPolicy:      "none",
+			ServiceCIDR:        DefaultKubernetesServiceCIDR,
+			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
+			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
+		},
 	}
 }
 
@@ -268,4 +311,196 @@ func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
 		return nil, false
 	}
 	return properties.(map[string]interface{}), true
+}
+
+func convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331 *v20180331.ResourcePurchasePlan) *ResourcePurchasePlan {
+	return &ResourcePurchasePlan{
+		Name:          v20180331.Name,
+		Product:       v20180331.Product,
+		PromotionCode: v20180331.PromotionCode,
+		Publisher:     v20180331.Publisher,
+	}
+}
+
+func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Properties {
+	properties := &Properties{
+		ProvisioningState: ProvisioningState(obj.ProvisioningState),
+		MasterProfile:     nil,
+	}
+
+	properties.HostedMasterProfile = &HostedMasterProfile{}
+	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
+	properties.HostedMasterProfile.FQDN = obj.FQDN
+
+	kubernetesConfig := convertV20180331AgentPoolOnlyKubernetesConfig(obj.EnableRBAC)
+	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion, obj.NetworkProfile, kubernetesConfig)
+
+	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
+	for i := range obj.AgentPoolProfiles {
+		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet, obj.NetworkProfile)
+	}
+	if obj.LinuxProfile != nil {
+		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
+	}
+
+	if obj.WindowsProfile != nil {
+		properties.WindowsProfile = convertV20180331AgentPoolOnlyWindowsProfile(obj.WindowsProfile)
+	}
+
+	if obj.ServicePrincipalProfile != nil {
+		properties.ServicePrincipalProfile = convertV20180331AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
+	}
+	if obj.AddonProfiles != nil {
+		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
+	}
+
+	return properties
+}
+
+func convertV20180331AgentPoolOnlyLinuxProfile(obj *v20180331.LinuxProfile) *LinuxProfile {
+	api := &LinuxProfile{
+		AdminUsername: obj.AdminUsername,
+	}
+	api.SSH.PublicKeys = []PublicKey{}
+	for _, d := range obj.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, PublicKey{KeyData: d.KeyData})
+	}
+	return api
+}
+
+func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) *WindowsProfile {
+	return &WindowsProfile{
+		AdminUsername: obj.AdminUsername,
+		AdminPassword: obj.AdminPassword,
+	}
+}
+
+func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
+	if enableRBAC != nil && *enableRBAC == true {
+		// We set default behavior to be false
+		return &KubernetesConfig{
+			EnableRbac:          helpers.PointerToBool(true),
+			EnableSecureKubelet: helpers.PointerToBool(true),
+		}
+	}
+	return &KubernetesConfig{
+		EnableRbac:          helpers.PointerToBool(false),
+		EnableSecureKubelet: helpers.PointerToBool(false),
+	}
+}
+
+func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, networkProfile *v20180331.NetworkProfile, kubernetesConfig *KubernetesConfig) *OrchestratorProfile {
+	if kubernetesConfig == nil {
+		kubernetesConfig = &KubernetesConfig{}
+	}
+
+	if networkProfile != nil {
+		switch networkProfile.NetworkPlugin {
+		case v20180331.Azure:
+			kubernetesConfig.NetworkPolicy = "azure"
+
+			if networkProfile.ServiceCidr != "" {
+				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			} else {
+				kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+			}
+
+			if networkProfile.DNSServiceIP != "" {
+				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			} else {
+				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+			}
+
+			if networkProfile.DockerBridgeCidr != "" {
+				kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+			} else {
+				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+			}
+		case v20180331.Kubenet:
+			kubernetesConfig.NetworkPolicy = "none"
+
+			if networkProfile.ServiceCidr != "" {
+				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			} else {
+				kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+			}
+
+			if networkProfile.DNSServiceIP != "" {
+				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			} else {
+				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+			}
+
+			if networkProfile.DockerBridgeCidr != "" {
+				kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+			} else {
+				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+			}
+		default:
+			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
+			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
+			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
+		}
+	} else {
+		// set network default for un-versioned model
+		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+	}
+
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		KubernetesConfig:    kubernetesConfig,
+	}
+}
+
+func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.AgentPoolProfile, availabilityProfile string, networkProfile *v20180331.NetworkProfile) *AgentPoolProfile {
+	api := &AgentPoolProfile{}
+	api.Name = agentPoolProfile.Name
+	api.Count = agentPoolProfile.Count
+	api.VMSize = agentPoolProfile.VMSize
+	api.OSDiskSizeGB = agentPoolProfile.OSDiskSizeGB
+	api.OSType = OSType(agentPoolProfile.OSType)
+	api.StorageProfile = agentPoolProfile.StorageProfile
+	api.VnetSubnetID = agentPoolProfile.VnetSubnetID
+	var maxPods string
+	// agentPoolProfile.MaxPods is 0 if maxPods field is not provided in API model
+	if agentPoolProfile.MaxPods == nil {
+		// default is kubenet
+		if networkProfile == nil || networkProfile.NetworkPlugin == v20180331.Kubenet {
+			maxPods = DefaultKubernetesMaxPodsKubenet
+		} else {
+			maxPods = DefaultKubernetesMaxPodsAzureCNI
+		}
+	} else {
+		maxPods = strconv.Itoa(*agentPoolProfile.MaxPods)
+	}
+	kubernetesConfig := &KubernetesConfig{
+		KubeletConfig: map[string]string{"--max-pods": maxPods},
+	}
+	api.KubernetesConfig = kubernetesConfig
+	api.Subnet = agentPoolProfile.GetSubnet()
+	api.AvailabilityProfile = availabilityProfile
+	return api
+}
+
+func convertV20180331AgentPoolOnlyServicePrincipalProfile(obj *v20180331.ServicePrincipalProfile) *ServicePrincipalProfile {
+	return &ServicePrincipalProfile{
+		ClientID: obj.ClientID,
+		Secret:   obj.Secret,
+	}
+}
+
+func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonProfile) map[string]AddonProfile {
+	api := make(map[string]AddonProfile)
+	for k, v := range obj {
+		api[k] = AddonProfile{
+			Enabled: v.Enabled,
+			Config:  v.Config,
+		}
+	}
+	return api
 }

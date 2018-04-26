@@ -71,7 +71,7 @@ mounts:
   - /dcos/volume2
 - - /dev/sdf1
   - /dcos/volume3
-runcmd:
+runcmd: PREPROVISION_EXTENSION
 - - ln
   - -s
   - /bin/rm
@@ -159,8 +159,7 @@ runcmd:
   - start
   - dcos-setup.service
 write_files:
-- content: 'https://dcosio.azureedge.net/dcos/stable/1.10.0
-
+- content: '{{{dcosRepositoryURL}}}
 '
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
@@ -170,11 +169,11 @@ write_files:
     "boto--3890cb2817c00b874ba033abe784b5b343caa3c7", "check-time--79e3f6ab99125471e1d94d5f6bc0fea88446831c",
     "cni--7a8572e385c3f5262945c52c8003d1bbb22cf7aa", "cosmos--e84c5bf3259405df90d682536ba445cc4839a324",
     "curl--17866a8ae9305826aa5f357a09db2c1f2b2c2ad0", "dcos-checks--8fd33919e6f163dba1bd13e4c7e4e0523919a719",
-    "dcos-cni--12a77c1e9bebd4cbd600524a864c2bd8483330d3", "dcos-config--setup_DCOSGUID",
+    "dcos-cni--12a77c1e9bebd4cbd600524a864c2bd8483330d3", "dcos-config--setup_{{{dcosProviderPackageID}}}",
     "dcos-diagnostics--e3b557b0ec8e98617d0cd0fdf136ef9dded96316", "dcos-history--23de88ddc1a5f9018dd11b279c5be6a768a18de4",
     "dcos-image--df630d8e930d6650ce3d0ade519660142233d862", "dcos-image-deps--81d23d00b1acddb316c9b15fd8499c2b10f6b697",
     "dcos-integration-test--9ec173650d4e73ba494603324e7583d23970e4b8", "dcos-log--d2af4b1a47d3755a51823e95fbc6c366cf0f9269",
-    "dcos-metadata--setup_DCOSGUID", "dcos-metrics--2a26c0b50b0b6564f86c48d50aa86f681c9af93c",
+    "dcos-metadata--setup_{{{dcosProviderPackageID}}}", "dcos-metrics--2a26c0b50b0b6564f86c48d50aa86f681c9af93c",
     "dcos-oauth--445bb1388670981c6acc667b2529fc32d4c1fbd4", "dcos-signal--4366023212ea49a64c5c9aef1965e5a3133c4b61",
     "dcos-test-utils--1066d896d25f4c1e3f6d9a5e7f9c1c6e8c675bb7", "dcos-ui--cc2e3d26537ea190efacd6f899dd4cc2210d45b7",
     "dnspython--0be432372a3820eafcfa66975943c9536dbe1164", "docker-gc--89f5535aea154dca504f84cd60eac6f61836aef9",
@@ -286,7 +285,7 @@ write_files:
       "oauth_enabled": |-
         {{{oauthEnabled}}}
     "late_bound_package_id": |-
-      dcos-provider-DCOSGUID-azure--setup
+      dcos-provider-{{{dcosProviderPackageID}}}-azure--setup
   owner: root
   path: /etc/mesosphere/setup-flags/late-config.yaml
   permissions: '0644'
@@ -311,7 +310,7 @@ write_files:
     Type=oneshot
     StandardOutput=journal+console
     StandardError=journal+console
-    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o //var/tmp/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/stable/1.10.0/bootstrap/4d92536e7381176206e71ee15b5ffe454439920c.bootstrap.tar.xz
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o //var/tmp/bootstrap.tar.xz {{{dcosBootstrapURL}}}
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
     ExecStart=/usr/bin/tar -axf //var/tmp/bootstrap.tar.xz -C /opt/mesosphere
     ExecStartPost=-/usr/bin/rm -f //var/tmp/bootstrap.tar.xz

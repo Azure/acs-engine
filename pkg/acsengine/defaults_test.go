@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func TestCertsAlreadyPresent(t *testing.T) {
@@ -198,7 +199,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 	// Verify that an addon with all custom values provided remains unmodified during default value assignment
 	customAddon := api.KubernetesAddon{
 		Name:    addonName,
-		Enabled: pointerToBool(true),
+		Enabled: helpers.PointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           addonName,
@@ -230,7 +231,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 	// Verify that an addon with no custom values provided gets all the appropriate defaults
 	customAddon = api.KubernetesAddon{
 		Name:    addonName,
-		Enabled: pointerToBool(true),
+		Enabled: helpers.PointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: addonName,
@@ -254,7 +255,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 	// More checking to verify default interpolation
 	customAddon = api.KubernetesAddon{
 		Name:    addonName,
-		Enabled: pointerToBool(true),
+		Enabled: helpers.PointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:         addonName,
@@ -279,34 +280,6 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 
 }
 
-func TestPointerToBool(t *testing.T) {
-	boolVar := true
-	ret := pointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected pointerToBool(true) to return *true, instead returned %#v", ret)
-	}
-}
-
-func TestKubeletFeatureGatesEnsureAcceleratorsNotSetFor1_5_0(t *testing.T) {
-	mockCS := getMockBaseContainerService("1.5.0")
-	properties := mockCS.Properties
-
-	// No KubernetesConfig.KubeletConfig set for MasterProfile or AgentProfile
-	// so they will inherit the top-level config
-	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
-
-	setKubeletConfig(&mockCS)
-
-	// Verify that the Accelerators feature gate has not been applied to master or agents
-	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
-	if agentFeatureGates != "TopLevel=true" {
-		t.Fatalf("setKubeletConfig modified the agent profile (version 1.5.0): expected 'TopLevel=true' got '%s'", agentFeatureGates)
-	}
-	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
-	if masterFeatureFates != "TopLevel=true" {
-		t.Fatalf("setKubeletConfig modified feature gates for master profile: 'TopLevel=true' got '%s'", agentFeatureGates)
-	}
-}
 func TestKubeletFeatureGatesEnsureAcceleratorsOnAgentsFor1_6_0(t *testing.T) {
 	mockCS := getMockBaseContainerService("1.6.0")
 	properties := mockCS.Properties
@@ -326,30 +299,6 @@ func TestKubeletFeatureGatesEnsureAcceleratorsOnAgentsFor1_6_0(t *testing.T) {
 	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
 	if masterFeatureFates != "TopLevel=true" {
 		t.Fatalf("setKubeletConfig modified feature gates for master profile: expected 'TopLevel=true' got '%s'", agentFeatureGates)
-	}
-}
-
-func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_5_0(t *testing.T) {
-	mockCS := getMockBaseContainerService("1.5.0")
-	properties := mockCS.Properties
-
-	// Set MasterProfile and AgentProfiles KubernetesConfig.KubeletConfit ig values
-	// Verify that they are used instead of the top-level config
-	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
-	properties.MasterProfile = &api.MasterProfile{KubernetesConfig: getKubernetesConfigWithFeatureGates("MasterLevel=true")}
-	properties.AgentPoolProfiles[0].KubernetesConfig = getKubernetesConfigWithFeatureGates("AgentLevel=true")
-
-	setKubeletConfig(&mockCS)
-
-	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
-	if agentFeatureGates != "AgentLevel=true" {
-		t.Fatalf("setKubeletConfig agent profile: expected 'AgentLevel=true' got '%s'", agentFeatureGates)
-	}
-
-	// Verify that the Accelerators feature gate override has only been applied to the agents
-	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
-	if masterFeatureFates != "MasterLevel=true" {
-		t.Fatalf("setKubeletConfig master profile: expected 'MasterLevel=true' got '%s'", agentFeatureGates)
 	}
 }
 
@@ -377,10 +326,67 @@ func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_6_0(t *testing.T)
 	}
 }
 
+func TestEtcdDiskSize(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.8.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSize {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSize)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT3Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT3Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 6
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT10Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT10Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 16
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT20Nodes {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT20Nodes)
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 5
+	properties.AgentPoolProfiles[0].Count = 50
+	customEtcdDiskSize := "512"
+	properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = customEtcdDiskSize
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != customEtcdDiskSize {
+		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, customEtcdDiskSize)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
-		Enabled: pointerToBool(true),
+		Enabled: helpers.PointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           name,

@@ -35,6 +35,7 @@ const (
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
+	nicResourceType  = "Microsoft.Network/networkInterfaces"
 
 	// resource ids
 	nsgID = "nsgID"
@@ -282,7 +283,7 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			continue
 		}
 
-		if !(resourceType == vmResourceType || resourceType == vmExtensionType) {
+		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType) {
 			continue
 		}
 
@@ -290,6 +291,21 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 		if !ok {
 			logger.Warnf("Template improperly formatted for field name: %s", nameFieldName)
 			continue
+		}
+
+		if resourceType == nicResourceType {
+			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
+				continue
+			} else {
+				// Remove agent NICs if upgrade master nodes
+				if agentPoolsToPreserve == nil {
+					logger.Infoln(fmt.Sprintf("Removing nic: %s from template", resourceName))
+					if len(filteredResources) > 0 {
+						filteredResources = filteredResources[:len(filteredResources)-1]
+					}
+				}
+				continue
+			}
 		}
 
 		if strings.EqualFold(resourceType, vmResourceType) &&
@@ -314,8 +330,7 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 				managedDisk := compute.ManagedDiskParameters{}
 				id := "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/', variables('resourceGroup'),'/providers/Microsoft.Compute/disks/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
 				managedDisk.ID = &id
-				var diskInterface interface{}
-				diskInterface = &managedDisk
+				diskInterface := &managedDisk
 				dataDisk[managedDiskFieldName] = diskInterface
 			}
 		}
@@ -332,7 +347,7 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 
 			logger.Infoln(fmt.Sprintf("agentPoolsToPreserve: %v...", agentPoolsToPreserve))
 
-			if agentPoolsToPreserve == nil || len(agentPoolsToPreserve) == 0 || agentPoolsToPreserve[poolName] != true {
+			if len(agentPoolsToPreserve) == 0 || !agentPoolsToPreserve[poolName] {
 				logger.Infoln(fmt.Sprintf("Removing agent pool: %s, resource: %s from template", poolName, resourceName))
 				if len(filteredResources) > 0 {
 					filteredResources = filteredResources[:len(filteredResources)-1]
@@ -348,12 +363,12 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 
 			removeExtension := true
 			for poolName, preserve := range agentPoolsToPreserve {
-				if strings.Contains(resourceName, "variables('"+poolName) && preserve == true {
+				if strings.Contains(resourceName, "variables('"+poolName) && preserve {
 					removeExtension = false
 				}
 			}
 
-			if removeExtension == true {
+			if removeExtension {
 				logger.Infoln(fmt.Sprintf("Removing extension: %s from template", resourceName))
 				if len(filteredResources) > 0 {
 					filteredResources = filteredResources[:len(filteredResources)-1]

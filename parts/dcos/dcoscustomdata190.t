@@ -85,6 +85,15 @@ runcmd: PREPROVISION_EXTENSION
 - sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
 - service ssh restart 
 - /opt/azure/containers/setup_ephemeral_disk.sh
+- - tar
+  - czf 
+  - /etc/docker.tar.gz
+  - -C
+  - /tmp/xtoph
+  - .docker
+- - rm 
+  - -rf 
+  - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -119,9 +128,8 @@ runcmd: PREPROVISION_EXTENSION
   - --no-block
   - start
   - dcos-setup.service
-- /opt/azure/containers/add_admin_to_docker_group.sh
 write_files:
-- content: 'https://dcosio.azureedge.net/dcos/stable
+- content: '{{{dcosRepositoryURL}}}
 
 '
   owner: root
@@ -132,10 +140,10 @@ write_files:
     "bootstrap--59a905ecee27e71168ed44cefda4481fb76b816d", "boto--6344d31eef082c7bd13259b17034ea7b5c34aedf",
     "check-time--be7d0ba757ec87f9965378fee7c76a6ee5ae996d", "cni--e48337da39a8cd379414acfe0da52a9226a10d24",
     "cosmos--20decef90f0623ed253a12ec4cf5c148b18d8249", "curl--fc3486c43f98e63f9b12675f1356e8fe842f26b0",
-    "dcos-config--setup_DCOSGUID", "dcos-history--77b0e97d7b25c8bedf8f7da0689cac65b83e3813",
+    "dcos-config--setup_{{{dcosProviderPackageID}}}", "dcos-history--77b0e97d7b25c8bedf8f7da0689cac65b83e3813",
     "dcos-image--bda6a02bcb2eb21c4218453a870cc584f921a800", "dcos-image-deps--83584fd868e5b470f7cf754424a9a75b328e9b68",
     "dcos-integration-test--c28bcb2347799dca43083f55e4c7b28503176f9c", "dcos-log--4d630df863228f38c6333e44670b4c4b20a74832",
-    "dcos-metadata--setup_DCOSGUID", "dcos-metrics--23ee2f89c58b1258bc959f1d0dd7debcbb3d79d2",
+    "dcos-metadata--setup_{{{dcosProviderPackageID}}}", "dcos-metrics--23ee2f89c58b1258bc959f1d0dd7debcbb3d79d2",
     "dcos-oauth--0079529da183c0f23a06d2b069721b6fa6cc7b52", "dcos-signal--1bcd3b612cbdc379380dcba17cdf9a3b6652d9dc",
     "dcos-ui--d4afd695796404a5b35950c3daddcae322481ac4", "dnspython--0f833eb9a8abeba3179b43f3a200a8cd42d3795a",
     "docker-gc--59a98ed6446a084bf74e4ff4b8e3479f59ea8528", "dvdcli--5374dd4ffb519f1dcefdec89b2247e3404f2e2e3",
@@ -249,7 +257,7 @@ write_files:
       "oauth_enabled": |-
         {{{oauthEnabled}}}
     "late_bound_package_id": |-
-      dcos-provider-DCOSGUID-azure--setup
+      dcos-provider-{{{dcosProviderPackageID}}}-azure--setup
   owner: root
   path: /etc/mesosphere/setup-flags/late-config.yaml
   permissions: '0644'
@@ -305,11 +313,8 @@ write_files:
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
   owner: "root"
-- content: |
-    #!/bin/bash
-    adduser {{{adminUsername}}} docker
-  path: "/opt/azure/containers/add_admin_to_docker_group.sh"
-  permissions: "0744"
+- content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"
 - content: |
     #!/bin/bash

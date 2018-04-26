@@ -114,9 +114,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 			var err error
 			ip := net.ParseIP("127.0.0.1").To4()
 			peerIPs := append(extraIPs, ip)
-			etcdPeerCertificate := new(x509.Certificate)
-			etcdPeerPrivateKey := new(rsa.PrivateKey)
-			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
+			etcdPeerCertificate, etcdPeerPrivateKey, err := createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
 			etcdPeerCertPairs[i] = &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))}
 			errors <- err
 		}(i)

@@ -2,12 +2,14 @@ package deployment
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
 	"strconv"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // List holds a list of deployments returned from kubectl get deploy
@@ -26,6 +28,7 @@ type Metadata struct {
 	Labels    map[string]string `json:"labels"`
 	Name      string            `json:"name"`
 	Namespace string            `json:"namespace"`
+	HasHPA    bool              `json:"hasHPA"`
 }
 
 // Spec holds information the deployment strategy and number of replicas
@@ -55,9 +58,35 @@ type Container struct {
 
 // CreateLinuxDeploy will create a deployment for a given image with a name in a namespace
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
-func CreateLinuxDeploy(image, name, namespace string) (*Deployment, error) {
+func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, error) {
+	var cmd *exec.Cmd
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides).CombinedOutput()
+	if miscOpts != "" {
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, miscOpts)
+	} else {
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides)
+	}
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	d, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Deployment %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return d, nil
+}
+
+// RunLinuxDeploy will create a deployment that runs a bash command in a pod
+// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -73,7 +102,9 @@ func CreateLinuxDeploy(image, name, namespace string) (*Deployment, error) {
 // CreateWindowsDeploy will crete a deployment for a given image with a name in a namespace
 func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
-	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides).CombinedOutput()
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -88,7 +119,9 @@ func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) 
 
 // Get returns a deployment from a name and namespace
 func Get(name, namespace string) (*Deployment, error) {
-	out, err := exec.Command("kubectl", "get", "deploy", "-o", "json", "-n", namespace, name).CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "deploy", "-o", "json", "-n", namespace, name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to fetch deployment %s in namespace %s:%s\n", name, namespace, string(out))
 		return nil, err
@@ -104,21 +137,49 @@ func Get(name, namespace string) (*Deployment, error) {
 
 // Delete will delete a deployment in a given namespace
 func (d *Deployment) Delete() error {
-	out, err := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name).CombinedOutput()
+	cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
 		return err
+	}
+	// Delete any associated HPAs
+	if d.Metadata.HasHPA {
+		cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
+		util.PrintCommand(cmd)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
+			return err
+		}
 	}
 	return nil
 }
 
 // Expose will create a load balancer and expose the deployment on a given port
-func (d *Deployment) Expose(targetPort, exposedPort int) error {
-	out, err := exec.Command("kubectl", "expose", "deployment", d.Metadata.Name, "--type", "LoadBalancer", "-n", d.Metadata.Namespace, "--target-port", strconv.Itoa(targetPort), "--port", strconv.Itoa(exposedPort)).CombinedOutput()
+func (d *Deployment) Expose(svcType string, targetPort, exposedPort int) error {
+	cmd := exec.Command("kubectl", "expose", "deployment", d.Metadata.Name, "--type", svcType, "-n", d.Metadata.Namespace, "--target-port", strconv.Itoa(targetPort), "--port", strconv.Itoa(exposedPort))
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to expose target port (%v) for deployment %s in namespace %s on port %v:%s\n", targetPort, d.Metadata.Name, d.Metadata.Namespace, exposedPort, string(out))
+		log.Printf("Error while trying to expose (%s) target port (%v) for deployment %s in namespace %s on port %v:%s\n", svcType, targetPort, d.Metadata.Name, d.Metadata.Namespace, exposedPort, string(out))
 		return err
 	}
+	return nil
+}
+
+// CreateDeploymentHPA applies autoscale characteristics to deployment
+func (d *Deployment) CreateDeploymentHPA(cpuPercent, min, max int) error {
+	cmd := exec.Command("kubectl", "autoscale", "deployment", d.Metadata.Name, fmt.Sprintf("--cpu-percent=%d", cpuPercent),
+		fmt.Sprintf("--min=%d", min), fmt.Sprintf("--max=%d", max))
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while configuring autoscale against deployment %s:%s\n", d.Metadata.Name, string(out))
+		return err
+	}
+	d.Metadata.HasHPA = true
 	return nil
 }
 

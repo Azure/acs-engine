@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -18,6 +20,7 @@ import (
 type Config struct {
 	ClientID              string `envconfig:"CLIENT_ID"`
 	ClientSecret          string `envconfig:"CLIENT_SECRET"`
+	ClientObjectID        string `envconfig:"CLIENT_OBJECTID"`
 	MasterDNSPrefix       string `envconfig:"DNS_PREFIX"`
 	AgentDNSPrefix        string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
@@ -26,6 +29,7 @@ type Config struct {
 	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
+	EnableKMSEncryption   bool   `envconfig:"ENABLE_KMS_ENCRYPTION" default:"false"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -38,8 +42,9 @@ type Config struct {
 
 // Engine holds necessary information to interact with acs-engine cli
 type Engine struct {
-	Config            *Config
-	ClusterDefinition *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
+	Config             *Config
+	ClusterDefinition  *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
+	ExpandedDefinition *api.ContainerService         // Holds the expanded ClusterDefinition
 }
 
 // ParseConfig will return a new engine config struct taking values from env vars
@@ -69,7 +74,7 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		log.Printf("Error while trying to build Engine Configuration:%s\n", err)
 	}
 
-	cs, err := Parse(config.ClusterDefinitionPath)
+	cs, err := ParseInput(config.ClusterDefinitionPath)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +98,9 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 	if config.PublicSSHKey != "" {
 		cs.ContainerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData = config.PublicSSHKey
+		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey = config.PublicSSHKey
+		}
 	}
 
 	if config.WindowsAdminPasssword != "" {
@@ -121,6 +129,11 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		}
 	}
 
+	if config.EnableKMSEncryption && config.ClientObjectID != "" {
+		cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = &config.EnableKMSEncryption
+		cs.ContainerService.Properties.ServicePrincipalProfile.ObjectID = config.ClientObjectID
+	}
+
 	return &Engine{
 		Config:            config,
 		ClusterDefinition: cs,
@@ -138,7 +151,7 @@ func (e *Engine) NodeCount() int {
 
 // HasLinuxAgents will return true if there is at least 1 linux agent pool
 func (e *Engine) HasLinuxAgents() bool {
-	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		if ap.OSType == "" || ap.OSType == "Linux" {
 			return true
 		}
@@ -148,7 +161,7 @@ func (e *Engine) HasLinuxAgents() bool {
 
 // HasWindowsAgents will return true is there is at least 1 windows agent pool
 func (e *Engine) HasWindowsAgents() bool {
-	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		if ap.OSType == "Windows" {
 			return true
 		}
@@ -156,9 +169,24 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
-// OrchestratorVersion1Dot8AndUp will return true if the orchestrator version is 1.8 and up
-func (e *Engine) OrchestratorVersion1Dot8AndUp() bool {
-	return e.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion >= "1.8"
+// HasGPUNodes will return true if the VM SKU is GPU-enabled
+func (e *Engine) HasGPUNodes() bool {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
+		if strings.Contains(ap.VMSize, "Standard_N") {
+			return true
+		}
+	}
+	return false
+}
+
+// HasAddon will return true if an addon is enabled
+func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == name {
+			return *addon.Enabled, addon
+		}
+	}
+	return false, api.KubernetesAddon{}
 }
 
 // Write will write the cluster definition to disk
@@ -172,11 +200,12 @@ func (e *Engine) Write() error {
 	if err != nil {
 		log.Printf("Error while trying to write container service definition to file (%s):%s\n%s\n", e.Config.ClusterDefinitionTemplate, err, string(json))
 	}
+
 	return nil
 }
 
-// Parse takes a template path and will parse that into a api.VlabsARMContainerService
-func Parse(path string) (*api.VlabsARMContainerService, error) {
+// ParseInput takes a template path and will parse that into a api.VlabsARMContainerService
+func ParseInput(path string) (*api.VlabsARMContainerService, error) {
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Printf("Error while trying to read cluster definition at (%s):%s\n", path, err)
@@ -188,4 +217,22 @@ func Parse(path string) (*api.VlabsARMContainerService, error) {
 		return nil, err
 	}
 	return &cs, nil
+}
+
+// ParseOutput takes the generated api model and will parse that into a api.ContainerService
+func ParseOutput(path string) (*api.ContainerService, error) {
+	locale, err := i18n.LoadTranslations()
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+	}
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+	containerService, _, err := apiloader.LoadContainerServiceFromFile(path, true, false, nil)
+	if err != nil {
+		return nil, err
+	}
+	return containerService, nil
 }

@@ -1,4 +1,12 @@
 version: 2
+
+defaults: &defaults
+  working_directory: /go/src/github.com/Azure/acs-engine
+  docker:
+    - image: quay.io/deis/go-dev:v1.9.1
+  environment:
+    GOPATH: /go
+
 experimental:
   notify:
     branches:
@@ -6,11 +14,7 @@ experimental:
         - master
 jobs:
   test:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -24,19 +28,15 @@ jobs:
           name: Run linting rules
           command: make test-style
       - run:
-          name: Build binaries
-          command: make build-binary
+          name: Build cross-architectural binaries
+          command: make build-cross
       - run:
-          name: Run unit tests
-          command: make test
+          name: Run unit tests and calculate coverage
+          command: make coverage
       - store_test_results:
           path: test/junit
   swarm-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -59,17 +59,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   dcos-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
       - run:
@@ -83,7 +80,7 @@ jobs:
   swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.2.0
+      - image: quay.io/deis/go-dev:v1.9.1
         environment:
           GOPATH: /go
     steps:
@@ -106,13 +103,9 @@ jobs:
           command: make bootstrap build test-e2e
           no_output_timeout: "30m"
       - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs        
+          path: /go/src/github.com/Azure/acs-engine/_logs
   k8s-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -120,46 +113,72 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output
+  k8s-linux-default-e2e:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: |
+          echo 'export TIMEOUT=10m' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+      - run:
+          name: compile
+          command: make build-binary
+      - run:
+          name: ginkgo k8s e2e tests
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -167,23 +186,51 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output
+  k8s-1.10-release-e2e:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_OBJECTID=${SERVICE_PRINCIPAL_OBJECT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+      - run:
+          name: compile
+          command: make build-binary
+      - run:
+          name: ginkgo k8s e2e tests
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -191,58 +238,89 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output
+  k8s-windows-1.10-release-e2e:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: |
+          echo 'export TIMEOUT=30m' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+      - run:
+          name: compile
+          command: make build-binary
+      - run:
+          name: ginkgo k8s windows e2e tests
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -256,13 +334,19 @@ workflows:
           filters:
             branches:
               ignore: master
+      - k8s-linux-default-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: master
       - pr-e2e-hold:
           type: approval
           requires:
             - test
           filters:
             branches:
-              ignore: master      
+              ignore: master
       - k8s-1.7-release-e2e:
           requires:
             - pr-e2e-hold
@@ -293,7 +377,19 @@ workflows:
           filters:
             branches:
               ignore: master
+      - k8s-windows-1.10-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
       - k8s-1.9-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
+      - k8s-1.10-release-e2e:
           requires:
             - pr-e2e-hold
           filters:

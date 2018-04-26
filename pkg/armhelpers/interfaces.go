@@ -78,6 +78,14 @@ type ACSEngineClient interface {
 	GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error)
 
 	ListProviders() (resources.ProviderListResult, error)
+
+	// DEPLOYMENTS
+
+	// ListDeploymentOperations gets all deployments operations for a deployment.
+	ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error)
+
+	// ListDeploymentOperationsNextResults retrieves the next set of results, if any.
+	ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error)
 }
 
 // ACSStorageClient interface models the azure storage client
@@ -94,6 +102,8 @@ type KubernetesClient interface {
 	GetNode(name string) (*v1.Node, error)
 	//UpdateNode updates the node in the api server with the passed in info
 	UpdateNode(node *v1.Node) (*v1.Node, error)
+	//DeleteNode deregisters node in the api server
+	DeleteNode(name string) error
 	//SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported
 	SupportEviction() (string, error)
 	//DeletePod deletes the passed in pod

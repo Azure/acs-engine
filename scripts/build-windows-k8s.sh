@@ -56,6 +56,14 @@ create_version_branch() {
 	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_TAG_BRANCH} || true
 }
 
+version_lt() {
+        [ "$1" != $(printf "$1\n$2" | sort -V | head -n 2 | tail -n 1) ]
+}
+
+version_ge() {
+        [ "$1" == $(printf "$1\n$2" | sort -V | head -n 2 | tail -n 1) ]
+}
+
 k8s_16_cherry_pick() {
 	# 232fa6e5bc (HEAD -> release-1.6, origin/release-1.6) Fix the delay caused by network setup in POD Infra container
 	# 02b1c2b9e2 Use dns policy to determine setting DNS servers on the correct NIC in Windows container
@@ -72,29 +80,103 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
-	# In 1.7.12, the following commits are cherry-picked in upstream and has conflict
-	# with 137f4cb16e. So removing them.
-	git revert --no-edit 593653c384 || true
-	git revert --no-edit 7305738dd1 || true
-	git revert --no-edit e01bafcf80 || true
-	git revert --no-edit afd79db7a6 || true
-	git revert --no-edit 3a4abca2f7 || true
-	git revert --no-edit 6a2e2f47d3 || true
+	if version_ge "${version}" "1.7.10"; then
+		echo "version 1.7.10 and after..."
+		# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
+		# due to the out-of-order back porting into Azure 1.7. So removing it.
+		# cee32e92f7 fix#50150: azure disk mount failure on coreos
+		git revert --no-edit cee32e92f7 || true
 
-	# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
-	# due to the out-of-order back porting into Azure 1.7. So removing it.
-	# cee32e92f7 fix#50150: azure disk mount failure on coreos
-	git revert --no-edit cee32e92f7 || true
+		if version_ge "${version}" "1.7.12"; then
+			echo "version 1.7.12 and after..."
+			# In 1.7.12, the following commits are cherry-picked in upstream and has conflict
+			# with 137f4cb16e. So removing them.
+			git revert --no-edit 593653c384 || true #only for linux
+			git revert --no-edit 7305738dd1 || true #add tests only
+			git revert --no-edit e01bafcf80 || true #only for linux
+			git revert --no-edit afd79db7a6 || true #only for linux
+			git revert --no-edit 3a4abca2f7 || true #covered by commit 3aa179744f
+			git revert --no-edit 6a2e2f47d3 || true #covered by commit 3aa179744f
 
-    # cce920d45e merge#54334: fix azure disk mount failure on coreos and some other distros
-    # ...
+			if version_ge "${version}" "1.7.13"; then
+				echo "version 1.7.13 and after..."
+				# In 1.7.13, the following commit is cherry-picked in upstream and has conflict
+				# with 137f4cb16e. So removing it.
+				git revert --no-edit 3aa179744f || true #only for linux
+
+				if version_ge "${version}" "1.7.14"; then
+					echo "version 1.7.14 and after..."
+					if version_ge "${version}" "1.7.15"; then
+						echo "version 1.7.15 and after..."
+						if version_ge "${version}" "1.7.16"; then
+							echo "version 1.7.16 and after..."
+							# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+							git revert --no-edit 3e530479ed || true
+							# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+							git revert --no-edit 76017a002b || true
+						fi
+
+						# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
+						git revert --no-edit 0d5df36f05 || true
+						# From 1.7.15, 4d50500614 conflict with reverting 51584188ee. It is server side code so jsut revert it.
+						git revert --no-edit 4d50500614 || true
+					fi
+					# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
+					git revert --no-edit 975d0a4bb9 || true
+					# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
+					git revert --no-edit 51584188ee || true
+					git revert --no-edit 3a0db21dcb || true
+					# From 1.7.14, 273411cc90 conflict with e9591ef03e. We use d18812a049 in Azure repo instead of 273411cc90
+					git revert --no-edit 273411cc90 || true
+					# From 1.7.14, a97f60fbf3 conflict with a36d59ddda. We use 69c56c6037 in Azure repo instead of a97f60fbf3
+					git revert --no-edit a97f60fbf3 || true
+				fi
+			fi
+		fi
+	fi
+
+	# 32ceaa7918 fix #60625: add remount logic for azure file plugin on Windows
+	# ...
 	# b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+	# From 1.7.13, acbdec96da is not needed since 060111c603 supercedes it
+	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..e912889a7f
+	if version_lt "${version}" "1.7.13"; then
+		echo "before version 1.7.13..."
+		git cherry-pick --allow-empty --keep-redundant-commits acbdec96da
+	fi
+	git cherry-pick --allow-empty --keep-redundant-commits 76d7c23f62^..32ceaa7918
 
-	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..cce920d45e
+	if version_ge "${version}" "1.7.14"; then
+		echo "version 1.7.14 and after..."
+		# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
+		git cherry-pick --allow-empty --keep-redundant-commits a36d59ddda
+		# From 1.7.14, 51584188ee and 3a0db21dcb conflict with af3a93b07e. We use f5c45d3def in Azure repo instead of them
+		git cherry-pick -X theirs --allow-empty --keep-redundant-commits f5c45d3def # git complains about a conflict and just take theirs
+		# From 1.7.14, 273411cc90 conflict with e9591ef03e. We use d18812a049 in Azure repo instead of 273411cc90
+		git cherry-pick --allow-empty --keep-redundant-commits d18812a049
+		# From 1.7.14, a97f60fbf3 conflict with a36d59ddda. We use 69c56c6037 in Azure repo instead of a97f60fbf3
+		git cherry-pick --allow-empty --keep-redundant-commits 69c56c6037
+
+		git cherry-pick --allow-empty --keep-redundant-commits 3e930be6bc
+
+		if version_ge "${version}" "1.7.15"; then
+			echo "version 1.7.15 and after..."
+			# From 1.7.15, 0d5df36f05 conflict with reverting 975d0a4bb9. We use 631e363b9d in Azure repo instead of 0d5df36f05
+			git cherry-pick --allow-empty --keep-redundant-commits 631e363b9d
+
+			if version_ge "${version}" "1.7.16"; then
+				echo "version 1.7.16 and after..."
+				# From 1.7.16, 76017a002b conflict with reverting 975d0a4bb9. We use 3d97a43e41 in Azure repo instead of 76017a002b
+				git cherry-pick --allow-empty --keep-redundant-commits 3d97a43e41
+				# From 1.7.16, 3e530479ed conflict with reverting 975d0a4bb9. We use 5f9113ce9b in Azure repo instead of 3e530479ed
+				git cherry-pick --allow-empty --keep-redundant-commits 5f9113ce9b
+			fi
+		fi
+	fi
 }
 
 k8s_18_cherry_pick() {
-	# 4dcfaf655d fix get stats/summary issue in azure/release-1.8
+	# 4fd355d04a fix #60625: add remount logic for azure file plugin on Windows
 	# ...
 	# 4647f2f616 merge #52401: add windows implementation of GetMountRefs
 
@@ -112,13 +194,61 @@ k8s_18_cherry_pick() {
 	# ...
 	# 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
+	if version_ge "${version}" "1.8.9"; then
+		echo "version 1.8.9 and after..."
+		if version_ge "${version}" "1.8.10"; then
+			echo "version 1.8.10 and after..."
+			if version_ge "${version}" "1.8.11"; then
+				echo "version 1.8.11 and after..."
+				# From 1.8.11, 6487f82b13 conflict with 86107edff5. We use 8e081d5da9 in Azure repo instead of 6487f82b13
+				git revert --no-edit 6487f82b13 || true
+				# From 1.8.11, 2704ef877b conflict with reverting a418057ddd. We skip it since it is test file
+				git revert --no-edit 2704ef877b || true
+				# From 1.8.11, dc21ebe936 conflict with reverting 63b4f60e43. We use 18589971f7 in Azure repo instead of dc21ebe936
+				git revert --no-edit dc21ebe936 || true
+				# From 1.8.11, a418057ddd conflict with reverting 63b4f60e43. We use 57038dce90 in Azure repo instead of a418057ddd
+				git revert --no-edit a418057ddd || true
+				# From 1.8.11, beaca32611 conflict with reverting 63b4f60e43. We use e6d8af84df in Azure repo instead of beaca32611
+				git revert --no-edit beaca32611 || true
+			fi
+			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
+			git revert --no-edit 5936faed37 || true
+		fi
+		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
+		git revert --no-edit 63b4f60e43 || true
+		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
+		git revert --no-edit 40d5e0a34f || true
+	fi
+
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
 	git cherry-pick --allow-empty --keep-redundant-commits b42981f90b^..cb29df51c0
-	if [ "${version}" \< "1.8.6" ]; then
+	if version_lt "${version}" "1.8.6"; then
+		echo "before version 1.8.6..."
 		git cherry-pick --allow-empty --keep-redundant-commits b8594873f4
 	fi
 	git cherry-pick --allow-empty --keep-redundant-commits d75ef50170
-	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4dcfaf655d
+	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4fd355d04a
+
+	if version_ge "${version}" "1.8.9"; then
+		echo "version 1.8.9 and after..."
+		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
+		git cherry-pick --allow-empty --keep-redundant-commits 6a8305e419
+		# From 1.8.9, 40d5e0a34f conflict with 6a8305e419. We use b90d61a48c in Azure repo instead of 40d5e0a34f
+		git cherry-pick --allow-empty --keep-redundant-commits b90d61a48c
+		if version_ge "${version}" "1.8.10"; then
+			echo "version 1.8.10 and after..."
+			# From 1.8.10, 5936faed37 conflict with reverting 63b4f60e43. We use 1f26b7a083 in Azure repo instead of 5936faed37
+			git cherry-pick --allow-empty --keep-redundant-commits 1f26b7a083
+			if version_ge "${version}" "1.8.11"; then
+				echo "version 1.8.11 and after..."
+				# From 1.8.11, 6487f82b13 conflict with 86107edff5. We use 8e081d5da9 in Azure repo instead of 6487f82b13
+				# From 1.8.11, dc21ebe936 conflict with reverting 63b4f60e43. We use 18589971f7 in Azure repo instead of dc21ebe936
+				# From 1.8.11, a418057ddd conflict with reverting 63b4f60e43. We use 57038dce90 in Azure repo instead of a418057ddd
+				# From 1.8.11, beaca32611 conflict with reverting 63b4f60e43. We use e6d8af84df in Azure repo instead of beaca32611
+				git cherry-pick --allow-empty --keep-redundant-commits 8e081d5da9^..18589971f7
+			fi
+		fi
+	fi
 }
 
 apply_acs_cherry_picks() {
@@ -128,8 +258,8 @@ apply_acs_cherry_picks() {
 		k8s_17_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
 		k8s_18_cherry_pick
-	elif [ "${KUBERNETES_RELEASE}" == "1.9" ]; then
-		echo "No need to cherry-pick for 1.9!"
+	elif version_ge "${KUBERNETES_RELEASE}" "1.9"; then
+		echo "No need to cherry-pick for version greater than or equal to 1.9!"
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1

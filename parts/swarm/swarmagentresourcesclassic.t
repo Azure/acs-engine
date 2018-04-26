@@ -1,74 +1,74 @@
 {{if .IsStorageAccount}}
     {
-      "apiVersion": "[variables('apiVersionStorage')]", 
+      "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
-        "count": "[variables('{{.Name}}StorageAccountsCount')]", 
+        "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "vmLoopNode"
-      }, 
+      },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ], 
-      "location": "[variables('location')]", 
-      "name": "[concat(variables('storageAccountPrefixes')[mod(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),copyIndex(1))]", 
+      ],
+      "location": "[variables('location')]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),copyIndex(1))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
-      }, 
+      },
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{end}}
 {{if IsPublic .Ports}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[variables('location')]", 
-      "name": "[variables('{{.Name}}IPAddressName')]", 
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "name": "[variables('{{.Name}}IPAddressName')]",
       "properties": {
         "dnsSettings": {
           "domainNameLabel": "[variables('{{.Name}}EndpointDNSNamePrefix')]"
-        }, 
+        },
         "publicIPAllocationMethod": "Dynamic"
-      }, 
+      },
       "type": "Microsoft.Network/publicIPAddresses"
-    }, 
+    },
     {
-      "apiVersion": "[variables('apiVersionDefault')]", 
+      "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
-      ], 
-      "location": "[variables('location')]", 
-      "name": "[variables('{{.Name}}LbName')]", 
+      ],
+      "location": "[variables('location')]",
+      "name": "[variables('{{.Name}}LbName')]",
       "properties": {
         "backendAddressPools": [
           {
             "name": "[variables('{{.Name}}LbBackendPoolName')]"
           }
-        ], 
+        ],
         "frontendIPConfigurations": [
           {
-            "name": "[variables('{{.Name}}LbIPConfigName')]", 
+            "name": "[variables('{{.Name}}LbIPConfigName')]",
             "properties": {
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('{{.Name}}IPAddressName'))]"
               }
             }
           }
-        ], 
-        "inboundNatRules": [], 
+        ],
+        "inboundNatRules": [],
         "loadBalancingRules": [
           {{(GetLBRules .Name .Ports)}}
-        ], 
+        ],
         "probes": [
           {{(GetProbes .Ports)}}
         ]
-      }, 
+      },
       "type": "Microsoft.Network/loadBalancers"
-    }, 
+    },
 {{end}}
     {
 {{if .IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-{{else}} 
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
-{{end}}  
+{{end}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
 {{if .IsStorageAccount}}
@@ -77,34 +77,34 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(2,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(2,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),3)]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(3,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(3,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),4)]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(4,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(4,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),5)]"
- 
+
 {{end}}
 {{if not .IsCustomVNET}}
       ,"[variables('vnetID')]"
 {{end}}
-{{if IsPublic .Ports}} 
+{{if IsPublic .Ports}}
        ,"[variables('{{.Name}}LbID')]"
-{{end}} 
+{{end}}
       ],
       "tags":
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
       },
-      "location": "[variables('location')]", 
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
+      "location": "[variables('location')]",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
           "mode": "Automatic"
-        }, 
+        },
         "virtualMachineProfile": {
           "networkProfile": {
             "networkInterfaceConfigurations": [
               {
-                "name": "nic", 
+                "name": "nic",
                 "properties": {
                   "ipConfigurations": [
                     {
-                      "name": "nicipconfig", 
+                      "name": "nicipconfig",
                       "properties": {
 {{if IsPublic .Ports}}
                         "loadBalancerBackendAddressPools": [
@@ -118,39 +118,39 @@
                         }
                       }
                     }
-                  ], 
+                  ],
                   "primary": "true"
                 }
               }
             ]
-          }, 
+          },
           "osProfile": {
-            "adminUsername": "[variables('adminUsername')]", 
-            "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]", 
+            "adminUsername": "[variables('adminUsername')]",
+            "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
 {{if IsSwarmMode}}
   {{if not .IsRHEL}}
-            {{GetAgentSwarmModeCustomData .}} 
+            {{GetAgentSwarmModeCustomData .}}
   {{end}}
 {{else}}
-            {{GetAgentSwarmCustomData .}} 
+            {{GetAgentSwarmCustomData .}}
 {{end}}
             "linuxConfiguration": {
-              "disablePasswordAuthentication": "true", 
+              "disablePasswordAuthentication": "true",
               "ssh": {
                 "publicKeys": [
                   {
-                    "keyData": "[parameters('sshRSAPublicKey')]", 
+                    "keyData": "[parameters('sshRSAPublicKey')]",
                     "path": "[variables('sshKeyPath')]"
                   }
                 ]
               }
             }
-          }, 
+          },
           "storageProfile": {
             "imageReference": {
-              "offer": "[variables('osImageOffer')]", 
-              "publisher": "[variables('osImagePublisher')]", 
-              "sku": "[variables('osImageSKU')]", 
+              "offer": "[variables('osImageOffer')]",
+              "publisher": "[variables('osImagePublisher')]",
+              "sku": "[variables('osImageSKU')]",
               "version": "latest"
             },
             {{GetDataDisks .}}
@@ -193,11 +193,11 @@
           }
 {{end}}
         }
-      }, 
+      },
       "sku": {
-        "capacity": "[variables('{{.Name}}Count')]", 
-        "name": "[variables('{{.Name}}VMSize')]", 
+        "capacity": "[variables('{{.Name}}Count')]",
+        "name": "[variables('{{.Name}}VMSize')]",
         "tier": "[variables('{{.Name}}VMSizeTier')]"
-      }, 
+      },
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     }

@@ -20,6 +20,7 @@ func init() {
 		DCOS:       dcosInfo,
 		Swarm:      swarmInfo,
 		SwarmMode:  dockerceInfo,
+		OpenShift:  openShiftInfo,
 	}
 }
 
@@ -33,6 +34,8 @@ func validate(orchestrator, version string) (string, error) {
 		return Swarm, nil
 	case strings.EqualFold(orchestrator, SwarmMode):
 		return SwarmMode, nil
+	case strings.EqualFold(orchestrator, OpenShift):
+		return OpenShift, nil
 	case orchestrator == "":
 		if version != "" {
 			return "", fmt.Errorf("Must specify orchestrator for version '%s'", version)
@@ -127,7 +130,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 						OrchestratorType:    Kubernetes,
 						OrchestratorVersion: ver,
 					},
-					Default:  ver == common.KubernetesDefaultVersion,
+					Default:  ver == common.GetDefaultKubernetesVersion(),
 					Upgrades: upgrades,
 				})
 		}
@@ -136,7 +139,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 		if err != nil {
 			return nil, err
 		}
-		cons, err := semver.NewConstraint("<1.5.0")
+		cons, err := semver.NewConstraint("<1.6.0")
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +157,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 					OrchestratorType:    Kubernetes,
 					OrchestratorVersion: csOrch.OrchestratorVersion,
 				},
-				Default:  csOrch.OrchestratorVersion == common.KubernetesDefaultVersion,
+				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(),
 				Upgrades: upgrades,
 			})
 	}
@@ -168,45 +171,13 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	if err != nil {
 		return nil, err
 	}
-	currentMajor, currentMinor, currentPatch := currentVer.Major(), currentVer.Minor(), currentVer.Patch()
-	var nextMajor, nextMinor int64
-
-	switch {
-	case currentMajor == 1 && currentMinor == 5:
-		nextMajor = 1
-		nextMinor = 6
-	case currentMajor == 1 && currentMinor == 6:
-		nextMajor = 1
-		nextMinor = 7
-	case currentMajor == 1 && currentMinor == 7:
-		nextMajor = 1
-		nextMinor = 8
-	case currentMajor == 1 && currentMinor == 8:
-		nextMajor = 1
-		nextMinor = 9
-	}
-	for ver, supported := range common.AllKubernetesSupportedVersions {
-		if !supported {
-			continue
-		}
-		nextVersion, err := semver.NewVersion(ver)
-		if err != nil {
-			continue
-		}
-		// add patch upgrade
-		if nextVersion.Major() == currentMajor && nextVersion.Minor() == currentMinor && currentPatch < nextVersion.Patch() {
-			ret = append(ret, &OrchestratorProfile{
-				OrchestratorType:    Kubernetes,
-				OrchestratorVersion: ver,
-			})
-		}
-		// add next version
-		if nextVersion.Major() == nextMajor && nextVersion.Minor() == nextMinor {
-			ret = append(ret, &OrchestratorProfile{
-				OrchestratorType:    Kubernetes,
-				OrchestratorVersion: ver,
-			})
-		}
+	nextNextMinorVersion := currentVer.IncMinor().IncMinor()
+	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorVersion.String(), false, true)
+	for _, ver := range upgradeableVersions {
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: ver,
+		})
 	}
 	return ret, nil
 }
@@ -259,4 +230,45 @@ func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, e
 			},
 		},
 	}, nil
+}
+
+func openShiftInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	orchs := []*OrchestratorVersionProfile{}
+	if csOrch.OrchestratorVersion == "" {
+		// get info for all supported versions
+		for _, ver := range common.GetAllSupportedOpenShiftVersions() {
+			// TODO: populate OrchestratorVersionProfile.Upgrades
+			orchs = append(orchs,
+				&OrchestratorVersionProfile{
+					OrchestratorProfile: OrchestratorProfile{
+						OrchestratorType:    OpenShift,
+						OrchestratorVersion: ver,
+					},
+					Default: ver == common.OpenShiftDefaultVersion,
+				})
+		}
+	} else {
+		ver, err := semver.NewVersion(csOrch.OrchestratorVersion)
+		if err != nil {
+			return nil, err
+		}
+		cons, err := semver.NewConstraint("<3.9.0")
+		if err != nil {
+			return nil, err
+		}
+		if cons.Check(ver) {
+			return nil, fmt.Errorf("OpenShift version %s is not supported", csOrch.OrchestratorVersion)
+		}
+
+		// TODO: populate OrchestratorVersionProfile.Upgrades
+		orchs = append(orchs,
+			&OrchestratorVersionProfile{
+				OrchestratorProfile: OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: csOrch.OrchestratorVersion,
+				},
+				Default: csOrch.OrchestratorVersion == common.OpenShiftDefaultVersion,
+			})
+	}
+	return orchs, nil
 }

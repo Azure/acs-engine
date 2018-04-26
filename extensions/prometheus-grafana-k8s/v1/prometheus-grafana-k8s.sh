@@ -143,7 +143,7 @@ install_helm() {
     mv linux-amd64/helm /usr/local/bin/helm
     echo $(date) " - Downloading prometheus values"
 
-    curl https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
+    curl "$1" > prometheus_values.yaml
 
     sleep 10
 
@@ -152,6 +152,37 @@ install_helm() {
     helm init
 
     echo $(date) " - helm installed"
+}
+
+daemonset_api() {
+    SERVER_VERSION_REGEX="Server Version: v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+    K8S_SERVER_VERSION=$(kubectl version --short | grep Server)
+    K8S_SERVER_VERSION_MAJOR=$(echo "$K8S_SERVER_VERSION" | sed -r "s/$SERVER_VERSION_REGEX/\1/g")
+    K8S_SERVER_VERSION_MINOR=$(sed -r "s/$SERVER_VERSION_REGEX/\2/g" "$K8S_SERVER_VERSION")
+
+    if [[ $K8S_SERVER_VERSION_MAJOR -gt 1 ]]; then
+        echo "apps/v1"
+    elif [[ $K8S_SERVER_VERSION_MAJOR -eq 1 ]]; then
+        if [[ $K8S_SERVER_VERSION_MINOR -gt 8 ]]; then
+            echo "apps/v1"
+        else
+            echo "apps/v1beta2"
+        fi
+    fi
+}
+
+install_cadvisor() {
+    echo "$(date) - Installing cAdvisor"
+    local NAMESPACE="$1"
+    echo "$(date) - Using namespace $NAMESPACE"
+    local CADVISOR_DS_CONFIG_URL="$2"
+    echo "$(date) - Using cAdvisor config at $CADVISOR_DS_CONFIG_URL"
+
+    curl -o cadvisor_ds.yml "$CADVISOR_DS_CONFIG_URL"
+    DAEMONSET_API=$(daemonset_api)
+    echo "$(date) - Using DaemonSet api group $DAEMONSET_API"
+    sed -i 's|DAEMONSET_API|'"$DAEMONSET_API"'|g' cadvisor_ds.yml
+    kubectl apply -f ./cadvisor_ds.yml
 }
 
 update_helm() {
@@ -172,6 +203,7 @@ install_prometheus() {
     while [[ $ITERATION -lt $ATTEMPTS ]]; do
         helm install -f prometheus_values.yaml \
             --name $PROM_RELEASE_NAME \
+            --version 5.1.3 \
             --namespace $NAMESPACE stable/prometheus $(storageclass_param)
 
         if [[ $? -eq 0 ]]; then
@@ -212,7 +244,10 @@ install_grafana() {
     NAMESPACE=$1
 
     echo $(date) " - Installing the Grafana Helm chart"
-    helm install --name $GF_RELEASE_NAME --namespace $NAMESPACE stable/grafana $(storageclass_param)
+    helm install \
+        --name $GF_RELEASE_NAME \
+        --version 0.8.5 \
+        --namespace $NAMESPACE stable/grafana $(storageclass_param)
 
     GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"
     DESIRED_POD_STATE=Running
@@ -251,6 +286,27 @@ ensure_k8s_namespace_exists() {
     fi
 }
 
+NAMESPACE=default
+RAW_PROMETHEUS_CHART_VALS="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml"
+CADVISOR_CONFIG_URL="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/cadvisor_daemonset.yml"
+
+# retrieve and parse extension parameters
+if [[ -n "$1" ]]; then
+    IFS=';' read -ra INPUT <<< "$1"
+    if [[ -n "${INPUT[0]}" ]]; then
+        NAMESPACE="${INPUT[0]}"
+        echo "$(date) - Custom namespace specified: $NAMESPACE"
+    fi
+    if [[ -n "${INPUT[1]}" ]]; then
+        RAW_PROMETHEUS_CHART_VALS="${INPUT[1]}"
+        echo "$(date) - Custom prometheus chart values url specified: $RAW_PROMETHEUS_CHART_VALS"
+    fi
+    if [[ -n "${INPUT[2]}" ]]; then
+        CADVISOR_CONFIG_URL="${INPUT[2]}"
+        echo "$(date) - Custom cAdvisor config url specified: $CADVISOR_CONFIG_URL"
+    fi
+fi
+
 # this extension should only run on a single node
 # the logic to decide whether or not this current node
 # should run the extension is to alphabetically determine
@@ -268,22 +324,15 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+echo "$(date) - Dumping out sorted agent nodes"
+kubectl get no -L kubernetes.io/role -l kubernetes.io/role=agent --no-headers -o jsonpath="{.items[*].metadata.name}" | tr " " "\n" | sort
+
 should_this_node_run_extension
 if [[ $? -ne 0 ]]; then
     echo $(date) " - Not the first master node or the first agent node, no longer continuing extension. Exiting"
     exit 1
 fi
 
-# Deploy container
-
-# the user can pass a non-default namespace through
-# extensionParameters as a string. we need to create
-# this namespace if it doesn't already exist
-if [[ -n "$1" ]]; then
-    NAMESPACE=$1
-else
-    NAMESPACE=default
-fi
 ensure_k8s_namespace_exists $NAMESPACE
 
 K8S_SECRET_NAME=dashboard-grafana
@@ -292,13 +341,14 @@ DS_NAME=prometheus1
 
 PROM_URL=http://monitoring-prometheus-server
 
-install_helm
+install_helm "$RAW_PROMETHEUS_CHART_VALS"
 wait_for_tiller
 if [[ $? -ne 0 ]]; then
     echo $(date) " - Tiller did not respond in a timely manner. Exiting"
     exit 1
 fi
 update_helm
+install_cadvisor $NAMESPACE $CADVISOR_CONFIG_URL
 install_prometheus $NAMESPACE
 install_grafana $NAMESPACE
 
@@ -376,7 +426,7 @@ chmod u+x sanitize_dashboard.py
 
 DB_RAW=$(cat << EOF
 {
-    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/315/revisions/3/download" | ./sanitize_dashboard.py),
+    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/3119/revisions/2/download" | ./sanitize_dashboard.py),
     "overwrite": false
 }
 EOF

@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Masterminds/semver"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -99,6 +100,11 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
 		upgrader = upgrader19
 
+	case strings.HasPrefix(upgradeVersion, "1.10."):
+		upgrader110 := &Upgrader{}
+		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader110
+
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
 	}
@@ -168,14 +174,13 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 	if len(arr) != 2 {
 		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
 	}
-	currentVer := arr[1]
-	arr = strings.Split(currentVer, ".")
-	if len(arr) != 3 {
-		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer)
+	currentVer, err := semver.NewVersion(arr[1])
+	if err != nil {
+		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer.String())
 	}
 	csOrch := &api.OrchestratorProfile{
 		OrchestratorType:    api.Kubernetes,
-		OrchestratorVersion: currentVer,
+		OrchestratorVersion: currentVer.String(),
 	}
 	orch, err := api.GetOrchestratorVersionProfile(csOrch)
 	if err != nil {
@@ -186,7 +191,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 			return nil
 		}
 	}
-	return fmt.Errorf("%s in non-upgradable to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
@@ -204,7 +209,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	if vmPoolName == "" {
 		uc.Logger.Infof("VM: %s does not contain `poolName` tag, skipping.\n", *vm.Name)
 		return nil
-	} else if uc.AgentPoolsToUpgrade[vmPoolName] == false {
+	} else if !uc.AgentPoolsToUpgrade[vmPoolName] {
 		uc.Logger.Infof("Skipping upgrade of VM: %s in pool: %s.\n", *vm.Name, vmPoolName)
 		return nil
 	}

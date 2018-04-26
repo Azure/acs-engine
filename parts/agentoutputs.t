@@ -1,7 +1,7 @@
 {{if IsPublic .Ports}}
-  {{ if not IsKubernetes}}
+  {{ if and (not IsKubernetes) (not IsOpenShift)}}
     "{{.Name}}FQDN": {
-        "type": "string", 
+        "type": "string",
         "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))).dnsSettings.fqdn]"
     },
   {{end}}

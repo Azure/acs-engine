@@ -7,10 +7,12 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -23,8 +25,11 @@ type Config struct {
 	Regions           []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
 	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	RetainSSH         bool          `envconfig:"RETAIN_SSH" default:"true"`
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
+	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
+	ForceDeploy       bool   `envconfig:"FORCE_DEPLOY"`
 }
 
 const (
@@ -56,7 +61,7 @@ func (c *Config) GetKubeConfig() string {
 // SetKubeConfig will set the KUBECONIFG env var
 func (c *Config) SetKubeConfig() {
 	os.Setenv("KUBECONFIG", c.GetKubeConfig())
-	log.Printf("Kubeconfig:%s\n", c.GetKubeConfig())
+	log.Printf("\nKubeconfig:%s\n", c.GetKubeConfig())
 }
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
@@ -102,42 +107,51 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 	return string(contents), nil
 }
 
+// SetSSHKeyPermissions will change the ssh file permission to 0600
+func (c *Config) SetSSHKeyPermissions() error {
+	privateKey := c.GetSSHKeyPath()
+	cmd := exec.Command("chmod", "0600", privateKey)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change private ssh key permissions at %s: %s\n", privateKey, out)
+		return err
+	}
+	publicKey := c.GetSSHKeyPath() + ".pub"
+	cmd = exec.Command("chmod", "0600", publicKey)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to change public ssh key permissions at %s: %s\n", publicKey, out)
+		return err
+	}
+	return nil
+}
+
 // IsKubernetes will return true if the ORCHESTRATOR env var is set to kubernetes or not set at all
 func (c *Config) IsKubernetes() bool {
-	if c.Orchestrator == kubernetesOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == kubernetesOrchestrator
 }
 
 // IsDCOS will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsDCOS() bool {
-	if c.Orchestrator == dcosOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == dcosOrchestrator
 }
 
 // IsSwarmMode will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsSwarmMode() bool {
-	if c.Orchestrator == swarmModeOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == swarmModeOrchestrator
 }
 
 // IsSwarm will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsSwarm() bool {
-	if c.Orchestrator == swarmOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == swarmOrchestrator
 }
 
 // SetRandomRegion sets Location to a random region
 func (c *Config) SetRandomRegion() {
 	var regions []string
-	if c.Regions == nil {
+	if c.Regions == nil || len(c.Regions) == 0 {
 		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 	} else {
 		regions = c.Regions

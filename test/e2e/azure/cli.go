@@ -2,17 +2,30 @@ package azure
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Account holds the values needed to talk to the Azure API
+// Storage provides access to StorageAccount objects
+type Storage interface {
+	CreateStorageAccount() error
+	SetConnectionString() error
+	CreateFileShare(name string) error
+	UploadFiles(source, destination string) error
+	DownloadFiles(source, destination string) error
+	DeleteFiles(source string) error
+}
+
+// Account represents an Azure account
 type Account struct {
 	User           *User  `json:"user"`
 	TenantID       string `json:"tenantId" envconfig:"TENANT_ID" required:"true"`
@@ -23,14 +36,27 @@ type Account struct {
 
 // ResourceGroup represents a collection of azure resources
 type ResourceGroup struct {
-	Name     string
-	Location string
+	Name     string            `json:"name"`
+	Location string            `json:"location"`
+	Tags     map[string]string `json:"tags"`
+}
+
+// VM represents an azure vm
+type VM struct {
+	Name string `json:"name"`
 }
 
 // Deployment represents a deployment of an acs cluster
 type Deployment struct {
 	Name              string // Name of the deployment
 	TemplateDirectory string // engine.GeneratedDefinitionPath
+}
+
+// StorageAccount represents an azure storage account
+type StorageAccount struct {
+	Name             string
+	ConnectionString string `json:"connectionString"`
+	ResourceGroup    ResourceGroup
 }
 
 // User represents the user currently logged into an Account
@@ -40,7 +66,7 @@ type User struct {
 	Type   string `json:"type"`
 }
 
-// NewAccount will parse env vars and return a new struct
+// NewAccount will parse env vars and return a new account struct
 func NewAccount() (*Account, error) {
 	a := new(Account)
 	if err := envconfig.Process("account", a); err != nil {
@@ -70,8 +96,12 @@ func (a *Account) Login() error {
 
 // SetSubscription will call az account set --subscription for the given Account
 func (a *Account) SetSubscription() error {
-	_, err := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID).CombinedOutput()
+	cmd := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Error while trying to set subscription (%s):%s", a.SubscriptionID, err)
+		log.Printf("Output:%s\n", out)
 		return err
 	}
 	return nil
@@ -80,24 +110,36 @@ func (a *Account) SetSubscription() error {
 // CreateGroup will create a resource group in a given location
 //--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
-	now := fmt.Sprintf("now=%v", time.Now().Add(-3*time.Hour).Unix())
-	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now).CombinedOutput()
+	now := fmt.Sprintf("now=%v", time.Now().Unix())
+	cmd := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying create resource group (%s) in %s:%s", name, location, err)
+		log.Printf("Error while trying to create resource group (%s) in %s:%s", name, location, err)
 		log.Printf("Output:%s\n", out)
 		return err
 	}
 	r := ResourceGroup{
 		Name:     name,
 		Location: location,
+		Tags: map[string]string{
+			"now": now,
+		},
 	}
 	a.ResourceGroup = r
 	return nil
 }
 
-// DeleteGroup delets a given resource group by name
-func (a *Account) DeleteGroup(name string) error {
-	out, err := exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes").CombinedOutput()
+// DeleteGroup deletes a given resource group by name
+func (a *Account) DeleteGroup(name string, wait bool) error {
+	var cmd *exec.Cmd
+	if !wait {
+		cmd = exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes")
+	} else {
+		cmd = exec.Command("az", "group", "delete", "--name", name, "--yes")
+	}
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete resource group (%s):%s", name, out)
 		return err
@@ -107,7 +149,6 @@ func (a *Account) DeleteGroup(name string) error {
 
 // CreateDeployment will deploy a cluster to a given resource group using the template and parameters on disk
 func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
-	log.Print("Creating deployment this make take a few minutes.")
 	d := Deployment{
 		Name:              name,
 		TemplateDirectory: e.Config.GeneratedDefinitionPath,
@@ -128,14 +169,16 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		}
 	}()
 
-	output, err := exec.Command("az", "group", "deployment", "create",
+	cmd := exec.Command("az", "group", "deployment", "create",
 		"--name", d.Name,
 		"--resource-group", a.ResourceGroup.Name,
 		"--template-file", e.Config.GeneratedTemplatePath,
-		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
+		"--parameters", e.Config.GeneratedParametersPath)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
-		log.Printf("Command Output: %s\n", output)
+		log.Printf("\nError from deployment for %s in resource group %s:%s\n", d.Name, a.ResourceGroup.Name, err)
+		log.Printf("Command Output: %s\n", out)
 		return err
 	}
 	quit <- true
@@ -145,7 +188,9 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 
 // GetCurrentAccount will run an az account show and parse that into an account strcut
 func GetCurrentAccount() (*Account, error) {
-	out, err := exec.Command("az", "account", "show").CombinedOutput()
+	cmd := exec.Command("az", "account", "show")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'account show':%s\n", err)
 		return nil, err
@@ -161,7 +206,9 @@ func GetCurrentAccount() (*Account, error) {
 
 // CreateVnet will create a vnet in a resource group
 func (a *Account) CreateVnet(vnet, addressPrefixes, subnetName, subnetPrefix string) error {
-	out, err := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix).CombinedOutput()
+	cmd := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to create vnet with the following command:\n az network vnet create -g %s -n %s --address-prefixes %s --subnet-name %s --subnet-prefix %s \n Output:%s\n", a.ResourceGroup.Name, vnet, addressPrefixes, subnetName, subnetPrefix, out)
 		return err
@@ -180,7 +227,8 @@ type RouteTable struct {
 
 // UpdateRouteTables is used to updated a vnet with the appropriate route tables
 func (a *Account) UpdateRouteTables(subnet, vnet string) error {
-	out, err := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name).CombinedOutput()
+	cmd := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to get route table list!\n Output:%s\n", out)
 		return err
@@ -188,9 +236,153 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 	rts := []RouteTable{}
 	json.Unmarshal(out, &rts)
 
-	out, err = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name).CombinedOutput()
+	cmd = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to update vnet route tables:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// GetHosts will get a list of vms in the resource group
+func (a *Account) GetHosts(name string) ([]VM, error) {
+	var resourceGroup string
+	if name != "" {
+		resourceGroup = name
+	} else {
+		resourceGroup = a.ResourceGroup.Name
+	}
+	cmd := exec.Command("az", "vm", "list", "-g", resourceGroup)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get vm list:%s\n", out)
+		return nil, err
+	}
+	v := []VM{{}}
+	err = json.Unmarshal(out, &v)
+	if err != nil {
+		log.Printf("Error unmarshalling VM json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+		return nil, err
+	}
+	return v, nil
+}
+
+// SetResourceGroup will set the account resource group
+func (a *Account) SetResourceGroup(name string) error {
+	if a.ResourceGroup.Name != "" {
+		return nil
+	}
+	cmd := exec.Command("az", "group", "show", "-g", name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to show resource group:%s\n", out)
+		return err
+	}
+	if len(out) == 0 {
+		log.Printf("Resource group %s does not exist\n", name)
+		return errors.New("Resource group not found")
+	}
+	a.ResourceGroup = ResourceGroup{}
+	err = json.Unmarshal(out, &a.ResourceGroup)
+	if err != nil {
+		log.Printf("Error unmarshalling resource group json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// IsClusterExpired will return true if a deployment was created more than t nanoseconds ago, or if timestamp is not found
+func (a *Account) IsClusterExpired(d time.Duration) bool {
+	tag, err := strconv.ParseInt(a.ResourceGroup.Tags["now"], 10, 64)
+	if err != nil {
+		log.Printf("Error parsing RG now tag:%s\n", err)
+		return true
+	}
+	t := time.Unix(tag, 0)
+	age := time.Since(t)
+	log.Printf("Cluster is %v hours old\n", int(age.Hours()))
+	return age > d
+}
+
+// CreateStorageAccount will create a new Azure Storage Account
+func (sa *StorageAccount) CreateStorageAccount() error {
+	cmd := exec.Command("az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to create storage account: %s", out)
+		return err
+	}
+	return nil
+}
+
+// SetConnectionString will set the storage account connection string
+func (sa *StorageAccount) SetConnectionString() error {
+	cmd := exec.Command("az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get connection-string:%s\n", out)
+		return err
+	}
+	err = json.Unmarshal(out, &sa)
+	if err != nil {
+		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// CreateFileShare will create a file share in a storage account if it doesn't already exist
+func (sa *StorageAccount) CreateFileShare(name string) error {
+	cmd := exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to create file share: %s", out)
+		return err
+	}
+	return nil
+}
+
+// UploadFiles will upload the output directory to storage
+func (sa *StorageAccount) UploadFiles(source, destination string) error {
+	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying upload files to file share:%s\n", out)
+		return err
+	}
+	return nil
+}
+
+// DownloadFiles will download the output directory from storage
+func (sa *StorageAccount) DownloadFiles(source, destination string) error {
+	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying download files from %s in storage account %s: %s\n", source, sa.Name, out)
+		return err
+	}
+	return nil
+}
+
+// DeleteFiles deletes files from an Azure storage file share
+func (sa *StorageAccount) DeleteFiles(source string) error {
+	cmd := exec.Command("az", "storage", "file", "delete-batch", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to delete files from %s: %s", source, out)
 		return err
 	}
 	return nil

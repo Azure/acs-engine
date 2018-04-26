@@ -6,7 +6,114 @@
       },
       "type": "string"
     },
+    "aadAdminGroupId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD default Admin group Object ID used to create a cluster-admin RBAC role."
+      },
+      "type": "string"
+    },
 {{end}}
+{{if IsHostedMaster}}
+    "kubernetesEndpoint": {
+      "metadata": {
+        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
+      },
+      "type": "string"
+    },
+{{else}}
+{{if not IsOpenShift}}
+    "etcdServerCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      },
+      "type": "string"
+    },
+    "etcdServerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      },
+      "type": "securestring"
+    },
+    "etcdClientCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      },
+      "type": "string"
+    },
+    "etcdClientPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      },
+      "type": "securestring"
+    },
+    "etcdPeerCertificate0": {
+      "metadata": {
+        "description": "The base 64 server certificates used on the master"
+      },
+      "type": "string"
+    },
+    "etcdPeerPrivateKey0": {
+      "metadata": {
+        "description": "The base 64 server private keys used on the master."
+      },
+      "type": "securestring"
+    },
+    {{if ge .MasterProfile.Count 3}}
+      "etcdPeerCertificate1": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        },
+        "type": "string"
+      },
+      "etcdPeerCertificate2": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        },
+        "type": "string"
+      },
+      "etcdPeerPrivateKey1": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        },
+        "type": "securestring"
+      },
+      "etcdPeerPrivateKey2": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        },
+        "type": "securestring"
+      },
+      {{if ge .MasterProfile.Count 5}}
+        "etcdPeerCertificate3": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          },
+          "type": "string"
+        },
+        "etcdPeerCertificate4": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          },
+          "type": "string"
+        },
+        "etcdPeerPrivateKey3": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          },
+          "type": "securestring"
+        },
+        "etcdPeerPrivateKey4": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          },
+          "type": "securestring"
+        },
+      {{end}}
+    {{end}}
+{{end}}
+{{end}}
+{{if not IsOpenShift}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -18,42 +125,6 @@
         "description": "The base 64 server private key used on the master."
       },
       "type": "securestring"
-    },
-    "etcdServerCertificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      }, 
-      "type": "string"
-    }, 
-    "etcdServerPrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      }, 
-      "type": "securestring"
-    }, 
-    "etcdClientCertificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      }, 
-      "type": "string"
-    }, 
-    "etcdClientPrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      }, 
-      "type": "securestring"
-    },
-    "etcdPeerCertificates": {
-      "metadata": {
-        "description": "The base 64 server certificates used on the master"
-      }, 
-      "type": "array"
-    }, 
-    "etcdPeerPrivateKeys": {
-      "metadata": {
-        "description": "The base 64 server private keys used on the master."
-      }, 
-      "type": "array"
     },
     "caCertificate": {
       "metadata": {
@@ -68,14 +139,6 @@
       },
       "type": "securestring"
     },
-{{if IsHostedMaster}}
-    "kubernetesEndpoint": {
-      "metadata": {
-        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
-      },
-      "type": "string"
-    },
-{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
@@ -100,6 +163,7 @@
       },
       "type": "securestring"
     },
+{{end}}
     "generatorCode": {
       {{PopulateClassicModeDefaultValue "generatorCode"}}
       "metadata": {
@@ -147,6 +211,12 @@
     "kubernetesNonMasqueradeCidr": {
       "metadata": {
         "description": "kubernetesNonMasqueradeCidr cluster subnet"
+      },
+      "type": "string"
+    },
+    "kubernetesKubeletClusterDomain": {
+      "metadata": {
+        "description": "--cluster-domain Kubelet config"
       },
       "type": "string"
     },
@@ -227,6 +297,13 @@
       },
       "type": "string"
     },
+    "kubernetesMetricsServerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesMetricsServerSpec"}}
+      "metadata": {
+        "description": "The container spec for Metrics Server."
+      },
+      "type": "string"
+    },
     "kubernetesTillerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {
@@ -259,6 +336,13 @@
       {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryLimit"}}
       "metadata": {
         "description": "Helm Tiller Memory Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMaxHistory": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMaxHistory"}}
+      "metadata": {
+        "description": "Helm Tiller Max History to Store. '0' for no limit."
       },
       "type": "string"
     },
@@ -472,6 +556,7 @@
       },
       "type": "string"
     },
+    {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",
       "metadata": {
@@ -494,15 +579,17 @@
        ],
       "type": "string"
     },
+    {{end}}
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
-        "description": "The network policy enforcement to use (none|azure|calico)"
+        "description": "The network policy enforcement to use (none|azure|calico|cilium)"
       },
       "allowedValues": [
         "none",
         "azure",
-        "calico"
+        "calico",
+        "cilium"
       ],
       "type": "string"
     },
@@ -530,9 +617,9 @@
       "type": "string"
     },
     "maxPods": {
-      "defaultValue": 110,
+      "defaultValue": 30,
       "metadata": {
-        "description": "The maximum number of pods per node."
+        "description": "This param has been deprecated."
       },
       "type": "int"
     },
@@ -606,3 +693,65 @@
       },
       "type": "string"
     }
+{{if ProvisionJumpbox}}
+    ,"jumpboxVMName": {
+      "metadata": {
+        "description": "jumpbox VM Name"
+      },
+      "type": "string"
+    },
+    "jumpboxVMSize": {
+      {{GetMasterAllowedSizes}}
+      "metadata": {
+        "description": "The size of the Virtual Machine. Required"
+      },
+      "type": "string"
+    },
+    "jumpboxOSDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "jumpboxOSDiskSizeGB"}}
+      "metadata": {
+        "description": "Size in GB to allocate to the private cluster jumpbox VM OS."
+      },
+      "type": "int"
+    },
+    "jumpboxPublicKey": {
+      "metadata": {
+        "description": "SSH public key used for auth to the private cluster jumpbox"
+      },
+      "type": "string"
+    },
+    "jumpboxUsername": {
+      "metadata": {
+        "description": "Username for the private cluster jumpbox"
+      },
+      "type": "string"
+    },
+    "jumpboxStorageProfile": {
+      "metadata": {
+        "description": "Storage Profile for the private cluster jumpbox"
+      },
+      "type": "string"
+    }
+{{end}}
+{{if EnableEncryptionWithExternalKms}}
+   ,
+   {{if not UseManagedIdentity}}
+   "servicePrincipalObjectId": {
+      "metadata": {
+        "description": "Object ID (used by cloudprovider)"
+      },
+      "type": "securestring"
+    },
+    {{end}}
+    "clusterKeyVaultSku": {
+       "type": "string",
+       "defaultValue": "Standard",
+       "allowedValues": [
+         "Standard",
+         "Premium"
+       ],
+       "metadata": {
+         "description": "SKU for the key vault used by the cluster"
+       }
+     }
+ {{end}}

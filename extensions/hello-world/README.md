@@ -25,21 +25,21 @@ ls -l /var/log
     "masterProfile": {
       ...
       "extensions": [
-        { 
-          "name": "hello-world-dcos", 
+        {
+          "name": "hello-world-dcos",
           "singleOrAll": "single"
         }
      ]
     },
     ...
     "extensionProfiles": [
-      { 
-        "name": "hello-world-dcos", 
-        "version": "v1", 
-        "script": "hello.sh" 
+      {
+        "name": "hello-world-dcos",
+        "version": "v1",
+        "script": "hello.sh"
       }
     ]
-    
+
 
 ```
 

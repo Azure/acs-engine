@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/Azure/acs-engine/test/e2e/config"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -33,7 +34,8 @@ func BuildGinkgoRunner(cfg *config.Config, pt *metrics.Point) (*Ginkgo, error) {
 func (g *Ginkgo) Run() error {
 	g.Point.SetTestStart()
 	testDir := fmt.Sprintf("test/e2e/%s", g.Config.Orchestrator)
-	cmd := exec.Command("ginkgo", "-slowSpecThreshold", "180", "-r", testDir)
+	cmd := exec.Command("ginkgo", "-slowSpecThreshold", "180", "-r", "-v", testDir)
+	util.PrintCommand(cmd)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Start()
@@ -47,10 +49,12 @@ func (g *Ginkgo) Run() error {
 	if err != nil {
 		g.Point.RecordTestError()
 		if g.Config.IsKubernetes() {
-			out, _ := exec.Command("kubectl", "get", "all", "--all-namespaces", "-o", "wide").CombinedOutput()
-			log.Printf("Running kubectl get all:\n%s\n", out)
-			out, _ = exec.Command("kubectl", "get", "nodes", "-o", "wide").CombinedOutput()
-			log.Printf("Running kubectl get nodes:\n%s\n", out)
+			kubectl := exec.Command("kubectl", "get", "all", "--all-namespaces", "-o", "wide")
+			util.PrintCommand(kubectl)
+			kubectl.CombinedOutput()
+			kubectl = exec.Command("kubectl", "get", "nodes", "-o", "wide")
+			util.PrintCommand(kubectl)
+			kubectl.CombinedOutput()
 		}
 		return err
 	}

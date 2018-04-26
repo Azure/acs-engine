@@ -1069,11 +1069,12 @@
       "allowedValues": [
         "none",
         "azure",
-        "calico"
+        "calico",
+        "cilium"
       ],
       "defaultValue": "none",
       "metadata": {
-        "description": "The network policy enforcement to use (none|azure|calico)"
+        "description": "The network policy enforcement to use (none|azure|calico|cilium)"
       },
       "type": "string"
     },
@@ -1941,8 +1942,8 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {
         "managed": "true",
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "3"
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3
       },
       "type": "Microsoft.Compute/availabilitySets"
     },

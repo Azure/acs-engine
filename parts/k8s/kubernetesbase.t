@@ -11,6 +11,13 @@
         },
         "type": "string"
       },
+      "windowsPackageSASURLBase": {
+        {{PopulateClassicModeDefaultValue "windowsPackageSASURLBase"}}
+        "metadata": {
+          "description": "The download url base for windows packages for kubernetes."
+        },
+        "type": "string"
+      },
       "kubeBinariesVersion": {
         {{PopulateClassicModeDefaultValue "kubeBinariesVersion"}}
         "metadata": {
@@ -47,9 +54,17 @@
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
       {{if .IsWindows}}
-        {{template "k8s/kuberneteswinagentresourcesvmas.t" .}}
+        {{if .IsVirtualMachineScaleSets}}
+          {{template "k8s/kuberneteswinagentresourcesvmss.t" .}}
+        {{else}}
+          {{template "k8s/kuberneteswinagentresourcesvmas.t" .}}
+        {{end}}
       {{else}}
-        {{template "k8s/kubernetesagentresourcesvmas.t" .}}
+        {{if .IsVirtualMachineScaleSets}}
+          {{template "k8s/kubernetesagentresourcesvmss.t" .}}
+        {{else}}
+          {{template "k8s/kubernetesagentresourcesvmas.t" .}}
+        {{end}}
       {{end}}
     {{end}}
     {{if not IsHostedMaster}}
@@ -108,20 +123,20 @@
         "securityRules": [
 {{if .HasWindows}}
           {
-            "name": "allow_rdp", 
+            "name": "allow_rdp",
             "properties": {
-              "access": "Allow", 
-              "description": "Allow RDP traffic to master", 
-              "destinationAddressPrefix": "*", 
-              "destinationPortRange": "3389-3389", 
-              "direction": "Inbound", 
-              "priority": 102, 
-              "protocol": "Tcp", 
-              "sourceAddressPrefix": "*", 
+              "access": "Allow",
+              "description": "Allow RDP traffic to master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389-3389",
+              "direction": "Inbound",
+              "priority": 102,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
               "sourcePortRange": "*"
             }
           },
-{{end}}       
+{{end}}
           {
             "name": "allow_ssh",
             "properties": {

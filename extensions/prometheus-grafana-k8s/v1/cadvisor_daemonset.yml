@@ -1,0 +1,52 @@
+apiVersion: DAEMONSET_API
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  labels:
+    app: cadvisor
+spec:
+  selector:
+    matchLabels:
+      name: cadvisor
+  template:
+    metadata:
+      labels:
+        name: cadvisor
+    spec:
+      containers:
+        - name: cadvisor
+          image: google/cadvisor:v0.28.3
+          ports:
+            - containerPort: 8080
+              hostPort: 8080
+          volumeMounts:
+            - name: rootfs
+              mountPath: /rootfs
+              readOnly: true
+            - name: varrun
+              mountPath: /var/run
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: varlibdocker
+              mountPath: /var/lib/docker
+              readOnly: true
+            - name: devdisk
+              mountPath: /dev/disk
+              readOnly: true
+      volumes:
+        - name: rootfs
+          hostPath:
+            path: /
+        - name: varrun
+          hostPath:
+            path: /var/run
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: varlibdocker
+          hostPath:
+            path: /var/lib/docker
+        - name: devdisk
+          hostPath:
+            path: /dev/disk

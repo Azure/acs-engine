@@ -24,6 +24,9 @@
     {{template "masterparams.t" .}}
   },
   "variables": {
+    "dcosRepositoryURL": "[parameters('dcosRepositoryURL')]",
+    "dcosClusterPackageListID": "[parameters('dcosClusterPackageListID')]",
+    "dcosProviderPackageID": "[parameters('dcosProviderPackageID')]",
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
         {{template "dcos/dcosagentvars.t" .}}
@@ -35,7 +38,7 @@
           {{end}}
         {{end}}
     {{end}}
-    
+
     {{template "dcos/dcosmastervars.t" .}}
   },
   "resources": [

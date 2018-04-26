@@ -75,7 +75,7 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
+		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
 		if err != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -94,12 +94,12 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		if certsGenerated == true {
+		if certsGenerated {
 			t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
 			if err != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -116,7 +116,7 @@ func TestExpected(t *testing.T) {
 				continue
 			}
 
-			if certsGenerated == true {
+			if certsGenerated {
 				t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 			}
 
@@ -292,7 +292,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
@@ -337,31 +337,24 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 		"Standard_NV12",
 		"Standard_NV24",
 		"Standard_NV24r",
-	}
-
-	// VMSize with GPU but NO NVIDIA agreement for drivers distribution
-	noLicenceSkus := []string{
-		"Standard_NC6_v2",
-		"Standard_NC12_v2",
-		"Standard_NC24_v2",
-		"Standard_NC24r_v2",
-		"Standard_ND6",
-		"Standard_ND12",
-		"Standard_ND24",
-		"Standard_ND24r",
+		"Standard_ND6s",
+		"Standard_ND12s",
+		"Standard_ND24s",
+		"Standard_ND24rs",
+		"Standard_NC6s_v2",
+		"Standard_NC12s_v2",
+		"Standard_NC24s_v2",
+		"Standard_NC24rs_v2",
+		"Standard_NC6s_v3",
+		"Standard_NC12s_v3",
+		"Standard_NC24s_v3",
+		"Standard_NC24rs_v3",
 	}
 
 	for _, sku := range validSkus {
 		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s == "" || s == getGPUDriversNotInstalledWarningMessage(sku) {
+		if s == "" {
 			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
-		}
-	}
-
-	for _, sku := range noLicenceSkus {
-		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s != getGPUDriversNotInstalledWarningMessage(sku) {
-			t.Fatalf("NVIDIA driver install script was provided for a VM sku (%v) that does not meet NVIDIA agreement.", sku)
 		}
 	}
 
@@ -369,5 +362,186 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"})
 	if s != "" {
 		t.Fatalf("VMSize without GPU should not receive a script, expected empty string, received %v", s)
+	}
+}
+func TestIsNSeriesSKU(t *testing.T) {
+	// VMSize with GPU
+	validSkus := []string{
+		"Standard_NC12",
+		"Standard_NC12s_v2",
+		"Standard_NC12s_v3",
+		"Standard_NC24",
+		"Standard_NC24r",
+		"Standard_NC24rs_v2",
+		"Standard_NC24rs_v3",
+		"Standard_NC24s_v2",
+		"Standard_NC24s_v3",
+		"Standard_NC6",
+		"Standard_NC6s_v2",
+		"Standard_NC6s_v3",
+		"Standard_ND12s",
+		"Standard_ND24rs",
+		"Standard_ND24s",
+		"Standard_ND6s",
+		"Standard_NV12",
+		"Standard_NV24",
+		"Standard_NV6",
+	}
+
+	invalidSkus := []string{
+		"Standard_A10",
+		"Standard_A11",
+		"Standard_A2",
+		"Standard_A2_v2",
+		"Standard_A2m_v2",
+		"Standard_A3",
+		"Standard_A4",
+		"Standard_A4_v2",
+		"Standard_A4m_v2",
+		"Standard_A5",
+		"Standard_A6",
+		"Standard_A7",
+		"Standard_A8",
+		"Standard_A8_v2",
+		"Standard_A8m_v2",
+		"Standard_A9",
+		"Standard_B2ms",
+		"Standard_B4ms",
+		"Standard_B8ms",
+		"Standard_D11",
+		"Standard_D11_v2",
+		"Standard_D11_v2_Promo",
+		"Standard_D12",
+		"Standard_D12_v2",
+		"Standard_D12_v2_Promo",
+		"Standard_D13",
+		"Standard_D13_v2",
+		"Standard_D13_v2_Promo",
+		"Standard_D14",
+		"Standard_D14_v2",
+		"Standard_D14_v2_Promo",
+		"Standard_D15_v2",
+		"Standard_D16_v3",
+		"Standard_D16s_v3",
+		"Standard_D2",
+		"Standard_D2_v2",
+		"Standard_D2_v2_Promo",
+		"Standard_D2_v3",
+		"Standard_D2s_v3",
+		"Standard_D3",
+		"Standard_D32_v3",
+		"Standard_D32s_v3",
+		"Standard_D3_v2",
+		"Standard_D3_v2_Promo",
+		"Standard_D4",
+		"Standard_D4_v2",
+		"Standard_D4_v2_Promo",
+		"Standard_D4_v3",
+		"Standard_D4s_v3",
+		"Standard_D5_v2",
+		"Standard_D5_v2_Promo",
+		"Standard_D64_v3",
+		"Standard_D64s_v3",
+		"Standard_D8_v3",
+		"Standard_D8s_v3",
+		"Standard_DS11",
+		"Standard_DS11_v2",
+		"Standard_DS11_v2_Promo",
+		"Standard_DS12",
+		"Standard_DS12_v2",
+		"Standard_DS12_v2_Promo",
+		"Standard_DS13",
+		"Standard_DS13-2_v2",
+		"Standard_DS13-4_v2",
+		"Standard_DS13_v2",
+		"Standard_DS13_v2_Promo",
+		"Standard_DS14",
+		"Standard_DS14-4_v2",
+		"Standard_DS14-8_v2",
+		"Standard_DS14_v2",
+		"Standard_DS14_v2_Promo",
+		"Standard_DS15_v2",
+		"Standard_DS3",
+		"Standard_DS3_v2",
+		"Standard_DS3_v2_Promo",
+		"Standard_DS4",
+		"Standard_DS4_v2",
+		"Standard_DS4_v2_Promo",
+		"Standard_DS5_v2",
+		"Standard_DS5_v2_Promo",
+		"Standard_E16_v3",
+		"Standard_E16s_v3",
+		"Standard_E2_v3",
+		"Standard_E2s_v3",
+		"Standard_E32-16s_v3",
+		"Standard_E32-8s_v3",
+		"Standard_E32_v3",
+		"Standard_E32s_v3",
+		"Standard_E4_v3",
+		"Standard_E4s_v3",
+		"Standard_E64-16s_v3",
+		"Standard_E64-32s_v3",
+		"Standard_E64_v3",
+		"Standard_E64s_v3",
+		"Standard_E8_v3",
+		"Standard_E8s_v3",
+		"Standard_F16",
+		"Standard_F16s",
+		"Standard_F16s_v2",
+		"Standard_F2",
+		"Standard_F2s_v2",
+		"Standard_F32s_v2",
+		"Standard_F4",
+		"Standard_F4s",
+		"Standard_F4s_v2",
+		"Standard_F64s_v2",
+		"Standard_F72s_v2",
+		"Standard_F8",
+		"Standard_F8s",
+		"Standard_F8s_v2",
+		"Standard_G1",
+		"Standard_G2",
+		"Standard_G3",
+		"Standard_G4",
+		"Standard_G5",
+		"Standard_GS1",
+		"Standard_GS2",
+		"Standard_GS3",
+		"Standard_GS4",
+		"Standard_GS4-4",
+		"Standard_GS4-8",
+		"Standard_GS5",
+		"Standard_GS5-16",
+		"Standard_GS5-8",
+		"Standard_H16",
+		"Standard_H16m",
+		"Standard_H16mr",
+		"Standard_H16r",
+		"Standard_H8",
+		"Standard_H8m",
+		"Standard_L16s",
+		"Standard_L32s",
+		"Standard_L4s",
+		"Standard_L8s",
+		"Standard_M128-32ms",
+		"Standard_M128-64ms",
+		"Standard_M128ms",
+		"Standard_M128s",
+		"Standard_M64-16ms",
+		"Standard_M64-32ms",
+		"Standard_M64ms",
+		"Standard_M64s",
+	}
+
+	for _, sku := range validSkus {
+		if !isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
+			t.Fatalf("Expected isNSeriesSKU(%s) to be true", sku)
+		}
+	}
+
+	for _, sku := range invalidSkus {
+		if isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
+			t.Fatalf("Expected isNSeriesSKU(%s) to be false", sku)
+		}
 	}
 }

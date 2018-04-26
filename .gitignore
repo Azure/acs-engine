@@ -1,5 +1,6 @@
 acs-engine.exe
 acs-engine
+debug
 _output/
 _input/
 .vscode
@@ -11,6 +12,7 @@ test/acs-engine-test/acs-engine-test
 _dist/
 bin/
 .env
+.coverprofile
 
 test/junit/
 test/acs-engine-test/acs-engine-test.exe

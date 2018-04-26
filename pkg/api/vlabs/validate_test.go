@@ -1,9 +1,13 @@
 package vlabs
 
 import (
+	"errors"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Masterminds/semver"
 )
 
 const (
@@ -63,6 +67,36 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	if err := o.Validate(true); err != nil {
 		t.Errorf("should not have failed on old patch version during update valdiation")
 	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: "v1.9.0",
+	}
+
+	if err := o.Validate(false); err != nil {
+		t.Errorf("should not have failed on version with v prefix")
+	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType:    OpenShift,
+		OrchestratorVersion: "v1.0",
+	}
+
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should have failed on old version")
+	}
+	if err := o.Validate(true); err != nil {
+		t.Errorf("should not have failed on old version")
+	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: "v1.9.0",
+		OpenShiftConfig:     &OpenShiftConfig{},
+	}
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should have failed on OpenShift config specified with non OpenShift orchestrator type")
+	}
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
@@ -74,19 +108,17 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			ClusterSubnet:      "10.120.0.0/16",
-			DockerBridgeSubnet: "10.120.1.0/16",
-			MaxPods:            42,
-			CloudProviderConfig: CloudProviderConfig{
-				CloudProviderBackoff:         ValidKubernetesCloudProviderBackoff,
-				CloudProviderBackoffRetries:  ValidKubernetesCloudProviderBackoffRetries,
-				CloudProviderBackoffJitter:   ValidKubernetesCloudProviderBackoffJitter,
-				CloudProviderBackoffDuration: ValidKubernetesCloudProviderBackoffDuration,
-				CloudProviderBackoffExponent: ValidKubernetesCloudProviderBackoffExponent,
-				CloudProviderRateLimit:       ValidKubernetesCloudProviderRateLimit,
-				CloudProviderRateLimitQPS:    ValidKubernetesCloudProviderRateLimitQPS,
-				CloudProviderRateLimitBucket: ValidKubernetesCloudProviderRateLimitBucket,
-			},
+			ClusterSubnet:                "10.120.0.0/16",
+			DockerBridgeSubnet:           "10.120.1.0/16",
+			MaxPods:                      42,
+			CloudProviderBackoff:         ValidKubernetesCloudProviderBackoff,
+			CloudProviderBackoffRetries:  ValidKubernetesCloudProviderBackoffRetries,
+			CloudProviderBackoffJitter:   ValidKubernetesCloudProviderBackoffJitter,
+			CloudProviderBackoffDuration: ValidKubernetesCloudProviderBackoffDuration,
+			CloudProviderBackoffExponent: ValidKubernetesCloudProviderBackoffExponent,
+			CloudProviderRateLimit:       ValidKubernetesCloudProviderRateLimit,
+			CloudProviderRateLimitQPS:    ValidKubernetesCloudProviderRateLimitQPS,
+			CloudProviderRateLimitBucket: ValidKubernetesCloudProviderRateLimitBucket,
 			KubeletConfig: map[string]string{
 				"--node-status-update-frequency": ValidKubernetesNodeStatusUpdateFrequency,
 			},
@@ -250,29 +282,11 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 	}
 
-	// Tests that apply to pre-1.6 releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8} {
-		c := KubernetesConfig{
-			CloudProviderConfig: CloudProviderConfig{
-				CloudProviderBackoff:   true,
-				CloudProviderRateLimit: true,
-			},
-		}
-		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error because backoff and rate limiting are not available before v1.6.6")
-		}
-	}
-
 	// Tests that apply to 1.6 and later releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
-		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12,
-		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7,
-		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1} {
+	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
 		c := KubernetesConfig{
-			CloudProviderConfig: CloudProviderConfig{
-				CloudProviderBackoff:   true,
-				CloudProviderRateLimit: true,
-			},
+			CloudProviderBackoff:   true,
+			CloudProviderRateLimit: true,
 		}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
@@ -280,18 +294,8 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	trueVal := true
-	// Tests that apply to pre-1.8 releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7} {
-		c := KubernetesConfig{
-			UseCloudControllerManager: &trueVal,
-		}
-		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error because UseCloudControllerManager is not available before v1.8")
-		}
-	}
-
 	// Tests that apply to 1.8 and later releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot8Dot1} {
+	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(), "1.8.0", true, true) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
@@ -335,12 +339,24 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			"should error on calico for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on cilium for windows clusters",
+		)
+	}
 }
 
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
 
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 
 		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
@@ -348,7 +364,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:       "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -361,7 +377,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -374,7 +390,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = "secret"
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -387,7 +403,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "randomID",
@@ -478,8 +494,8 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 }
 
-func getK8sDefaultProperties() *Properties {
-	return &Properties{
+func getK8sDefaultProperties(hasWindows bool) *Properties {
+	p := &Properties{
 		OrchestratorProfile: &OrchestratorProfile{
 			OrchestratorType: Kubernetes,
 		},
@@ -511,6 +527,24 @@ func getK8sDefaultProperties() *Properties {
 			Secret:   "clientSecret",
 		},
 	}
+
+	if hasWindows {
+		p.AgentPoolProfiles = []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+				OSType:              Windows,
+			},
+		}
+		p.WindowsProfile = &WindowsProfile{
+			AdminUsername: "azureuser",
+			AdminPassword: "password",
+		}
+	}
+
+	return p
 }
 
 func Test_Properties_ValidateContainerRuntime(t *testing.T) {
@@ -518,13 +552,13 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	p.OrchestratorProfile = &OrchestratorProfile{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 
-	for _, policy := range ContainerRuntimeValues {
+	for _, runtime := range ContainerRuntimeValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
-		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
+		p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = runtime
 		if err := p.validateContainerRuntime(); err != nil {
 			t.Errorf(
 				"should not error on containerRuntime=\"%s\"",
-				policy,
+				runtime,
 			)
 		}
 	}
@@ -546,5 +580,118 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 		t.Errorf(
 			"should error on clear-containers for windows clusters",
 		)
+	}
+}
+
+func TestWindowsVersions(t *testing.T) {
+	for _, version := range common.GetAllSupportedKubernetesVersionsWindows() {
+		p := getK8sDefaultProperties(true)
+		p.OrchestratorProfile.OrchestratorVersion = version
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Windows version: %v", err,
+			)
+		}
+		sv, _ := semver.NewVersion(version)
+		p = getK8sDefaultProperties(true)
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Windows version: %v", err,
+			)
+		}
+	}
+	p := getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.4"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.4.0"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+}
+
+func TestLinuxVersions(t *testing.T) {
+	for _, version := range common.GetAllSupportedKubernetesVersions() {
+		p := getK8sDefaultProperties(false)
+		p.OrchestratorProfile.OrchestratorVersion = version
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Linux version: %v", err,
+			)
+		}
+		sv, _ := semver.NewVersion(version)
+		p = getK8sDefaultProperties(false)
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		if err := p.Validate(false); err != nil {
+			t.Errorf(
+				"should not error on valid Linux version: %v", err,
+			)
+		}
+	}
+	p := getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.4"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.4.0"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
+		)
+	}
+}
+
+func TestValidateImageNameAndGroup(t *testing.T) {
+	tests := []struct {
+		name string
+
+		imageName          string
+		imageResourceGroup string
+
+		expectedErr error
+	}{
+		{
+			name: "valid run",
+
+			imageName:          "rhel9000",
+			imageResourceGroup: "club",
+
+			expectedErr: nil,
+		},
+		{
+			name: "invalid: image name is missing",
+
+			imageResourceGroup: "club",
+
+			expectedErr: errors.New(`imageName needs to be specified when imageResourceGroup is provided`),
+		},
+		{
+			name: "invalid: image resource group is missing",
+
+			imageName: "rhel9000",
+
+			expectedErr: errors.New(`imageResourceGroup needs to be specified when imageName is provided`),
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
+		if !reflect.DeepEqual(gotErr, test.expectedErr) {
+			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
+		}
 	}
 }

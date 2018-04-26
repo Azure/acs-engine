@@ -5,6 +5,8 @@ import (
 	"log"
 	"os/exec"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // Namespace holds namespace metadata
@@ -20,7 +22,9 @@ type Metadata struct {
 
 // Create a namespace with the given name
 func Create(name string) (*Namespace, error) {
-	out, err := exec.Command("kubectl", "create", "namespace", name).CombinedOutput()
+	cmd := exec.Command("kubectl", "create", "namespace", name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to create namespace (%s):%s\n", name, string(out))
 		return nil, err
@@ -30,7 +34,9 @@ func Create(name string) (*Namespace, error) {
 
 // Get returns a namespace for with a given name
 func Get(name string) (*Namespace, error) {
-	out, err := exec.Command("kubectl", "get", "namespace", name, "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "namespace", name, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to get namespace (%s):%s\n", name, string(out))
 		return nil, err
@@ -45,7 +51,9 @@ func Get(name string) (*Namespace, error) {
 
 // Delete a namespace
 func (n *Namespace) Delete() error {
-	out, err := exec.Command("kubectl", "delete", "namespace", n.Metadata.Name).CombinedOutput()
+	cmd := exec.Command("kubectl", "delete", "namespace", n.Metadata.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete namespace (%s):%s\n", n.Metadata.Name, out)
 		return err

@@ -50,7 +50,6 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	}
 	// Kubernetes don't allow agent DNSPrefix
 	if orchestratorType == Kubernetes {
-		// The line below need to be removed after June 2017
 		a.DNSPrefix = ""
 		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
 			return e
@@ -120,10 +119,7 @@ func (a *Properties) Validate() error {
 			}
 		}
 	}
-	if e := a.LinuxProfile.Validate(); e != nil {
-		return e
-	}
-	return nil
+	return a.LinuxProfile.Validate()
 }
 
 func validateNameEmpty(name string, label string) error {

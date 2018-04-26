@@ -31,7 +31,7 @@ var _ = BeforeSuite(func() {
 
 	engCfg, err := engine.ParseConfig(c.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	Expect(err).NotTo(HaveOccurred())
-	cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+	cs, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
 	Expect(err).NotTo(HaveOccurred())
 	eng = engine.Engine{
 		Config:            engCfg,
@@ -58,7 +58,8 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			expectedVersion := common.RationalizeReleaseAndVersion(
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorType,
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
-				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+				false)
 			Expect(version).To(Equal(expectedVersion))
 		})
 

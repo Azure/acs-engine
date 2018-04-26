@@ -3,13 +3,14 @@ Monitoring Kubernetes Clusters
 
 Monitoring your Kubernetes cluster is important to be able to see your cluster's health. By monitoring your cluster, you can see stats such as such as CPU, memory, and disk usage. Monitoring is supported for both Linux as well as Windows nodes in your cluster.
 
-There are five main options to monitor your cluster: 
+There are five main options to monitor your cluster:
 
 1. [Kubectl](#kubectl)
-2. [Kubernetes dashboard](#kubernetes-dashboard)
-3. [Grafana and Influx DB](#grafana-and-influx-db)
-4. [Azure Operations Management Suite (OMS)](#oms)
-5. [Heapster REST API](#heapster-rest-api)
+1. [Kubernetes dashboard](#kubernetes-dashboard)
+1. [Monitoring extension](#monitoring-extension)
+1. [Grafana and Influx DB](#grafana-and-influx-db)
+1. [Azure Operations Management Suite (OMS)](#oms)
+1. [Heapster REST API](#heapster-rest-api)
 
 ## Intro to Heapster
 
@@ -39,7 +40,7 @@ The easiest way to see basic node metrics is by using kubectl. The `kubectl top`
 
 1. To get node metrics: `kubectl top node`
 
-```shell 
+```shell
 azureuser@k8s-master-95363663-0:~$ kubectl top node
 NAME                        CPU(cores)   CPU%      MEMORY(bytes)   MEMORY%
 k8s-agentpool1-95363663-0   49m          2%        1298Mi          18%
@@ -65,13 +66,23 @@ Once you have opened the UI, you can explore node stats (CPU, Memory, etc...) un
 
 ![Image of Kuberentes dashboard](../images/k8s-monitoring-dashboard.png)
 
+## Monitoring extension
+
+A quick way to scaffold out cloud-native and open source monitoring components is to use the [acs-engine monitoring extension](https://github.com/Azure/acs-engine/tree/master/extensions/prometheus-grafana-k8s). For details on how to use the monitoring extension, please refer to the [extension documentation](https://github.com/Azure/acs-engine/tree/master/extensions/prometheus-grafana-k8s). By embedding the extension in your apimodel, the extension will do much of the work to create a monitoring solution in your cluster, which includes the following:
+
+- [cAdvisor](https://github.com/google/cadvisor) daemon set to publish container metrics
+- [Prometheus](https://prometheus.io/) for metrics collection and storage
+- [Grafana](https://grafana.com/) for dashboard and visualizations
+
+The extension wires up these components together. Post-deplyoment of the Kubernetes cluster, you just have to retrieve Grafana admin password (Kubernetes secret) and target your browser to the Grafana endpoint. There is already a pre-loaded Kubernetes cluster monitoring dashboard, so out-of-the-box you will have meaningful monitoring points with the extensibility that Prometheus and Grafana offer you.
+
 ## Grafana and Influx DB
 
-Another option to see stats is via Grafana and Influx DB. Grafana is a powerful dashboarding tool that can be used to visualize all types of data from various sources. InfluxDB is a database that is used to store time series data. Heapster is responsible for aggregating metrics across your cluster and ingesting them into InfluxDB. Then Grafana uses InfluxDB as it's datasource to visualize metrics. 
+Another option to see stats is via Grafana and Influx DB. Grafana is a powerful dashboarding tool that can be used to visualize all types of data from various sources. InfluxDB is a database that is used to store time series data. Heapster is responsible for aggregating metrics across your cluster and ingesting them into InfluxDB. Then Grafana uses InfluxDB as it's datasource to visualize metrics.
 
 ![Image of Grafana](../images/k8s-monitoring-grafana1.png)
 
-To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also need to configure Heapster to use InfluxDB as its storage backend. 
+To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also need to configure Heapster to use InfluxDB as its storage backend.
 
 1. `wget https://raw.githubusercontent.com/kubernetes/heapster/release-1.5/deploy/kube-config/influxdb/influxdb.yaml`
 1. `wget https://raw.githubusercontent.com/kubernetes/heapster/release-1.5/deploy/kube-config/influxdb/grafana.yaml`
@@ -79,7 +90,7 @@ To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also nee
 1. `kubectl create -f grafana.yaml`
 1. `kubectl get pods --namespace=kube-system` Ensure that Heapster, Grafana and InfluxDB are in the `Running` state
 1. `kubectl edit deployment/heapster --namespace=kube-system`
-    
+
     We need to configure Heapster to use InfluxDB as the the data store. To do that under the spec > containers > command property change the command field from:
    ``` yaml
    - command:

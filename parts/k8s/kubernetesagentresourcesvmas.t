@@ -10,9 +10,6 @@
 {{else}}
       "[variables('vnetID')]"
 {{end}}
-{{range $masterOffset := loop 1 GetMasterCount}}
-      ,"[concat(variables('masterNICNamePrefix'), sub({{$masterOffset}}, 1))]"
-{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
@@ -34,6 +31,14 @@
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
+{{if eq $.Role "infra"}}
+              ,
+              "loadBalancerBackendAddressPools": [
+                {
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                }
+              ]
+{{end}}
             }
           }
           {{if lt $seq $.IPAddressCount}},{{end}}
@@ -46,18 +51,18 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
-{{if .IsManagedDisks}} 
+{{if .IsManagedDisks}}
    {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "properties":
         {
-            "platformFaultDomainCount": "2",
-            "platformUpdateDomainCount": "3",
+            "platformFaultDomainCount": 2,
+            "platformUpdateDomainCount": 3,
 		"managed" : "true"
         },
-  
+
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{else if .IsStorageAccount}}
@@ -68,9 +73,11 @@
         "name": "loop"
       },
       {{if not IsHostedMaster}}
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
+        {{if not IsPrivateCluster}}
+          "dependsOn": [
+            "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+          ],
+        {{end}}
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
@@ -87,9 +94,11 @@
         "name": "datadiskLoop"
       },
       {{if not IsHostedMaster}}
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
+        {{if not IsPrivateCluster}}
+          "dependsOn": [
+            "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+          ],
+        {{end}}
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
@@ -106,7 +115,7 @@
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
-{{end}} 
+{{end}}
   {
     {{if .IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
@@ -142,6 +151,13 @@
         "type": "systemAssigned"
       },
       {{end}}
+      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
+      "plan": {
+        "name": "[variables('{{.Name}}osImageSKU')]",
+        "publisher": "[variables('{{.Name}}osImagePublisher')]",
+        "product": "[variables('{{.Name}}osImageOffer')]"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
@@ -159,7 +175,9 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+          {{if not IsOpenShift}}
           {{GetKubernetesAgentCustomData .}}
+          {{end}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
@@ -177,12 +195,18 @@
             {{end}}
         },
         "storageProfile": {
+          {{if not (UseAgentCustomImage .)}}
           {{GetDataDisks .}}
+          {{end}}
           "imageReference": {
+            {{if UseAgentCustomImage .}}
+            "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
+            {{else}}
             "offer": "[variables('{{.Name}}osImageOffer')]",
             "publisher": "[variables('{{.Name}}osImagePublisher')]",
             "sku": "[variables('{{.Name}}osImageSKU')]",
             "version": "[variables('{{.Name}}osImageVersion')]"
+            {{end}}
           },
           "osDisk": {
             "createOption": "FromImage"
@@ -255,7 +279,7 @@
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'/cse', copyIndex(variables('{{.Name}}Offset')))]",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'/cse', '-agent-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
@@ -263,7 +287,11 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+        {{if IsOpenShift }}
+          "script": "{{ Base64 (OpenShiftGetNodeSh .) }}"
+        {{else}}
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+        {{end}}
         }
       }
     }

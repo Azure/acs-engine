@@ -1,0 +1,121 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.10",
+      "kubernetesConfig": {
+        "useInstanceMetadata": false
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "masterdns1",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool3",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool4",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool5",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool6",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool7",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool8",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool9",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool10",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool11",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      },
+      {
+        "name": "agentpool12",
+        "count": 100,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "ServicePrincipalClientID",
+      "secret": "myServicePrincipalClientSecret"
+    },
+    "certificateProfile": {
+      "caCertificate": "caCertificate",
+      "caPrivateKey": "caPrivateKey",
+      "apiServerCertificate": "apiServerCertificate",
+      "apiServerPrivateKey": "apiServerPrivateKey",
+      "clientCertificate": "clientCertificate",
+      "clientPrivateKey": "clientPrivateKey",
+      "kubeConfigCertificate": "kubeConfigCertificate",
+      "kubeConfigPrivateKey": "kubeConfigPrivateKey",
+      "etcdClientCertificate": "etcdClientCertificate",
+      "etcdClientPrivateKey": "etcdClientPrivateKey",
+      "etcdServerCertificate": "etcdServerCertificate",
+      "etcdServerPrivateKey": "etcdServerPrivateKey",
+      "etcdPeerCertificates": ["etcdPeerCertificate0"],
+      "etcdPeerPrivateKeys": ["etcdPeerPrivateKey0"]
+    }
+  }
+}

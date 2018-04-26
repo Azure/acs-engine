@@ -68,6 +68,15 @@ runcmd: PREPROVISION_EXTENSION
   - mask
   - --now
   - lxc-net.service
+- - tar
+  - czf
+  - /etc/docker.tar.gz
+  - -C
+  - /tmp/xtoph
+  - .docker
+- - rm
+  - -rf
+  - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -121,7 +130,7 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/bootstrap-id
   permissions: '0644'
-- content: '["dcos-config--setup_DCOSGUID", "dcos-metadata--setup_DCOSGUID"]
+- content: '["dcos-config--setup_{{{dcosProviderPackageID}}}", "dcos-metadata--setup_{{{dcosProviderPackageID}}}"]
 
     '
   owner: root
@@ -349,13 +358,14 @@ write_files:
     '
   path: /etc/systemd/system/dcos-setup.service
   permissions: '0644'
+- path: /var/lib/dcos/mesos-slave-common
+  content: 'ATTRIBUTES_STR'
 - content: ''
   path: /etc/mesosphere/roles/azure
 - content: 'PROVISION_STR'
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
-- path: /var/lib/dcos/mesos-slave-common
-  content: 'ATTRIBUTES_STR'
-  permissions: "0644"
+- content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"

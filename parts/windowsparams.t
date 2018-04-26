@@ -23,4 +23,25 @@
         "description": "The source of the generalized blob which will be used to create a custom windows image for the agent virtual machines."
       },
       "type": "string"
+    },
+    "agentWindowsPublisher": {
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": {
+        "description": "The publisher of windows image for the agent virtual machines."
+      },
+      "type": "string"
+    },
+    "agentWindowsOffer": {
+      "defaultValue": "WindowsServerSemiAnnual",
+      "metadata": {
+        "description": "The offer of windows image for the agent virtual machines."
+      },
+      "type": "string"
+    },
+    "agentWindowsSku": {
+      "defaultValue": "Datacenter-Core-1709-with-Containers-smalldisk",
+      "metadata": {
+        "description": "The SKU of windows image for the agent virtual machines."
+      },
+      "type": "string"
     }

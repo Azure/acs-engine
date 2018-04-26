@@ -50,13 +50,13 @@ function check_node_count() {
 check_node_count
 
 log "Downloading dcos"
-${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos
+${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.10/dcos
 if [[ "$?" != "0" ]]; then log "Failed to download dcos"; exit 1; fi
 log "Setting dcos permissions"
 ${remote_exec} chmod a+x ./dcos
 if [[ "$?" != "0" ]]; then log "Failed to chmod dcos"; exit 1; fi
 log "Configuring dcos"
-${remote_exec} ./dcos config set core.dcos_url http://localhost:80
+${remote_exec} ./dcos cluster setup http://localhost:80
 if [[ "$?" != "0" ]]; then log "Failed to configure dcos"; exit 1; fi
 
 log "Copying marathon.json"

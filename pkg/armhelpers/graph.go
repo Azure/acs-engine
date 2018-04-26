@@ -2,6 +2,7 @@ package armhelpers
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
@@ -97,6 +98,7 @@ func (az *AzureClient) CreateRoleAssignmentSimple(resourceGroup, servicePrincipa
 		},
 	}
 
+	re := regexp.MustCompile("(?i)status=(\\d+)")
 	for {
 		_, err := az.CreateRoleAssignment(
 			scope,
@@ -104,6 +106,12 @@ func (az *AzureClient) CreateRoleAssignmentSimple(resourceGroup, servicePrincipa
 			roleAssignmentParameters,
 		)
 		if err != nil {
+			match := re.FindStringSubmatch(err.Error())
+			if match != nil && (match[1] == "403") {
+				//insufficient permissions. stop now
+				log.Debugf("Failed to create role assignment (will abort now): %q", err)
+				return err
+			}
 			log.Debugf("Failed to create role assignment (will retry): %q", err)
 			time.Sleep(3 * time.Second)
 			continue

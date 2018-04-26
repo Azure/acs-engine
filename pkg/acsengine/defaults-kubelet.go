@@ -1,13 +1,10 @@
 package acsengine
 
 import (
-	"bytes"
-	"fmt"
-	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -15,41 +12,40 @@ func setKubeletConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 	staticLinuxKubeletConfig := map[string]string{
-		"--address":                         "0.0.0.0",
-		"--allow-privileged":                "true",
-		"--anonymous-auth":                  "false",
-		"--authorization-mode":              "Webhook",
-		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
-		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cluster-domain":                  "cluster.local",
-		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
-		"--cgroups-per-qos":                 "false",
-		"--enforce-node-allocatable":        "",
-		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
-		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
-		"--read-only-port":                  "0",
-		"--keep-terminated-pod-volumes":     "false",
+		"--address":                     "0.0.0.0",
+		"--allow-privileged":            "true",
+		"--anonymous-auth":              "false",
+		"--authorization-mode":          "Webhook",
+		"--client-ca-file":              "/etc/kubernetes/certs/ca.crt",
+		"--pod-manifest-path":           "/etc/kubernetes/manifests",
+		"--cluster-dns":                 o.KubernetesConfig.DNSServiceIP,
+		"--cgroups-per-qos":             "true",
+		"--enforce-node-allocatable":    "pods",
+		"--kubeconfig":                  "/var/lib/kubelet/kubeconfig",
+		"--keep-terminated-pod-volumes": "false",
 	}
 
 	staticWindowsKubeletConfig := make(map[string]string)
 	for key, val := range staticLinuxKubeletConfig {
 		staticWindowsKubeletConfig[key] = val
 	}
-	// Windows kubelet config overrides
-	staticWindowsKubeletConfig["--network-plugin"] = NetworkPluginKubenet
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
-		"--network-plugin":               "cni",
-		"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
-		"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
-		"--node-status-update-frequency": KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
-		"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
-		"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
-		"--cloud-provider":               "azure",
-		"--cloud-config":                 "/etc/kubernetes/azure.json",
+		"--cluster-domain":                  "cluster.local",
+		"--network-plugin":                  "cni",
+		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
+		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
+		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
+		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
+		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
+		"--non-masquerade-cidr":             o.KubernetesConfig.ClusterSubnet,
+		"--cloud-provider":                  "azure",
+		"--cloud-config":                    "/etc/kubernetes/azure.json",
+		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
+		"--event-qps":                       DefaultKubeletEventQPS,
+		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -64,6 +60,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Override default --network-plugin?
 	if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
 	// We don't support user-configurable values for the following,
@@ -79,7 +76,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	}
 
 	// Get rid of values not supported in v1.5 clusters
-	if !isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
+	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
 		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
@@ -87,7 +84,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
-		for _, key := range []string{"--anonymous-auth", "--authorization-mode", "--client-ca-file"} {
+		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}
@@ -113,20 +110,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 	}
 }
 
-// combine user-provided --feature-gates vals with defaults
-// a minimum k8s version may be declared as required for defaults assignment
-func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
-	if minVersion != "" {
-		if isKubernetesVersionGe(version, minVersion) {
-			m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
-		} else {
-			m["--feature-gates"] = combineValues(m["--feature-gates"], "")
-		}
-	} else {
-		m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
-	}
-}
-
 func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 	if p.KubeletConfig == nil {
 		p.KubeletConfig = d
@@ -146,38 +129,4 @@ func copyMap(input map[string]string) map[string]string {
 		copy[key] = value
 	}
 	return copy
-}
-func combineValues(inputs ...string) string {
-	var valueMap map[string]string
-	valueMap = make(map[string]string)
-	for _, input := range inputs {
-		applyValueStringToMap(valueMap, input)
-	}
-	return mapToString(valueMap)
-}
-
-func applyValueStringToMap(valueMap map[string]string, input string) {
-	values := strings.Split(input, ",")
-	for index := 0; index < len(values); index++ {
-		// trim spaces (e.g. if the input was "foo=true, bar=true" - we want to drop the space after the comma)
-		value := strings.Trim(values[index], " ")
-		valueParts := strings.Split(value, "=")
-		if len(valueParts) == 2 {
-			valueMap[valueParts[0]] = valueParts[1]
-		}
-	}
-}
-
-func mapToString(valueMap map[string]string) string {
-	// Order by key for consistency
-	keys := []string{}
-	for key := range valueMap {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	var buf bytes.Buffer
-	for _, key := range keys {
-		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
-	}
-	return strings.TrimSuffix(buf.String(), ",")
 }
