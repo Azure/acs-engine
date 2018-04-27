@@ -21,9 +21,6 @@ fs_setup:
       - "-E"
       - "lazy_itable_init=1,lazy_journal_init=1"
 
-mounts: 
-  - [ /dev/disk/azure/scsi1/lun0-part1, /var/lib/etcddisk ]
-
 write_files:
 - path: "/opt/azure/containers/provision_source.sh"
   permissions: "0744"
@@ -319,6 +316,20 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/etc/systemd/system/var-lib-etcddisk.mount"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Mount System Etcd work Directory
+    [Mount]
+    What=/dev/disk/azure/scsi1/lun0-part1
+    Where=/var/lib/etcddisk
+    Type=ext4
+    Options=noatime,defaults
+    [Install]
+    RequiredBy=etcd.service
+
 - path: "/etc/systemd/system/etcd.service"
   permissions: "0644"
   owner: "root"
@@ -329,6 +340,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     Documentation=man:etcd
     After=network.target
     Wants=network-online.target
+    Requires=var-lib-etcddisk.mount
     [Service]
     Environment=DAEMON_ARGS=
     Environment=ETCD_NAME=%H
@@ -337,6 +349,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     Type=notify
     User=etcd
     PermissionsStartOnly=true
+    ExecStartPre=
     ExecStart=/usr/bin/etcd $DAEMON_ARGS
     Restart=always
     [Install]
@@ -354,6 +367,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     systemctl daemon-reload
+    systemctl enable var-lib-etcddisk.mount
     systemctl enable etcd.service
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
