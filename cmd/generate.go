@@ -117,7 +117,6 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 func (gc *generateCmd) mergeAPIModel() error {
 	var err error
-	log.Infoln("test")
 
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
