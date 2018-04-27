@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: /go/src/github.com/Azure/acs-engine
   docker:
-    - image: quay.io/deis/go-dev:v1.9.1
+    - image: quay.io/deis/go-dev:v1.10.0
   environment:
     GOPATH: /go
 
@@ -78,11 +78,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   swarmmode-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
