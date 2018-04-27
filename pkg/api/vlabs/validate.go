@@ -235,12 +235,6 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
-	if a.osType != nil {
-		if e := validatePoolOsType(a.osType); e != nil {
-			return e
-		}
-	}
-
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
 	if orchestratorType == Kubernetes {
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
@@ -527,8 +521,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := a.WindowsProfile.Validate(); e != nil {
-				return e
+			if a.WindowsProfile != nil {
+				if e := a.WindowsProfile.Validate(); e != nil {
+					return e
+				}
+			} else {
+				return fmt.Errorf("WindowsProfile is required when the cluster definition contains Windows agent pool(s)")
 			}
 		}
 	}
