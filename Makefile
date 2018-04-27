@@ -44,6 +44,10 @@ all: build
 dev:
 	$(DEV_ENV_CMD_IT) bash
 
+.PHONY: validate-generated
+validate-generated: bootstrap
+	./scripts/validate-generated.sh
+
 .PHONY: generate
 generate: bootstrap
 	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
