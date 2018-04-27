@@ -449,6 +449,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |imageReference.name|no|The name of a a Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
+|osType|no|Specifies the OS of the VM. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
 |distro|no|Specifies agent pool(s) Operating System (Linux). Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
 
 ### linuxProfile
