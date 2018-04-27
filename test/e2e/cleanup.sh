@@ -45,9 +45,9 @@ echo "Looking for resource groups created over ${EXPIRATION_IN_HOURS} hours ago.
 for resourceGroup in `az group list | jq --arg dl $deadline '.[] | select(.id | contains("acse-test-infrastructure") | not) | select(.tags.now < $dl).name' | tr -d '\"' || ""`; do
     for deployment in `az group deployment list -g $resourceGroup | jq '.[] | .name' | tr -d '\"' || ""`; do
         echo "Will delete deployment ${deployment} from resource group ${resourceGroup}..."
-        az group deployment delete -n $deployment -g $resourceGroup || echo "unable to delete deployment ${deployment}, will continue...""
+        az group deployment delete -n $deployment -g $resourceGroup || echo "unable to delete deployment ${deployment}, will continue..."
     done
     echo "Will delete resource group ${resourceGroup}..."
     # delete old resource groups
-    az group delete -y -n $resourceGroup --no-wait >> delete.log || echo "unable to delete resource group ${resourceGroup}, will continue...""
+    az group delete -y -n $resourceGroup --no-wait >> delete.log || echo "unable to delete resource group ${resourceGroup}, will continue..."
 done
