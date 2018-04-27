@@ -5,7 +5,7 @@
         "name": "loop"
       },
       "dependsOn": [
-{{if IsKubernetes}}
+{{if not IsOpenShift}}
 {{if .IsCustomVNET}}
       "[variables('nsgID')]"
 {{else}}
@@ -25,7 +25,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-{{if IsKubernetes}}
+{{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
           "id": "[variables('nsgID')]"

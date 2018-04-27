@@ -198,9 +198,9 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
 {{if not IsAzureCNI}}
-        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if IsKubernetes}},{{end}}
+        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if not IsOpenShift}},{{end}}
 {{end}}
-{{if IsKubernetes}}
+{{if not IsOpenShift}}
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
 {{end}}
       ],
@@ -217,7 +217,7 @@
             "name": "[variables('subnetName')]",
             "properties": {
               "addressPrefix": "[variables('subnet')]"
-{{if IsKubernetes}}
+{{if not IsOpenShift}}
               ,
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
@@ -399,7 +399,7 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-{{if IsKubernetes}}
+{{if not IsOpenShift}}
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
 {{else}}
@@ -483,7 +483,7 @@
           "name": "nicLoopNode"
         },
         "dependsOn": [
-  {{if IsKubernetes}}
+  {{if not IsOpenShift}}
   {{if .MasterProfile.IsCustomVNET}}
           "[variables('nsgID')]"
   {{else}}
