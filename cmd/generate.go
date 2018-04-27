@@ -63,7 +63,7 @@ func newGenerateCmd() *cobra.Command {
 				log.Fatalf(fmt.Sprintf("error validating generateCmd: %s", err.Error()))
 			}
 
-			if err := gc.mergeAPIModel(cmd, args); err != nil {
+			if err := gc.mergeAPIModel(); err != nil {
 				log.Fatalf(fmt.Sprintf("error merging API model in generateCmd: %s", err.Error()))
 			}
 
@@ -115,8 +115,9 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (gc *generateCmd) mergeAPIModel(cmd *cobra.Command, args []string) error {
+func (gc *generateCmd) mergeAPIModel() error {
 	var err error
+	log.Infoln("test")
 
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
