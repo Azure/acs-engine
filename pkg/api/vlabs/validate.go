@@ -235,6 +235,12 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
+	if a.osType != nil {
+		if e := validatePoolOsType(a.osType); e != nil {
+			return e
+		}
+	}
+
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
 	if orchestratorType == Kubernetes {
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
@@ -816,6 +822,12 @@ func validatePoolName(poolName string) error {
 		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
 	}
 	return nil
+}
+
+func validatePoolOsType(osType string) error {
+	if osType != "linux" && osType != "windows"
+		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
+	return nil	
 }
 
 func validateDNSName(dnsName string) error {
