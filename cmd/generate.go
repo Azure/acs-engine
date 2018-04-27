@@ -123,7 +123,7 @@ func (gc *generateCmd) mergeAPIModel(cmd *cobra.Command, args []string) error {
 		m := make(map[string]setFlagValue)
 		mapValues(m, gc.set)
 
-		// update api model file with overriden values and get the new file path
+		// overrides the api model and generates a new file
 		gc.apimodelPath, err = mergeValuesWithAPIModel(gc.apimodelPath, m)
 		if err != nil {
 			return fmt.Errorf(fmt.Sprintf("error merging --set values with the api model: %s", err.Error()))
