@@ -31,14 +31,19 @@ The cluster definition file enables the following customizations to your Docker 
 
 ## Contributing
 
+Follow the [developers guide](docs/developers.md) to set up your environment.
+
+To build acs-engine, run `make build`. If you are developing from a with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` first to start a Docker container and run `make build` there.
+
 Please follow these instructions before submitting a PR:
 
-1. Execute `make ci` to run the checkin validation tests.
+1. Execute `make test` to run unit tests.
 
 2. Manually test deployments if you are making modifications to the templates.
    For example, if you have to change the expected resulting templates then you
-   should deploy the relevant example cluster definitions to ensure you're not
-   introducing any sort of regression.
+   should deploy the relevant example cluster definitions to ensure that you are not introducing any regressions.
+   
+3. Make sure that your changes are properly documented and include relevant unit tests.
 
 ## Usage
 
