@@ -235,7 +235,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
-	if a.OSType != nil {
+	if a.OSType != "" {
 		if e := validatePoolOSType(a.OSType); e != nil {
 			return e
 		}
