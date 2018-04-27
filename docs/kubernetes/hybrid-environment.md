@@ -31,7 +31,7 @@ To benefit the scaling capabilities of the cluster and to ensure resiliency to m
 
 In addition, you might want cluster services to address urls outside the cluster using your on-premise dns. To achieve this you need to configure KubeDNS to use your existing nameservice as upstream. [This setup is well documented on kubernetes blog](https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes)
 
-Note : There is some ongoing work to make this easier. See [acs-engine#2590](azure/acs-engine#2590)
+Note : There is some ongoing work to make this easier. See [acs-engine#2590](https://github.com/Azure/acs-engine/pull/2590)
 
 ### Private Cluster
 
