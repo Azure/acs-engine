@@ -38,16 +38,7 @@
     {{template "k8s/kubernetesparams.t" .}}
   },
   "variables": {
-    {{range $index, $agent := .AgentPoolProfiles}}
-        "{{.Name}}Index": {{$index}},
-        {{template "k8s/kubernetesagentvars.t" .}}
-        {{if .IsStorageAccount}}
-          {{if .HasDisks}}
-            "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
-          {{end}}
-          "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
-        {{end}}
-    {{end}}
+    {{template "k8s/kubernetesagentvars.t" .}}
     {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
