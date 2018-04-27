@@ -235,6 +235,12 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
+	if a.OSType != nil {
+		if e := validatePoolOSType(a.OSType); e != nil {
+			return e
+		}
+	}
+
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
 	if orchestratorType == Kubernetes {
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
@@ -822,10 +828,11 @@ func validatePoolName(poolName string) error {
 	return nil
 }
 
-func validatePoolOsType(osType string) error {
-	if osType != "linux" && osType != "windows"
+func validatePoolOSType(osType string) error {
+	if osType != "linux" && osType != "windows" {
 		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
-	return nil	
+	}
+	return nil
 }
 
 func validateDNSName(dnsName string) error {
