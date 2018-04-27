@@ -16,6 +16,9 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	IMAGE_PREFIX="registry.access.redhat.com/openshift3"
 	ANSIBLE_CONTAINER_VERSION="v${VERSION}"
 	PROMETHEUS_EXPORTER_VERSION="v${VERSION}"
+	COCKPIT_PREFIX="${IMAGE_PREFIX}"
+	COCKPIT_BASENAME="registry-console"
+	COCKPIT_VERSION="v${VERSION}"
 else
 	ANSIBLE_DEPLOY_TYPE="origin"
 	IMAGE_TYPE="${SERVICE_TYPE}"
@@ -23,6 +26,9 @@ else
 	# FIXME: These versions are set to deal with differences in how Origin and OCP
 	#        components are versioned
 	ANSIBLE_CONTAINER_VERSION="v${VERSION%.*}"
+	COCKPIT_PREFIX="cockpit"
+	COCKPIT_BASENAME="kubernetes"
+	COCKPIT_VERSION="latest"
 fi
 systemctl restart docker.service
 
@@ -88,6 +94,7 @@ fi
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
     sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|IMAGE_PREFIX|$IMAGE_PREFIX|g; s|ANSIBLE_DEPLOY_TYPE|$ANSIBLE_DEPLOY_TYPE|g" $i
     sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
+    sed -i "s|COCKPIT_VERSION|${COCKPIT_VERSION}|g; s|COCKPIT_BASENAME|${COCKPIT_BASENAME}|g; s|COCKPIT_PREFIX|${COCKPIT_PREFIX}|g;" $i
     sed -i "s|VERSION|${VERSION}|g; s|SHORT_VER|${VERSION%.*}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
     sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
 done
