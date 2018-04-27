@@ -8,10 +8,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestApiModelMergerMapValues(t *testing.T) {
+func TestAPIModelMergerMapValues(t *testing.T) {
 	RegisterTestingT(t)
 
-	m := make(map[string]ApiModelValue)
+	m := make(map[string]APIModelValue)
 	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin"}
 
 	MapValues(m, values)
@@ -27,7 +27,7 @@ func TestApiModelMergerMapValues(t *testing.T) {
 func TestMergeValuesWithAPIModel(t *testing.T) {
 	RegisterTestingT(t)
 
-	m := make(map[string]ApiModelValue)
+	m := make(map[string]APIModelValue)
 	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin"}
 
 	MapValues(m, values)
@@ -36,15 +36,15 @@ func TestMergeValuesWithAPIModel(t *testing.T) {
 	jsonFileContent, err := ioutil.ReadFile(tmpFile)
 	Expect(err).To(BeNil())
 
-	jsonApiModel, err := gabs.ParseJSON(jsonFileContent)
+	jsonAPIModel, err := gabs.ParseJSON(jsonFileContent)
 	Expect(err).To(BeNil())
 
-	masterProfileCount := jsonApiModel.Path("properties.masterProfile.count").Data()
+	masterProfileCount := jsonAPIModel.Path("properties.masterProfile.count").Data()
 	Expect(masterProfileCount).To(BeIdenticalTo(float64(5)))
 
-	adminUsername := jsonApiModel.Path("properties.linuxProfile.adminUsername").Data()
+	adminUsername := jsonAPIModel.Path("properties.linuxProfile.adminUsername").Data()
 	Expect(adminUsername).To(BeIdenticalTo("admin"))
 
-	agentPoolProfileName := jsonApiModel.Path("properties.agentPoolProfiles").Index(0).Path("name").Data().(string)
+	agentPoolProfileName := jsonAPIModel.Path("properties.agentPoolProfiles").Index(0).Path("name").Data().(string)
 	Expect(agentPoolProfileName).To(BeIdenticalTo("agentpool1"))
 }

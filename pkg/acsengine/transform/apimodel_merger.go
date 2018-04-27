@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ApiModelValue represents a value in the ApiModel JSON file
-type ApiModelValue struct {
+// APIModelValue represents a value in the APIModel JSON file
+type APIModelValue struct {
 	stringValue   string
 	intValue      int64
 	arrayValue    bool
@@ -23,7 +23,7 @@ type ApiModelValue struct {
 }
 
 // MapValues converts an arraw of rwa ApiModel values (like ["masterProfile.count=4","linuxProfile.adminUsername=admin"]) to a map
-func MapValues(m map[string]ApiModelValue, values []string) {
+func MapValues(m map[string]APIModelValue, values []string) {
 	if values == nil || len(values) == 0 {
 		return
 	}
@@ -37,7 +37,7 @@ func MapValues(m map[string]ApiModelValue, values []string) {
 			key := keyValueSplitted[0]
 			stringValue := keyValueSplitted[1]
 
-			flagValue := ApiModelValue{}
+			flagValue := APIModelValue{}
 
 			if asInteger, err := strconv.ParseInt(stringValue, 10, 64); err == nil {
 				flagValue.intValue = asInteger
@@ -70,7 +70,7 @@ func MapValues(m map[string]ApiModelValue, values []string) {
 }
 
 // MergeValuesWithAPIModel takes the path to an ApiModel JSON file, loads it and merges it with the values in the map to another temp file
-func MergeValuesWithAPIModel(apiModelPath string, m map[string]ApiModelValue) (string, error) {
+func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (string, error) {
 	// load the apiModel file from path
 	fileContent, err := ioutil.ReadFile(apiModelPath)
 	if err != nil {

@@ -107,7 +107,7 @@ func (gc *generateCmd) mergeAPIModel() error {
 
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
-		m := make(map[string]transform.ApiModelValue)
+		m := make(map[string]transform.APIModelValue)
 		transform.MapValues(m, gc.set)
 
 		// overrides the api model and generates a new file
