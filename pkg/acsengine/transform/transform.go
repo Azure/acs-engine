@@ -113,9 +113,11 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		}
 
 		resourceType, ok := resourceMap[typeFieldName].(string)
-		if ok && resourceType == nsgResourceType {
-			resourceName := resourceMap[nameFieldName].(string)
-			if nsgIndex != -1 && !strings.Contains(resourceName, "variables('jumpboxNetworkSecurityGroupName')") {
+		resourceName := resourceMap[nameFieldName].(string)
+
+		if ok && resourceType == nsgResourceType && !strings.Contains(resourceName, "variables('jumpboxNetworkSecurityGroupName')") {
+
+			if nsgIndex != -1 {
 				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
 				logger.Errorf(err.Error())
 				return err
