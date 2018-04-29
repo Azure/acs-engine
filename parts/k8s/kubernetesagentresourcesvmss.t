@@ -1,47 +1,3 @@
-{{if .IsStorageAccount}}
-  {
-    "apiVersion": "[variables('apiVersionStorage')]",
-    "copy": {
-      "count": "[variables('{{.Name}}StorageAccountsCount')]",
-      "name": "loop"
-    },
-    {{if not IsHostedMaster}}
-      {{if not IsPrivateCluster}}
-        "dependsOn": [
-          "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-        ],
-      {{end}}
-    {{end}}
-    "location": "[variables('location')]",
-    "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-    "properties": {
-      "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
-    },
-    "type": "Microsoft.Storage/storageAccounts"
-  },
-  {{if .HasDisks}}
-  {
-    "apiVersion": "[variables('apiVersionStorage')]",
-    "copy": {
-      "count": "[variables('{{.Name}}StorageAccountsCount')]",
-      "name": "datadiskLoop"
-    },
-    {{if not IsHostedMaster}}
-      {{if not IsPrivateCluster}}
-        "dependsOn": [
-          "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-        ],
-      {{end}}
-    {{end}}
-    "location": "[variables('location')]",
-    "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-    "properties": {
-      "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
-    },
-    "type": "Microsoft.Storage/storageAccounts"
-  },
-  {{end}}
-{{end}}
 {{if UseManagedIdentity}}
   {
     "apiVersion": "2014-10-01-preview",
@@ -60,12 +16,6 @@
       "[variables('nsgID')]"
     {{else}}
       "[variables('vnetID')]"
-    {{end}}
-    {{if .IsStorageAccount}}
-        ,"[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(0,variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(0,variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]"
-    {{if .HasDisks}}
-        ,"[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(0,variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(0,variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]"
-    {{end}}
     {{end}}
     ],
     "tags":
@@ -164,12 +114,6 @@
           "osDisk": {
             "createOption": "FromImage",
             "caching": "ReadWrite"
-          {{if .IsStorageAccount}}
-            ,"name": "[concat(variables('{{.Name}}VMNamePrefix'),'-osdisk')]"
-            ,"vhdContainers": [
-              "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(0,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk')]"
-            ]
-          {{end}}
           {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
           {{end}}
