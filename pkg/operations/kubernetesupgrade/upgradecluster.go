@@ -234,8 +234,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 			return err
 		}
 
-		//Verify that it is not breaking anything
-		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex+900)
+		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex)
 
 		if !strings.Contains(uc.NameSuffix, poolPrefix) {
 			uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",

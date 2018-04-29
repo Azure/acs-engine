@@ -37,7 +37,6 @@ type scaleCmd struct {
 	location             string
 	agentPoolToScale     string
 	classicMode          bool
-	windowsPool          bool
 
 	// derived
 	apiModelPath   string
@@ -77,7 +76,6 @@ func newScaleCmd() *cobra.Command {
 	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.StringVar(&sc.agentPoolToScale, "node-pool", "", "node pool to scale")
 	f.StringVar(&sc.masterFQDN, "master-FQDN", "", "FQDN for the master load balancer, Needed to scale down Kubernetes agent pools")
-	f.BoolVar(&sc.windowsPool, "windows", false, "true if windows pool")
 
 	addAuthFlags(&sc.authArgs, f)
 
@@ -191,7 +189,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	sc.validate(cmd, args)
 
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
-	var currentNodeCount, highestUsedIndex, index, poolindex int
+	var currentNodeCount, highestUsedIndex int
 	indexes := make([]int, 0)
 	indexToVM := make(map[int]string)
 	if sc.agentPool.IsAvailabilitySets() {
@@ -203,19 +201,10 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			log.Fatalln("The provided resource group does not contain any vms.")
 		}
 		for _, vm := range *vms.Value {
-			vmTags := *vm.Tags
-			poolName := *vmTags["poolName"]
-			nameSuffix := *vmTags["resourceNameSuffix"]
 
-			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+			poolName, nameSuffix, index, err := utils.K8sLinuxVMNameParts(*vm.Name)
+			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
 				continue
-			}
-
-			if sc.windowsPool {
-				_, _, poolindex, index, err = utils.WindowsVMNameParts(*vm.Name)
-			} else {
-				_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
 			}
 
 			indexToVM[index] = *vm.Name
@@ -273,19 +262,10 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			log.Fatalln("failed to get vmss list in the resource group. Error: %s", err.Error())
 		}
 		for _, vmss := range *vmssList.Value {
-			vmTags := *vmss.Tags
-			poolName := *vmTags["poolName"]
-			nameSuffix := *vmTags["resourceNameSuffix"]
-
-			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+			poolName, nameSuffix, err := utils.VmssNameParts(*vmss.Name)
+			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
 				continue
 			}
-
-			if sc.windowsPool {
-				_, _, poolindex, err = utils.WindowsVMSSNameParts(*vmss.Name)
-			}
-
 			currentNodeCount = int(*vmss.Sku.Capacity)
 			highestUsedIndex = 0
 		}
@@ -335,9 +315,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 	addValue(parametersJSON, sc.agentPool.Name+"Count", countForTemplate)
 
-	if sc.windowsPool {
-		templateJSON["variables"].(map[string]interface{})[sc.agentPool.Name+"Index"] = poolindex
-	}
 	switch orchestratorInfo.OrchestratorType {
 	case api.Kubernetes:
 		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
