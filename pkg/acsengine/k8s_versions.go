@@ -8,6 +8,33 @@ import (
 )
 
 var k8sComponentVersions = map[string]map[string]string{
+	"1.11": {
+		"dockerEngine":    "1.13.*",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.8.3",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addon-resizer":   "addon-resizer:1.8.1",
+		"heapster":        "heapster-amd64:v1.5.1",
+		"metrics-server":  "metrics-server-amd64:v0.2.1",
+		"kube-dns":        "k8s-dns-kube-dns-amd64:1.14.8",
+		"addon-manager":   "kube-addon-manager-amd64:v8.6",
+		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.8",
+		"pause":           "pause-amd64:3.1",
+		"tiller":          "tiller:v2.8.1",
+		"rescheduler":     "rescheduler:v0.3.1",
+		"aci-connector":   "virtual-kubelet:latest",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
+	},
 	"1.10": {
 		"dockerEngine":    "1.13.*",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.8.3",
