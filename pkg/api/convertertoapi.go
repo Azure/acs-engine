@@ -656,6 +656,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.NetworkPlugin = vlabs.NetworkPlugin
 	api.ContainerRuntime = vlabs.ContainerRuntime
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
@@ -698,11 +699,11 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 	if api.KubernetesConfig == nil {
 		api.KubernetesConfig = &KubernetesConfig{}
 	}
-	if api.KubernetesConfig.NetworkPolicy == "" {
+	if api.KubernetesConfig.NetworkPlugin == "" {
 		if vp.HasWindows() {
-			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicyWindows
+			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPluginWindows
 		} else {
-			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicy
+			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPlugin
 		}
 	}
 }

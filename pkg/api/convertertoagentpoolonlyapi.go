@@ -230,7 +230,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableRbac:          helpers.PointerToBool(false),
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
-			NetworkPolicy:      "none",
+			NetworkPolicy:      string(v20180331.Kubenet),
 			ClusterSubnet:      DefaultKubernetesClusterSubnet,
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
@@ -400,7 +400,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	if networkProfile != nil {
 		switch networkProfile.NetworkPlugin {
 		case v20180331.Azure:
-			kubernetesConfig.NetworkPolicy = "azure"
+			kubernetesConfig.NetworkPlugin = "azure"
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -420,7 +420,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		case v20180331.Kubenet:
-			kubernetesConfig.NetworkPolicy = "none"
+			kubernetesConfig.NetworkPlugin = "kubenet"
 
 			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 
@@ -442,14 +442,14 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		default:
-			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+			kubernetesConfig.NetworkPlugin = string(networkProfile.NetworkPlugin)
 			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
 			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
 		}
 	} else {
 		// set network default for un-versioned model
-		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.NetworkPlugin = string(v20180331.Kubenet)
 		kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP

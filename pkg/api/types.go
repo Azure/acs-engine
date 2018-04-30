@@ -264,6 +264,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	NetworkPlugin                    string            `json:"networkPlugin,omitempty"`
 	ContainerRuntime                 string            `json:"containerRuntime,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
@@ -757,11 +758,11 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 	return o.OrchestratorType == DCOS
 }
 
-// IsAzureCNI returns true if Azure VNET integration is enabled
+// IsAzureCNI returns true if Azure CNI network plugin is enabled
 func (o *OrchestratorProfile) IsAzureCNI() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
-		return o.KubernetesConfig.NetworkPolicy == "azure"
+		return o.KubernetesConfig.NetworkPlugin == "azure"
 	default:
 		return false
 	}

@@ -699,6 +699,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.NetworkPlugin = api.NetworkPlugin
 	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 	vlabs.CloudProviderBackoff = api.CloudProviderBackoff

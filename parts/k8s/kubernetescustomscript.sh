@@ -225,10 +225,10 @@ function configKubenet() {
     chmod -R 755 $CNI_BIN_DIR
 }
 
-function configNetworkPolicy() {
-    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+function configNetworkPlugin() {
+    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
-    elif [[ "${NETWORK_POLICY}" = "none" ]] ; then
+    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
         configKubenet
     fi
 }
@@ -491,8 +491,8 @@ fi
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
-echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
-configNetworkPolicy
+echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
+configNetworkPlugin
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then

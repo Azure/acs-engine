@@ -392,6 +392,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
 		return e
 	}
+	if e := a.validateNetworkPlugin(); e != nil {
+		return e
+	}
 	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
@@ -690,7 +693,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
 		}
 
-		if a.NetworkPolicy == "azure" {
+		if a.NetworkPlugin == "azure" {
 			ones, bits := subnet.Mask.Size()
 			if bits-ones <= 8 {
 				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
@@ -824,6 +827,33 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	return nil
 }
 
+func (a *Properties) validateNetworkPlugin() error {
+	var networkPlugin string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			networkPlugin = a.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+		}
+	default:
+		return nil
+	}
+
+	// Check NetworkPlugin has a valid value.
+	valid := false
+	for _, plugin := range NetworkPluginValues {
+		if networkPlugin == plugin {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown networkPlugin '%s' specified", networkPlugin)
+	}
+
+	return nil
+}
+
 func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
 
@@ -838,8 +868,8 @@ func (a *Properties) validateNetworkPolicy() error {
 
 	// Check NetworkPolicy has a valid value.
 	valid := false
-	for _, policy := range NetworkPolicyValues {
-		if networkPolicy == policy {
+	for _, plugin := range NetworkPolicyValues {
+		if networkPolicy == plugin {
 			valid = true
 			break
 		}

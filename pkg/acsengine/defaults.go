@@ -329,6 +329,17 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
+		// For backwards compatibility with original, overloaded "NetworkPolicy" config vector
+		// We translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
+		// And set a default network policy enforcement configuration
+		switch o.KubernetesConfig.NetworkPolicy {
+		case NetworkPluginAzure:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		case NetworkPolicyNone:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
@@ -376,12 +387,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if a.HasWindows() {
-			if o.KubernetesConfig.NetworkPolicy == "" {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPluginWindows
 			}
 		} else {
-			if o.KubernetesConfig.NetworkPolicy == "" {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPlugin
 			}
 		}
 		if o.KubernetesConfig.ContainerRuntime == "" {
@@ -553,8 +564,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if kc.ContainerRuntime == "" {
 			kc.ContainerRuntime = DefaultContainerRuntime
 		}
-		if kc.NetworkPolicy == "" {
-			kc.NetworkPolicy = DefaultNetworkPolicy
+		if kc.NetworkPlugin == "" {
+			kc.NetworkPlugin = DefaultNetworkPlugin
 		}
 	}
 }
