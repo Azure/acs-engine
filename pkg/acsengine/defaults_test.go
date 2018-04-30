@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"encoding/base64"
 	"reflect"
 	"testing"
 
@@ -380,6 +381,20 @@ func TestEtcdDiskSize(t *testing.T) {
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != customEtcdDiskSize {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, customEtcdDiskSize)
+	}
+}
+
+func TestGenerateEtcdEncryptionKey(t *testing.T) {
+	key1 := generateEtcdEncryptionKey()
+	key2 := generateEtcdEncryptionKey()
+	if key1 == key2 {
+		t.Fatalf("generateEtcdEncryptionKey should return a unique key each time, instead returned identical %s and %s", key1, key2)
+	}
+	for _, val := range []string{key1, key2} {
+		_, err := base64.URLEncoding.DecodeString(val)
+		if err != nil {
+			t.Fatalf("generateEtcdEncryptionKey should return a base64 encoded key, instead returned %s", val)
+		}
 	}
 }
 
