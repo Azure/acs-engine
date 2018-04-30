@@ -229,6 +229,37 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 	majorMinor := strings.Join(s[:2], ".")
 	var ret map[string]string
 	switch majorMinor {
+	case "1.11":
+		ret = map[string]string{
+			"hyperkube":                   "hyperkube-amd64:v" + version,
+			"ccm":                         "cloud-controller-manager-amd64:v" + version,
+			"windowszip":                  "v" + version + "-1int.zip",
+			"dockerEngineVersion":         k8sComponentVersions["1.11"]["dockerEngine"],
+			DefaultDashboardAddonName:     k8sComponentVersions["1.11"]["dashboard"],
+			"exechealthz":                 k8sComponentVersions["1.11"]["exechealthz"],
+			"addonresizer":                k8sComponentVersions["1.11"]["addon-resizer"],
+			"heapster":                    k8sComponentVersions["1.11"]["heapster"],
+			DefaultMetricsServerAddonName: k8sComponentVersions["1.11"]["metrics-server"],
+			"dns":                        k8sComponentVersions["1.11"]["kube-dns"],
+			"addonmanager":               k8sComponentVersions["1.11"]["addon-manager"],
+			"dnsmasq":                    k8sComponentVersions["1.11"]["dnsmasq"],
+			"pause":                      k8sComponentVersions["1.11"]["pause"],
+			DefaultTillerAddonName:       k8sComponentVersions["1.11"]["tiller"],
+			DefaultReschedulerAddonName:  k8sComponentVersions["1.11"]["rescheduler"],
+			DefaultACIConnectorAddonName: k8sComponentVersions["1.11"]["aci-connector"],
+			"nodestatusfreq":             k8sComponentVersions["1.11"]["nodestatusfreq"],
+			"nodegraceperiod":            k8sComponentVersions["1.11"]["nodegraceperiod"],
+			"podeviction":                k8sComponentVersions["1.11"]["podeviction"],
+			"routeperiod":                k8sComponentVersions["1.11"]["routeperiod"],
+			"backoffretries":             k8sComponentVersions["1.11"]["backoffretries"],
+			"backoffjitter":              k8sComponentVersions["1.11"]["backoffjitter"],
+			"backoffduration":            k8sComponentVersions["1.11"]["backoffduration"],
+			"backoffexponent":            k8sComponentVersions["1.11"]["backoffexponent"],
+			"ratelimitqps":               k8sComponentVersions["1.11"]["ratelimitqps"],
+			"ratelimitbucket":            k8sComponentVersions["1.11"]["ratelimitbucket"],
+			"gchighthreshold":            k8sComponentVersions["1.11"]["gchighthreshold"],
+			"gclowthreshold":             k8sComponentVersions["1.11"]["gclowthreshold"],
+		}
 	case "1.10":
 		ret = map[string]string{
 			"hyperkube":                   "hyperkube-amd64:v" + version,
