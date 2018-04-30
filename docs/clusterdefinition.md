@@ -55,6 +55,7 @@ Here are the valid values for the orchestrator types:
 |cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config)|
 |apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config)|
 |schedulerConfig|no|Configure various runtime configuration for scheduler. See `schedulerConfig` [below](#feat-scheduler-config)|
+|customWindowsPackageURL|no|Configure custom windows Kubernetes release package URL for deployment on Windows|
 
 #### addons
 
