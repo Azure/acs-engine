@@ -4,7 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "networkPolicy": "azure"
+        "networkPlugin": "azure"
       }
     },
     "masterProfile": {
