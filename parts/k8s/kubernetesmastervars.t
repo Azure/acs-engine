@@ -127,6 +127,7 @@
     "useInstanceMetadata": "{{ UseInstanceMetadata }}",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
+    "networkPlugin": "[parameters('networkPlugin')]",
     "networkPolicy": "[parameters('networkPolicy')]",
     "containerRuntime": "[parameters('containerRuntime')]",
     "cniPluginsURL":"[parameters('cniPluginsURL')]",
