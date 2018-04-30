@@ -207,7 +207,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -267,7 +267,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
+	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode, acsengineVersion); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -449,11 +449,14 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string) (paramsMap, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
 	cloudSpecConfig := GetCloudSpecConfig(location)
+
+	// acsengine Parameters
+	addValue(parametersMap, "acsengineVersion", acsengineVersion)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)

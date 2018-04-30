@@ -874,6 +874,7 @@
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "acsengineVersion" : "[variables('acsengineVersion')]",
         "poolName" : "master"
       },
       "location": "[variables('location')]",
