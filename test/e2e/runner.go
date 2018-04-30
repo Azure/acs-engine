@@ -114,7 +114,8 @@ func main() {
 		rgs = cliProvisioner.ResourceGroups
 		eng = cliProvisioner.Engine
 		if err != nil {
-			teardown()
+			// TODO enable configurable teardown if a deployment fails
+			// teardown()
 			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
 		if cfg.SoakClusterName != "" {
