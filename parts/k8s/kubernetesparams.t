@@ -692,6 +692,12 @@
         "description": "etcd version"
       },
       "type": "string"
+    },
+    "etcdEncryptionKey": { 
+      "metadata": {
+        "description": "Encryption at rest key for etcd" 
+      },
+      "type": "string"
     }
 {{if ProvisionJumpbox}}
     ,"jumpboxVMName": {
