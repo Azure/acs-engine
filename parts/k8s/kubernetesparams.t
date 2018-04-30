@@ -586,6 +586,7 @@
         "description": "The network policy enforcement to use (calico|cilium); 'none' and 'azure' here for backwards compatibility"
       },
       "allowedValues": [
+        "",
         "none",
         "azure",
         "calico",

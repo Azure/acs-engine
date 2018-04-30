@@ -330,8 +330,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		// For backwards compatibility with original, overloaded "NetworkPolicy" config vector
-		// We translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
-		// And set a default network policy enforcement configuration
+		// we translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
+		// and set a default network policy enforcement configuration
 		switch o.KubernetesConfig.NetworkPolicy {
 		case NetworkPluginAzure:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
