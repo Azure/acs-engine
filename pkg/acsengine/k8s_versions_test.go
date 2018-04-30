@@ -51,7 +51,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 	if oneDotNineDotThree == nil {
 		t.Fatalf("getK8sVersionComponents() should not return nil for valid version")
 	}
-	expected := map[string]string{
+	expected = map[string]string{
 		"hyperkube":                   "hyperkube-amd64:v1.9.3",
 		"ccm":                         "cloud-controller-manager-amd64:v1.9.3",
 		"windowszip":                  "v1.9.3-1int.zip",
