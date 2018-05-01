@@ -27,11 +27,12 @@ type Storage interface {
 
 // Account represents an Azure account
 type Account struct {
-	User           *User  `json:"user"`
-	TenantID       string `json:"tenantId" envconfig:"TENANT_ID" required:"true"`
-	SubscriptionID string `json:"id" envconfig:"SUBSCRIPTION_ID" required:"true"`
-	ResourceGroup  ResourceGroup
-	Deployment     Deployment
+	User            *User  `json:"user"`
+	TenantID        string `json:"tenantId" envconfig:"TENANT_ID" required:"true"`
+	SubscriptionID  string `json:"id" envconfig:"SUBSCRIPTION_ID" required:"true"`
+	ResourceGroup   ResourceGroup
+	Deployment      Deployment
+	TimeoutCommands bool
 }
 
 // ResourceGroup represents a collection of azure resources
@@ -77,6 +78,12 @@ func NewAccount() (*Account, error) {
 		return nil, err
 	}
 	a.User = u
+	cmd := exec.Command("which", "timeout")
+	util.PrintCommand(cmd)
+	_, err := cmd.CombinedOutput()
+	if err == nil {
+		a.TimeoutCommands = true
+	}
 	return a, nil
 }
 
@@ -254,7 +261,12 @@ func (a *Account) GetHosts(name string) ([]VM, error) {
 	} else {
 		resourceGroup = a.ResourceGroup.Name
 	}
-	cmd := exec.Command("az", "vm", "list", "-g", resourceGroup)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "vm", "list", "-g", resourceGroup)
+	} else {
+		cmd = exec.Command("az", "vm", "list", "-g", resourceGroup)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
