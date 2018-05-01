@@ -80,6 +80,11 @@ write_files:
   path: /etc/systemd/system/docker.socket
   permissions: '0644'
 - content: |
+    DCOS_ENVIRONMENT={{{targetEnvironment}}}
+  owner: root
+  path: /opt/azure/dcos/environment
+  permissions: '0644'
+- content: |
     #!/bin/sh
 
     curl -H Metadata:true -fsSL "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text"
@@ -105,7 +110,7 @@ MASTER_IP_LIST
 - content: |
     #!/bin/bash
     cd /opt/azure/dcos
-    curl -O BOOTSTRAP_INSTALLER_URL
+    curl -O {{{dcosBootstrapURL}}}
 
     bash dcos_generate_config.sh
     docker run -d -p 8086:80 -v $PWD/genconf/serve:/usr/share/nginx/html:ro nginx

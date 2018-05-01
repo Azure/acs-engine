@@ -80,6 +80,11 @@ write_files:
     WantedBy=sockets.target
   path: /etc/systemd/system/docker.socket
   permissions: '0644'
+- content: |
+    DCOS_ENVIRONMENT={{{targetEnvironment}}}
+  owner: root
+  path: /opt/azure/dcos/environment
+  permissions: '0644'
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"

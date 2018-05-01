@@ -780,7 +780,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			case api.DCOSVersion1Dot10Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			case api.DCOSVersion1Dot11Dot0:
-				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS111BootstrapDownloadURL
+				dcosBootstrapURL = getDCOSDefaultBootstrapInstallerURL(properties.OrchestratorProfile)
 			}
 		}
 
@@ -1161,8 +1161,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
 					"PREPROVISION_EXTENSION":  bootstrapPreprovisionExtension,
 					"BOOTSTRAP_IP":            bootstrapIP,
-					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled),
-					"BOOTSTRAP_INSTALLER_URL": getDCOSBootstrapInstallerURL(cs.Properties.OrchestratorProfile)})
+					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled)})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -2015,7 +2014,7 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 	return parms
 }
 
-func getDCOSBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
+func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
 	if profile.OrchestratorType == api.DCOS {
 		switch profile.OrchestratorVersion {
 		case api.DCOSVersion1Dot11Dot0:
