@@ -201,7 +201,8 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.7.1",
 		"1.10.0-beta.2",
 		"1.10.0-beta.4",
-		"1.10.0-rc.1"} {
+		"1.10.0-rc.1",
+		"1.11.0-alpha.1"} {
 		ret[version] = false
 	}
 	return ret
