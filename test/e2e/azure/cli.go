@@ -32,6 +32,7 @@ type Account struct {
 	SubscriptionID  string `json:"id" envconfig:"SUBSCRIPTION_ID" required:"true"`
 	ResourceGroup   ResourceGroup
 	Deployment      Deployment
+	StorageAccount  *StorageAccount
 	TimeoutCommands bool
 }
 
@@ -78,6 +79,7 @@ func NewAccount() (*Account, error) {
 		return nil, err
 	}
 	a.User = u
+	a.StorageAccount = new(StorageAccount)
 	cmd := exec.Command("which", "timeout")
 	util.PrintCommand(cmd)
 	_, err := cmd.CombinedOutput()
@@ -89,13 +91,23 @@ func NewAccount() (*Account, error) {
 
 // Login will login to a given subscription
 func (a *Account) Login() error {
-	output, err := exec.Command("az", "login",
-		"--service-principal",
-		"--username", a.User.ID,
-		"--password", a.User.Secret,
-		"--tenant", a.TenantID).CombinedOutput()
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "login",
+			"--service-principal",
+			"--username", a.User.ID,
+			"--password", a.User.Secret,
+			"--tenant", a.TenantID)
+	} else {
+		cmd = exec.Command("az", "login",
+			"--service-principal",
+			"--username", a.User.ID,
+			"--password", a.User.Secret,
+			"--tenant", a.TenantID)
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("output:%s\n", output)
+		log.Printf("output:%s\n", out)
 		return err
 	}
 	return nil
@@ -103,7 +115,12 @@ func (a *Account) Login() error {
 
 // SetSubscription will call az account set --subscription for the given Account
 func (a *Account) SetSubscription() error {
-	cmd := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "account", "set", "--subscription", a.SubscriptionID)
+	} else {
+		cmd = exec.Command("az", "account", "set", "--subscription", a.SubscriptionID)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -118,7 +135,12 @@ func (a *Account) SetSubscription() error {
 //--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
 	now := fmt.Sprintf("now=%v", time.Now().Unix())
-	cmd := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "group", "create", "--name", name, "--location", location, "--tags", now)
+	} else {
+		cmd = exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -141,7 +163,11 @@ func (a *Account) CreateGroup(name, location string) error {
 func (a *Account) DeleteGroup(name string, wait bool) error {
 	var cmd *exec.Cmd
 	if !wait {
-		cmd = exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes")
+		if a.TimeoutCommands {
+			cmd = exec.Command("timeout", "60", "az", "group", "delete", "--name", name, "--no-wait", "--yes")
+		} else {
+			cmd = exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes")
+		}
 	} else {
 		cmd = exec.Command("az", "group", "delete", "--name", name, "--yes")
 	}
@@ -193,27 +219,18 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 	return nil
 }
 
-// GetCurrentAccount will run an az account show and parse that into an account strcut
-func GetCurrentAccount() (*Account, error) {
-	cmd := exec.Command("az", "account", "show")
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error trying to run 'account show':%s\n", err)
-		return nil, err
-	}
-	a := Account{}
-	err = json.Unmarshal(out, &a)
-	if err != nil {
-		log.Printf("Error unmarshalling account json:%s\n", err)
-		log.Printf("JSON:%s\n", out)
-	}
-	return &a, nil
-}
-
 // CreateVnet will create a vnet in a resource group
 func (a *Account) CreateVnet(vnet, addressPrefixes, subnetName, subnetPrefix string) error {
-	cmd := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "network", "vnet", "create", "-g",
+			a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes,
+			"--subnet-name", subnetName, "--subnet-prefix", subnetPrefix)
+	} else {
+		cmd = exec.Command("az", "network", "vnet", "create", "-g",
+			a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes,
+			"--subnet-name", subnetName, "--subnet-prefix", subnetPrefix)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -234,7 +251,12 @@ type RouteTable struct {
 
 // UpdateRouteTables is used to updated a vnet with the appropriate route tables
 func (a *Account) UpdateRouteTables(subnet, vnet string) error {
-	cmd := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "network", "route-table", "list", "-g", a.ResourceGroup.Name)
+	} else {
+		cmd = exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name)
+	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to get route table list!\n Output:%s\n", out)
@@ -243,7 +265,13 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 	rts := []RouteTable{}
 	json.Unmarshal(out, &rts)
 
-	cmd = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name)
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "network", "vnet", "subnet", "update",
+			"-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name)
+	} else {
+		cmd = exec.Command("az", "network", "vnet", "subnet", "update",
+			"-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name)
+	}
 	util.PrintCommand(cmd)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
@@ -288,7 +316,12 @@ func (a *Account) SetResourceGroup(name string) error {
 	if a.ResourceGroup.Name != "" {
 		return nil
 	}
-	cmd := exec.Command("az", "group", "show", "-g", name)
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "group", "show", "-g", name)
+	} else {
+		cmd = exec.Command("az", "group", "show", "-g", name)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -323,8 +356,14 @@ func (a *Account) IsClusterExpired(d time.Duration) bool {
 }
 
 // CreateStorageAccount will create a new Azure Storage Account
-func (sa *StorageAccount) CreateStorageAccount() error {
-	cmd := exec.Command("az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
+func (a *Account) CreateStorageAccount() error {
+	sa := a.StorageAccount
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
+	} else {
+		cmd = exec.Command("az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -335,8 +374,14 @@ func (sa *StorageAccount) CreateStorageAccount() error {
 }
 
 // SetConnectionString will set the storage account connection string
-func (sa *StorageAccount) SetConnectionString() error {
-	cmd := exec.Command("az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
+func (a *Account) SetConnectionString() error {
+	sa := a.StorageAccount
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
+	} else {
+		cmd = exec.Command("az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -353,8 +398,14 @@ func (sa *StorageAccount) SetConnectionString() error {
 }
 
 // CreateFileShare will create a file share in a storage account if it doesn't already exist
-func (sa *StorageAccount) CreateFileShare(name string) error {
-	cmd := exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+func (a *Account) CreateFileShare(name string) error {
+	sa := a.StorageAccount
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	} else {
+		cmd = exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
+	}
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -365,7 +416,8 @@ func (sa *StorageAccount) CreateFileShare(name string) error {
 }
 
 // UploadFiles will upload the output directory to storage
-func (sa *StorageAccount) UploadFiles(source, destination string) error {
+func (a *Account) UploadFiles(source, destination string) error {
+	sa := a.StorageAccount
 	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -377,7 +429,8 @@ func (sa *StorageAccount) UploadFiles(source, destination string) error {
 }
 
 // DownloadFiles will download the output directory from storage
-func (sa *StorageAccount) DownloadFiles(source, destination string) error {
+func (a *Account) DownloadFiles(source, destination string) error {
+	sa := a.StorageAccount
 	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -389,7 +442,8 @@ func (sa *StorageAccount) DownloadFiles(source, destination string) error {
 }
 
 // DeleteFiles deletes files from an Azure storage file share
-func (sa *StorageAccount) DeleteFiles(source string) error {
+func (a *Account) DeleteFiles(source string) error {
+	sa := a.StorageAccount
 	cmd := exec.Command("az", "storage", "file", "delete-batch", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
