@@ -1,4 +1,4 @@
-maintainers:
-  - anhowe
-  - colemickens
-  - seanknox
+approvers:
+- brendandburns
+- CecileRobertMichon
+- jackfrancis

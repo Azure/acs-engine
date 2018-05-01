@@ -44,9 +44,9 @@ $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
 $global:WindowsPackageSASURLBase = "{{WrapAsVariable "windowsPackageSASURLBase"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
+$global:KubeletNodeLabels = "{{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
-
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
@@ -291,8 +291,8 @@ Set-NetworkConfig
 function
 Write-KubernetesStartFiles($podCIDR)
 {
-    mkdir $global:VolumePluginDir
-    $KubeletArgList = @("--hostname-override=`$env:computername","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
+    mkdir $global:VolumePluginDir 
+    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")    
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@

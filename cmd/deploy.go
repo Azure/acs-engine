@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
@@ -116,6 +117,8 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	if dc.location == "" {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
+	dc.location = helpers.NormalizeAzureRegion(dc.location)
+
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
@@ -263,7 +266,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)

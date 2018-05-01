@@ -114,3 +114,33 @@ Run `acs-engine generate examples/kubernetes.json`
 
 
 **Note**: If the cluster is using an existing VNET please see the [Custom VNET](features.md#feat-custom-vnet) feature documentation for additional steps that must be completed after cluster provisioning.
+
+
+## Checking VM tags
+
+### First we get list of Master and Agent VMs in the cluster
+```sh
+az vm list -g <resource group of cluster> -o table
+Name                      ResourceGroup                    Location
+------------------------  -------------------------------  -------------
+k8s-agentpool1-22116803-1       XXXXXXXXXXXX                  southeastasia
+k8s-master-22116803-0           XXXXXXXXXXXX                  southeastasia
+```
+
+### Once we have the VM Names, we can check tags associated with any of the VMs using the command below
+
+```sh
+az vm show -g <resource group of cluster> -n <name of Master or agent VM> --query tags
+```
+
+    Sample JSON out of this command is shown below. This command can also be used to check the acs-engine version which was used to create the cluster
+
+```json
+{
+  "acsengineVersion": "v0.15.0",
+  "creationSource": "acsengine-k8s-master-22116803-0",
+  "orchestrator": "Kubernetes:1.9.5",
+  "poolName": "master",
+  "resourceNameSuffix": "22116803"
+}
+```

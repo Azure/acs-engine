@@ -10,6 +10,12 @@
       },
       "type": "string"
     },
+    "acsengineVersion": {
+      "metadata": {
+        "description": "Contains details of the acs-engine version which was used to provision the cluster"
+      },
+      "type": "string"
+    },
     {{range .ExtensionProfiles}}
       "{{.Name}}Parameters": {
         "metadata": {

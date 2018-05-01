@@ -714,6 +714,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage
 	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
+	vlabs.CustomWindowsPackageURL = api.CustomWindowsPackageURL
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableSecureKubelet = api.EnableSecureKubelet
@@ -725,6 +726,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
+	vlabs.EtcdEncryptionKey = api.EtcdEncryptionKey
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)

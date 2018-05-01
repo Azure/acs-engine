@@ -1,6 +1,7 @@
 package vlabs
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -133,7 +134,12 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion, o.OrchestratorVersion)
 					}
-
+					if o.KubernetesConfig.EtcdEncryptionKey != "" {
+						_, err = base64.URLEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
+						if err != nil {
+							return fmt.Errorf("etcdEncryptionKey must be base64 encoded. Please provide a valid base64 encoded value or leave the etcdEncryptionKey empty to auto-generate the value")
+						}
+					}
 				}
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {

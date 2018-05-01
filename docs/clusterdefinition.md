@@ -41,6 +41,7 @@ Here are the valid values for the orchestrator types:
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |enableDataEncryptionAtRest|no|Enable [kubernetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
+|etcdEncryptionKey|no|Enryption key to be used if enableDataEncryptionAtRest is enabled. Defaults to a random, generated, key|
 |enablePodSecurityPolicy|no|Enable [kubernetes pod security policy](https://kubernetes.io/docs/concepts/policy/pod-security-policy/).This is currently a beta feature. (boolean - default == false)|
 |enableEncryptionWithExternalKms|no|Enable [kubernetes data encryption at rest with external KMS](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
 |etcdDiskSizeGB|no|Size in GB to assign to etcd data volume. Defaults (if no user value provided) are: 256 GB for clusters up to 3 nodes; 512 GB for clusters with between 4 and 10 nodes; 1024 GB for clusters with between 11 and 20 nodes; and 2048 GB for clusters with more than 20 nodes|
@@ -54,6 +55,7 @@ Here are the valid values for the orchestrator types:
 |cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config)|
 |apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config)|
 |schedulerConfig|no|Configure various runtime configuration for scheduler. See `schedulerConfig` [below](#feat-scheduler-config)|
+|customWindowsPackageURL|no|Configure custom windows Kubernetes release package URL for deployment on Windows|
 
 #### addons
 
@@ -449,7 +451,8 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |imageReference.name|no|The name of a a Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
-|distro|no|Specifies agent pool(s) Operating System (Linux). Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|osType|no|Specifies the agent pool's Operating System. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
+|distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
 
 ### linuxProfile
 

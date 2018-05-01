@@ -57,7 +57,7 @@ const MasterPoolName = "master"
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, resourceGroup string,
-	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string) error {
+	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string, acsengineVersion string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
@@ -82,27 +82,28 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	switch {
 	case strings.HasPrefix(upgradeVersion, "1.6."):
 		upgrader16 := &Kubernetes16upgrader{}
-		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
 		upgrader = upgrader16
 
 	case strings.HasPrefix(upgradeVersion, "1.7."):
 		upgrader17 := &Kubernetes17upgrader{}
-		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
 		upgrader = upgrader17
 
 	case strings.HasPrefix(upgradeVersion, "1.8."):
 		upgrader18 := &Kubernetes18upgrader{}
-		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
+
 		upgrader = upgrader18
 
 	case strings.HasPrefix(upgradeVersion, "1.9."):
 		upgrader19 := &Upgrader{}
-		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
 		upgrader = upgrader19
 
 	case strings.HasPrefix(upgradeVersion, "1.10."):
 		upgrader110 := &Upgrader{}
-		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
 		upgrader = upgrader110
 
 	default:
