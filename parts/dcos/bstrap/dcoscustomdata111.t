@@ -41,6 +41,7 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, restart, systemd-journald.service ]
     - [ systemctl, restart, docker.service ]
     - [ bash, /tmp/dcos/dcos_install.sh, ROLENAME ]
+    - [ sed, -i.bak, '99 s/1s/10s/', /opt/mesosphere/packages/dcos-config--setup_db35841c60c3f46815fbca1f13d18618dd05dc7a/etc/dcos-diagnostics-runner-config.json ]
 write_files:
 - content: |
     [Unit]
