@@ -459,6 +459,12 @@ workflows:
           filters:
             branches:
               ignore: master
+      - openshift-3.9-rhel-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
       - swarm-e2e:
           requires:
             - pr-e2e-hold
@@ -516,6 +522,10 @@ workflows:
       - k8s-1.9-release-e2e:
           requires:
             - test
+          filters:
+            branches:
+              only: master
+      - openshift-3.9-rhel-e2e:
           filters:
             branches:
               only: master
