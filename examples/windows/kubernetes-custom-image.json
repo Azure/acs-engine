@@ -15,7 +15,6 @@
         "count": 2,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks",
         "osType": "Windows"
       }
     ],

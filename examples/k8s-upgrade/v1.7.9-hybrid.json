@@ -8,8 +8,7 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2",
-      "storageProfile" : "ManagedDisks"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
@@ -17,15 +16,13 @@
         "count": 2,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile" : "ManagedDisks",
         "osType": "Windows"
       },
       {
         "name": "agentpool2",
         "count": 1,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
-         "storageProfile" : "ManagedDisks"
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "windowsProfile": {
