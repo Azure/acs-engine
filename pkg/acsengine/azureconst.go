@@ -47,15 +47,6 @@ var AzureLocations = []string{
 	"francecentral",
 }
 
-// GetDCOSBootstrapAllowedSizes returns the bootstrap allowed sizes
-func GetDCOSBootstrapAllowedSizes() string {
-	return `      "allowedValues": [
-        "Standard_D2_v2",
-        "Standard_D2s_v3"
-    ],
-`
-}
-
 // GetDCOSMasterAllowedSizes returns the master allowed sizes
 func GetDCOSMasterAllowedSizes() string {
 	return `      "allowedValues": [

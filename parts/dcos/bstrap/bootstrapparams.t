@@ -41,7 +41,7 @@
       "type": "string"
     },
     "bootstrapVMSize": {
-      {{GetDCOSBootstrapAllowedSizes}}
+      {{GetMasterAllowedSizes}}
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
