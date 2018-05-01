@@ -18,6 +18,7 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
         "diskSizesGB": [
           128,
           128,
@@ -30,6 +31,7 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
         "diskSizesGB": [
           10,
           10,
