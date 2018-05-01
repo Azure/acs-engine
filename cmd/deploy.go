@@ -241,6 +241,11 @@ func autofillApimodel(dc *deployCmd) {
 				Secret:   secret,
 				ObjectID: servicePrincipalObjectID,
 			}
+		} else if dc.containerService.Properties.ServicePrincipalProfile == nil && dc.ClientID.String() != "" && dc.ClientSecret != "" {
+			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
+				ClientID: dc.ClientID.String(),
+				Secret:   dc.ClientSecret,
+			}
 		}
 	}
 }
