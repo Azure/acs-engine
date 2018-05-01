@@ -756,6 +756,19 @@ func (o *OrchestratorProfile) IsAzureCNI() bool {
 	}
 }
 
+// IsAzureCNI returns true if Azure VNET integration is enabled
+func (o *OrchestratorProfile) RequireRouteTable() bool {
+	switch o.OrchestratorType {
+	case Kubernetes:
+		if o.IsAzureCNI() || "cilium" == o.KubernetesConfig.NetworkPolicy {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
 // HasAadProfile  returns true if the has aad profile
 func (p *Properties) HasAadProfile() bool {
 	return p.AADProfile != nil
