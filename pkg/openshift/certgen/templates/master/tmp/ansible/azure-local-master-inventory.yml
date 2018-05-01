@@ -76,6 +76,10 @@ localmaster:
     #       openshift-ansible in Origin and OCP
     openshift_examples_content_version: "vSHORT_VER"
 
+    openshift_cockpit_deployer_prefix: "COCKPIT_PREFIX/"
+    openshift_cockpit_deployer_basename: "COCKPIT_BASENAME"
+    openshift_cockpit_deployer_version: "COCKPIT_VERSION"
+
     # NOTE: Do not define openshift_hosted_router_replicas so that the task file
     # router.yml inside the openshift_hosted role from openshift-ansible will
     # autopopulate it using the openshift_hosted_router_selector and querying
