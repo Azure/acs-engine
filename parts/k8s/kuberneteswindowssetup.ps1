@@ -61,6 +61,7 @@ $global:PrimaryScaleSetName = "{{WrapAsVariable "primaryScaleSetName"}}"
 $global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
 $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 $global:KubeNetwork = "l2bridge"
+$global:KubeDnsSearchPath = "svc.cluster.local"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
@@ -278,6 +279,21 @@ Set-AzureNetworkPolicy()
 }
 
 function
+Set-AzureCNIConfig()
+{
+    # Fill in DNS information for kubernetes.
+    $fileName  = [Io.path]::Combine("$global:AzureCNIConfDir", "10-azure.conflist")
+    $configJson = Get-Content $fileName | ConvertFrom-Json
+    $configJson.plugins.dns.Nameservers[1] = $KubeDnsServiceIp
+    $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath 
+    $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[0] = $global:KubeClusterCIDR
+    $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[1] = $global:MasterSubnet
+    $configJson.plugins.AdditionalArgs[1].Value.DestinationPrefix  = $global:KubeServiceCIDR
+
+    $configJson | ConvertTo-Json -depth 20 | Out-File -encoding ASCII -filepath $fileName
+}
+
+function
 Set-NetworkConfig
 {
     Write-Log "Configuring networking with NetworkPolicy:$global:NetworkPolicy"
@@ -286,6 +302,7 @@ Set-NetworkConfig
     if ($global:NetworkPolicy -eq "azure") {
         Install-VnetPlugins
         Set-AzureNetworkPolicy
+        Set-AzureCNIConfig
     }
 }
 
