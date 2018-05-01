@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 	}
 
-	sa := new(azure.StorageAccount)
+	sa := acct.StorageAccount
 
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
