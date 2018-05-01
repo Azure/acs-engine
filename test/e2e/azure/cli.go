@@ -59,6 +59,7 @@ type StorageAccount struct {
 	Name             string
 	ConnectionString string `json:"connectionString"`
 	ResourceGroup    ResourceGroup
+	TimeoutCommands  bool
 }
 
 // User represents the user currently logged into an Account
@@ -80,11 +81,13 @@ func NewAccount() (*Account, error) {
 	}
 	a.User = u
 	a.StorageAccount = new(StorageAccount)
+
 	cmd := exec.Command("which", "timeout")
 	util.PrintCommand(cmd)
 	_, err := cmd.CombinedOutput()
 	if err == nil {
 		a.TimeoutCommands = true
+		a.StorageAccount.TimeoutCommands = true
 	}
 	return a, nil
 }
@@ -356,10 +359,9 @@ func (a *Account) IsClusterExpired(d time.Duration) bool {
 }
 
 // CreateStorageAccount will create a new Azure Storage Account
-func (a *Account) CreateStorageAccount() error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) CreateStorageAccount() error {
 	var cmd *exec.Cmd
-	if a.TimeoutCommands {
+	if sa.TimeoutCommands {
 		cmd = exec.Command("timeout", "60", "az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
 	} else {
 		cmd = exec.Command("az", "storage", "account", "create", "--name", sa.Name, "--resource-group", sa.ResourceGroup.Name)
@@ -374,10 +376,9 @@ func (a *Account) CreateStorageAccount() error {
 }
 
 // SetConnectionString will set the storage account connection string
-func (a *Account) SetConnectionString() error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) SetConnectionString() error {
 	var cmd *exec.Cmd
-	if a.TimeoutCommands {
+	if sa.TimeoutCommands {
 		cmd = exec.Command("timeout", "60", "az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
 	} else {
 		cmd = exec.Command("az", "storage", "account", "show-connection-string", "-g", sa.ResourceGroup.Name, "-n", sa.Name)
@@ -398,10 +399,9 @@ func (a *Account) SetConnectionString() error {
 }
 
 // CreateFileShare will create a file share in a storage account if it doesn't already exist
-func (a *Account) CreateFileShare(name string) error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) CreateFileShare(name string) error {
 	var cmd *exec.Cmd
-	if a.TimeoutCommands {
+	if sa.TimeoutCommands {
 		cmd = exec.Command("timeout", "60", "az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	} else {
 		cmd = exec.Command("az", "storage", "share", "create", "--name", name, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
@@ -416,8 +416,7 @@ func (a *Account) CreateFileShare(name string) error {
 }
 
 // UploadFiles will upload the output directory to storage
-func (a *Account) UploadFiles(source, destination string) error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) UploadFiles(source, destination string) error {
 	cmd := exec.Command("az", "storage", "file", "upload-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -429,8 +428,7 @@ func (a *Account) UploadFiles(source, destination string) error {
 }
 
 // DownloadFiles will download the output directory from storage
-func (a *Account) DownloadFiles(source, destination string) error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) DownloadFiles(source, destination string) error {
 	cmd := exec.Command("az", "storage", "file", "download-batch", "--destination", destination, "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -442,8 +440,7 @@ func (a *Account) DownloadFiles(source, destination string) error {
 }
 
 // DeleteFiles deletes files from an Azure storage file share
-func (a *Account) DeleteFiles(source string) error {
-	sa := a.StorageAccount
+func (sa *StorageAccount) DeleteFiles(source string) error {
 	cmd := exec.Command("az", "storage", "file", "delete-batch", "--source", source, "--account-name", sa.Name, "--connection-string", sa.ConnectionString)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
