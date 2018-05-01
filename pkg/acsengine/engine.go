@@ -479,42 +479,6 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getDCOSBootstrapURL(cs *api.ContainerService) string {
-	properties := cs.Properties
-	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
-	dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
-	switch properties.OrchestratorProfile.OrchestratorType {
-	case api.DCOS:
-		switch properties.OrchestratorProfile.OrchestratorVersion {
-		case api.DCOSVersion1Dot8Dot8:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
-		case api.DCOSVersion1Dot9Dot0:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
-		case api.DCOSVersion1Dot10Dot0:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
-		case api.DCOSVersion1Dot11Dot0:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS111BootstrapDownloadURL
-		}
-	}
-
-	if properties.OrchestratorProfile.DcosConfig != nil {
-		if properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL != "" {
-			dcosBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL
-		}
-	}
-	return dcosBootstrapURL
-}
-
-func getDCOSClusterPackageList(cs *api.ContainerService) string {
-	properties := cs.Properties
-	if properties.OrchestratorProfile.DcosConfig != nil {
-		if properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID != "" {
-			return properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID
-		}
-	}
-	return ""
-}
-
 func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
