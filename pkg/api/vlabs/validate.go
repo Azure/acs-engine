@@ -558,6 +558,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) && agentPoolProfile.StorageProfile == StorageAccount {
+			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
+		}
+
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
 			if i == 0 {
 				continue

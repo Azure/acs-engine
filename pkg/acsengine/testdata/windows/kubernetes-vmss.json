@@ -19,7 +19,8 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "VirtualMachineScaleSets",
-        "osType": "Windows"
+        "osType": "Windows",
+        "storageProfile": "ManagedDisks"
       }
     ],
     "windowsProfile": {
