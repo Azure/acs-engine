@@ -55,6 +55,10 @@ var (
 		},
 		{
 			networkPlugin: "",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "",
 			networkPolicy: "none",
 		},
 	}
