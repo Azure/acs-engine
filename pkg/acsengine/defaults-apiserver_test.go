@@ -345,6 +345,7 @@ func createContainerService(containerServiceName string, orchestratorVersion str
 		MaxPods:             DefaultKubernetesMaxPodsVNETIntegrated,
 		ClusterSubnet:       DefaultKubernetesSubnet,
 		ContainerRuntime:    DefaultContainerRuntime,
+		NetworkPlugin:       DefaultNetworkPlugin,
 		NetworkPolicy:       DefaultNetworkPolicy,
 		EtcdVersion:         DefaultEtcdVersion,
 		KubeletConfig:       make(map[string]string),

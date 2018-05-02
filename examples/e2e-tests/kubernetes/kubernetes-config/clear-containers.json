@@ -5,7 +5,7 @@
       "orchestratorType": "Kubernetes",
       "orchestratorRelease": "1.10",
       "kubernetesConfig": {
-        "networkPolicy": "azure",
+        "networkPlugin": "azure",
         "containerRuntime": "clear-containers"
       }
     },
