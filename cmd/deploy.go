@@ -118,7 +118,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
 	dc.location = helpers.NormalizeAzureRegion(dc.location)
-	
+
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
