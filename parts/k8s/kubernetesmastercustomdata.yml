@@ -259,6 +259,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesClusterAutoscalerMemoryRequests>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryRequests"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerMinNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMinNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerMaxNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMaxNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerUseManagedIdentity>|{{WrapAsVariable "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
@@ -274,7 +275,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}
-    sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml" 
+    sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml"
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}

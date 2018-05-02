@@ -668,6 +668,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
 			addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
 			addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", clusterAutoscalerAddon.Enabled)
+			addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
 			if clusterAutoscalerAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
 			} else {
@@ -1732,6 +1733,44 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = clusterAutoscalerAddon.Containers[aS].Image
 						} else {
 							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
+						}
+					}
+				case "kubernetesClusterAutoscalerCPURequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryRequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerCPULimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryLimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerEnabled":
+					if aS > -1 {
+						val = strconv.FormatBool(*clusterAutoscalerAddon.Enabled)
+					} else {
+						val = "false"
+					}
+				case "kubernetesClusterAutoscalerUseManagedIdentity":
+					if aS > -1 {
+						if cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+							val = strings.ToLower(strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity))
+						} else {
+							val = "false"
 						}
 					}
 				case "kubernetesTillerSpec":

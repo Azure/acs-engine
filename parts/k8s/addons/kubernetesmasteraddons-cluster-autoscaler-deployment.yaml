@@ -142,6 +142,7 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
+      <kubernetesClusterAutoscalerHostNetwork>
       serviceAccountName: cluster-autoscaler
       containers:
       - image: <kubernetesClusterAutoscalerSpec>
@@ -192,15 +193,19 @@ spec:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
+        - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
+          value: "<kubernetesClusterAutoscalerUseManagedIdentity>"
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
           readOnly: true
+        <kubernetesClusterAutoscalerVolumeMounts>
       restartPolicy: Always
       volumes:
       - hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
           type: ""
         name: ssl-certs
+      <kubernetesClusterAutoscalerVolumes>
       nodeSelector:
         beta.kubernetes.io/os: linux

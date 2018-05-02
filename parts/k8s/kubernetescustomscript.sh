@@ -60,7 +60,25 @@ configAddons() {
 }
 
 configClusterAutoscalerAddon() {
+
     echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
+
+    if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
+        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityStart>>/opt/m
+        CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT="- mountPath: /var/lib/waagent/\n\          name: waagent\n\          readOnly: true"
+        CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
+        CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
+
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityDone>>/opt/m
+    elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    fi
+
     sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"

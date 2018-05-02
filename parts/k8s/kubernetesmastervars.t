@@ -117,6 +117,7 @@
     "kubernetesClusterAutoscalerMinNodes": "[parameters('kubernetesClusterAutoscalerMinNodes')]",
     "kubernetesClusterAutoscalerMaxNodes": "[parameters('kubernetesClusterAutoscalerMaxNodes')]",
     "kubernetesClusterAutoscalerEnabled": "[parameters('kubernetesClusterAutoscalerEnabled')]",
+    "kubernetesClusterAutoscalerUseManagedIdentity": "[parameters('kubernetesClusterAutoscalerUseManagedIdentity')]",
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",

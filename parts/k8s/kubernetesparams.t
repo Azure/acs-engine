@@ -500,6 +500,13 @@
       },
       "type": "bool"
     },
+    "kubernetesClusterAutoscalerUseManagedIdentity": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerUseManagedIdentity"}}
+      "metadata": {
+        "description": "Managed identity for the cluster autoscaler addon"
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
@@ -762,9 +769,9 @@
       },
       "type": "string"
     },
-    "etcdEncryptionKey": { 
+    "etcdEncryptionKey": {
       "metadata": {
-        "description": "Encryption at rest key for etcd" 
+        "description": "Encryption at rest key for etcd"
       },
       "type": "string"
     }
