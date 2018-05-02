@@ -4,6 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
+        "useManagedIdentity": true,
         "addons": [
           {
             "name": "cluster-autoscaler",
@@ -26,7 +27,8 @@
         "name": "agentpool",
         "count": 1,
         "vmSize": "Standard_DS2_v2",
-        "availabilityProfile": "VirtualMachineScaleSets"
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "storageProfile": "ManagedDisks"
       }
     ],
     "linuxProfile": {
@@ -38,10 +40,6 @@
           }
         ]
       }
-    },
-    "servicePrincipalProfile": {
-      "clientId": "",
-      "secret": ""
     }
   }
 }

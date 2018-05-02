@@ -11,53 +11,50 @@ To use this add-on, make sure your cluster's Kubernetes version is 1.10 or above
 
 ```
 {
-    "apiVersion": "vlabs",
-    "properties": {
-      "orchestratorProfile": {
-        "orchestratorType": "Kubernetes",
-        "orchestratorRelease": "1.10",
-        "kubernetesConfig": {
-          "addons": [
-            {
-              "name": "cluster-autoscaler",
-              "enabled" : true,
-              "config": {
-                "minNodes": "1",
-                "maxNodes": "5"
-              }
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "useManagedIdentity": true,
+        "addons": [
+          {
+            "name": "cluster-autoscaler",
+            "enabled": true,
+            "config": {
+              "minNodes": "1",
+              "maxNodes": "5"
             }
-          ]
-        }
-      },
-      "masterProfile": {
+          }
+        ]
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_DS2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool",
         "count": 1,
-        "dnsPrefix": "",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "agentPoolProfiles": [
-        {
-          "name": "agentpool",
-          "count": 1,
-          "vmSize": "Standard_DS2_v2",
-          "availabilityProfile": "VirtualMachineScaleSets"
-        }
-      ],
-      "linuxProfile": {
-        "adminUsername": "azureuser",
-        "ssh": {
-          "publicKeys": [
-            {
-              "keyData": ""
-            }
-          ]
-        }
-      },
-      "servicePrincipalProfile": {
-        "clientId": "",
-        "secret": ""
+        "vmSize": "Standard_DS2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "storageProfile": "ManagedDisks"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
       }
     }
   }
+}
 ```
 
 You should see cluster autoscaler as running after running:
@@ -66,9 +63,9 @@ You should see cluster autoscaler as running after running:
 $ kubectl get pods -n kube-system
 ```
 
-Follow the README at https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler for examples.
+Follow the README at https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler for more information.
 
-# Configuration
+## Configuration
 
 | Name           | Required | Description                       | Default Value                                              |
 | -------------- | -------- | --------------------------------- | ---------------------------------------------------------- |
@@ -81,6 +78,6 @@ Follow the README at https://github.com/kubernetes/autoscaler/tree/master/cluste
 | cpuLimits      | no       | cpu limits for the container      | "100m"                                                     |
 | memoryLimits   | no       | memory limits for the container   | "300Mi"                                                    |
 
-# Supported Orchestrators
+## Supported Orchestrators
 
 Kubernetes
