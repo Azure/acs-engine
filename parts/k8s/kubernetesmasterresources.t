@@ -194,10 +194,10 @@
     },
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
-    {
+{
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-{{if not IsAzureCNI}}
+{{if RequireRouteTable}}
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if not IsOpenShift}},{{end}}
 {{end}}
 {{if not IsOpenShift}}
@@ -223,7 +223,7 @@
                 "id": "[variables('nsgID')]"
               }
 {{end}}
-{{if not IsAzureCNI}}
+{{if RequireRouteTable}}
               ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
@@ -290,7 +290,7 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
-{{if not IsAzureCNI}}
+{{if RequireRouteTable}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
