@@ -395,27 +395,27 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 	}
 
 	for _, config := range []k8sNetworkConfig{
-		k8sNetworkConfig{
+		{
 			networkPlugin: "azure",
 			networkPolicy: "calico",
 		},
-		k8sNetworkConfig{
+		{
 			networkPlugin: "azure",
 			networkPolicy: "cilium",
 		},
-		k8sNetworkConfig{
+		{
 			networkPlugin: "azure",
 			networkPolicy: "azure",
 		},
-		k8sNetworkConfig{
+		{
 			networkPlugin: "kubenet",
 			networkPolicy: "none",
 		},
-		k8sNetworkConfig{
+		{
 			networkPlugin: "azure",
 			networkPolicy: "none",
 		},
-		k8sNetworkConfig{
+		{
 			networkPlugin: "kubenet",
 			networkPolicy: "kubenet",
 		},
