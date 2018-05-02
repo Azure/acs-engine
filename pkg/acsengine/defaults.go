@@ -529,6 +529,19 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
+		dcosSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
+		dcosBootstrapSemVer, _ := semver.NewVersion(api.DCOSVersion1Dot11Dot0)
+		if !dcosSemVer.LessThan(dcosBootstrapSemVer) {
+			if o.DcosConfig.BootstrapProfile == nil {
+				o.DcosConfig.BootstrapProfile = &api.BootstrapProfile{}
+			}
+			if o.DcosConfig.BootstrapProfile.Count == 0 {
+				o.DcosConfig.BootstrapProfile.Count = 1
+			}
+			if len(o.DcosConfig.BootstrapProfile.VMSize) == 0 {
+				o.DcosConfig.BootstrapProfile.VMSize = "Standard_D2s_v3"
+			}
+		}
 	case api.OpenShift:
 		if a.MasterProfile.Distro == "" {
 			a.MasterProfile.Distro = api.RHEL
@@ -596,6 +609,17 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 			a.MasterProfile.Subnet = DefaultOpenShiftMasterSubnet
 			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
 				a.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
+			}
+		} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
+			a.MasterProfile.Subnet = DefaultDCOSMasterSubnet
+			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
+			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
+			}
+			if a.OrchestratorProfile.DcosConfig != nil && a.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) == 0 {
+					a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP = DefaultDCOSBootstrapFirstConsecutiveStaticIP
+				}
 			}
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet

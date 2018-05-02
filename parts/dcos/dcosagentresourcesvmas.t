@@ -175,6 +175,9 @@
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
+{{if and HasBootstrap (not IsHostedBootstrap)}}
+       ,"[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/extensions/bootstrapready')]"
+{{end}}
       ],
       "tags":
       {
