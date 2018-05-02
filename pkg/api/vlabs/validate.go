@@ -51,7 +51,7 @@ var (
 		},
 		{
 			networkPlugin: "",
-			networkPolicy: "azure",
+			networkPolicy: "calico",
 		},
 		{
 			networkPlugin: "",
@@ -59,7 +59,11 @@ var (
 		},
 		{
 			networkPlugin: "",
-			networkPolicy: "none",
+			networkPolicy: "azure", // for backwards-compatibility w/ prior networkPolicy usage
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "none", // for backwards-compatibility w/ prior networkPolicy usage
 		},
 	}
 )
