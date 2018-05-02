@@ -6,7 +6,7 @@ Setting up Kubernetes in a hybrid environment imposes some requirement on the se
 
 Note : We do not cover a Kubernetes cluster _spanning_ a hybrid cloud network, but rather how to run a cluster in the cloud and interact with an existing local network seamlessly.
 
-![Kubernetes in an hybrid cloud network](../images/kubernetes-hybrid-env.png)
+![Kubernetes in a hybrid cloud network](../images/kubernetes-hybrid-env.png)
 
 As illustrated on the figure above, we recommand to deploy the Kubernetes cluster in its own dedicated VNET / subnets and then peer this VNET to the one that allows to access to other resources, both on-premises and in the cloud. This allows you to connect new vnet to your on-premise network by setting up an additional peering. It also separates clusters and environments infrastructure (dev, qa, pre-prod, prod etc...) and facilitate safe Kubernetes version upgrades (see [Cluster upgrades](#cluster-upgrades) section).
 
@@ -22,14 +22,14 @@ This document assumes that you are familiar with:
 
 ### Topology
 
-The network topology must be well defined beforehand to enable peering between the different VNET. This means that the subnet ip range musty be defined before deploying kubernetes. It cannot be changed afterwards.
+The network topology must be well defined beforehand to enable peering between the different VNET. This means that the subnet IP range must be defined before deploying kubernetes. It cannot be changed afterwards.
 
-### Dns
+### DNS
 
 In a hybrid environment, you usually want to integrate with your on-premises DNS. There is two aspects to this. The first one is to register the VMs forming the cluster, and using your local search domain when resolving other services. The second is getting the services running on Kubernetes to use the external DNS.
-To benefit the scaling capabilities of the cluster and to ensure resiliency to machine failure, every node configuration needs to be scripted and part of the initial template that acs-engine will deploy. To register the nodes in your DNS at startup, you need to define [an acs-engine extension](../extensions.md) that will run your [dns registration script](https://github.com/tesharp/acs-engine/blob/register-dns-extension/extensions/register-dns/v1/register-dns.sh).
+To benefit the scaling capabilities of the cluster and to ensure resiliency to machine failure, every node configuration needs to be scripted and part of the initial template that acs-engine will deploy. To register the nodes in your DNS at startup, you need to define [an acs-engine extension](../extensions.md) that will run your [DNS registration script](https://github.com/tesharp/acs-engine/blob/register-dns-extension/extensions/register-dns/v1/register-dns.sh).
 
-In addition, you might want cluster services to address urls outside the cluster using your on-premise dns. To achieve this you need to configure KubeDNS to use your existing nameservice as upstream. [This setup is well documented on kubernetes blog](https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes)
+In addition, you might want cluster services to address URLs outside the cluster using your on-premise DNS. To achieve this you need to configure KubeDNS to use your existing nameservice as upstream. [This setup is well documented on kubernetes blog](https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes)
 
 Note : There is some ongoing work to make this easier. See [acs-engine#2590](https://github.com/Azure/acs-engine/pull/2590)
 
@@ -43,13 +43,13 @@ For your kubernetes cluster to communicate with your on-premise network, you wil
 
 ### Network
 
-Deploying Acs-engine on azure, you have 3 options of network policy. Azure CNI, Kubenet, or Calico.
+Deploying ACS-Engine on Azure, you have 3 options of network policy. Azure CNI, Kubenet, or Calico.
 
 #### Azure CNI
 
-By default, acs-engine is using the [**azure cni** network policy](../../examples/networkpolicy/README.md#azure-container-networking-default) plugin. This has some advantages and some consequences that must be considered when defining the network where we deploy the cluster. CNI provides an integration with azure subnet ip addressing so that every pod created ny kubernetes is assigned an ip address from the corresponding subnet.
-All IP addresses are pre-allocated at provisionning time. By default, [acs-engine will pre-allocate 128 ips per node](https://github.com/Azure/azure-container-networking/blob/master/docs/acs.md#enabling-azure-vnet-plugins-for-an-acs-kubernetes-cluster) on the subnet.
-While this can be configured, new addresses will not be allocated dynamically. you need to plan for maximum scale.
+By default, ACS-Engine is using the [**azure cni** network policy](../../examples/networkpolicy/README.md#azure-container-networking-default) plugin. This has some advantages and some consequences that must be considered when defining the network where we deploy the cluster. CNI provides an integration with azure subnet IP addressing so that every pod created by kubernetes is assigned an IP address from the corresponding subnet.
+All IP addresses are pre-allocated at provisionning time. By default, [acs-engine will pre-allocate 128 IPs per node](https://github.com/Azure/azure-container-networking/blob/master/docs/acs.md#enabling-azure-vnet-plugins-for-an-acs-kubernetes-cluster) on the subnet.
+While this can be configured, new addresses will not be allocated dynamically. That means that you need to anticipate and plan for the maximum number of IP addresses you will need for the maximum scale.
 
 Consequences:
 
@@ -57,12 +57,12 @@ Consequences:
 - Subnets where you deploy Kubernetes must be sized according to your scaling plan
 - You must account for [Kubernetes control plane](https://kubernetes.io/docs/concepts/overview/components/) services
 - Network Security must be applied at the subnet level, using Azure NSG
-- You can avoid masquerading on outgoing network calls (packets origin are the pod ip, not the node ip)
+- You can avoid masquerading on outgoing network calls (packets origin are the pod IP, not the node IP)
 
 #### Kubenet
 
 The built-in kubernetes network plugin is [Kubenet](https://kubernetes.io/docs/concepts/cluster-administration/network-plugins/#kubenet).
-Kubenet assigns virtual ips to the pods running in the cluster that are not part of the physical network infrastructure. The nodes are then configured to forward and masquerade the network calls using iptables rules. This means you can plan for a much smaller address space on your network as only the nodes will get an ip address.
+Kubenet assigns virtual IPs to the pods running in the cluster that are not part of the physical network infrastructure. The nodes are then configured to forward and masquerade the network calls using iptables rules. This means you can plan for a much smaller address space on your network as only the nodes will get an IP address.
 
 ## Kubernetes Services
 
