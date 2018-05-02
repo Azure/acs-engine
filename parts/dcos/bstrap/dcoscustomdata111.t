@@ -87,9 +87,11 @@ write_files:
   permissions: '0644'
 - content: |
     #!/bin/bash
-    
+
     for f in /opt/mesosphere/packages/dcos-config--setup_*/etc/dcos-diagnostics-runner-config.json; do
-      sed -i.bak "99 s/1s/10s/" $f
+      if [ -e $f ]; then
+        sed -i.bak "99 s/1s/10s/" $f
+      fi
     done
   owner: root
   path: /opt/azure/dcos/diagnostics_fix.sh
