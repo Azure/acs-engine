@@ -101,9 +101,7 @@ write_files:
     master_list:
 MASTER_IP_LIST
     resolvers:
-    - 198.51.100.1
-    - 198.51.100.2
-    - 198.51.100.3
+    - 168.63.129.16
   owner: root
   path: /opt/azure/dcos/genconf/config.yaml
   permissions: '0644'
