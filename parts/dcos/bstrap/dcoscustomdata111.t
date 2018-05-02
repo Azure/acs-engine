@@ -41,7 +41,7 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, restart, systemd-journald.service ]
     - [ systemctl, restart, docker.service ]
     - [ bash, /tmp/dcos/dcos_install.sh, ROLENAME ]
-    - [ sed, -i.bak, "99 s/1s/10s/", /opt/mesosphere/packages/dcos-config--setup_db35841c60c3f46815fbca1f13d18618dd05dc7a/etc/dcos-diagnostics-runner-config.json ]
+    - [ bash, /opt/azure/dcos/diagnostics_fix.sh ]
 write_files:
 - content: |
     [Unit]
@@ -85,6 +85,15 @@ write_files:
   owner: root
   path: /opt/azure/dcos/environment
   permissions: '0644'
+- content: |
+    #!/bin/bash
+    
+    for f in /opt/mesosphere/packages/dcos-config--setup_*/etc/dcos-diagnostics-runner-config.json; do
+      sed -i.bak "99 s/1s/10s/" $f
+    done
+  owner: root
+  path: /opt/azure/dcos/diagnostics_fix.sh
+  permissions: '0744'
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"
