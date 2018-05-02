@@ -20,6 +20,8 @@ import (
 ///////////////////////////////////////////////////////////
 
 const (
+	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
+	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
@@ -36,7 +38,7 @@ const (
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
-	c.Location = NormalizeAzureRegion(v20170831.Location)
+	c.Location = helpers.NormalizeAzureRegion(v20170831.Location)
 	c.Name = v20170831.Name
 	if v20170831.Plan != nil {
 		c.Plan = convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831.Plan)
@@ -54,7 +56,7 @@ func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *Contain
 func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20180331.ID
-	c.Location = NormalizeAzureRegion(v20180331.Location)
+	c.Location = helpers.NormalizeAzureRegion(v20180331.Location)
 	c.Name = v20180331.Name
 	if v20180331.Plan != nil {
 		c.Plan = convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331.Plan)
@@ -111,7 +113,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
-	c.Location = NormalizeAzureRegion(vlabs.Location)
+	c.Location = helpers.NormalizeAzureRegion(vlabs.Location)
 	c.Name = vlabs.Name
 	if vlabs.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -229,6 +231,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
 			NetworkPolicy:      "none",
+			ClusterSubnet:      DefaultKubernetesClusterSubnet,
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
@@ -419,6 +422,8 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 		case v20180331.Kubenet:
 			kubernetesConfig.NetworkPolicy = "none"
 
+			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			} else {
@@ -445,6 +450,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	} else {
 		// set network default for un-versioned model
 		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet

@@ -274,6 +274,7 @@ type KubernetesConfig struct {
 	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
 	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
+	CustomWindowsPackageURL         string            `json:"customWindowsPackageURL,omitempty"`
 	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`
@@ -283,6 +284,7 @@ type KubernetesConfig struct {
 	GCLowThreshold                  int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                     string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                  string            `json:"etcdDiskSizeGB,omitempty"`
+	EtcdEncryptionKey               string            `json:"etcdEncryptionKey,omitempty"`
 	EnableDataEncryptionAtRest      *bool             `json:"enableDataEncryptionAtRest,omitempty"`
 	EnableEncryptionWithExternalKms *bool             `json:"enableEncryptionWithExternalKms,omitempty"`
 	EnablePodSecurityPolicy         *bool             `json:"enablePodSecurityPolicy,omitempty"`

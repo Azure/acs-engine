@@ -150,6 +150,7 @@
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
         "resourceNameSuffix" : "[variables('winResourceNamePrefix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "acsengineVersion" : "[variables('acsengineVersion')]",
         "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",

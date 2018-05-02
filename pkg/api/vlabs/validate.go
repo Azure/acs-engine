@@ -1,6 +1,7 @@
 package vlabs
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -124,7 +125,12 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion, o.OrchestratorVersion)
 					}
-
+					if o.KubernetesConfig.EtcdEncryptionKey != "" {
+						_, err = base64.URLEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
+						if err != nil {
+							return fmt.Errorf("etcdEncryptionKey must be base64 encoded. Please provide a valid base64 encoded value or leave the etcdEncryptionKey empty to auto-generate the value")
+						}
+					}
 				}
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
@@ -424,6 +430,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && a.MasterProfile.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
 	for i, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
@@ -468,6 +478,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.StorageProfile != ManagedDisks {
+			return errors.New("OpenShift orchestrator supports only ManagedDisks")
 		}
 
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
@@ -542,6 +556,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
 				}
 			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) && agentPoolProfile.StorageProfile == StorageAccount {
+			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {

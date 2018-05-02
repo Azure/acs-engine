@@ -138,6 +138,9 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
+{{if EnableDataEncryptionAtRest}} 
+    "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
+{{end}}
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -245,7 +248,9 @@
 {{end}}
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
+    "acsengineVersion": "[parameters('acsengineVersion')]",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
+
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
 {{else}}

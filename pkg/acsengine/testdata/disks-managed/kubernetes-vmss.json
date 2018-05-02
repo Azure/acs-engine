@@ -5,10 +5,7 @@
     "provisioningState": "",
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.10",
-      "kubernetesConfig": {
-        "useInstanceMetadata": false
-      }
+      "orchestratorRelease": "1.10"
     },
     "masterProfile": {
       "count": 1,

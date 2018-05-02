@@ -207,7 +207,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -267,7 +267,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
+	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode, acsengineVersion); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -449,11 +449,14 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string) (paramsMap, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
 	cloudSpecConfig := GetCloudSpecConfig(location)
+
+	// acsengine Parameters
+	addValue(parametersMap, "acsengineVersion", acsengineVersion)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
@@ -692,6 +695,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
+		addValue(parametersMap, "etcdEncryptionKey", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey)
 		if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() {
 			addValue(parametersMap, "jumpboxVMName", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Name)
 			addValue(parametersMap, "jumpboxVMSize", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.VMSize)
@@ -842,7 +846,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
-			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeConfigs[k8sVersion]["windowszip"])
+			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
+			if kubeBinariesSASURL == "" {
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
+			}
+
+			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
 			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
@@ -1725,6 +1734,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
 				case "etcdVersion":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
+				case "etcdEncryptionKey":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey
 				case "etcdDiskSizeGB":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				case "jumpboxOSDiskSizeGB":

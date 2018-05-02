@@ -18,9 +18,10 @@ type Upgrader struct {
 	Translator *i18n.Translator
 	logger     *logrus.Entry
 	ClusterTopology
-	Client      armhelpers.ACSEngineClient
-	kubeConfig  string
-	stepTimeout *time.Duration
+	Client           armhelpers.ACSEngineClient
+	kubeConfig       string
+	stepTimeout      *time.Duration
+	ACSEngineVersion string
 }
 
 type vmStatus int
@@ -38,13 +39,14 @@ type vmInfo struct {
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string, stepTimeout *time.Duration) {
+func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string, stepTimeout *time.Duration, acsEngineVersion string) {
 	ku.Translator = translator
 	ku.logger = logger
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
 	ku.kubeConfig = kubeConfig
 	ku.stepTimeout = stepTimeout
+	ku.ACSEngineVersion = acsEngineVersion
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -71,7 +73,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	}
 	ku.logger.Infof("Master nodes StorageProfile: %s", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile)
 	// Upgrade Master VMs
-	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
+	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
 	if err != nil {
 		return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
@@ -194,7 +196,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 func (ku *Upgrader) upgradeAgentPools() error {
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
-		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
+		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
 		if err != nil {
 			ku.logger.Errorf("Error generating upgrade template: %v", err)
 			return ku.Translator.Errorf("Error generating upgrade template: %s", err.Error())
@@ -373,7 +375,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 	return nil
 }
 
-func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService) (map[string]interface{}, map[string]interface{}, error) {
+func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService, acsengineVersion string) (map[string]interface{}, map[string]interface{}, error) {
 	var err error
 	ctx := acsengine.Context{
 		Translator: ku.Translator,
@@ -385,7 +387,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 
 	var templateJSON string
 	var parametersJSON string
-	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true); err != nil {
+	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true, acsengineVersion); err != nil {
 		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
