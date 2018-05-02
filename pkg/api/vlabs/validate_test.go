@@ -353,6 +353,85 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	}
 }
 
+func Test_Properties_ValidateNetworkPlugin(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	for _, policy := range NetworkPluginValues {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = policy
+		if err := p.validateNetworkPlugin(); err != nil {
+			t.Errorf(
+				"should not error on networkPolicy=\"%s\"",
+				policy,
+			)
+		}
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "not-existing"
+	if err := p.validateNetworkPlugin(); err == nil {
+		t.Errorf(
+			"should error on invalid networkPlugin",
+		)
+	}
+}
+
+func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	for _, config := range networkPluginPlusPolicyAllowed {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
+		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
+		if err := p.validateNetworkPluginPlusPolicy(); err != nil {
+			t.Errorf(
+				"should not error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
+				config.networkPolicy, config.networkPlugin,
+			)
+		}
+	}
+
+	for _, config := range []k8sNetworkConfig{
+		k8sNetworkConfig{
+			networkPlugin: "azure",
+			networkPolicy: "calico",
+		},
+		k8sNetworkConfig{
+			networkPlugin: "azure",
+			networkPolicy: "cilium",
+		},
+		k8sNetworkConfig{
+			networkPlugin: "azure",
+			networkPolicy: "azure",
+		},
+		k8sNetworkConfig{
+			networkPlugin: "kubenet",
+			networkPolicy: "none",
+		},
+		k8sNetworkConfig{
+			networkPlugin: "azure",
+			networkPolicy: "none",
+		},
+		k8sNetworkConfig{
+			networkPlugin: "kubenet",
+			networkPolicy: "kubenet",
+		},
+	} {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
+		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
+		if err := p.validateNetworkPluginPlusPolicy(); err == nil {
+			t.Errorf(
+				"should error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
+				config.networkPolicy, config.networkPlugin,
+			)
+		}
+	}
+}
+
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
 
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
