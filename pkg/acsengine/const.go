@@ -46,6 +46,10 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
 	NetworkPolicyNone = "none"
+	// NetworkPolicyCalico is the string expression for calico network policy config option
+	NetworkPolicyCalico = "calico"
+	// NetworkPolicyCilium is the string expression for cilium network policy config option
+	NetworkPolicyCilium = "cilium"
 	// NetworkPluginAzure is the string expression for Azure CNI network policy
 	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin

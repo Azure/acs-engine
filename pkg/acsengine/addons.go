@@ -65,12 +65,12 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 		{
 			"kubernetesmasteraddons-calico-daemonset.yaml",
 			"calico-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCalico,
 		},
 		{
 			"kubernetesmasteraddons-cilium-daemonset.yaml",
 			"cilium-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "cilium",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCilium,
 		},
 		{
 			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",
