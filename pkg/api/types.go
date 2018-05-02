@@ -756,7 +756,7 @@ func (o *OrchestratorProfile) IsAzureCNI() bool {
 	}
 }
 
-// IsAzureCNI returns true if Azure VNET integration is enabled
+// RequireRouteTable returns true if this deployment requires routing table
 func (o *OrchestratorProfile) RequireRouteTable() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
