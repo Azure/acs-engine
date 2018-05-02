@@ -3,6 +3,7 @@ package certgen
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
@@ -267,7 +268,7 @@ func (c *Config) WriteMasterKubeConfigs(fs filesystem.Filesystem) error {
 		if err != nil {
 			return err
 		}
-		err = fs.WriteFile(filename, b, 0600)
+		err = fs.WriteFile(filename, b, filesystem.Fileinfo{User: "root", Group: "root", Mode: os.FileMode(0600)})
 		if err != nil {
 			return err
 		}
@@ -282,5 +283,6 @@ func (c *Config) WriteBootstrapKubeConfig(fs filesystem.Filesystem) error {
 	if err != nil {
 		return err
 	}
-	return fs.WriteFile("etc/origin/node/bootstrap.kubeconfig", b, 0600)
+
+	return fs.WriteFile("etc/origin/node/bootstrap.kubeconfig", b, filesystem.Fileinfo{User: "root", Group: "root", Mode: os.FileMode(0600)})
 }
