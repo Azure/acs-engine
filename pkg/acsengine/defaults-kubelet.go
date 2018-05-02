@@ -106,7 +106,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+		if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
+			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+		}
 	}
 }
 
