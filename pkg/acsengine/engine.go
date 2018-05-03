@@ -2229,7 +2229,7 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	if len(profile.OSType) > 0 {
 		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
 	} else {
-		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:linux")
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", api.Linux)
 	}
 
 	if len(profile.Ports) > 0 {
