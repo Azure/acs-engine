@@ -28,6 +28,44 @@ var (
 		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
 		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9", "3.2.11", "3.2.12",
 		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.3.0", "3.3.1"}
+	networkPluginPlusPolicyAllowed = []k8sNetworkConfig{
+		{
+			networkPlugin: "",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "calico",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "calico",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "azure", // for backwards-compatibility w/ prior networkPolicy usage
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "none", // for backwards-compatibility w/ prior networkPolicy usage
+		},
+	}
 )
 
 const (
@@ -35,6 +73,11 @@ const (
 	labelValueFormat        = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 	labelKeyFormat          = "^(([a-zA-Z0-9-]+[.])*[a-zA-Z0-9-]+[/])?([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 )
+
+type k8sNetworkConfig struct {
+	networkPlugin string
+	networkPolicy string
+}
 
 func init() {
 	validate = validator.New()
@@ -71,6 +114,15 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				false)
 			if version == "" {
 				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+			}
+			if o.DcosConfig != nil && o.DcosConfig.BootstrapProfile != nil {
+				if len(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) > 0 {
+					bootstrapFirstIP := net.ParseIP(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+					if bootstrapFirstIP == nil {
+						return fmt.Errorf("DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address",
+							o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+					}
+				}
 			}
 		case Swarm:
 		case SwarmMode:
@@ -383,7 +435,13 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
 		return e
 	}
+	if e := a.validateNetworkPlugin(); e != nil {
+		return e
+	}
 	if e := a.validateNetworkPolicy(); e != nil {
+		return e
+	}
+	if e := a.validateNetworkPluginPlusPolicy(); e != nil {
 		return e
 	}
 	if e := a.validateContainerRuntime(); e != nil {
@@ -681,7 +739,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
 		}
 
-		if a.NetworkPolicy == "azure" {
+		if a.NetworkPlugin == "azure" {
 			ones, bits := subnet.Mask.Size()
 			if bits-ones <= 8 {
 				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
@@ -815,6 +873,33 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	return nil
 }
 
+func (a *Properties) validateNetworkPlugin() error {
+	var networkPlugin string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			networkPlugin = a.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+		}
+	default:
+		return nil
+	}
+
+	// Check NetworkPlugin has a valid value.
+	valid := false
+	for _, plugin := range NetworkPluginValues {
+		if networkPlugin == plugin {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown networkPlugin '%s' specified", networkPlugin)
+	}
+
+	return nil
+}
+
 func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
 
@@ -829,8 +914,8 @@ func (a *Properties) validateNetworkPolicy() error {
 
 	// Check NetworkPolicy has a valid value.
 	valid := false
-	for _, policy := range NetworkPolicyValues {
-		if networkPolicy == policy {
+	for _, plugin := range NetworkPolicyValues {
+		if networkPolicy == plugin {
 			valid = true
 			break
 		}
@@ -845,6 +930,24 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	return nil
+}
+
+func (a *Properties) validateNetworkPluginPlusPolicy() error {
+	var config k8sNetworkConfig
+
+	if a.OrchestratorProfile.KubernetesConfig != nil {
+		config.networkPlugin = a.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+	}
+	if a.OrchestratorProfile.KubernetesConfig != nil {
+		config.networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	}
+
+	for _, c := range networkPluginPlusPolicyAllowed {
+		if c.networkPlugin == config.networkPlugin && c.networkPolicy == config.networkPolicy {
+			return nil
+		}
+	}
+	return fmt.Errorf("networkPolicy '%s' is not supported with networkPlugin '%s'", config.networkPolicy, config.networkPlugin)
 }
 
 func (a *Properties) validateContainerRuntime() error {

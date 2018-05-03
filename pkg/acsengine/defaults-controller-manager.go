@@ -12,6 +12,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 	staticLinuxControllerManagerConfig := map[string]string{
 		"--kubeconfig":                       "/var/lib/kubelet/kubeconfig",
 		"--allocate-node-cidrs":              strconv.FormatBool(!o.IsAzureCNI()),
+		"--configure-cloud-routes":           strconv.FormatBool(o.RequireRouteTable()),
 		"--cluster-cidr":                     o.KubernetesConfig.ClusterSubnet,
 		"--root-ca-file":                     "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-cert-file":        "/etc/kubernetes/certs/ca.crt",

@@ -2,7 +2,12 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "DCOS",
+      "dcosConfig": {
+        "bootstrapProfile": {
+          "firstConsecutiveStaticIP": "10.100.0.240"
+        }
+      }
     },
     "masterProfile": {
       "count": 3,

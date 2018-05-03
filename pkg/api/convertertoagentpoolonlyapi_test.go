@@ -30,7 +30,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != string(networkPlugin) {
+	if api.KubernetesConfig.NetworkPlugin != string(networkPlugin) {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -55,7 +55,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != "none" {
+	if api.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -86,7 +86,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != "none" {
+	if api.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 

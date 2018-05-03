@@ -75,6 +75,7 @@ $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
 #azure cni
 $global:NetworkPolicy = "{{WrapAsVariable "networkPolicy"}}"
+$global:NetworkPlugin = "{{WrapAsVariable "networkPlugin"}}"
 $global:VNetCNIPluginsURL = "{{WrapAsVariable "vnetCniWindowsPluginsURL"}}"
 
 $global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")

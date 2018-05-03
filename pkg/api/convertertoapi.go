@@ -625,6 +625,17 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosRepositoryURL = vlabs.DcosRepositoryURL
 	api.DcosClusterPackageListID = vlabs.DcosClusterPackageListID
 	api.DcosProviderPackageID = vlabs.DcosProviderPackageID
+
+	if vlabs.BootstrapProfile != nil {
+		api.BootstrapProfile = &BootstrapProfile{
+			Count:                    vlabs.BootstrapProfile.Count,
+			VMSize:                   vlabs.BootstrapProfile.VMSize,
+			OSDiskSizeGB:             vlabs.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled:             vlabs.BootstrapProfile.OAuthEnabled,
+			FirstConsecutiveStaticIP: vlabs.BootstrapProfile.FirstConsecutiveStaticIP,
+			Subnet: vlabs.BootstrapProfile.Subnet,
+		}
+	}
 }
 
 func convertVLabsOpenShiftConfig(vlabs *vlabs.OpenShiftConfig, api *OpenShiftConfig) {
@@ -645,6 +656,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.NetworkPlugin = vlabs.NetworkPlugin
 	api.ContainerRuntime = vlabs.ContainerRuntime
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
@@ -687,11 +699,11 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 	if api.KubernetesConfig == nil {
 		api.KubernetesConfig = &KubernetesConfig{}
 	}
-	if api.KubernetesConfig.NetworkPolicy == "" {
+	if api.KubernetesConfig.NetworkPlugin == "" {
 		if vp.HasWindows() {
-			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicyWindows
+			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPluginWindows
 		} else {
-			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicy
+			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPlugin
 		}
 	}
 }

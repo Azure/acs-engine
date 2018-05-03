@@ -32,7 +32,8 @@ Here are the valid values for the orchestrator types:
 |---|---|---|
 |kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
-|networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience,<br>`none` for not enforcing any network policy,<br>`calico` for Calico network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>`cilium` for cilium network policy (required for Kubernetes network policies; clusters with Linux agents only).<br>See [network policy examples](../examples/networkpolicy) for more information|
+|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience, or <br>`"kubenet"` for k8s software networking implementation.|
+|networkPolicy|no|Specifies the network policy enforcement tool for the cluster (currently Linux-only). Valid values are:<br>`calico` for Calico network policy.<br>`cilium` for cilium network policy (Lin).<br>See [network policy examples](../examples/networkpolicy) for more information|
 |containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The only other option is `clear-containers`|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`|
@@ -169,7 +170,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--cloud-provider"|"azure"|
 |"--cluster-domain"|"cluster.local"|
 |"--pod-infra-container-image"|"pause-amd64:*version*"|
-|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPolicy": "none"`)|
+|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPlugin": "kubenet"`)|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
 |"--node-status-update-frequency"|"10s"|
 |"--image-gc-high-threshold"|"85"|

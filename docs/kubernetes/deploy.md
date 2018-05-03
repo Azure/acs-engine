@@ -98,11 +98,25 @@ Edit the [simple Kubernetes cluster definition](/examples/kubernetes.json) and f
 
 Optional: attach to an existing virtual network (VNET). Details [here](features.md#feat-custom-vnet)
 
+Note: you can then use the `--set` option of the generate command to override values from the cluster definition file directly in the command line (cf. [Step 4](deploy.md#step-4-generate-the-templates))
+
 ### Step 4: Generate the Templates
 
 The generate command takes a cluster definition and outputs a number of templates which describe your Kubernetes cluster. By default, `generate` will create a new directory named after your cluster nested in the `_output` directory. If my dnsPrefix was `larry` my cluster templates would be found in `_output/larry-`.
 
 Run `acs-engine generate examples/kubernetes.json`
+
+The generate command lets you override values from the cluster definition file without having to update the file. You can use the `--set` flag to do that:
+
+```bash
+acs-engine generate --set linuxProfile.adminUsername=myNewUsername,masterProfile.count=3 clusterdefinition.json
+```
+
+The `--set` flag only supports JSON properties under `properties`. You can also work with array, like the following:
+
+```bash
+acs-engine generate --set agentPoolProfiles[0].count=5,agentPoolProfiles[1].name=myPoolName clusterdefinition.json
+```
 
 ### Step 5: Submit your Templates to Azure Resource Manager (ARM)
 
