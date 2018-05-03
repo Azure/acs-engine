@@ -655,8 +655,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
-	api.NetworkPolicy = vlabs.NetworkPolicy
-	api.NetworkPlugin = vlabs.NetworkPlugin
 	api.ContainerRuntime = vlabs.ContainerRuntime
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
@@ -698,6 +696,17 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
 	if api.KubernetesConfig == nil {
 		api.KubernetesConfig = &KubernetesConfig{}
+	}
+	// Included here for backwards compatibility with deprecated NetworkPolicy usage patterns
+	if vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure {
+		api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+		api.KubernetesConfig.NetworkPolicy = "" // no-op but included for emphasis
+	} else if vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
+		api.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+		api.KubernetesConfig.NetworkPolicy = "" // no-op but included for emphasis
+	} else {
+		api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+		api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 	}
 	if api.KubernetesConfig.NetworkPlugin == "" {
 		if vp.HasWindows() {

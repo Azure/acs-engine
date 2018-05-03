@@ -120,6 +120,12 @@ const (
 	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
+	// NetworkPolicyAzure is the string expression for the deprecated NetworkPolicy usage pattern "azure"
+	NetworkPolicyAzure = "azure"
+	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
+	NetworkPolicyNone = "none"
+	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
+	NetworkPluginKubenet = "kubenet"
 )
 
 const (
