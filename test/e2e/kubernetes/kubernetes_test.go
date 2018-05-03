@@ -259,6 +259,33 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("with a linux agent pool", func() {
+		It("should be able to schedule pods that have outbound internet access", func() {
+			if eng.HasLinuxAgents() {
+				By("Creating a new deployment")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				curlDeploymentName := fmt.Sprintf("curl-pod-%s-%v", cfg.Name, r.Intn(99999))
+				curlDeploy, err := deployment.CreateLinuxDeploy("tutum/curl:trusty", curlDeploymentName, "default", "")
+				Expect(err).NotTo(HaveOccurred())
+				running, err := pod.WaitOnReady(curlDeploymentName, "default", 3, 60*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				curlPods, err := curlDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				for i, curlPod := range curlPods {
+					if i < 1 {
+						pass, err := curlPod.ValidateCurlConnection("https://bing.com", 5*time.Second, 3*time.Minute)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(pass).To(BeTrue())
+					}
+				}
+				By("Cleaning up after ourselves")
+				err = curlDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("No linux agent was provisioned for this Cluster Definition")
+			}
+		})
+
 		It("should be able to produce a working ILB connection", func() {
 			if eng.HasLinuxAgents() {
 				By("Creating a nginx deployment")
@@ -275,7 +302,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Ensuring the ILB IP is assigned to the service")
 				curlDeploymentName := fmt.Sprintf("long-running-pod-%s-%v", cfg.Name, r.Intn(99999))
-				curlDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", curlDeploymentName, "default", "")
+				curlDeploy, err := deployment.CreateLinuxDeploy("tutum/curl:trusty", curlDeploymentName, "default", "")
 				Expect(err).NotTo(HaveOccurred())
 				running, err := pod.WaitOnReady(curlDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
@@ -284,7 +311,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				for i, curlPod := range curlPods {
 					if i < 1 {
-						pass, err := curlPod.ValidateCurlConnection(svc.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, cfg.Timeout)
+						pass, err := curlPod.ValidateCurlConnection(svc.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, 3*time.Minute)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
@@ -398,16 +425,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring the service root URL returns the expected payload")
 				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
-
-				By("Ensuring we have outbound internet access from the nginx pods")
-				nginxPods, err := nginxDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(nginxPods)).ToNot(BeZero())
-				for _, nginxPod := range nginxPods {
-					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(pass).To(BeTrue())
-				}
 
 				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete()
