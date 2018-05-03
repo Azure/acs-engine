@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"io"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"golang.org/x/crypto/ssh"
@@ -15,6 +16,11 @@ const (
 	// SSHKeySize is the size (in bytes) of SSH key to create
 	SSHKeySize = 4096
 )
+
+// NormalizeAzureRegion returns a normalized Azure region with white spaces removed and converted to lower case
+func NormalizeAzureRegion(name string) string {
+	return strings.ToLower(strings.Replace(name, " ", "", -1))
+}
 
 // JSONMarshalIndent marshals formatted JSON w/ optional SetEscapeHTML
 func JSONMarshalIndent(content interface{}, prefix, indent string, escape bool) ([]byte, error) {

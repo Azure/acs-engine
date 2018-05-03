@@ -59,7 +59,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	}
 
 	// Override default --network-plugin?
-	if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
+	if o.KubernetesConfig.NetworkPlugin == NetworkPluginKubenet {
 		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
@@ -114,7 +114,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+		if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
+			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+		}
 	}
 }
 

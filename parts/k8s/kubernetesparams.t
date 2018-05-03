@@ -583,13 +583,25 @@
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
-        "description": "The network policy enforcement to use (none|azure|calico|cilium)"
+        "description": "The network policy enforcement to use (calico|cilium); 'none' and 'azure' here for backwards compatibility"
       },
       "allowedValues": [
+        "",
         "none",
         "azure",
         "calico",
         "cilium"
+      ],
+      "type": "string"
+    },
+    "networkPlugin": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPlugin}}",
+      "metadata": {
+        "description": "The network plugin to use for Kubernetes (kubenet|azure)"
+      },
+      "allowedValues": [
+        "kubenet",
+        "azure"
       ],
       "type": "string"
     },
@@ -690,6 +702,12 @@
       {{PopulateClassicModeDefaultValue "etcdVersion"}}
       "metadata": {
         "description": "etcd version"
+      },
+      "type": "string"
+    },
+    "etcdEncryptionKey": { 
+      "metadata": {
+        "description": "Encryption at rest key for etcd" 
       },
       "type": "string"
     }

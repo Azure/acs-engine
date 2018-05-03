@@ -5,18 +5,39 @@
         "name": "loop"
       },
       "dependsOn": [
+{{if not IsOpenShift}}
 {{if .IsCustomVNET}}
       "[variables('nsgID')]"
 {{else}}
       "[variables('vnetID')]"
 {{end}}
+{{else}}
+{{if not .IsCustomVNET}}
+      "[variables('vnetID')]",
+{{end}}
+{{if eq .Role "infra"}}
+      "[resourceId('Microsoft.Network/networkSecurityGroups', 'router-nsg')]"
+{{else}}
+      "[variables('nsgID')]"
+{{end}}
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+{{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
           "id": "[variables('nsgID')]"
+        },
+{{end}}
+{{else}}
+        "networkSecurityGroup": {
+          {{if eq .Role "infra"}}
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'router-nsg')]"
+          {{else}}
+          "id": "[variables('nsgID')]"
+          {{end}}
         },
 {{end}}
         "ipConfigurations": [
@@ -142,6 +163,7 @@
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "acsengineVersion" : "[variables('acsengineVersion')]",
         "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",
@@ -149,6 +171,13 @@
       {{if UseManagedIdentity}}
       "identity": {
         "type": "systemAssigned"
+      },
+      {{end}}
+      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
+      "plan": {
+        "name": "[variables('{{.Name}}osImageSKU')]",
+        "publisher": "[variables('{{.Name}}osImagePublisher')]",
+        "product": "[variables('{{.Name}}osImageOffer')]"
       },
       {{end}}
       "properties": {

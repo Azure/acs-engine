@@ -1,4 +1,12 @@
 version: 2
+
+defaults: &defaults
+  working_directory: /go/src/github.com/Azure/acs-engine
+  docker:
+    - image: quay.io/deis/go-dev:v1.10.0
+  environment:
+    GOPATH: /go
+
 experimental:
   notify:
     branches:
@@ -6,21 +14,19 @@ experimental:
         - master
 jobs:
   test:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
-          echo 'export COVERALLS_TOKEN=${COVERALLS_TOKEN}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
+      - run:
+          name: Run validation rules
+          command: make validate-generated
       - run:
           name: Run linting rules
           command: make test-style
@@ -33,11 +39,7 @@ jobs:
       - store_test_results:
           path: test/junit
   swarm-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -60,17 +62,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   dcos-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
@@ -83,11 +82,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   swarmmode-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -110,11 +105,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   k8s-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -122,7 +113,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -139,18 +130,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-linux-default-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=10m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
           echo 'export CREATE_VNET=false' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -167,18 +154,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.7-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -195,11 +178,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -207,7 +186,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -224,11 +203,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.10-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -237,7 +212,34 @@ jobs:
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_OBJECTID=${SERVICE_PRINCIPAL_OBJECT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+      - run:
+          name: compile
+          command: make build-binary
+      - run:
+          name: ginkgo k8s e2e tests
+          command: make test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output
+  k8s-1.11-release-e2e:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.11' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -255,11 +257,7 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
@@ -267,7 +265,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -284,18 +282,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.8-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -312,18 +306,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.9-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -340,18 +330,14 @@ jobs:
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
   k8s-windows-1.10-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.9.1
-        environment:
-          GOPATH: /go
+    <<: *defaults
     steps:
       - checkout
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -431,6 +417,12 @@ workflows:
             branches:
               ignore: master
       - k8s-1.10-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
+      - k8s-1.11-release-e2e:
           requires:
             - pr-e2e-hold
           filters:

@@ -9,6 +9,7 @@ localmaster:
     ansible_python_interpreter: /usr/bin/python2
 
     openshift_is_containerized: False
+    openshift_client_binary: /usr/bin/oc
 
     openshift_image_tag: "vVERSION"
 
@@ -26,6 +27,8 @@ localmaster:
     # because of legacy reasons
     openshift_router_selector: 'region=infra'
     openshift_registry_selector: 'region=infra'
+    # No idea why this is a different data type, but it is
+    openshift_prometheus_node_selector: {'region': 'infra'}
 
     # Set Azure specific data for hosted registry
     openshift_hosted_registry_storage_provider: "azure_blob"
@@ -53,16 +56,29 @@ localmaster:
     openshift_hosted_registry_replicas: 1
 
     openshift_prometheus_state: "present"
-    openshift_prometheus_image_version: "vVERSION"
-    openshift_prometheus_proxy_image_version: 'vVERSION'
-    openshift_prometheus_alertmanager_image_version: 'vVERSION'
-    openshift_prometheus_alertbuffer_image_version: 'vVERSION'
-    openshift_prometheus_node_exporter_image_version: 'vVERSION'
+    openshift_prometheus_node_exporter_image_version: 'PROMETHEUS_EXPORTER_VERSION'
 
     openshift_web_console_install: True
 
     openshift_prometheus_image_prefix: "IMAGE_PREFIX/"
     openshift_deployment_type: 'ANSIBLE_DEPLOY_TYPE'
+
+    ansible_service_broker_install: True
+    openshift_service_catalog_image_prefix: "IMAGE_PREFIX/IMAGE_TYPE-"
+    openshift_service_catalog_image_version: 'vVERSION'
+    openshift_master_etcd_urls: ["https://HOSTNAME:2379"]
+
+    template_service_broker_prefix: "IMAGE_PREFIX/"
+    template_service_broker_image_name: "IMAGE_TYPE-template-service-broker"
+    template_service_broker_version: "vVERSION"
+
+    # NOTE: This is redundant, but required to handle version skew between
+    #       openshift-ansible in Origin and OCP
+    openshift_examples_content_version: "vSHORT_VER"
+
+    openshift_cockpit_deployer_prefix: "COCKPIT_PREFIX/"
+    openshift_cockpit_deployer_basename: "COCKPIT_BASENAME"
+    openshift_cockpit_deployer_version: "COCKPIT_VERSION"
 
     # NOTE: Do not define openshift_hosted_router_replicas so that the task file
     # router.yml inside the openshift_hosted role from openshift-ansible will
@@ -74,9 +90,13 @@ localmaster:
     openshift:
       common:
         config_base: /etc/origin/
+        examples_content_version: "vSHORT_VER"
       master:
         public_console_url: "https://{{ .ExternalMasterHostname }}:8443/console"
         public_api_url: "https://{{ .ExternalMasterHostname }}:8443"
+        etcd_urls: ["https://HOSTNAME:2379"] #FIXME: No longer needed as of openshift-ansible-3.9.22-1 but we're not on that version yet
+      node:
+        nodename: 'HOSTNAME'
 
 oo_masters_to_config:
   hosts:

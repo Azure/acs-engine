@@ -258,10 +258,8 @@ apply_acs_cherry_picks() {
 		k8s_17_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
 		k8s_18_cherry_pick
-	elif [ "${KUBERNETES_RELEASE}" == "1.9" ]; then
-		echo "No need to cherry-pick for 1.9!"
-	elif [ "${KUBERNETES_RELEASE}" == "1.10" ]; then
-		echo "No need to cherry-pick for 1.10!"
+	elif version_ge "${KUBERNETES_RELEASE}" "1.9"; then
+		echo "No need to cherry-pick for version greater than or equal to 1.9!"
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1

@@ -1,20 +1,35 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
 
-SERVICE_TYPE=origin
-IMAGE_TYPE="${SERVICE_TYPE}"
-IMAGE_PREFIX="openshift"
-ANSIBLE_DEPLOY_TYPE="origin"
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
-	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
-	IMAGE_TYPE=ose
-	IMAGE_PREFIX="registry.reg-aws.openshift.com:443/openshift3"
+else
+	SERVICE_TYPE=origin
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 
+if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
+	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
+	IMAGE_TYPE=ose
+	IMAGE_PREFIX="registry.access.redhat.com/openshift3"
+	ANSIBLE_CONTAINER_VERSION="v${VERSION}"
+	PROMETHEUS_EXPORTER_VERSION="v${VERSION}"
+	COCKPIT_PREFIX="${IMAGE_PREFIX}"
+	COCKPIT_BASENAME="registry-console"
+	COCKPIT_VERSION="v${VERSION}"
+else
+	ANSIBLE_DEPLOY_TYPE="origin"
+	IMAGE_TYPE="${SERVICE_TYPE}"
+	IMAGE_PREFIX="openshift"
+	# FIXME: These versions are set to deal with differences in how Origin and OCP
+	#        components are versioned
+	ANSIBLE_CONTAINER_VERSION="v${VERSION%.*}"
+	COCKPIT_PREFIX="cockpit"
+	COCKPIT_BASENAME="kubernetes"
+	COCKPIT_VERSION="latest"
+fi
 systemctl restart docker.service
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
@@ -34,10 +49,6 @@ rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
 ( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
-
-chown -R etcd:etcd /etc/etcd
-chmod 0600 /etc/origin/master/htpasswd
-chmod 1777 /tmp
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
@@ -62,10 +73,26 @@ set -x
 routerLBHost="{{.RouterLBHostname}}"
 routerLBIP=$(dig +short $routerLBHost)
 
+# NOTE: The version of openshift-ansible for origin defaults the ansible var
+#       openshift_prometheus_node_exporter_image_version correctly as needed by
+#       origin, but for OCP it does not.
+#
+#       This is fixed in openshift/openshift-ansible@c27a0f4, which is in
+#       openshift-ansible >= 3.9.15, so once we're shipping OCP >= v3.9.15 we
+#       can remove this and the definition of the cooresonding variable in the
+#       ansible inventory file.
+if [[ "${ANSIBLE_DEPLOY_TYPE}" == "origin" ]]; then
+    sed -i "/PROMETHEUS_EXPORTER_VERSION/d" /tmp/ansible/azure-local-master-inventory.yml
+else
+    sed -i "s|PROMETHEUS_EXPORTER_VERSION|${PROMETHEUS_EXPORTER_VERSION}|g;" /tmp/ansible/azure-local-master-inventory.yml
+fi
+
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
     sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|IMAGE_PREFIX|$IMAGE_PREFIX|g; s|ANSIBLE_DEPLOY_TYPE|$ANSIBLE_DEPLOY_TYPE|g" $i
     sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
-    sed -i "s|VERSION|${VERSION}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
+    sed -i "s|COCKPIT_VERSION|${COCKPIT_VERSION}|g; s|COCKPIT_BASENAME|${COCKPIT_BASENAME}|g; s|COCKPIT_PREFIX|${COCKPIT_PREFIX}|g;" $i
+    sed -i "s|VERSION|${VERSION}|g; s|SHORT_VER|${VERSION%.*}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
+    sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
 done
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up
@@ -111,6 +138,7 @@ systemctl enable ${SERVICE_TYPE}-node.service
 systemctl start ${SERVICE_TYPE}-node.service &
 
 chmod +x /tmp/ansible/ansible.sh
+
 docker run \
 	--rm \
 	-u "$(id -u)" \
@@ -122,7 +150,5 @@ docker run \
 	-e VERSION="$VERSION" \
 	-e HOSTNAME="$(hostname)" \
 	--network="host" \
-	"${IMAGE_PREFIX}/${IMAGE_TYPE}-ansible:v$VERSION" \
+	"${IMAGE_PREFIX}/${IMAGE_TYPE}-ansible:${ANSIBLE_CONTAINER_VERSION}" \
 	/opt/app-root/src/ansible.sh
-
-exit 0

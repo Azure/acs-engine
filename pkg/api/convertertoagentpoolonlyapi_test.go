@@ -11,9 +11,10 @@ import (
 func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 	kubernetesVersion := "1.7.9"
 	networkPlugin := v20180331.Azure
-	serviceCIDR := "10.0.0.0/8"
-	dnsServiceIP := "10.0.0.10"
-	dockerBridgeSubnet := "172.17.0.1/16"
+	networkPluginKubenet := v20180331.Kubenet
+	serviceCIDR := "172.0.0.0/8"
+	dnsServiceIP := "172.0.0.10"
+	dockerBridgeSubnet := "173.17.0.1/16"
 
 	// all networkProfile fields are defined
 	p := &v20180331.NetworkProfile{
@@ -29,7 +30,7 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != string(networkPlugin) {
+	if api.KubernetesConfig.NetworkPlugin != string(networkPlugin) {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -54,25 +55,29 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != "none" {
+	if api.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.ClusterSubnet != DefaultKubernetesClusterSubnet {
+		t.Error("error in orchestrator profile PodCidr conversion")
 	}
 
-	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.ServiceCIDR != DefaultKubernetesServiceCIDR {
+		t.Error("error in orchestrator profile ServiceCidr conversion")
 	}
 
-	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.DNSServiceIP != DefaultKubernetesDNSServiceIP {
+		t.Error("error in orchestrator profile DNSServiceIP conversion")
 	}
 
-	// only networkProfile NetworkPlugin fields is defined
+	if api.KubernetesConfig.DockerBridgeSubnet != DefaultDockerBridgeSubnet {
+		t.Error("error in orchestrator profile DockerBridgeSubnet conversion")
+	}
+
+	// only networkProfile NetworkPlugin fields is defined as kubenet
 	p = &v20180331.NetworkProfile{
-		NetworkPlugin: networkPlugin,
+		NetworkPlugin: networkPluginKubenet,
 	}
 
 	api = convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion, p, nil)
@@ -81,20 +86,24 @@ func TestConvertV20180331AgentPoolOnlyOrchestratorProfile(t *testing.T) {
 		t.Error("error in orchestrator profile kubernetesVersion conversion")
 	}
 
-	if api.KubernetesConfig.NetworkPolicy != string(networkPlugin) {
+	if api.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
-	if api.KubernetesConfig.ServiceCIDR != "10.0.0.0/16" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.ClusterSubnet != DefaultKubernetesClusterSubnet {
+		t.Error("error in orchestrator profile PodCidr conversion")
 	}
 
-	if api.KubernetesConfig.DNSServiceIP != "10.0.0.10" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.ServiceCIDR != DefaultKubernetesServiceCIDR {
+		t.Error("error in orchestrator profile ServiceCidr conversion")
 	}
 
-	if api.KubernetesConfig.DockerBridgeSubnet != "172.17.0.1/16" {
-		t.Error("error in orchestrator profile networkPlugin conversion")
+	if api.KubernetesConfig.DNSServiceIP != DefaultKubernetesDNSServiceIP {
+		t.Error("error in orchestrator profile DNSServiceIP conversion")
+	}
+
+	if api.KubernetesConfig.DockerBridgeSubnet != DefaultDockerBridgeSubnet {
+		t.Error("error in orchestrator profile DockerBridgeSubnet conversion")
 	}
 }
 
@@ -268,16 +277,16 @@ func TestConvertV20180331AgentPoolOnlyKubernetesConfig(t *testing.T) {
 		t.Error("EnableRbac expected not to be nil")
 	}
 
-	if *kc.EnableRbac != true {
-		t.Error("EnableRbac expected to be true")
+	if *kc.EnableRbac != false {
+		t.Error("EnableRbac expected to be false")
 	}
 
 	if kc.EnableSecureKubelet == nil {
 		t.Error("EnableSecureKubelet expected not to be nil")
 	}
 
-	if *kc.EnableSecureKubelet != true {
-		t.Error("EnableSecureKubelet expected to be true")
+	if *kc.EnableSecureKubelet != false {
+		t.Error("EnableSecureKubelet expected to be false")
 	}
 
 	if *kc.EnableSecureKubelet != *kc.EnableRbac {

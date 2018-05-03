@@ -2,6 +2,8 @@ package acsengine
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net"
 	"sort"
@@ -83,6 +85,22 @@ var (
 		ImageVersion:   "latest",
 	}
 
+	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
+	DefaultOpenShift39RHELImageConfig = AzureOSImageConfig{
+		ImageOffer:     "acsengine-preview",
+		ImageSku:       "rhel74",
+		ImagePublisher: "redhat",
+		ImageVersion:   "latest",
+	}
+
+	//DefaultOpenShift39CentOSImageConfig is the OpenShift on CentOS distribution.
+	DefaultOpenShift39CentOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "origin-acsengine-preview",
+		ImageSku:       "centos7",
+		ImagePublisher: "redhat",
+		ImageVersion:   "latest",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
@@ -99,6 +117,9 @@ var (
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
+			// Image config supported for OpenShift
+			api.OpenShift39RHEL: DefaultOpenShift39RHELImageConfig,
+			api.OpenShiftCentOS: DefaultOpenShift39CentOSImageConfig,
 		},
 	}
 
@@ -308,6 +329,21 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
+		// For backwards compatibility with original, overloaded "NetworkPolicy" config vector
+		// we translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
+		// and set a default network policy enforcement configuration
+		switch o.KubernetesConfig.NetworkPolicy {
+		case NetworkPluginAzure:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		case NetworkPolicyNone:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		case NetworkPolicyCalico:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+		case NetworkPolicyCilium:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+		}
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
@@ -355,12 +391,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if a.HasWindows() {
-			if o.KubernetesConfig.NetworkPolicy == "" {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPluginWindows
 			}
 		} else {
-			if o.KubernetesConfig.NetworkPolicy == "" {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPlugin
 			}
 		}
 		if o.KubernetesConfig.ContainerRuntime == "" {
@@ -460,6 +496,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
+		if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+			if "" == a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey {
+				a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey = generateEtcdEncryptionKey()
+			}
+		}
+
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
 			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB = DefaultJumpboxDiskSize
 		}
@@ -502,8 +544,23 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
+		dcosSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
+		dcosBootstrapSemVer, _ := semver.NewVersion(api.DCOSVersion1Dot11Dot0)
+		if !dcosSemVer.LessThan(dcosBootstrapSemVer) {
+			if o.DcosConfig.BootstrapProfile == nil {
+				o.DcosConfig.BootstrapProfile = &api.BootstrapProfile{}
+			}
+			if o.DcosConfig.BootstrapProfile.Count == 0 {
+				o.DcosConfig.BootstrapProfile.Count = 1
+			}
+			if len(o.DcosConfig.BootstrapProfile.VMSize) == 0 {
+				o.DcosConfig.BootstrapProfile.VMSize = "Standard_D2s_v3"
+			}
+		}
 	case api.OpenShift:
-		a.MasterProfile.Distro = api.RHEL
+		if a.MasterProfile.Distro == "" {
+			a.MasterProfile.Distro = api.RHEL
+		}
 		kc := a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
 		if kc == nil {
 			kc = &api.KubernetesConfig{}
@@ -511,8 +568,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if kc.ContainerRuntime == "" {
 			kc.ContainerRuntime = DefaultContainerRuntime
 		}
-		if kc.NetworkPolicy == "" {
-			kc.NetworkPolicy = DefaultNetworkPolicy
+		if kc.NetworkPlugin == "" {
+			kc.NetworkPlugin = DefaultNetworkPlugin
 		}
 	}
 }
@@ -567,6 +624,17 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 			a.MasterProfile.Subnet = DefaultOpenShiftMasterSubnet
 			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
 				a.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
+			}
+		} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
+			a.MasterProfile.Subnet = DefaultDCOSMasterSubnet
+			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
+			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
+			}
+			if a.OrchestratorProfile.DcosConfig != nil && a.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) == 0 {
+					a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP = DefaultDCOSBootstrapFirstConsecutiveStaticIP
+				}
 			}
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
@@ -1011,4 +1079,10 @@ func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.Orches
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+}
+
+func generateEtcdEncryptionKey() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
 }

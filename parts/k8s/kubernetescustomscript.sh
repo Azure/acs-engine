@@ -153,12 +153,14 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
     "resourceGroup": "${RESOURCE_GROUP}",
     "location": "${LOCATION}",
+    "vmType": "${VM_TYPE}",
     "subnetName": "${SUBNET}",
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
     "routeTableName": "${ROUTE_TABLE}",
     "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
     "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
     "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
     "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
@@ -223,10 +225,10 @@ function configKubenet() {
     chmod -R 755 $CNI_BIN_DIR
 }
 
-function configNetworkPolicy() {
-    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+function configNetworkPlugin() {
+    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
-    elif [[ "${NETWORK_POLICY}" = "none" ]] ; then
+    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
         configKubenet
     fi
 }
@@ -332,11 +334,7 @@ function ensureDocker() {
     systemctlEnableAndStart docker
 }
 function ensureKMS() {
-    systemctlEnableAndCheck kms
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart kms
-    fi
+    systemctlEnableAndStart kms
 }
 
 function ensureKubelet() {
@@ -489,8 +487,8 @@ fi
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
-echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
-configNetworkPolicy
+echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
+configNetworkPlugin
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then

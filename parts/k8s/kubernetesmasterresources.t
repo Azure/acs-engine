@@ -1,5 +1,43 @@
 {{if IsOpenShift}}
     {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "name": "router-nsg",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow_http",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow http traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "80",
+              "direction": "Inbound",
+              "priority": 110,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          },
+          {
+            "name": "allow_https",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow https traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "443",
+              "direction": "Inbound",
+              "priority": 111,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
         "name": "router-ip",
         "type": "Microsoft.Network/publicIPAddresses",
         "apiVersion": "2017-08-01",
@@ -156,13 +194,14 @@
     },
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
-    {
+{
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+{{if RequireRouteTable}}
+        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if not IsOpenShift}},{{end}}
+{{end}}
+{{if not IsOpenShift}}
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-{{if not IsAzureCNI}}
-        ,
-        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
 {{end}}
       ],
       "location": "[variables('location')]",
@@ -177,11 +216,14 @@
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnet')]",
+              "addressPrefix": "[variables('subnet')]"
+{{if not IsOpenShift}}
+              ,
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
               }
-{{if not IsAzureCNI}}
+{{end}}
+{{if RequireRouteTable}}
               ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
@@ -210,36 +252,6 @@
               "destinationPortRange": "3389-3389",
               "direction": "Inbound",
               "priority": 102,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-{{end}}
-{{if IsOpenShift}}
-          {
-            "name": "allow_http",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow http traffic to infra nodes",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "80",
-              "direction": "Inbound",
-              "priority": 110,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-          {
-            "name": "allow_https",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow https traffic to infra nodes",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443",
-              "direction": "Inbound",
-              "priority": 111,
               "protocol": "Tcp",
               "sourceAddressPrefix": "*",
               "sourcePortRange": "*"
@@ -278,7 +290,7 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
-{{if not IsAzureCNI}}
+{{if RequireRouteTable}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -387,10 +399,17 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
+{{if not IsOpenShift}}
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
 {{else}}
         "[variables('vnetID')]",
+{{end}}
+{{else}}
+        "[variables('nsgID')]",
+{{if not .MasterProfile.IsCustomVNET}}
+        "[variables('vnetID')]",
+{{end}}
 {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
 {{if gt .MasterProfile.Count 1}}
@@ -448,7 +467,7 @@
         ,
         "enableIPForwarding": true
 {{end}}
-{{if .MasterProfile.IsCustomVNET}}
+{{if or .MasterProfile.IsCustomVNET IsOpenShift}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         }
@@ -464,10 +483,17 @@
           "name": "nicLoopNode"
         },
         "dependsOn": [
+  {{if not IsOpenShift}}
   {{if .MasterProfile.IsCustomVNET}}
           "[variables('nsgID')]"
   {{else}}
           "[variables('vnetID')]"
+  {{end}}
+  {{else}}
+          "[variables('nsgID')]"
+  {{if not .MasterProfile.IsCustomVNET}}
+          ,"[variables('vnetID')]"
+  {{end}}
   {{end}}
   {{if gt .MasterProfile.Count 1}}
           ,"[variables('masterInternalLbName')]"
@@ -517,7 +543,7 @@
           ,
           "enableIPForwarding": true
   {{end}}
-  {{if .MasterProfile.IsCustomVNET}}
+  {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
           ,"networkSecurityGroup": {
             "id": "[variables('nsgID')]"
           }
@@ -848,6 +874,7 @@
         "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "acsengineVersion" : "[variables('acsengineVersion')]",
         "poolName" : "master"
       },
       "location": "[variables('location')]",
@@ -855,6 +882,13 @@
       {{if UseManagedIdentity}}
       "identity": {
         "type": "systemAssigned"
+      },
+      {{end}}
+      {{if and IsOpenShift (not UseMasterCustomImage)}}
+      "plan": {
+        "name": "[variables('osImageSku')]",
+        "publisher": "[variables('osImagePublisher')]",
+        "product": "[variables('osImageOffer')]"
       },
       {{end}}
       "properties": {
@@ -874,7 +908,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-          {{if IsKubernetes}}
+          {{if not IsOpenShift}}
           {{GetKubernetesMasterCustomData .}}
           {{end}}
           "linuxConfiguration": {
@@ -894,7 +928,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if not UseMasterCustomImage}}
+          {{if and (not UseMasterCustomImage) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
