@@ -648,6 +648,7 @@ func convertVLabsOpenShiftConfig(vlabs *vlabs.OpenShiftConfig, api *OpenShiftCon
 	}
 	api.ClusterUsername = vlabs.ClusterUsername
 	api.ClusterPassword = vlabs.ClusterPassword
+	api.EnableAADAuthentication = vlabs.EnableAADAuthentication
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {

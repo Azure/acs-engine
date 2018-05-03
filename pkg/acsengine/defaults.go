@@ -747,9 +747,10 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 			},
 			Port: 8443,
 		},
-		ExternalMasterHostname: externalMasterHostname,
-		ClusterUsername:        a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
-		ClusterPassword:        a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
+		ExternalMasterHostname:  externalMasterHostname,
+		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
+		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
+		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
 		AzureConfig: certgen.AzureConfig{
 			TenantID:        a.AzProfile.TenantID,
 			SubscriptionID:  a.AzProfile.SubscriptionID,

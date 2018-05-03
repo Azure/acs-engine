@@ -21,6 +21,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 const (
@@ -221,7 +223,29 @@ func autofillApimodel(dc *deployCmd) {
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
 			appName := dc.containerService.Properties.MasterProfile.DNSPrefix
 			appURL := fmt.Sprintf("https://%s/", appName)
-			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL)
+			var replyURLs *[]string
+			var requiredResourceAccess *[]graphrbac.RequiredResourceAccess
+			if dc.containerService.Properties.OrchestratorProfile.OrchestratorType == api.OpenShift {
+				appName = fmt.Sprintf("%s.%s.cloudapp.azure.com", appName, dc.containerService.Properties.AzProfile.Location)
+				appURL = fmt.Sprintf("https://%s:8443/", appName)
+				replyURLs = to.StringSlicePtr([]string{fmt.Sprintf("https://%s:8443/oauth2callback/Azure%%20AD", appName)})
+				ra := []graphrbac.ResourceAccess{
+					{
+						// TODO: where is this UUID defined?
+						ID:   to.StringPtr("311a71cc-e848-46a1-bdf8-97ff7156d8e6"),
+						Type: to.StringPtr("Scope"),
+					},
+				}
+				rra := []graphrbac.RequiredResourceAccess{
+					{
+						// TODO: where is this UUID defined?
+						ResourceAppID:  to.StringPtr("00000002-0000-0000-c000-000000000000"),
+						ResourceAccess: &ra,
+					},
+				}
+				requiredResourceAccess = &rra
+			}
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
 				log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
 			}

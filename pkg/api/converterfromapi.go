@@ -660,6 +660,7 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	}
 	vl.ClusterUsername = api.ClusterUsername
 	vl.ClusterPassword = api.ClusterPassword
+	vl.EnableAADAuthentication = api.EnableAADAuthentication
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
