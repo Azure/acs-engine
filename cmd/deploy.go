@@ -25,8 +25,8 @@ import (
 
 const (
 	deployName             = "deploy"
-	deployShortDescription = "deploy an Azure Resource Manager template"
-	deployLongDescription  = "deploys an Azure Resource Manager template, parameters file and other assets for a cluster"
+	deployShortDescription = "Deploy an Azure Resource Manager template"
+	deployLongDescription  = "Deploys an Azure Resource Manager template, parameters file and other assets for a cluster"
 )
 
 type deployCmd struct {

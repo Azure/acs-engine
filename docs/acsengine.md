@@ -97,18 +97,18 @@ The build process leaves the compiled `acs-engine` binary in the `bin` directory
 
 ```
 # ./bin/acs-engine
-ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
+ACS-Engine deploys and manages Kubernetes, OpenShift, Swarm Mode, and DC/OS clusters in Azure
 
 Usage:
   acs-engine [command]
 
 Available Commands:
-  deploy        deploy an Azure Resource Manager template
+  deploy        Deploy an Azure Resource Manager template
   generate      Generate an Azure Resource Manager template
   help          Help about any command
-  orchestrators provide info about supported orchestrators
-  scale         scale a deployed cluster
-  upgrade       upgrades an existing Kubernetes cluster
+  orchestrators Display info about supported orchestrators
+  scale         Scale an existing Kubernetes cluster
+  upgrade       Upgrade an existing Kubernetes cluster
   version       Print the version of ACS-Engine
 
 Flags:
