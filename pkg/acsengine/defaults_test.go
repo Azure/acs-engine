@@ -448,6 +448,39 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	}
 }
 
+func TestStorageProfile(t *testing.T) {
+	// Test ManagedDisks default configuration
+	mockCS := getMockBaseContainerService("1.8.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.OrchestratorProfile.KubernetesConfig.PrivateCluster = &api.PrivateCluster{
+		Enabled:        helpers.PointerToBool(true),
+		JumpboxProfile: &api.PrivateJumpboxProfile{},
+	}
+	SetPropertiesDefaults(&mockCS, false)
+	if properties.MasterProfile.StorageProfile != api.ManagedDisks {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.MasterProfile.StorageProfile, api.ManagedDisks)
+	}
+	if !properties.MasterProfile.IsManagedDisks() {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %t, expected %t",
+			false, true)
+	}
+	if properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
+		t.Fatalf("AgentPoolProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].StorageProfile, api.ManagedDisks)
+	}
+	if !properties.AgentPoolProfiles[0].IsManagedDisks() {
+		t.Fatalf("AgentPoolProfile.IsManagedDisks() did not have the expected configuration, got %t, expected %t",
+			false, true)
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile != api.ManagedDisks {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile, api.ManagedDisks)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,

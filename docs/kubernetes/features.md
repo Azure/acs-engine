@@ -289,11 +289,9 @@ container runtime by setting:
 ```
 
 You will need to make sure your agents are using a `vmSize` that [supports
-nested
-virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
+nested virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
 These are the `Dv3` or `Ev3` series nodes.
 
-You will also need to attach a disk to those nodes for the device-mapper disk that clear containers will use.
 This should look like:
 
 ```
@@ -303,7 +301,6 @@ This should look like:
         "count": 3,
         "vmSize": "Standard_D4s_v3",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks",
         "diskSizesGB": [1023]
       }
     ],
@@ -340,7 +337,6 @@ To auto-provision a jumpbox with your acs-engine deployment use:
             "name": "my-jb",
             "vmSize": "Standard_D4s_v3",
             "osDiskSizeGB": 30,
-            "storageProfile": "ManagedDisks",
             "username": "azureuser",
             "publicKey": "xxx"
           }

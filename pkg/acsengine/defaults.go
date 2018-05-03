@@ -511,7 +511,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == "" {
-			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.StorageAccount
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.ManagedDisks
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
@@ -716,11 +716,19 @@ func setAgentNetworkDefaults(a *api.Properties) {
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
 	if a.MasterProfile != nil && len(a.MasterProfile.StorageProfile) == 0 {
-		a.MasterProfile.StorageProfile = api.StorageAccount
+		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+			a.MasterProfile.StorageProfile = api.ManagedDisks
+		} else {
+			a.MasterProfile.StorageProfile = api.StorageAccount
+		}
 	}
 	for _, profile := range a.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
-			profile.StorageProfile = api.StorageAccount
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+				profile.StorageProfile = api.ManagedDisks
+			} else {
+				profile.StorageProfile = api.StorageAccount
+			}
 		}
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets

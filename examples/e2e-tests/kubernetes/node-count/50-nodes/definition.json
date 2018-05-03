@@ -17,7 +17,6 @@
         "count": 50,
         "vmSize": "Standard_D2_v2",
         "osType": "Linux",
-        "storageProfile": "ManagedDisks",
         "availabilityProfile": "AvailabilitySet"
       }
     ],
