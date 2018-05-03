@@ -235,10 +235,8 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
-	if a.OSType != "" {
-		if e := validatePoolOSType(a.OSType); e != nil {
-			return e
-		}
+	if e := validatePoolOSType(a.OSType); e != nil {
+		return e
 	}
 
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
@@ -496,9 +494,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
 		if agentPoolProfile.OSType == Windows {
-			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Swarm:
@@ -829,7 +824,8 @@ func validatePoolName(poolName string) error {
 }
 
 func validatePoolOSType(os OSType) error {
-	if os != "linux" && os != "windows" {
+	// Should we use a.IsLinux() and a.IsWindows() instead?
+	if os != Linux && os != Windows {
 		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
 	}
 	return nil
