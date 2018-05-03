@@ -824,8 +824,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validatePoolOSType(os OSType) error {
-	// Should we use a.IsLinux() and a.IsWindows() instead?
-	if os != Linux && os != Windows {
+	if os != Linux && os != Windows && != "" {
 		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
 	}
 	return nil
