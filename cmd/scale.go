@@ -284,6 +284,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	sc.containerService.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{sc.agentPool}
 
 	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
+	// TODO
+	// By this point the api model has been validated, and processed through various default transformations
+	// e.g., an input of "networkPolicy": "azure" + "networkPlugin": "" --> "networkPolicy": "" + "networkPlugin": "azure"
+	fmt.Printf("1: networkPlugin: %s\n\n", sc.containerService.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
+	fmt.Printf("1: networkPolicy: %s\n\n", sc.containerService.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", sc.apiModelPath, err.Error())
 		os.Exit(1)
@@ -355,6 +360,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 	var apiVersion string
 	sc.containerService, apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, false, true, nil)
+	// TODO
+	// And at this point in the code the api model has somehow been "merged" ad hoc, in a way that could produce a non-validated api model representation
+	// e.g., vlabs w/ "networkPolicy": "azure" + "networkPlugin": "azure"
+	fmt.Printf("2: networkPlugin: %s\n\n", sc.containerService.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
+	fmt.Printf("2: networkPolicy: %s\n\n", sc.containerService.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 	if err != nil {
 		return err
 	}
