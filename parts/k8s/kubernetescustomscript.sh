@@ -260,7 +260,7 @@ function installClearContainersRuntime() {
 }
 
 function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
+	CRI_CONTAINERD_VERSION="1.1.0"
 	local CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
