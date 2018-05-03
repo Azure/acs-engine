@@ -20,8 +20,6 @@ import (
 ///////////////////////////////////////////////////////////
 
 const (
-	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
-	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
@@ -230,8 +228,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableRbac:          helpers.PointerToBool(false),
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
-			NetworkPolicy:      string(v20180331.Kubenet),
-			ClusterSubnet:      DefaultKubernetesClusterSubnet,
+			NetworkPolicy:      "none",
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
@@ -400,7 +397,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	if networkProfile != nil {
 		switch networkProfile.NetworkPlugin {
 		case v20180331.Azure:
-			kubernetesConfig.NetworkPlugin = "azure"
+			kubernetesConfig.NetworkPolicy = "azure"
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -420,9 +417,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		case v20180331.Kubenet:
-			kubernetesConfig.NetworkPlugin = "kubenet"
-
-			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+			kubernetesConfig.NetworkPolicy = "none"
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -442,15 +437,14 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		default:
-			kubernetesConfig.NetworkPlugin = string(networkProfile.NetworkPlugin)
+			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
 			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
 			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
 		}
 	} else {
 		// set network default for un-versioned model
-		kubernetesConfig.NetworkPlugin = string(v20180331.Kubenet)
-		kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+		kubernetesConfig.NetworkPolicy = "none"
 		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
