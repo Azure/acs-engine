@@ -96,6 +96,10 @@ write_files:
   owner: root
   path: /opt/azure/dcos/diagnostics_fix.sh
   permissions: '0744'
+- path: /var/lib/dcos/mesos-slave-common
+  content: 'ATTRIBUTES_STR'
+  permissions: "0644"
+  owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"
