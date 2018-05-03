@@ -184,7 +184,7 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 					OrchestratorType: OpenShift,
 					OpenShiftConfig: &vlabs.OpenShiftConfig{
 						KubernetesConfig: &vlabs.KubernetesConfig{
-							NetworkPolicy:    "azure",
+							NetworkPlugin:    "azure",
 							ContainerRuntime: "docker",
 						},
 					},
@@ -194,12 +194,12 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 				OrchestratorType:    OpenShift,
 				OrchestratorVersion: common.OpenShiftDefaultVersion,
 				KubernetesConfig: &KubernetesConfig{
-					NetworkPolicy:    "azure",
+					NetworkPlugin:    "azure",
 					ContainerRuntime: "docker",
 				},
 				OpenShiftConfig: &OpenShiftConfig{
 					KubernetesConfig: &KubernetesConfig{
-						NetworkPolicy:    "azure",
+						NetworkPlugin:    "azure",
 						ContainerRuntime: "docker",
 					},
 				},
