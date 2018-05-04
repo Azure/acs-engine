@@ -164,8 +164,6 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
         {
-            "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 3,
 		        "managed" : true
         },
       "type": "Microsoft.Compute/availabilitySets"
