@@ -101,7 +101,7 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test: generate
-	ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes -r .
+	ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes,test/e2e/openshift -r .
 
 .PHONY: test-style
 test-style:
