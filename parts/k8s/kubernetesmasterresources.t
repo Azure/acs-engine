@@ -5,7 +5,7 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
         {
-            "platformFaultDomainCount": "{{ GetPlatformFaultDomainCountForManagedDisks [variables('location')] }}",
+            "platformFaultDomainCount": {{ GetPlatformFaultDomainCountForManagedDisks "[variables('location')]" }},
             "platformUpdateDomainCount": 3,
 		        "managed" : true
         },
