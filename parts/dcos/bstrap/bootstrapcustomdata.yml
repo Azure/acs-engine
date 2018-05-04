@@ -37,48 +37,8 @@ runcmd: PREPROVISION_EXTENSION
     - [ systemctl, disable, --now, unscd.service ]
     - [ systemctl, stop, --now, unscd.service ]
     - /opt/azure/containers/provision.sh
-    - [ systemctl, start, dcos-docker-install.service ]
-    - [ systemctl, restart, systemd-journald.service ]
-    - [ systemctl, restart, docker.service ]
     - /opt/azure/dcos/init_bootstrap.sh
 write_files:
-- content: |
-    [Unit]
-    After=network-online.target
-    Wants=network-online.target
-    [Service]
-    Type=oneshot
-    Environment=DEBIAN_FRONTEND=noninteractive
-    StandardOutput=journal+console
-    StandardError=journal+console
-    ExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /var/tmp/d.deb https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb
-    ExecStart=/usr/bin/bash -c "try=1;until dpkg -D3 -i /var/tmp/d.deb || ((try>9));do echo retry $((try++));sleep $((try*try));done;systemctl --now start docker;systemctl restart docker.socket"
-  path: /etc/systemd/system/dcos-docker-install.service
-  permissions: '0644'
-- content: |
-    [Service]
-    Restart=always
-    StartLimitInterval=0
-    RestartSec=15
-    ExecStartPre=-/sbin/ip link del docker0
-    ExecStart=
-    ExecStart=/usr/bin/dockerd --storage-driver=overlay
-  path: /etc/systemd/system/docker.service.d/execstart.conf
-  permissions: '0644'
-- content: |
-    [Unit]
-    PartOf=docker.service
-    [Socket]
-    ListenStream=/var/run/docker.sock
-    SocketMode=0660
-    SocketUser=root
-    SocketGroup=docker
-    ListenStream=2375
-    BindIPv6Only=both
-    [Install]
-    WantedBy=sockets.target
-  path: /etc/systemd/system/docker.socket
-  permissions: '0644'
 - content: |
     DCOS_ENVIRONMENT={{{targetEnvironment}}}
   owner: root
@@ -107,6 +67,7 @@ MASTER_IP_LIST
   permissions: '0644'
 - content: |
     #!/bin/bash
+
     cd /opt/azure/dcos
     curl -O {{{dcosBootstrapURL}}}
 
