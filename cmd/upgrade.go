@@ -33,12 +33,12 @@ type upgradeCmd struct {
 	resourceGroupName   string
 	deploymentDirectory string
 	upgradeVersion      string
-	apiVersion          string
 	location            string
 	timeoutInMinutes    int
 
 	// derived
 	containerService    *api.ContainerService
+	apiVersion          string
 	client              armhelpers.ACSEngineClient
 	locale              *gotext.Locale
 	nameSuffix          string
@@ -111,7 +111,11 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 		cmd.Usage()
 		return fmt.Errorf("--deployment-dir must be specified")
 	}
+	return nil
+}
 
+func (uc *upgradeCmd) load(cmd *cobra.Command) error {
+	var err error
 	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
 		return fmt.Errorf("Error ensuring resource group: %s", err)
@@ -198,6 +202,11 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	err := uc.validate(cmd)
 	if err != nil {
 		log.Fatalf("error validating upgrade command: %v", err)
+	}
+
+	err = uc.load(cmd)
+	if err != nil {
+		log.Fatalf("error loading existing cluster: %v", err)
 	}
 
 	upgradeCluster := kubernetesupgrade.UpgradeCluster{
