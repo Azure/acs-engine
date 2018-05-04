@@ -325,8 +325,18 @@ function systemctlEnableAndStart() {
     systemctl is-failed $1
     if [ $? -eq 0 ]
     then
-        echo "$1 could not be started"
+        echo "$1 is in a failed state"
         exit 4
+    fi
+    # hyperkube-extract does not stay active after running so skip the check for active
+    if ["$1" != "hyperkube-extract"]
+    then
+        systemctl is-active $1
+        if [ $? -ne 0 ]
+        then
+            echo "$1 could not be started"
+            exit 4
+        fi
     fi
 }
 
@@ -343,6 +353,12 @@ function ensureKubelet() {
 
 function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
+    docker pull $HYPERKUBE_URL
+    if [ $? -eq 0 ]
+    then
+        echo "docker pull $HYPERKUBE_URL failed after 100 retries"
+        exit 4
+    fi
     systemctlEnableAndStart hyperkube-extract
 }
 
