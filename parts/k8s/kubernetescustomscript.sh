@@ -195,6 +195,16 @@ function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
+function installCNI() {
+    CNI_BIN_DIR=/opt/cni/bin
+    mkdir -p $CNI_BIN_DIR
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    chown -R root:root $CNI_BIN_DIR
+    chmod -R 755 $CNI_BIN_DIR
+}
+
 function configAzureCNI() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
@@ -205,31 +215,28 @@ function configAzureCNI() {
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
     retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
-    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
-    chown -R root:root $CNI_BIN_DIR
-    chmod -R 755 $CNI_BIN_DIR
+    installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
     /sbin/ebtables -t nat --list
 }
 
 function configKubenet() {
-    CNI_BIN_DIR=/opt/cni/bin
-    mkdir -p $CNI_BIN_DIR
-    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
-    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./bridge ./host-local
-    chown -R root:root $CNI_BIN_DIR
-    chmod -R 755 $CNI_BIN_DIR
+    installCNI
+}
+
+function configFlannel() {
+    installCNI
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPlugin() {
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
     elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
-        configKubenet
+        installCNI
+    elif [[ "${NETWORK_POLICY}" = "flannel" ]] ; then
+        configCNINetworkPolicy
     fi
 }
 

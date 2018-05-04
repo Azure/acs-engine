@@ -48,6 +48,8 @@ const (
 	NetworkPolicyNone = "none"
 	// NetworkPolicyCalico is the string expression for calico network policy config option
 	NetworkPolicyCalico = "calico"
+	// NetworkPolicyFlannel is the string expression for flannel network policy config option
+	NetworkPolicyFlannel = "flannel"
 	// NetworkPolicyCilium is the string expression for cilium network policy config option
 	NetworkPolicyCilium = "cilium"
 	// NetworkPluginAzure is the string expression for Azure CNI network policy

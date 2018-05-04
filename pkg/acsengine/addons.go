@@ -73,6 +73,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCilium,
 		},
 		{
+			"kubernetesmasteraddons-flannel-daemonset.yaml",
+			"flannel-daemonset.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyFlannel,
+		},
+		{
 			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",
 			"aad-default-admin-group-rbac.yaml",
 			profile.AADProfile != nil && profile.AADProfile.AdminGroupID != "",
