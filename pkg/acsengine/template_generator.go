@@ -1225,5 +1225,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"shellQuote": func(s string) string {
 			return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
 		},
+		"GetPlatformFaultDomainCountForManagedDisks": func() int {
+			switch cs.Location {
+			case "eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "northeurope", "westeurope":
+				return 3
+			default:
+				return 2
+			}
+		},
 	}
 }
