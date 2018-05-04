@@ -24,6 +24,12 @@ var (
 	version             versionInfo
 )
 
+const (
+	versionName             = "version"
+	versionShortDescription = "Print the version of ACS-Engine"
+	versionLongDescription  = "Print the version of ACS-Engine"
+)
+
 type versionInfo struct {
 	GitTag       string
 	GitCommit    string
@@ -68,9 +74,9 @@ func getVersion(outputType string) string {
 
 func newVersionCmd() *cobra.Command {
 	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Print the version of ACS-Engine",
-		Long:  "Print the version of ACS-Engine",
+		Use:   versionName,
+		Short: versionShortDescription,
+		Long:  versionLongDescription,
 
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(getVersion(outputFormat))
