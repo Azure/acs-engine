@@ -4,6 +4,7 @@
 # Exit codes represent the following:
 # | exit code number | meaning |
 # | 20 | Timeout waiting for docker install to finish |
+# | 21 | Docker pull hyperkube image failed |
 # | 3 | Service could not be enabled by systemctl |
 # | 4 | Service could not be started by systemctl |
 # | 5 | Timeout waiting for cloud-init runcmd to complete |
@@ -14,6 +15,18 @@
 
 set -x
 source /opt/azure/containers/provision_source.sh
+globaltimeout=7200 # TODO: make this configurable
+exitcode=-1
+
+function timeout_script() {
+   sleep "$globaltimeout"
+   kill "$1"
+   exit $exitcode
+}
+
+# start the timeout check in background and pass the PID
+timeout_script "$$" &
+timeout_pid=$!
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -34,22 +47,16 @@ fi
 
 ensureRunCommandCompleted()
 {
+    exitcode=5
     echo "waiting for runcmd to finish"
-    wait_for_file 900 1 /opt/azure/containers/runcmd.complete
-    if [ ! -f /opt/azure/containers/runcmd.complete ]; then
-        echo "Timeout waiting for cloud-init runcmd to complete"
-        exit 5
-    fi
+    wait_for_file $globaltimeout 1 /opt/azure/containers/runcmd.complete
 }
 
 ensureDockerInstallCompleted()
 {
+    exitcode=20
     echo "waiting for docker install to finish"
-    wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
-    if [ ! -f /opt/azure/containers/dockerinstall.complete ]; then
-        echo "Timeout waiting for docker install to finish"
-        exit 20
-    fi
+    wait_for_file $globaltimeout 1 /opt/azure/containers/dockerinstall.complete
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
@@ -183,12 +190,8 @@ function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
     fi
-    wait_for_file 600 1 $1
-    if [ ! -f $1 ]; then
-        echo "Timeout waiting for $1"
-        exit 6
-    fi
-    
+    exitcode=6
+    wait_for_file $globaltimeout 1 $1
 }
 
 function setKubeletOpts () {
@@ -203,10 +206,10 @@ function configAzureCNI() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
+    retrycmd_get_tarball $globaltimeout 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    retrycmd_get_tarball $globaltimeout 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -219,7 +222,7 @@ function configKubenet() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    retrycmd_get_tarball $globaltimeout 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./bridge ./host-local
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -264,7 +267,7 @@ function installContainerd() {
 	local CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+    retrycmd_get_tarball $globaltimeout 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
 	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
 	rm -f "$CONTAINERD_TGZ_TMP"
 
@@ -300,7 +303,8 @@ function ensureContainerd() {
 }
 
 function systemctlEnableAndStart() {
-    retrycmd_if_failure 10 1 3 systemctl daemon-reload
+    exitcode=3
+    retrycmd_if_failure $globaltimeout 1 3 systemctl daemon-reload
     systemctl enable $1
     systemctl is-enabled $1
     enabled=$?
@@ -318,16 +322,11 @@ function systemctlEnableAndStart() {
     if [ $enabled -ne 0 ]
     then
         echo "$1 could not be enabled by systemctl"
-        exit 3
     fi
-    systemctl_restart 100 1 10 $1
-    retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    exitcode=4
+    systemctl_restart $globaltimeout 1 10 $1
+    retrycmd_if_failure $globaltimeout 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     systemctl is-failed $1
-    if [ $? -eq 0 ]
-    then
-        echo "$1 is in a failed state"
-        exit 4
-    fi
     # hyperkube-extract does not stay active after running so skip the check for active
     if ["$1" != "hyperkube-extract"]
     then
@@ -335,7 +334,6 @@ function systemctlEnableAndStart() {
         if [ $? -ne 0 ]
         then
             echo "$1 could not be started"
-            exit 4
         fi
     fi
 }
@@ -352,13 +350,8 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
-    docker pull $HYPERKUBE_URL
-    if [ $? -eq 0 ]
-    then
-        echo "docker pull $HYPERKUBE_URL failed after 100 retries"
-        exit 4
-    fi
+    exitcode=21
+    retrycmd_if_failure $globaltimeout 1 60 docker pull $HYPERKUBE_URL
     systemctlEnableAndStart hyperkube-extract
 }
 
@@ -374,10 +367,11 @@ function ensureK8s() {
     if $REBOOTREQUIRED; then
         return
     fi
+    exitcode=30
     k8sHealthy=1
     nodesActive=1
     nodesReady=1
-    wait_for_file 600 1 $KUBECTL
+    wait_for_file $globaltimeout 1 $KUBECTL
     for i in {1..600}; do
         $KUBECTL 2>/dev/null cluster-info
             if [ "$?" = "0" ]
@@ -391,14 +385,14 @@ function ensureK8s() {
     if [ $k8sHealthy -ne 0 ]
     then
         echo "k8s cluster is not healthy after $i seconds"
-        exit 30
     fi
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
+    exitcode=11
     etcdIsRunning=1
-    for i in {1..600}; do
+    for i in {1..$globaltimeout}; do
         curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
         if [ $? -eq 0 ]
         then
@@ -411,11 +405,11 @@ function ensureEtcd() {
     if [ $etcdIsRunning -ne 0 ]
     then
         echo "Etcd not accessible after $i seconds"
-        exit 11
     fi
 }
 
 function ensureEtcdDataDir() {
+    exitcode=10
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
     if [ "$?" = "0" ]
     then
@@ -424,7 +418,7 @@ function ensureEtcdDataDir() {
     else
         echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
         s = 5
-        for i in {1..60}; do
+        for i in {1..$globaltimeout}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
             if [ "$?" = "0" ]
             then
@@ -437,7 +431,6 @@ function ensureEtcdDataDir() {
     fi
 
    echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 10
 }
 
 function ensurePodSecurityPolicy(){
@@ -497,7 +490,7 @@ fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
+	retrycmd_if_failure $globaltimeout 5 5 apt-mark hold walinuxagent
 fi
 
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
@@ -544,7 +537,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
+    retrycmd_if_failure $globaltimeout 5 5 apt-mark unhold walinuxagent
 fi
 
 echo "Install complete successfully"
@@ -559,3 +552,6 @@ echo `date`,`hostname`, endscript>>/opt/m
 
 mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
 ps auxfww > /opt/azure/provision-ps.log &
+
+# kill timeout check when script finishes
+kill "$timeout_pid"
