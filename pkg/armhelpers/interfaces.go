@@ -65,7 +65,7 @@ type ACSEngineClient interface {
 
 	// CreateGraphPrincipal creates a service principal via the graphrbac client
 	CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
-	CreateApp(applicationName, applicationURL string) (applicationID, servicePrincipalObjectID, secret string, err error)
+	CreateApp(applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
 
 	// RBAC
 	CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
