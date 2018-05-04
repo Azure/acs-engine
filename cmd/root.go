@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/go-autorest/autorest/azure"
 	uuid "github.com/satori/go.uuid"
@@ -76,22 +78,22 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 
 	if authArgs.AuthMethod == "client_secret" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.ClientSecret == "" {
-			log.Fatal(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
+			return nil, fmt.Errorf(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
 		}
 		// try parse the UUID
 	} else if authArgs.AuthMethod == "client_certificate" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.CertificatePath == "" || authArgs.PrivateKeyPath == "" {
-			log.Fatal(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
+			return nil, fmt.Errorf(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
 		}
 	}
 
 	if authArgs.SubscriptionID.String() == "00000000-0000-0000-0000-000000000000" {
-		log.Fatal("--subscription-id is required (and must be a valid UUID)")
+		return nil, fmt.Errorf("--subscription-id is required (and must be a valid UUID)")
 	}
 
 	env, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {
-		log.Fatal("failed to parse --azure-env as a valid target Azure cloud environment")
+		return nil, fmt.Errorf("failed to parse --azure-env as a valid target Azure cloud environment")
 	}
 
 	var client *armhelpers.AzureClient
@@ -103,8 +105,7 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	case "client_certificate":
 		client, err = armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
 	default:
-		log.Fatalf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
-		return nil, nil // unreachable
+		return nil, fmt.Errorf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
 	}
 	if err != nil {
 		return nil, err
