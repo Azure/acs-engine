@@ -51,8 +51,8 @@ type scaleCmd struct {
 
 const (
 	scaleName             = "scale"
-	scaleShortDescription = "scale a deployed cluster"
-	scaleLongDescription  = "scale a deployed cluster"
+	scaleShortDescription = "Scale an existing Kubernetes cluster"
+	scaleLongDescription  = "Scale an existing Kubernetes cluster by specifying increasing or decreasing the node count of an agentpool"
 )
 
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
