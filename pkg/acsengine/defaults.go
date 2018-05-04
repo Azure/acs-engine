@@ -343,7 +343,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 		case NetworkPolicyCilium:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+		case NetworkPolicyFlannel:
+			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 		}
+
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{

@@ -59,6 +59,10 @@ var (
 		},
 		{
 			networkPlugin: "",
+			networkPolicy: "flannel",
+		},
+		{
+			networkPlugin: "",
 			networkPolicy: "azure", // for backwards-compatibility w/ prior networkPolicy usage
 		},
 		{
