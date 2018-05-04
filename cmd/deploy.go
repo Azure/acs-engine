@@ -132,7 +132,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		return fmt.Errorf("failed to get client: %s", err.Error()) // TODO: cleanup
+		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors

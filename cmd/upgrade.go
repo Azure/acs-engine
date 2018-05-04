@@ -103,13 +103,13 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 		return fmt.Errorf("--upgrade-version must be specified")
 	}
 
-	if uc.client, err = uc.authArgs.getClient(); err != nil {
-		return fmt.Errorf("Failed to get client: %s", err)
-	}
-
 	if uc.deploymentDirectory == "" {
 		cmd.Usage()
 		return fmt.Errorf("--deployment-dir must be specified")
+	}
+
+	if uc.client, err = uc.authArgs.getClient(); err != nil {
+		return fmt.Errorf("Failed to get client: %s", err)
 	}
 	return nil
 }
