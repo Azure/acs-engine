@@ -109,6 +109,10 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--new-node-count must be specified")
 	}
 
+	if err = sc.authArgs.validateAuthArgs(); err != nil {
+		log.Fatal("%s", err)
+	}
+
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
 		log.Error("Failed to get client:", err)
 	}

@@ -102,7 +102,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "southcentralus",
 					authArgs:            authArgs{},
 				},
-				expectedErr: fmt.Errorf("Failed to get client: --subscription-id is required (and must be a valid UUID)"),
+				expectedErr: fmt.Errorf("--subscription-id is required (and must be a valid UUID)"),
 			},
 			{
 				uc: &upgradeCmd{

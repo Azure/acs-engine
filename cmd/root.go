@@ -72,31 +72,38 @@ func addAuthFlags(authArgs *authArgs, f *flag.FlagSet) {
 	f.StringVar(&authArgs.language, "language", "en-us", "language to return error messages in")
 }
 
-func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
+func (authArgs *authArgs) validateAuthArgs() error {
 	authArgs.ClientID, _ = uuid.FromString(authArgs.rawClientID)
 	authArgs.SubscriptionID, _ = uuid.FromString(authArgs.rawSubscriptionID)
 
 	if authArgs.AuthMethod == "client_secret" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.ClientSecret == "" {
-			return nil, fmt.Errorf(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
+			return fmt.Errorf(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
 		}
 		// try parse the UUID
 	} else if authArgs.AuthMethod == "client_certificate" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.CertificatePath == "" || authArgs.PrivateKeyPath == "" {
-			return nil, fmt.Errorf(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
+			return fmt.Errorf(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
 		}
 	}
 
 	if authArgs.SubscriptionID.String() == "00000000-0000-0000-0000-000000000000" {
-		return nil, fmt.Errorf("--subscription-id is required (and must be a valid UUID)")
+		return fmt.Errorf("--subscription-id is required (and must be a valid UUID)")
 	}
 
+	_, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
+	if err != nil {
+		return fmt.Errorf("failed to parse --azure-env as a valid target Azure cloud environment")
+	}
+	return nil
+}
+
+func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
+	var client *armhelpers.AzureClient
 	env, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse --azure-env as a valid target Azure cloud environment")
+		return nil, err
 	}
-
-	var client *armhelpers.AzureClient
 	switch authArgs.AuthMethod {
 	case "device":
 		client, err = armhelpers.NewAzureClientWithDeviceAuth(env, authArgs.SubscriptionID.String())
@@ -105,7 +112,7 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	case "client_certificate":
 		client, err = armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
 	default:
-		return nil, fmt.Errorf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
+		return nil, fmt.Errorf("--auth-method: ERROR: method unsupported. method=%q", authArgs.AuthMethod)
 	}
 	if err != nil {
 		return nil, err

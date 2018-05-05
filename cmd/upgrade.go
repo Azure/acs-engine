@@ -88,9 +88,8 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 	if uc.location == "" {
 		cmd.Usage()
 		return fmt.Errorf("--location must be specified")
-	} else {
-		uc.location = helpers.NormalizeAzureRegion(uc.location)
 	}
+	uc.location = helpers.NormalizeAzureRegion(uc.location)
 
 	if uc.timeoutInMinutes != -1 {
 		timeout := time.Duration(uc.timeoutInMinutes) * time.Minute
@@ -108,13 +107,13 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 		return fmt.Errorf("--deployment-dir must be specified")
 	}
 
-	if uc.client, err = uc.authArgs.getClient(); err != nil {
-		return fmt.Errorf("Failed to get client: %s", err)
+	if err = uc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err)
 	}
 	return nil
 }
 
-func (uc *upgradeCmd) load(cmd *cobra.Command) error {
+func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	var err error
 	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
@@ -167,9 +166,8 @@ func (uc *upgradeCmd) load(cmd *cobra.Command) error {
 		return fmt.Errorf("version %s is not supported", uc.upgradeVersion)
 	}
 
-	uc.client, err = uc.authArgs.getClient()
-	if err != nil {
-		return fmt.Errorf("failed to get client") // TODO: cleanup
+	if uc.client, err = uc.authArgs.getClient(); err != nil {
+		return fmt.Errorf("Failed to get client: %s", err)
 	}
 
 	// Read name suffix to identify nodes in the resource group that belong
@@ -204,7 +202,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		log.Fatalf("error validating upgrade command: %v", err)
 	}
 
-	err = uc.load(cmd)
+	err = uc.loadCluster(cmd)
 	if err != nil {
 		log.Fatalf("error loading existing cluster: %v", err)
 	}
