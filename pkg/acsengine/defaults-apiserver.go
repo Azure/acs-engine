@@ -144,12 +144,14 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 func getEtcdMasters(cs *api.ContainerService) string {
 	var ret string
-	for i := 0; i < cs.Properties.MasterProfile.Count; i++ {
-		ret += "https://" + DefaultOrchestratorName + "-master-" + GenerateClusterID(cs.Properties) +
-			":" + strconv.Itoa(DefaultMasterEtcdClientPort) + ","
-	}
-	if ret != "" {
-		return ret[:len(ret)-1]
+	if cs.Properties.MasterProfile != nil {
+		for i := 0; i < cs.Properties.MasterProfile.Count; i++ {
+			ret += "https://" + DefaultOrchestratorName + "-master-" + GenerateClusterID(cs.Properties) +
+				":" + strconv.Itoa(DefaultMasterEtcdClientPort) + ","
+		}
+		if ret != "" {
+			return ret[:len(ret)-1]
+		}
 	}
 	return ret
 }
