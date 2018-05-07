@@ -2,6 +2,10 @@
         "type": "string",
         "value": "[variables('resourceGroup')]"
     },
+    "vnetResourceGroup": {
+        "type": "string",
+        "value": "[variables('virtualNetworkResourceGroupName')]"
+    },
     "subnetName": {
         "type": "string",
         "value": "[variables('subnetName')]"

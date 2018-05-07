@@ -760,12 +760,10 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 
 // IsAzureCNI returns true if Azure CNI network plugin is enabled
 func (o *OrchestratorProfile) IsAzureCNI() bool {
-	switch o.OrchestratorType {
-	case Kubernetes:
+	if o.KubernetesConfig != nil {
 		return o.KubernetesConfig.NetworkPlugin == "azure"
-	default:
-		return false
 	}
+	return false
 }
 
 // RequireRouteTable returns true if this deployment requires routing table

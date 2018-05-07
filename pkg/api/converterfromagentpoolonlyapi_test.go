@@ -68,7 +68,7 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile networkProfile conversion")
 	}
 
-	// only networkProfile networkPolicy field is defined in kubernetesConfig
+	// only networkProfile networkPlugin field is defined in kubernetesConfig
 	kubernetesConfig = &KubernetesConfig{
 		NetworkPlugin: networkPlugin,
 	}

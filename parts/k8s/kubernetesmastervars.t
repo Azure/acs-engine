@@ -276,12 +276,21 @@
   {{end}}
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
+  {{if IsCustomVNET}}
+    "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
+    "subnetNameResourceSegmentIndex": 10,
+    "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "vnetNameResourceSegmentIndex": 8,
+    "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "vnetResourceGroupNameResourceSegmentIndex": 4,
+    "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+  {{else}}
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
-    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "''",
+  {{end}}
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
     "kubeDNSServiceIP": "[parameters('kubeDNSServiceIP')]",

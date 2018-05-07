@@ -26,6 +26,35 @@ const exampleAPIModel = `{
 }
 `
 
+func TestIsAzureCNI(t *testing.T) {
+	k := &KubernetesConfig{
+		NetworkPlugin: "azure",
+	}
+
+	o := &OrchestratorProfile{
+		KubernetesConfig: k,
+	}
+	if !o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is using Azure CNI from NetworkPlugin=%s", o.KubernetesConfig.NetworkPlugin)
+	}
+
+	k = &KubernetesConfig{
+		NetworkPlugin: "none",
+	}
+
+	o = &OrchestratorProfile{
+		KubernetesConfig: k,
+	}
+	if o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is not using Azure CNI from NetworkPlugin=%s", o.KubernetesConfig.NetworkPlugin)
+	}
+
+	o = &OrchestratorProfile{}
+	if o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is not using Azure CNI from nil KubernetesConfig")
+	}
+}
+
 func TestIsDCOS(t *testing.T) {
 	dCOSProfile := &OrchestratorProfile{
 		OrchestratorType: "DCOS",
