@@ -1,5 +1,3 @@
-#cloud-config
-
 bootcmd:
 - bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel
   gpt;touch /var/lib/sdb-gpt;fi"
@@ -23,24 +21,24 @@ mounts:
 - - ephemeral0.2
   - /var/lib/docker
 runcmd: PREPROVISION_EXTENSION
-    - [ ln, -s, /bin/rm, /usr/bin/rm ]
-    - [ ln, -s, /bin/mkdir, /usr/bin/mkdir ]
-    - [ ln, -s, /bin/tar, /usr/bin/tar ]
-    - [ ln, -s, /bin/ln, /usr/bin/ln ]
-    - [ ln, -s, /bin/cp, /usr/bin/cp ]
-    - [ ln, -s, /bin/systemctl, /usr/bin/systemctl ]
-    - [ ln, -s, /bin/mount, /usr/bin/mount ]
-    - [ ln, -s, /bin/bash, /usr/bin/bash ]
-    - [ ln, -s, /usr/sbin/useradd, /usr/bin/useradd ]
-    - [ systemctl, disable, --now, resolvconf.service ]
-    - [ systemctl, mask, --now, lxc-net.service ]
-    - [ systemctl, disable, --now, unscd.service ]
-    - [ systemctl, stop, --now, unscd.service ]
-    - /opt/azure/containers/provision.sh
-    - [ systemctl, start, dcos-docker-install.service ]
-    - [ systemctl, restart, systemd-journald.service ]
-    - [ bash, /tmp/dcos/dcos_install.sh, ROLENAME ]
-    - [ bash, /opt/azure/dcos/diagnostics_fix.sh ]
+- ln -s /bin/rm /usr/bin/rm
+- ln -s /bin/mkdir /usr/bin/mkdir
+- ln -s /bin/tar /usr/bin/tar
+- ln -s /bin/ln /usr/bin/ln
+- ln -s /bin/cp /usr/bin/cp
+- ln -s /bin/systemctl /usr/bin/systemctl
+- ln -s /bin/mount /usr/bin/mount
+- ln -s /bin/bash /usr/bin/bash
+- ln -s /usr/sbin/useradd /usr/bin/useradd
+- systemctl disable --now resolvconf.service
+- systemctl mask --now lxc-net.service
+- systemctl disable --now unscd.service
+- systemctl stop --now unscd.service
+- /opt/azure/containers/provision.sh
+- systemctl start dcos-docker-install.service
+- systemctl restart systemd-journald.service
+- bash /tmp/dcos/dcos_install.sh ROLENAME
+- bash /opt/azure/dcos/diagnostics_fix.sh
 write_files:
 - content: |
     [Unit]
