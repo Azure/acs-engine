@@ -1,0 +1,15 @@
+prowjob_namespace: acs-engine-ci
+
+tide:
+  target_url: http://acs-engine-prow.eastus.cloudapp.azure.com/tide.html
+  queries:
+  - repos:
+    - Azure/acs-engine
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - needs-ok-to-test
+    - DO-NOT-MERGE
+    - do-not-merge/work-in-progress
+    - do-not-merge/hold

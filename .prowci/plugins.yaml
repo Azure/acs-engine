@@ -1,0 +1,27 @@
+approve:
+- repos:
+  - Azure/acs-engine
+
+config_updater:
+  maps:
+    .prowci/config.yaml:
+      name: config
+    .prowci/plugins.yaml:
+      name: plugins
+
+plugins:
+  Azure/acs-engine:
+  - approve
+  - assign
+  - cat
+  - config-updater
+  - dog
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - wip
+  - yuks
