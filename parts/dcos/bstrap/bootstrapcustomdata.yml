@@ -22,7 +22,7 @@ mounts:
   - /var/lib/mesos
 - - ephemeral0.2
   - /var/lib/docker
-runcmd: PREPROVISION_EXTENSION
+runcmd:
     - [ ln, -s, /bin/rm, /usr/bin/rm ]
     - [ ln, -s, /bin/mkdir, /usr/bin/mkdir ]
     - [ ln, -s, /bin/tar, /usr/bin/tar ]
