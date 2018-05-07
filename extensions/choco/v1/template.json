@@ -1,66 +1,66 @@
 {
-   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-   "contentVersion": "1.0.0.0",
-   "parameters": {
-		"artifactsLocation": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Artifacts Location - URL"
-			}
-		},
-		"apiVersionCompute": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Compute API Version"
-			}
-		},
-		"targetVMName":{
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Name of the vm to run the extension on"
-			}
-		},
-		"extensionParameters": {
-			"type": "securestring",
-			"minLength": 0,
-			"metadata": {
-				"description": "Custom Parameter for Extension - for Choco param is passed as extension parameter"
-			}
-		},
-		"vmIndex": {
-			"type": "int",
-			"metadata": {
-				"description": "index in the pool of the current agent, used so that we can get the extension name right"
-			}
-		}
-   },
-   "variables": {  },
-   "resources": [
-	{
-	  "apiVersion": "[parameters('apiVersionCompute')]",
-	  "dependsOn": [],
-	  "location": "[resourceGroup().location]",
-	  "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('targetVMName'),'/cse', parameters('vmIndex'))]",
-	  "properties": {
-		"publisher": "Microsoft.Compute",
-		"type": "CustomScriptExtension",
-		"typeHandlerVersion": "1.9",
-		"autoUpgradeMinorVersion": true,
-		"settings": {
-			"fileUris": [
-				"[concat(parameters('artifactsLocation'), 'extensions/choco/v1/startChocolatey.ps1')]",
-				"[concat(parameters('artifactsLocation'), 'extensions/choco/v1/ChocolateyPackageInstaller.ps1')]"
-			 ]
-		},
-		"protectedSettings": {
-			"commandToExecute": "[concat('powershell.exe -ExecutionPolicy bypass \"& ./startChocolatey.ps1 -PackageList ', parameters('extensionParameters'), '\"')]"
-		}
-	  }
-	}
-	],
-   "outputs": {  }
-}
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		 "artifactsLocation": {
+			 "type": "string",
+			 "minLength": 1,
+			 "metadata": {
+				 "description": "Artifacts Location - URL"
+			 }
+		 },
+		 "apiVersionCompute": {
+			 "type": "string",
+			 "minLength": 1,
+			 "metadata": {
+				 "description": "Compute API Version"
+			 }
+		 },
+		 "targetVMName":{
+			 "type": "string",
+			 "minLength": 1,
+			 "metadata": {
+				 "description": "Name of the vm to run the extension on"
+			 }
+		 },
+		 "extensionParameters": {
+			 "type": "securestring",
+			 "minLength": 0,
+			 "metadata": {
+				 "description": "Custom Parameter for Extension - for Choco param is passed as extension parameter"
+			 }
+		 },
+		 "vmIndex": {
+			 "type": "int",
+			 "metadata": {
+				 "description": "index in the pool of the current agent, used so that we can get the extension name right"
+			 }
+		 }
+	},
+	"variables": {  },
+	"resources": [
+	 {
+	   "apiVersion": "[parameters('apiVersionCompute')]",
+	   "dependsOn": [],
+	   "location": "[resourceGroup().location]",
+	   "type": "Microsoft.Compute/virtualMachines/extensions",
+	   "name": "[concat(parameters('targetVMName'),'/cse')]",
+	   "properties": {
+		 "publisher": "Microsoft.Compute",
+		 "type": "CustomScriptExtension",
+		 "typeHandlerVersion": "1.8",
+		 "autoUpgradeMinorVersion": true,
+		 "settings": {
+			 "fileUris": [
+				 "[concat(parameters('artifactsLocation'), 'extensions/choco/v1/startChocolatey.ps1')]",
+				 "[concat(parameters('artifactsLocation'), 'extensions/choco/v1/ChocolateyPackageInstaller.ps1')]"
+			  ]
+		 },
+		 "protectedSettings": {
+			 "commandToExecute": "[concat('powershell.exe -ExecutionPolicy bypass \"& ./startChocolatey.ps1 -PackageList ', parameters('extensionParameters'), '\"')]"
+		 }
+	   }
+	 }
+	 ],
+	"outputs": {  }
+ }
