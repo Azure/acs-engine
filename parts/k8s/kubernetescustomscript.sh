@@ -60,7 +60,6 @@ configAddons() {
 }
 
 configClusterAutoscalerAddon() {
-
     echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
 
     if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
@@ -536,6 +535,7 @@ ensureDockerInstallCompleted
 ensureDocker
 echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
 configNetworkPlugin
+echo `date`,`hostname`, configAddonsStart>>/opt/m
 configAddons
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
