@@ -148,5 +148,8 @@ func getEtcdMasters(cs *api.ContainerService) string {
 		ret += "https://" + DefaultOrchestratorName + "-master-" + GenerateClusterID(cs.Properties) +
 			":" + strconv.Itoa(DefaultMasterEtcdClientPort) + ","
 	}
-	return ret[:len(ret)-1]
+	if ret != "" {
+		return ret[:len(ret)-1]
+	}
+	return ret
 }
