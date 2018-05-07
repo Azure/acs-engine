@@ -132,9 +132,13 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("--location does not match api model location"))
 	}
 
+	if err = dc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err)
+	}
+
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("failed to get client")) // TODO: cleanup
+		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
