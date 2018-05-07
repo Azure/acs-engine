@@ -22,7 +22,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
-		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
+		"--etcd-servers":               getEtcdMasters(cs),
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
@@ -140,4 +140,13 @@ func setAPIServerConfig(cs *api.ContainerService) {
 			delete(o.KubernetesConfig.APIServerConfig, key)
 		}
 	}
+}
+
+func getEtcdMasters(cs *api.ContainerService) string {
+	var ret string
+	for i := 0; i < cs.Properties.MasterProfile.Count; i++ {
+		ret += "https://" + DefaultOrchestratorName + "-master-" + GenerateClusterID(cs.Properties) +
+			":" + strconv.Itoa(DefaultMasterEtcdClientPort) + ","
+	}
+	return ret[:len(ret)-1]
 }
