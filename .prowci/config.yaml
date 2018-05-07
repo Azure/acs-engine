@@ -1,7 +1,8 @@
-prowjob_namespace: acs-engine-ci
+prowjob_namespace: default
+log_level: debug
 
 tide:
-  target_url: http://acs-engine-prow.eastus.cloudapp.azure.com/tide.html
+  target_url: http://ci-bot-aks-ingress.eastus.cloudapp.azure.com/tide.html
   queries:
   - repos:
     - Azure/acs-engine
