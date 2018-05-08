@@ -48,7 +48,6 @@ ensureRunCommandCompleted()
     echo "waiting for runcmd to finish"
     wait_for_file 900 1 /opt/azure/containers/runcmd.complete
     if [ $? -ne 0 ]; then
-    then
         echo "Timeout waiting for cloud-init runcmd to complete"
         exit 5
     fi
@@ -59,7 +58,6 @@ ensureDockerInstallCompleted()
     echo "waiting for docker install to finish"
     wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
     if [ $? -ne 0 ]; then
-    then
         echo "Timeout waiting for docker install to finish"
         exit 20
     fi
@@ -237,7 +235,6 @@ function ensureFilepath() {
     fi
     wait_for_file 600 1 $1
     if [ $? -ne 0 ]; then
-    then
         echo "Timeout waiting for $1"
         exit 6
     fi
@@ -253,7 +250,6 @@ function installCNI() {
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
     retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
-    then
         echo "could not download required CNI artifact at ${CNI_PLUGINS_URL}"
         exit 41
     fi
@@ -272,7 +268,6 @@ function configAzureCNI() {
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
     retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
-    then
         echo "could not download required CNI artifact at ${VNET_CNI_PLUGINS_URL}"
         exit 41
     fi
@@ -324,7 +319,6 @@ function installContainerd() {
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
     if [ $? -ne 0 ]; then
-    then
         echo "could not download required CNI artifact at $CONTAINERD_DOWNLOAD_URL"
         exit 41
     fi
@@ -375,7 +369,6 @@ function systemctlEnableAndStart() {
     fi
     retrycmd_if_failure 10 1 3 systemctl enable $1
     if [ $? -ne 0 ]; then
-    then
         echo "$1 could not be enabled by systemctl"
         exit 3
     fi
@@ -395,7 +388,6 @@ function ensureKubelet() {
 function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     if [ $? -ne 0 ]; then
-    then
         echo "required kubernetes docker image could not be downloaded at $HYPERKUBE_URL"
         exit 31
     fi
@@ -419,22 +411,19 @@ function ensureK8s() {
     nodesReady=1
     wait_for_file 600 1 $KUBECTL
     if [ $? -ne 0 ]; then
-    then
         echo "could not find kubectl at $KUBECTL"
         exit 32
     fi
     for i in {1..600}; do
         $KUBECTL 2>/dev/null cluster-info
-            if [ $? -eq 0 ]
-            then
+            if [ $? -eq 0 ]; then
                 echo "k8s cluster is healthy, took $i seconds"
                 k8sHealthy=0
                 break
             fi
         sleep 1
     done
-    if [ $k8sHealthy -ne 0 ]
-    then
+    if [ $k8sHealthy -ne 0 ]; then
         echo "k8s cluster is not healthy after $i seconds"
         exit 30
     fi
@@ -445,16 +434,14 @@ function ensureEtcd() {
     etcdIsRunning=1
     for i in {1..600}; do
         curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
-        if [ $? -eq 0 ]
-        then
+        if [ $? -eq 0 ]; then
             etcdIsRunning=0
             echo "Etcd setup successfully, took $i seconds"
             break
         fi
         sleep 1
     done
-    if [ $etcdIsRunning -ne 0 ]
-    then
+    if [ $etcdIsRunning -ne 0 ]; then
         echo "Etcd not accessible after $i seconds"
         exit 11
     fi
@@ -462,8 +449,7 @@ function ensureEtcd() {
 
 function ensureEtcdDataDir() {
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
-    if [ "$?" = "0" ]
-    then
+    if [ "$?" = "0" ]; then
         echo "Etcd is running with data dir at: /var/lib/etcddisk"
         return
     else
@@ -471,8 +457,7 @@ function ensureEtcdDataDir() {
         s = 5
         for i in {1..60}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
-            if [ "$?" = "0" ]
-            then
+            if [ "$?" = "0" ]; then
                 (( t = ${i} * ${s} ))
                 echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
                 return
@@ -544,7 +529,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	# make sure walinuxagent doesn't get updated in the middle of running this script
 	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
     if [ $? -ne 0 ]; then
-    then
         echo "error placing apt-mark hold on walinuxagent"
         exit 7
     fi
@@ -601,7 +585,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 
     retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
     if [ $? -ne 0 ]; then
-    then
         echo "error releasing apt-mark hold on walinuxagent"
         exit 8
     fi
