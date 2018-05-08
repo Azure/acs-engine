@@ -3,15 +3,29 @@
 # This script runs on every Kubernetes VM
 # Exit codes represent the following:
 # | exit code number | meaning |
-# | 20 | Timeout waiting for docker install to finish |
-# | 21 | Docker pull hyperkube image failed |
-# | 3 | Service could not be enabled by systemctl |
-# | 4 | Service could not be started by systemctl |
-# | 5 | Timeout waiting for cloud-init runcmd to complete |
-# | 6 | Timeout waiting for a file |
-# | 10 | Etcd data dir not found |
-# | 11 | Timeout waiting for etcd to be accessible |
-# | 30 | Timeout waiting for k8s cluster to be healthy|
+# | 20 | timeout waiting for docker install to finish |
+# | 21 | docker pull hyperkube image failed |
+# | 22 | docker could not be enabled by systemctl |
+# | 23 | docker could not be started by systemctl |
+# | 12 | etcd could not be enabled by systemctl |
+# | 13 | etcd could not be started by systemctl |
+# | 5 | timeout waiting for cloud-init runcmd to complete |
+# | 6 | timeout waiting for a file |
+# | 10 | etcd data dir not found |
+# | 11 | timeout waiting for etcd to be accessible |
+# | 30 | timeout waiting for k8s cluster to be healthy|
+# | 32 | kubelet could not be enabled by systemctl |
+# | 33 | kubelet could not be started by systemctl |
+# | 42 | kms could not be enabled by systemctl |
+# | 43 | kms could not be started by systemctl |
+# | 52 | journald could not be enabled by systemctl |
+# | 53 | journald could not be started by systemctl |
+# | 62 | cc-proxy could not be enabled by systemctl |
+# | 63 | cc-proxy could not be started by systemctl |
+# | 64 | containerd could not be enabled by systemctl |
+# | 65 | containerd could not be started by systemctl |
+# | 64 | hyperkube-extract could not be enabled by systemctl |
+# | 65 | hyperkube-extract could not be started by systemctl |
 
 set -x
 source /opt/azure/containers/provision_source.sh
@@ -257,7 +271,7 @@ function installClearContainersRuntime() {
 
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	systemctlEnableAndStart cc-proxy
+	systemctlEnableAndStart cc-proxy 62
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
@@ -297,13 +311,13 @@ function ensureContainerd() {
 			# Enable and start cri-containerd service
 			# Make sure this is done after networking plugins are installed
 			echo "Enabling and starting cri-containerd service..."
-			systemctlEnableAndStart containerd
+			systemctlEnableAndStart containerd 64
 		fi
 	fi
 }
 
 function systemctlEnableAndStart() {
-    exitcode=3
+    exitcode=$2
     retrycmd_if_failure $globaltimeout 1 3 systemctl daemon-reload
     systemctl enable $1
     systemctl is-enabled $1
@@ -323,10 +337,15 @@ function systemctlEnableAndStart() {
     then
         echo "$1 could not be enabled by systemctl"
     fi
-    exitcode=4
+    ((exitcode++))
     systemctl_restart $globaltimeout 1 10 $1
-    retrycmd_if_failure $globaltimeout 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    # Do not retry getting the status of the service for logs
+    retrycmd_if_failure 1 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     systemctl is-failed $1
+    if [ $? -ne 0 ]
+    then
+        echo "$1 is in a failed state"
+    fi
     # hyperkube-extract does not stay active after running so skip the check for active
     if ["$1" != "hyperkube-extract"]
     then
@@ -339,24 +358,24 @@ function systemctlEnableAndStart() {
 }
 
 function ensureDocker() {
-    systemctlEnableAndStart docker
+    systemctlEnableAndStart docker 22
 }
 function ensureKMS() {
-    systemctlEnableAndStart kms
+    systemctlEnableAndStart kms 42
 }
 
 function ensureKubelet() {
-    systemctlEnableAndStart kubelet
+    systemctlEnableAndStart kubelet 32
 }
 
 function extractHyperkube(){
     exitcode=21
     retrycmd_if_failure $globaltimeout 1 60 docker pull $HYPERKUBE_URL
-    systemctlEnableAndStart hyperkube-extract
+    systemctlEnableAndStart hyperkube-extract 72
 }
 
 function ensureJournal(){
-    systemctlEnableAndStart systemd-journald
+    systemctlEnableAndStart systemd-journald 52
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
