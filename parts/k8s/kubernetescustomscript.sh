@@ -8,9 +8,14 @@
 # | 4 | Service could not be started by systemctl |
 # | 5 | Timeout waiting for cloud-init runcmd to complete |
 # | 6 | Timeout waiting for a file |
+# | 7 | Error placing apt-mark hold on walinuxagent
+# | 8 | Error releasing apt-mark hold on walinuxagent
 # | 10 | Etcd data dir not found |
 # | 11 | Timeout waiting for etcd to be accessible |
 # | 30 | Timeout waiting for k8s cluster to be healthy|
+# | 31 | Timeout waiting for k8s download(s)|
+# | 32 | Timeout waiting for kubectl|
+# | 41 | Timeout waiting for CNI download(s)|
 
 set -x
 source /opt/azure/containers/provision_source.sh
@@ -36,7 +41,8 @@ ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
     wait_for_file 900 1 /opt/azure/containers/runcmd.complete
-    if [ ! -f /opt/azure/containers/runcmd.complete ]; then
+    if [ $? -ne 0 ]; then
+    then
         echo "Timeout waiting for cloud-init runcmd to complete"
         exit 5
     fi
@@ -46,7 +52,8 @@ ensureDockerInstallCompleted()
 {
     echo "waiting for docker install to finish"
     wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
-    if [ ! -f /opt/azure/containers/dockerinstall.complete ]; then
+    if [ $? -ne 0 ]; then
+    then
         echo "Timeout waiting for docker install to finish"
         exit 20
     fi
@@ -223,11 +230,11 @@ function ensureFilepath() {
         return
     fi
     wait_for_file 600 1 $1
-    if [ ! -f $1 ]; then
+    if [ $? -ne 0 ]; then
+    then
         echo "Timeout waiting for $1"
         exit 6
     fi
-
 }
 
 function setKubeletOpts () {
@@ -239,6 +246,11 @@ function installCNI() {
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
     retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    if [ $? -ne 0 ]; then
+    then
+        echo "could not download required CNI artifact at ${CNI_PLUGINS_URL}"
+        exit 41
+    fi
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -253,6 +265,11 @@ function configAzureCNI() {
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
     retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
+    if [ $? -ne 0 ]; then
+    then
+        echo "could not download required CNI artifact at ${VNET_CNI_PLUGINS_URL}"
+        exit 41
+    fi
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -300,6 +317,11 @@ function installContainerd() {
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+    if [ $? -ne 0 ]; then
+    then
+        echo "could not download required CNI artifact at $CONTAINERD_DOWNLOAD_URL"
+        exit 41
+    fi
 	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
 	rm -f "$CONTAINERD_TGZ_TMP"
 
@@ -338,33 +360,18 @@ function ensureContainerd() {
 }
 
 function systemctlEnableAndStart() {
-    retrycmd_if_failure 10 1 3 systemctl daemon-reload
-    systemctl enable $1
-    systemctl is-enabled $1
-    enabled=$?
-    for i in {1..900}; do
-        if [ $enabled -ne 0 ]; then
-            systemctl enable $1
-            systemctl is-enabled $1
-            enabled=$?
-        else
-            echo "$1 took $i seconds to be enabled by systemctl"
-            break
-        fi
-        sleep 1
-    done
-    if [ $enabled -ne 0 ]
+    systemctl_restart 20 1 10 $1
+    RESTART_STATUS=$?
+    systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    if [ $RESTART_STATUS -ne 0 ]; then
+        echo "$1 could not be started"
+        exit 4
+    fi
+    retrycmd_if_failure 10 1 3 systemctl enable $1
+    if [ $? -ne 0 ]; then
     then
         echo "$1 could not be enabled by systemctl"
         exit 3
-    fi
-    systemctl_restart 100 1 10 $1
-    retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
-    systemctl is-failed $1
-    if [ $? -eq 0 ]
-    then
-        echo "$1 could not be started"
-        exit 4
     fi
 }
 
@@ -381,6 +388,11 @@ function ensureKubelet() {
 
 function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
+    if [ $? -ne 0 ]; then
+    then
+        echo "required kubernetes docker image could not be downloaded at $HYPERKUBE_URL"
+        exit 31
+    fi
     systemctlEnableAndStart hyperkube-extract
 }
 
@@ -400,9 +412,14 @@ function ensureK8s() {
     nodesActive=1
     nodesReady=1
     wait_for_file 600 1 $KUBECTL
+    if [ $? -ne 0 ]; then
+    then
+        echo "could not find kubectl at $KUBECTL"
+        exit 32
+    fi
     for i in {1..600}; do
         $KUBECTL 2>/dev/null cluster-info
-            if [ "$?" = "0" ]
+            if [ $? -eq 0 ]
             then
                 echo "k8s cluster is healthy, took $i seconds"
                 k8sHealthy=0
@@ -520,6 +537,12 @@ fi
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	# make sure walinuxagent doesn't get updated in the middle of running this script
 	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
+    if [ $? -ne 0 ]; then
+    then
+        echo "error placing apt-mark hold on walinuxagent"
+        exit 7
+    fi
+    
 fi
 
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
@@ -571,6 +594,11 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
     retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
+    if [ $? -ne 0 ]; then
+    then
+        echo "error releasing apt-mark hold on walinuxagent"
+        exit 8
+    fi
 fi
 
 echo "Install complete successfully"
