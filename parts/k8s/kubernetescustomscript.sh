@@ -321,12 +321,23 @@ function systemctlEnableAndStart() {
         exit 3
     fi
     systemctl_restart 100 1 10 $1
-    retrycmd_if_failure 10 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    # Do not retry getting the status of the service for logs
+    retrycmd_if_failure 1 1 3 systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     systemctl is-failed $1
     if [ $? -eq 0 ]
     then
-        echo "$1 could not be started"
+        echo "$1 is in a failed state"
         exit 4
+    fi
+    # hyperkube-extract does not stay active after running so skip the check for active
+    if ["$1" != "hyperkube-extract"]
+    then
+        systemctl is-active $1
+        if [ $? -ne 0 ]
+        then
+            echo "$1 could not be started"
+            exit 4
+        fi
     fi
 }
 
