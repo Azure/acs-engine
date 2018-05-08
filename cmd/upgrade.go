@@ -115,6 +115,11 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 
 func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	var err error
+	
+	if uc.client, err = uc.authArgs.getClient(); err != nil {
+		return fmt.Errorf("Failed to get client: %s", err)
+	}
+
 	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
 		return fmt.Errorf("Error ensuring resource group: %s", err)
@@ -164,10 +169,6 @@ func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	}
 	if !found {
 		return fmt.Errorf("version %s is not supported", uc.upgradeVersion)
-	}
-
-	if uc.client, err = uc.authArgs.getClient(); err != nil {
-		return fmt.Errorf("Failed to get client: %s", err)
 	}
 
 	// Read name suffix to identify nodes in the resource group that belong
