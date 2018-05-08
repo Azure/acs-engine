@@ -3,16 +3,16 @@
 # This script runs on every Kubernetes VM
 # Exit codes represent the following:
 # | exit code number | meaning |
-# | 20 | timeout waiting for docker install to finish |
-# | 21 | docker pull hyperkube image failed |
-# | 22 | docker could not be enabled by systemctl |
-# | 23 | docker could not be started by systemctl |
-# | 12 | etcd could not be enabled by systemctl |
-# | 13 | etcd could not be started by systemctl |
 # | 5 | timeout waiting for cloud-init runcmd to complete |
 # | 6 | timeout waiting for a file |
 # | 10 | etcd data dir not found |
 # | 11 | timeout waiting for etcd to be accessible |
+# | 12 | etcd could not be enabled by systemctl |
+# | 13 | etcd could not be started by systemctl |
+# | 20 | timeout waiting for docker install to finish |
+# | 21 | docker pull hyperkube image failed |
+# | 22 | docker could not be enabled by systemctl |
+# | 23 | docker could not be started by systemctl |
 # | 30 | timeout waiting for k8s cluster to be healthy|
 # | 32 | kubelet could not be enabled by systemctl |
 # | 33 | kubelet could not be started by systemctl |
@@ -39,7 +39,8 @@ function timeout_script() {
 }
 
 # start the timeout check in background and pass the PID
-timeout_script "$$" &
+timeout_script 
+ &
 timeout_pid=$!
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
