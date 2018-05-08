@@ -330,7 +330,7 @@ function systemctlEnableAndStart() {
         exit 4
     fi
     # hyperkube-extract does not stay active after running so skip the check for active
-    if ["$1" != "hyperkube-extract"]
+    if [ "$1" != "hyperkube-extract" ]
     then
         systemctl is-active $1
         if [ $? -ne 0 ]
