@@ -13,7 +13,12 @@ echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-
 echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{end}}
 
-rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
+
+rm -rf /etc/etcd/* /etc/origin/master/*
+
+sed -i 's#^CONFIG_FILE=.*$#CONFIG_FILE=/etc/origin/node/node-config.yaml#' /etc/sysconfig/${SERVICE_TYPE}-node
+
+cp /etc/origin/node/bootstrap-node-config.yaml /etc/origin/node/node-config.yaml 
 
 ( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
 

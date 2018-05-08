@@ -15,11 +15,11 @@ localmaster:
 
     # NOTE: This changes in 3.10+ and it's all combined into a single variable
     #       under the name openshift_web_console_image_name
-    openshift_web_console_prefix: "IMAGE_PREFIX/"
-    openshift_web_console_image_name: "IMAGE_TYPE-web-console"
-    openshift_web_console_version: "vVERSION"
+    openshift_web_console_image_name: "IMAGE_PREFIX/IMAGE_TYPE-web-console:vVERSION"
+    
 
     oreg_url_master: 'IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}'
+    oreg_url: 'IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}'
     openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
 
     # FIXME
