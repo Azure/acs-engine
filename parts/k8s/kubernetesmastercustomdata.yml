@@ -341,7 +341,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    retrycmd_if_failure 10 1 3 systemctl daemon-reload
     retrycmd_if_failure 10 1 3 systemctl enable etcd.service
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
@@ -394,8 +393,7 @@ runcmd:
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /opt/azure/containers/mountetcd.sh
-- retrycmd_if_failure 10 1 3 systemctl daemon-reload
-- retrycmd_if_failure 10 1 5 systemctl restart etcd
+- systemctl_restart 10 1 5 etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - retrycmd_if_failure 10 1 5 sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - retrycmd_if_failure 5 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines

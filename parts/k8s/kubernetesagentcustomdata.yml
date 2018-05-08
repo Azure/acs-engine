@@ -185,8 +185,8 @@ runcmd:
 - retrycmd_if_failure 5 10 120 apt-get install -y apt-transport-https ca-certificates nfs-common iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers
 - echo `date`,`hostname`, aptinstall>>/opt/m
 - retrycmd_if_failure 10 1 3 systemctl enable rpcbind rpc-statd
-- retrycmd_if_failure 20 1 10 systemctl daemon-reload && systemctl restart rpcbind
-- retrycmd_if_failure 20 1 10 systemctl daemon-reload && systemctl restart rpc-statd
+- systemctl_restart 20 1 10 rpcbind
+- systemctl_restart 20 1 10 rpc-statd
 - echo `date`,`hostname`, predockerinstall>>/opt/m
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
 - retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg
