@@ -1,10 +1,10 @@
-hash: 6ccf7505e5ada9ca2cbbfc77ca540b6ec59e0bd40d9392c79e29942386446685
-updated: 2018-04-06T09:25:41.745057-07:00
+hash: faf99d950b5c402d6f5124bdb07d262bcc15ed5ef2c2e01fce1631f9fb4d9255
+updated: 2018-04-27T12:02:51.48800531-05:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
-  version: 5b6066bbd213e47c49a5fa2be2b29529bbcb6704
+  version: 2592daf71ab6b95dcfc7f7437ecc1afb9ddb7360
   subpackages:
   - arm/authorization
   - arm/compute
@@ -16,7 +16,7 @@ imports:
   - arm/storage
   - storage
 - name: github.com/Azure/go-autorest
-  version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
+  version: f6be1abbb5abd0517522f850dd785990d373da7e
   subpackages:
   - autorest
   - autorest/adal
@@ -82,6 +82,8 @@ imports:
   - client/v2
   - models
   - pkg/escape
+- name: github.com/Jeffail/gabs
+  version: 2a3aa15961d5fee6047b8151b67ac2f08ba2c48c
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/juju/ratelimit
@@ -165,6 +167,8 @@ imports:
 - name: golang.org/x/crypto
   version: 122d919ec1efcfb58483215da23f815853e24b81
   subpackages:
+  - bcrypt
+  - blowfish
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519

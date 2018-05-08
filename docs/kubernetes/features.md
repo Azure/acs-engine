@@ -104,11 +104,11 @@ spec:
 
 ## Using Azure integrated networking (CNI)
 
-Kubernetes clusters are configured by default to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides an Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. If the api model doesn't specify explicitly, acs-engine will automatically provide the following `networkPolicy` configuration in `kubernetesConfig`:
+Kubernetes clusters are configured by default to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides an Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. If the api model doesn't specify explicitly, acs-engine will automatically provide the following `networkPlugin` configuration in `kubernetesConfig`:
 
 ```
       "kubernetesConfig": {
-        "networkPolicy": "azure"
+        "networkPlugin": "azure"
       }
 ```
 
@@ -242,7 +242,7 @@ Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match
 
 ### Kubenet Networking Custom VNET
 
-If you're not using Azure CNI (e.g., `"networkPolicy": "none"` in the `kubernetesConfig` api model configuration object): After a custom VNET-configured cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
+If you're *not* using Azure CNI (e.g., `"networkPlugin": "kubenet"` in the `kubernetesConfig` api model configuration object): After a custom VNET-configured cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
 
 The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
 
@@ -289,11 +289,9 @@ container runtime by setting:
 ```
 
 You will need to make sure your agents are using a `vmSize` that [supports
-nested
-virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
+nested virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
 These are the `Dv3` or `Ev3` series nodes.
 
-You will also need to attach a disk to those nodes for the device-mapper disk that clear containers will use.
 This should look like:
 
 ```
@@ -303,7 +301,6 @@ This should look like:
         "count": 3,
         "vmSize": "Standard_D4s_v3",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks",
         "diskSizesGB": [1023]
       }
     ],
@@ -340,7 +337,6 @@ To auto-provision a jumpbox with your acs-engine deployment use:
             "name": "my-jb",
             "vmSize": "Standard_D4s_v3",
             "osDiskSizeGB": 30,
-            "storageProfile": "ManagedDisks",
             "username": "azureuser",
             "publicKey": "xxx"
           }

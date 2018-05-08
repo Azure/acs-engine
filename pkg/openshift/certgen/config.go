@@ -12,16 +12,17 @@ import (
 
 // Config represents an OpenShift configuration
 type Config struct {
-	ExternalMasterHostname string
-	serial                 serial
-	cas                    map[string]CertAndKey
-	AuthSecret             string
-	EncSecret              string
-	Master                 *Master
-	Bootstrap              KubeConfig
-	ClusterUsername        string
-	ClusterPassword        string
-	AzureConfig            AzureConfig
+	ExternalMasterHostname  string
+	serial                  serial
+	cas                     map[string]CertAndKey
+	AuthSecret              string
+	EncSecret               string
+	Master                  *Master
+	Bootstrap               KubeConfig
+	ClusterUsername         string
+	ClusterPassword         string
+	EnableAADAuthentication bool
+	AzureConfig             AzureConfig
 }
 
 // AzureConfig represents the azure.conf configuration

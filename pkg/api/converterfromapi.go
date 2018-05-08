@@ -660,26 +660,38 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	}
 	vl.ClusterUsername = api.ClusterUsername
 	vl.ClusterPassword = api.ClusterPassword
+	vl.EnableAADAuthentication = api.EnableAADAuthentication
 }
 
-func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
-	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
-	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
+func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
+	vl.DcosBootstrapURL = api.DcosBootstrapURL
+	vl.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
 
 	if api.Registry != "" {
-		vlabs.Registry = api.Registry
+		vl.Registry = api.Registry
 	}
 
 	if api.RegistryUser != "" {
-		vlabs.RegistryUser = api.RegistryUser
+		vl.RegistryUser = api.RegistryUser
 	}
 
 	if api.RegistryPass != "" {
-		vlabs.RegistryPass = api.RegistryPass
+		vl.RegistryPass = api.RegistryPass
 	}
-	vlabs.DcosRepositoryURL = api.DcosRepositoryURL
-	vlabs.DcosClusterPackageListID = api.DcosClusterPackageListID
-	vlabs.DcosProviderPackageID = api.DcosProviderPackageID
+	vl.DcosRepositoryURL = api.DcosRepositoryURL
+	vl.DcosClusterPackageListID = api.DcosClusterPackageListID
+	vl.DcosProviderPackageID = api.DcosProviderPackageID
+
+	if api.BootstrapProfile != nil {
+		vl.BootstrapProfile = &vlabs.BootstrapProfile{
+			Count:                    api.BootstrapProfile.Count,
+			VMSize:                   api.BootstrapProfile.VMSize,
+			OSDiskSizeGB:             api.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled:             api.BootstrapProfile.OAuthEnabled,
+			FirstConsecutiveStaticIP: api.BootstrapProfile.FirstConsecutiveStaticIP,
+			Subnet: api.BootstrapProfile.Subnet,
+		}
+	}
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
@@ -688,6 +700,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.NetworkPlugin = api.NetworkPlugin
 	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 	vlabs.CloudProviderBackoff = api.CloudProviderBackoff
@@ -703,6 +716,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage
 	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
+	vlabs.CustomWindowsPackageURL = api.CustomWindowsPackageURL
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableSecureKubelet = api.EnableSecureKubelet
@@ -714,6 +728,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
+	vlabs.EtcdEncryptionKey = api.EtcdEncryptionKey
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)

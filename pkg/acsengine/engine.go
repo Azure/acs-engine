@@ -39,8 +39,8 @@ const (
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 	// OpenShift custom scripts
-	openshiftNodeScript   = "k8s/openshiftnodescript.sh"
-	openshiftMasterScript = "k8s/openshiftmasterscript.sh"
+	openshiftNodeScript   = "openshift/openshiftnodescript.sh"
+	openshiftMasterScript = "openshift/openshiftmasterscript.sh"
 )
 
 const (
@@ -48,9 +48,12 @@ const (
 	dcosCustomData190    = "dcos/dcoscustomdata190.t"
 	dcosCustomData198    = "dcos/dcoscustomdata198.t"
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
-	dcosCustomData111    = "dcos/dcoscustomdata111.t"
 	dcosProvision        = "dcos/dcosprovision.sh"
 	dcosWindowsProvision = "dcos/dcosWindowsProvision.ps1"
+
+	dcos2Provision          = "dcos/bstrap/dcosprovision.sh"
+	dcos2BootstrapProvision = "dcos/bstrap/bootstrapprovision.sh"
+	dcos2CustomData111      = "dcos/bstrap/dcoscustomdata111.t"
 )
 
 const (
@@ -74,14 +77,23 @@ const (
 	dcosParams                    = "dcos/dcosparams.t"
 	dcosMasterResources           = "dcos/dcosmasterresources.t"
 	dcosMasterVars                = "dcos/dcosmastervars.t"
+	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
+	dcos2BootstrapVars            = "dcos/bstrap/bootstrapvars.t"
+	dcos2BootstrapParams          = "dcos/bstrap/bootstrapparams.t"
+	dcos2BootstrapResources       = "dcos/bstrap/bootstrapresources.t"
+	dcos2BootstrapCustomdata      = "dcos/bstrap/bootstrapcustomdata.yml"
+	dcos2MasterVars               = "dcos/bstrap/dcosmastervars.t"
+	dcos2MasterResources          = "dcos/bstrap/dcosmasterresources.t"
 	iaasOutputs                   = "iaasoutputs.t"
 	kubernetesBaseFile            = "k8s/kubernetesbase.t"
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
+	kubernetesAgentResourcesVMSS  = "k8s/kubernetesagentresourcesvmss.t"
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
 	kubernetesMasterResources     = "k8s/kubernetesmasterresources.t"
 	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
+	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
@@ -106,7 +118,8 @@ const (
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
+var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(kubernetesTemplateFiles, openshiftNodeScript, openshiftMasterScript)
@@ -172,6 +185,7 @@ func init() {
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := commonTemplateFiles
 	allFiles = append(allFiles, dcosTemplateFiles...)
+	allFiles = append(allFiles, dcos2TemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, openshiftTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
@@ -204,7 +218,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -264,7 +278,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
+	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode, acsengineVersion); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -343,13 +357,31 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
+func generateIPList(count int, firstAddr string) []string {
+	ipaddr := net.ParseIP(firstAddr).To4()
+	if ipaddr == nil {
+		panic(fmt.Sprintf("IPAddr '%s' is an invalid IP address", firstAddr))
+	}
+	ret := make([]string, count)
+	for i := 0; i < count; i++ {
+		ret[i] = fmt.Sprintf("%d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]+byte(i))
+	}
+	return ret
+}
+
 func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
 	switch properties.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
-		files = append(commonTemplateFiles, dcosTemplateFiles...)
-		baseFile = dcosBaseFile
+		switch properties.OrchestratorProfile.OrchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			files = append(commonTemplateFiles, dcos2TemplateFiles...)
+			baseFile = dcos2BaseFile
+		default:
+			files = append(commonTemplateFiles, dcosTemplateFiles...)
+			baseFile = dcosBaseFile
+		}
 	case api.Swarm:
 		files = append(commonTemplateFiles, swarmTemplateFiles...)
 		baseFile = swarmBaseFile
@@ -446,11 +478,14 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string) (paramsMap, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
 	cloudSpecConfig := GetCloudSpecConfig(location)
+
+	// acsengine Parameters
+	addValue(parametersMap, "acsengineVersion", acsengineVersion)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
@@ -461,6 +496,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
 		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
 	}
+	// TODO: Choose the correct image config based on the version
+	// for the openshift orchestrator
 	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
 	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
 	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
@@ -678,6 +715,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+		addValue(parametersMap, "networkPlugin", properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
 		addValue(parametersMap, "containerRuntime", properties.OrchestratorProfile.KubernetesConfig.ContainerRuntime)
 		addValue(parametersMap, "cniPluginsURL", cloudSpecConfig.KubernetesSpecConfig.CNIPluginsDownloadURL)
 		addValue(parametersMap, "vnetCniLinuxPluginsURL", cloudSpecConfig.KubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL)
@@ -687,6 +725,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
+		addValue(parametersMap, "etcdEncryptionKey", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey)
 		if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() {
 			addValue(parametersMap, "jumpboxVMName", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Name)
 			addValue(parametersMap, "jumpboxVMSize", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.VMSize)
@@ -707,9 +746,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretVersion)
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
-				if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && !properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && properties.ServicePrincipalProfile.ObjectID != "" {
-					addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
-				}
+			}
+
+			if properties.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && !properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && properties.ServicePrincipalProfile.ObjectID != "" {
+				addValue(parametersMap, "servicePrincipalObjectId", properties.ServicePrincipalProfile.ObjectID)
 			}
 		}
 
@@ -740,7 +780,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			case api.DCOSVersion1Dot10Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			case api.DCOSVersion1Dot11Dot0:
-				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS111BootstrapDownloadURL
+				dcosBootstrapURL = getDCOSDefaultBootstrapInstallerURL(properties.OrchestratorProfile)
 			}
 		}
 
@@ -786,6 +826,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "dcosRepositoryURL", dcosRepositoryURL)
 		addValue(parametersMap, "dcosClusterPackageListID", dcosClusterPackageListID)
 		addValue(parametersMap, "dcosProviderPackageID", dcosProviderPackageID)
+
+		if properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+			addValue(parametersMap, "bootstrapEndpointDNSNamePrefix", "bstrap-"+properties.MasterProfile.DNSPrefix)
+			addValue(parametersMap, "bootstrapFirstConsecutiveStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.VMSize)
+			addValue(parametersMap, "bootstrapCount", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count)
+		}
 	}
 
 	// Agent parameters
@@ -836,7 +883,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
-			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeConfigs[k8sVersion]["windowszip"])
+			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
+			if kubeBinariesSASURL == "" {
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
+			}
+
+			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
 			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
@@ -1026,6 +1078,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsAzureCNI": func() bool {
 			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
+		"RequireRouteTable": func() bool {
+			return cs.Properties.OrchestratorProfile.RequireRouteTable()
+		},
+
 		"IsPrivateCluster": func() bool {
 			if !cs.Properties.OrchestratorProfile.IsKubernetes() {
 				return false
@@ -1078,37 +1134,102 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
+		"HasBootstrap": func() bool {
+			return cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil
+		},
+		"IsHostedBootstrap": func() bool {
+			return false
+		},
+		"GetBootstrapHTTPSourceAddressPrefix": func() string {
+			return fmt.Sprintf("%s", "*")
+		},
+		"GetDCOSBootstrapCustomData": func() string {
+			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
+			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			for i, v := range masterIPList {
+				masterIPList[i] = "    - " + v
+			}
+			bootstrapIP := generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+
+			str := getSingleLineDCOSCustomData(
+				cs.Properties.OrchestratorProfile.OrchestratorType,
+				dcos2BootstrapCustomdata,
+				cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count,
+				map[string]string{
+					"PROVISION_STR":
+					// transform the provision script content
+					strings.Replace(
+						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
+						"\n", "\n\n    ", -1),
+					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
+					"BOOTSTRAP_IP":            bootstrapIP,
+					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled)})
+
+			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
+		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
+			masterProvisionScript := getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
 				masterPreprovisionExtension += "\n"
 				masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
 			}
+			var bootstrapIP string
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+			}
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersion,
-				cs.Properties.MasterProfile.Count, masterProvisionScript,
-				masterAttributeContents, masterPreprovisionExtension)
+				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
+				cs.Properties.MasterProfile.Count,
+				map[string]string{
+					"PROVISION_STR":
+					// transform the provision script content
+					strings.Replace(
+						strings.Replace(
+							strings.Replace(masterProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
+							"\r\n", "\n", -1),
+						"\n", "\n\n    ", -1),
+					"ATTRIBUTES_STR":         masterAttributeContents,
+					"PREPROVISION_EXTENSION": masterPreprovisionExtension,
+					"ROLENAME":               "master"})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile, *cs.Properties.OrchestratorProfile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
 				agentPreprovisionExtension += "\n"
 				agentPreprovisionExtension += makeAgentExtensionScriptCommands(cs, profile)
 			}
+			var agentRoleName, bootstrapIP string
+			if len(profile.Ports) > 0 {
+				agentRoleName = "slave_public"
+			} else {
+				agentRoleName = "slave"
+			}
+			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+			}
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersion,
-				cs.Properties.MasterProfile.Count, agentProvisionScript,
-				attributeContents, agentPreprovisionExtension)
+				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
+				cs.Properties.MasterProfile.Count,
+				map[string]string{
+					"PROVISION_STR": // transform the provision script content
+					strings.Replace(
+						strings.Replace(
+							strings.Replace(agentProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
+							"\r\n", "\n", -1),
+						"\n", "\n\n    ", -1),
+					"ATTRIBUTES_STR":         attributeContents,
+					"PREPROVISION_EXTENSION": agentPreprovisionExtension,
+					"ROLENAME":               agentRoleName})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1336,9 +1457,17 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
-		"AnyAgentUsesAvailablilitySets": func() bool {
+		"AnyAgentUsesAvailabilitySets": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
 				if agentProfile.IsAvailabilitySets() {
+					return true
+				}
+			}
+			return false
+		},
+		"AnyAgentUsesVirtualMachineScaleSets": func() bool {
+			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
+				if agentProfile.IsVirtualMachineScaleSets() {
 					return true
 				}
 			}
@@ -1708,6 +1837,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
 				case "etcdVersion":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
+				case "etcdEncryptionKey":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey
 				case "etcdDiskSizeGB":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				case "jumpboxOSDiskSizeGB":
@@ -1741,11 +1872,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnablePodSecurityPolicy": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
-		"OpenShiftGetMasterSh": func() string {
-			tb := MustAsset("k8s/openshiftmasterscript.sh")
-			t := template.Must(template.New("master").Parse(string(tb)))
+		"OpenShiftGetMasterSh": func() (string, error) {
+			tb := MustAsset(openshiftMasterScript)
+			t, err := template.New("master").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle           string
 				ExternalMasterHostname string
 				RouterLBHostname       string
@@ -1756,20 +1890,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
 				Location:               cs.Properties.AzProfile.Location,
 			})
-			return b.String()
+			return b.String(), err
 		},
-		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) string {
-			tb := MustAsset("k8s/openshiftnodescript.sh")
-			t := template.Must(template.New("node").Parse(string(tb)))
+		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
+			tb := MustAsset(openshiftNodeScript)
+			t, err := template.New("node").Parse(string(tb))
+			if err != nil {
+				return "", err
+			}
 			b := &bytes.Buffer{}
-			t.Execute(b, struct {
+			err = t.Execute(b, struct {
 				ConfigBundle string
 				Role         api.AgentPoolProfileRole
 			}{
 				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]),
 				Role:         profile.Role,
 			})
-			return b.String()
+			return b.String(), err
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -1874,6 +2011,16 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 
 	parms := extensionProfile.ExtensionParameters
 	return parms
+}
+
+func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
+	if profile.OrchestratorType == api.DCOS {
+		switch profile.OrchestratorVersion {
+		case api.DCOSVersion1Dot11Dot0:
+			return "https://downloads.dcos.io/dcos/stable/1.11.0/dcos_generate_config.sh"
+		}
+	}
+	return ""
 }
 
 func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
@@ -2076,7 +2223,7 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	if len(profile.OSType) > 0 {
 		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
 	} else {
-		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:linux")
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", api.Linux)
 	}
 
 	if len(profile.Ports) > 0 {
@@ -2351,14 +2498,35 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.OrchestratorProfile) string {
+func getDCOSBootstrapProvisionScript() string {
+	// add the provision script
+	bp, err := Asset(dcos2BootstrapProvision)
+	if err != nil {
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
+	}
+
+	provisionScript := string(bp)
+	if strings.Contains(provisionScript, "'") {
+		panic(fmt.Sprintf("BUG: %s may not contain character '", dcos2BootstrapProvision))
+	}
+
+	return provisionScript
+}
+
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile) string {
 	// add the provision script
 
 	var scriptname string
-	if profile.OSType == api.Windows {
-		scriptname = dcosWindowsProvision
-	} else {
-		scriptname = dcosProvision
+
+	switch orchProfile.OrchestratorVersion {
+	case api.DCOSVersion1Dot11Dot0:
+		scriptname = dcos2Provision
+	default:
+		if profile.OSType == api.Windows {
+			scriptname = dcosWindowsProvision
+		} else {
+			scriptname = dcosProvision
+		}
 	}
 
 	bp, err1 := Asset(scriptname)
@@ -2392,66 +2560,69 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.
 	return b.String()
 }
 
-func getDCOSMasterProvisionScript(orchProfile api.OrchestratorProfile) string {
+func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
+	var scriptname string
+	switch orchProfile.OrchestratorVersion {
+	case api.DCOSVersion1Dot11Dot0:
+		scriptname = dcos2Provision
+	default:
+		scriptname = dcosProvision
+	}
 	// add the provision script
-	bp, err1 := Asset(dcosProvision)
-	if err1 != nil {
-		panic(fmt.Sprintf("BUG: %s", err1.Error()))
+	bp, err := Asset(scriptname)
+	if err != nil {
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
 	provisionScript := string(bp)
 	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+		panic(fmt.Sprintf("BUG: %s may not contain character '", scriptname))
 	}
 
 	// the embedded roleFileContents
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
 
 	return b.String()
-
 }
 
-// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType, orchestratorVersion string,
-	masterCount int, provisionContent, attributeContents, preProvisionExtensionContents string) string {
-	yamlFilename := ""
+func getDCOSCustomDataTemplate(orchestratorType, orchestratorVersion string) string {
 	switch orchestratorType {
 	case api.DCOS:
 		switch orchestratorVersion {
 		case api.DCOSVersion1Dot8Dot8:
-			yamlFilename = dcosCustomData188
+			return dcosCustomData188
 		case api.DCOSVersion1Dot9Dot0:
-			yamlFilename = dcosCustomData190
+			return dcosCustomData190
 		case api.DCOSVersion1Dot9Dot8:
-			yamlFilename = dcosCustomData198
+			return dcosCustomData198
 		case api.DCOSVersion1Dot10Dot0:
-			yamlFilename = dcosCustomData110
+			return dcosCustomData110
 		case api.DCOSVersion1Dot11Dot0:
-			yamlFilename = dcosCustomData111
+			return dcos2CustomData111
 		}
 	default:
 		// it is a bug to get here
 		panic(fmt.Sprintf("BUG: invalid orchestrator %s", orchestratorType))
 	}
+	return ""
+}
 
+// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
+func getSingleLineDCOSCustomData(orchestratorType, yamlFilename string, masterCount int, replaceMap map[string]string) string {
 	b, err := Asset(yamlFilename)
 	if err != nil {
 		panic(fmt.Sprintf("BUG getting yaml custom data file: %s", err.Error()))
 	}
-
-	// transform the provision script content
-	provisionContent = strings.Replace(provisionContent, "\r\n", "\n", -1)
-	provisionContent = strings.Replace(provisionContent, "\n", "\n\n    ", -1)
-
 	yamlStr := string(b)
-	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
-	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
-	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
+	for k, v := range replaceMap {
+		yamlStr = strings.Replace(yamlStr, k, v, -1)
+	}
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
@@ -2625,7 +2796,6 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
 			agentPoolProfile.Name, agentPoolProfile.Name)
 		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
-
 	}
 
 	if strings.EqualFold(singleOrAll, "single") {

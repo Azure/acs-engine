@@ -151,12 +151,14 @@ cat <<EOF >"${AZURE_JSON_PATH}"
     "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
     "resourceGroup": "${RESOURCE_GROUP}",
     "location": "${LOCATION}",
+    "vmType": "${VM_TYPE}",
     "subnetName": "${SUBNET}",
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
     "routeTableName": "${ROUTE_TABLE}",
     "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
     "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
     "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
     "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
@@ -191,42 +193,49 @@ function setKubeletOpts() {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
+function installCNI() {
+    CNI_BIN_DIR=/opt/cni/bin
+    mkdir -p $CNI_BIN_DIR
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    chown -R root:root $CNI_BIN_DIR
+    chmod -R 755 $CNI_BIN_DIR
+}
+
 function configAzureCNI() {
-	CNI_CONFIG_DIR=/etc/cni/net.d
-	mkdir -p $CNI_CONFIG_DIR
-	chown -R root:root $CNI_CONFIG_DIR
-	chmod 755 $CNI_CONFIG_DIR
-	CNI_BIN_DIR=/opt/cni/bin
-	mkdir -p $CNI_BIN_DIR
-	AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-	retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
-	tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-	CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-	retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
-	tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./portmap
-	chown -R root:root $CNI_BIN_DIR
-	chmod -R 755 $CNI_BIN_DIR
-	mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
-	chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-	/sbin/ebtables -t nat --list
+    CNI_CONFIG_DIR=/etc/cni/net.d
+    mkdir -p $CNI_CONFIG_DIR
+    chown -R root:root $CNI_CONFIG_DIR
+    chmod 755 $CNI_CONFIG_DIR
+    CNI_BIN_DIR=/opt/cni/bin
+    mkdir -p $CNI_BIN_DIR
+    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
+    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    installCNI
+    mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+    chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+    /sbin/ebtables -t nat --list
 }
 
 function configKubenet() {
-	CNI_BIN_DIR=/opt/cni/bin
-	mkdir -p $CNI_BIN_DIR
-	CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-	retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
-	tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR ./loopback ./bridge ./host-local
-	chown -R root:root $CNI_BIN_DIR
-	chmod -R 755 $CNI_BIN_DIR
+    installCNI
 }
 
-function configNetworkPolicy() {
-	if [[ "${NETWORK_POLICY}" == "azure" ]]; then
-		configAzureCNI
-	elif [[ "${NETWORK_POLICY}" == "none" ]]; then
-		configKubenet
-	fi
+function configFlannel() {
+    installCNI
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+function configNetworkPlugin() {
+    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
+        configAzureCNI
+    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
+        installCNI
+    elif [[ "${NETWORK_POLICY}" = "flannel" ]] ; then
+        configCNINetworkPolicy
+    fi
 }
 
 function installClearContainersRuntime() {
@@ -256,7 +265,7 @@ function installClearContainersRuntime() {
 }
 
 function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0-rc.0"
+	CRI_CONTAINERD_VERSION="1.1.0"
 	local CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
 	CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
@@ -328,11 +337,7 @@ function ensureDocker() {
 	systemctlEnableAndStart docker
 }
 function ensureKMS() {
-	systemctlEnableAndCheck kms
-	# only start if a reboot is not required
-	if ! $REBOOTREQUIRED; then
-		systemctl restart kms
-	fi
+    systemctlEnableAndStart kms
 }
 
 function ensureKubelet() {
@@ -490,8 +495,8 @@ fi
 echo $(date),$(hostname), EnsureDockerStart >>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
-echo $(date),$(hostname), configNetworkPolicyStart >>/opt/m
-configNetworkPolicy
+echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
+configNetworkPlugin
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then

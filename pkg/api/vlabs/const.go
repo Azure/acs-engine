@@ -71,8 +71,12 @@ const (
 )
 
 var (
+	// NetworkPluginValues holds the valid values for network plugin implementation
+	NetworkPluginValues = [...]string{"", "kubenet", "azure"}
+
 	// NetworkPolicyValues holds the valid values for a network policy
-	NetworkPolicyValues = [...]string{"", "none", "azure", "calico", "cilium"}
+	// "azure" and "none" are there for backwards-compatibility
+	NetworkPolicyValues = [...]string{"", "calico", "cilium", "azure", "none", "flannel"}
 
 	// ContainerRuntimeValues holds the valid values for container runtimes
 	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers"}
@@ -86,10 +90,12 @@ const (
 
 // vlabs default configuration
 const (
+	// DefaultNetworkPlugin defines the network plugin to use by default
+	DefaultNetworkPlugin = "azure"
+	// DefaultNetworkPluginWindows defines the network plugin to use by default for clusters with Windows agent pools
+	DefaultNetworkPluginWindows = "azure"
 	// DefaultNetworkPolicy defines the network policy to use by default
-	DefaultNetworkPolicy = "azure"
-	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = "azure"
+	DefaultNetworkPolicy = ""
 )
 
 const (

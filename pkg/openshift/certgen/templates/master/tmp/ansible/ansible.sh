@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # TODO: do this, and more (registry console, asb), the proper way
 

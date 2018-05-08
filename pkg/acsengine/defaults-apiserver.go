@@ -63,13 +63,13 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Aggregated API configuration
 	if o.KubernetesConfig.EnableAggregatedAPIs || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
-		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
-		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
-		staticLinuxAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"
-		staticLinuxAPIServerConfig["--requestheader-allowed-names"] = ""
-		staticLinuxAPIServerConfig["--requestheader-extra-headers-prefix"] = "X-Remote-Extra-"
-		staticLinuxAPIServerConfig["--requestheader-group-headers"] = "X-Remote-Group"
-		staticLinuxAPIServerConfig["--requestheader-username-headers"] = "X-Remote-User"
+		defaultAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
+		defaultAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
+		defaultAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"
+		defaultAPIServerConfig["--requestheader-allowed-names"] = ""
+		defaultAPIServerConfig["--requestheader-extra-headers-prefix"] = "X-Remote-Extra-"
+		defaultAPIServerConfig["--requestheader-group-headers"] = "X-Remote-Group"
+		defaultAPIServerConfig["--requestheader-username-headers"] = "X-Remote-User"
 	}
 
 	// Enable cloudprovider if we're not using cloud controller manager

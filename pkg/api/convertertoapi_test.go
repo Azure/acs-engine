@@ -139,6 +139,9 @@ func TestKubernetesVlabsDefaults(t *testing.T) {
 	if ap.OrchestratorProfile.KubernetesConfig == nil {
 		t.Fatalf("KubernetesConfig cannot be nil after vlabs default conversion")
 	}
+	if ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin != vlabs.DefaultNetworkPlugin {
+		t.Fatalf("vlabs defaults not applied, expected NetworkPlugin: %s, instead got: %s", vlabs.DefaultNetworkPlugin, ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
+	}
 	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicy {
 		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicy, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 	}
@@ -151,8 +154,11 @@ func TestKubernetesVlabsDefaults(t *testing.T) {
 	if ap.OrchestratorProfile.KubernetesConfig == nil {
 		t.Fatalf("KubernetesConfig cannot be nil after vlabs default conversion")
 	}
-	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicyWindows {
-		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicyWindows, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+	if ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin != vlabs.DefaultNetworkPluginWindows {
+		t.Fatalf("vlabs defaults not applied, expected NetworkPlugin: %s, instead got: %s", vlabs.DefaultNetworkPluginWindows, ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
+	}
+	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicy {
+		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicy, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 	}
 }
 
@@ -178,7 +184,7 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 					OrchestratorType: OpenShift,
 					OpenShiftConfig: &vlabs.OpenShiftConfig{
 						KubernetesConfig: &vlabs.KubernetesConfig{
-							NetworkPolicy:    "azure",
+							NetworkPlugin:    "azure",
 							ContainerRuntime: "docker",
 						},
 					},
@@ -188,12 +194,12 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 				OrchestratorType:    OpenShift,
 				OrchestratorVersion: common.OpenShiftDefaultVersion,
 				KubernetesConfig: &KubernetesConfig{
-					NetworkPolicy:    "azure",
+					NetworkPlugin:    "azure",
 					ContainerRuntime: "docker",
 				},
 				OpenShiftConfig: &OpenShiftConfig{
 					KubernetesConfig: &KubernetesConfig{
-						NetworkPolicy:    "azure",
+						NetworkPlugin:    "azure",
 						ContainerRuntime: "docker",
 					},
 				},

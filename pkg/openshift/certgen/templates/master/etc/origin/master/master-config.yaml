@@ -156,10 +156,33 @@ oauthConfig:
   grantConfig:
     method: auto
   identityProviders:
-  - challenge: true
+{{- if .EnableAADAuthentication}}
+  - name: Azure AD
+    challenge: false
     login: true
     mappingMethod: claim
-    name: htpasswd_auth
+    provider:
+      apiVersion: v1
+      kind: OpenIDIdentityProvider
+      clientID: {{ .AzureConfig.AADClientID }}
+      clientSecret: {{ .AzureConfig.AADClientSecret }}
+      claims:
+        id:
+        - sub
+        preferredUsername:
+        - unique_name
+        name:
+        - name
+        email:
+        - email
+      urls:
+        authorize: https://login.microsoftonline.com/{{ .AzureConfig.TenantID }}/oauth2/authorize
+        token: https://login.microsoftonline.com/{{ .AzureConfig.TenantID }}/oauth2/token
+{{- end}}
+  - name: Local password
+    challenge: true
+    login: true
+    mappingMethod: claim
     provider:
       apiVersion: v1
       file: /etc/origin/master/htpasswd

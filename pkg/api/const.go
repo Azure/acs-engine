@@ -27,6 +27,9 @@ const (
 	Ubuntu Distro = "ubuntu"
 	RHEL   Distro = "rhel"
 	CoreOS Distro = "coreos"
+	// Supported distros by OpenShift
+	OpenShift39RHEL Distro = "openshift39_rhel"
+	OpenShiftCentOS Distro = "openshift39_centos"
 )
 
 const (
@@ -117,6 +120,12 @@ const (
 	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
+	// NetworkPolicyAzure is the string expression for the deprecated NetworkPolicy usage pattern "azure"
+	NetworkPolicyAzure = "azure"
+	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
+	NetworkPolicyNone = "none"
+	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
+	NetworkPluginKubenet = "kubenet"
 )
 
 const (

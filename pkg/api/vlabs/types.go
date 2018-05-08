@@ -266,6 +266,7 @@ type KubernetesConfig struct {
 	DNSServiceIP                    string            `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                     string            `json:"serviceCidr,omitempty"`
 	NetworkPolicy                   string            `json:"networkPolicy,omitempty"`
+	NetworkPlugin                   string            `json:"networkPlugin,omitempty"`
 	ContainerRuntime                string            `json:"containerRuntime,omitempty"`
 	MaxPods                         int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet              string            `json:"dockerBridgeSubnet,omitempty"`
@@ -274,6 +275,7 @@ type KubernetesConfig struct {
 	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
 	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
+	CustomWindowsPackageURL         string            `json:"customWindowsPackageURL,omitempty"`
 	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`
@@ -283,6 +285,7 @@ type KubernetesConfig struct {
 	GCLowThreshold                  int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                     string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                  string            `json:"etcdDiskSizeGB,omitempty"`
+	EtcdEncryptionKey               string            `json:"etcdEncryptionKey,omitempty"`
 	EnableDataEncryptionAtRest      *bool             `json:"enableDataEncryptionAtRest,omitempty"`
 	EnableEncryptionWithExternalKms *bool             `json:"enableEncryptionWithExternalKms,omitempty"`
 	EnablePodSecurityPolicy         *bool             `json:"enablePodSecurityPolicy,omitempty"`
@@ -302,26 +305,39 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
+// BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
+type BootstrapProfile struct {
+	Count                    int    `json:"count,omitempty"`
+	VMSize                   string `json:"vmSize,omitempty"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled,omitempty"`
+	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string `json:"subnet,omitempty"`
+}
+
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
-	DcosBootstrapURL         string `json:"dcosBootstrapURL,omitempty"`
-	DcosWindowsBootstrapURL  string `json:"dcosWindowsBootstrapURL,omitempty"`
-	Registry                 string `json:"registry,omitempty"`
-	RegistryUser             string `json:"registryUser,omitempty"`
-	RegistryPass             string `json:"registryPassword,omitempty"`
-	DcosRepositoryURL        string `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
-	DcosClusterPackageListID string `json:"dcosClusterPackageListID,omitempty"` // all three of these items
-	DcosProviderPackageID    string `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+	DcosBootstrapURL         string            `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string            `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                 string            `json:"registry,omitempty"`
+	RegistryUser             string            `json:"registryUser,omitempty"`
+	RegistryPass             string            `json:"registryPassword,omitempty"`
+	DcosRepositoryURL        string            `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
+	DcosClusterPackageListID string            `json:"dcosClusterPackageListID,omitempty"` // all three of these items
+	DcosProviderPackageID    string            `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+	BootstrapProfile         *BootstrapProfile `json:"bootstrapProfile,omitempty"`
 }
 
 // OpenShiftConfig holds configuration for OpenShift
 type OpenShiftConfig struct {
 	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
-	// ClusterUsername and ClusterPassword are temporary before AAD
-	// authentication is enabled, and will be removed subsequently.
+	// ClusterUsername and ClusterPassword are temporary, do not rely on them.
 	ClusterUsername string `json:"clusterUsername,omitempty"`
 	ClusterPassword string `json:"clusterPassword,omitempty"`
+
+	// EnableAADAuthentication is temporary, do not rely on it.
+	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -530,6 +546,11 @@ func (a *AgentPoolProfile) IsCoreOS() bool {
 // IsAvailabilitySets returns true if the customer specified disks
 func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet
+}
+
+// IsVirtualMachineScaleSets returns true if the agent pool availability profile is VMSS
+func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
+	return a.AvailabilityProfile == VirtualMachineScaleSets
 }
 
 // IsManagedDisks returns true if the customer specified managed disks

@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
@@ -50,8 +51,8 @@ type scaleCmd struct {
 
 const (
 	scaleName             = "scale"
-	scaleShortDescription = "scale a deployed cluster"
-	scaleLongDescription  = "scale a deployed cluster"
+	scaleShortDescription = "Scale an existing Kubernetes cluster"
+	scaleLongDescription  = "Scale an existing Kubernetes cluster by specifying increasing or decreasing the node count of an agentpool"
 )
 
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
@@ -99,11 +100,17 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	if sc.location == "" {
 		cmd.Usage()
 		log.Fatal("--location must be specified")
+	} else {
+		sc.location = helpers.NormalizeAzureRegion(sc.location)
 	}
 
 	if sc.newDesiredAgentCount == 0 {
 		cmd.Usage()
 		log.Fatal("--new-node-count must be specified")
+	}
+
+	if err = sc.authArgs.validateAuthArgs(); err != nil {
+		log.Fatal("%s", err)
 	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
@@ -280,7 +287,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	sc.containerService.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{sc.agentPool}
 
-	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false)
+	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", sc.apiModelPath, err.Error())
 		os.Exit(1)

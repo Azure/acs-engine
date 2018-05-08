@@ -164,12 +164,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				if !eng.HasWindowsAgents() {
 					By("Gathering connection information to determine whether or not to connect via HTTP or HTTPS")
-					dashboardPort := 80
+					dashboardPort := 443
 					version, err := node.Version()
 					Expect(err).NotTo(HaveOccurred())
-					re := regexp.MustCompile("v1.9")
+					re := regexp.MustCompile("1.(5|6|7|8).")
 					if re.FindString(version) != "" {
-						dashboardPort = 443
+						dashboardPort = 80
 					}
 					port := s.GetNodePort(dashboardPort)
 

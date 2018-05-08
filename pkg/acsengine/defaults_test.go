@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"encoding/base64"
 	"reflect"
 	"testing"
 
@@ -380,6 +381,113 @@ func TestEtcdDiskSize(t *testing.T) {
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != customEtcdDiskSize {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, customEtcdDiskSize)
+	}
+}
+
+func TestGenerateEtcdEncryptionKey(t *testing.T) {
+	key1 := generateEtcdEncryptionKey()
+	key2 := generateEtcdEncryptionKey()
+	if key1 == key2 {
+		t.Fatalf("generateEtcdEncryptionKey should return a unique key each time, instead returned identical %s and %s", key1, key2)
+	}
+	for _, val := range []string{key1, key2} {
+		_, err := base64.URLEncoding.DecodeString(val)
+		if err != nil {
+			t.Fatalf("generateEtcdEncryptionKey should return a base64 encoded key, instead returned %s", val)
+		}
+	}
+}
+
+func TestNetworkPolicyDefaults(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.8.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "azure" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "azure")
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "" {
+		t.Fatalf("NetworkPolicy did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "none"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "" {
+		t.Fatalf("NetworkPolicy did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "")
+	}
+}
+
+func TestStorageProfile(t *testing.T) {
+	// Test ManagedDisks default configuration
+	mockCS := getMockBaseContainerService("1.8.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.OrchestratorProfile.KubernetesConfig.PrivateCluster = &api.PrivateCluster{
+		Enabled:        helpers.PointerToBool(true),
+		JumpboxProfile: &api.PrivateJumpboxProfile{},
+	}
+	SetPropertiesDefaults(&mockCS, false)
+	if properties.MasterProfile.StorageProfile != api.ManagedDisks {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.MasterProfile.StorageProfile, api.ManagedDisks)
+	}
+	if !properties.MasterProfile.IsManagedDisks() {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %t, expected %t",
+			false, true)
+	}
+	if properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
+		t.Fatalf("AgentPoolProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].StorageProfile, api.ManagedDisks)
+	}
+	if !properties.AgentPoolProfiles[0].IsManagedDisks() {
+		t.Fatalf("AgentPoolProfile.IsManagedDisks() did not have the expected configuration, got %t, expected %t",
+			false, true)
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile != api.ManagedDisks {
+		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile, api.ManagedDisks)
 	}
 }
 

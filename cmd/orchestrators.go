@@ -10,8 +10,8 @@ import (
 
 const (
 	cmdName             = "orchestrators"
-	cmdShortDescription = "provide info about supported orchestrators"
-	cmdLongDescription  = "provide info about versions of supported orchestrators"
+	cmdShortDescription = "Display info about supported orchestrators"
+	cmdLongDescription  = "Display supported versions and upgrade versions for each orchestrator"
 )
 
 type orchestratorsCmd struct {

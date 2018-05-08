@@ -13,6 +13,12 @@ const (
 	DefaultSwarmWindowsMasterSubnet = "192.168.255.0/24"
 	// DefaultSwarmWindowsFirstConsecutiveStaticIP specifies the static IP address on master 0 for a Swarm WIndows cluster
 	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
+	// DefaultDCOSMasterSubnet specifies the default master subnet for a DCOS cluster
+	DefaultDCOSMasterSubnet = "192.168.255.0/24"
+	// DefaultDCOSFirstConsecutiveStaticIP  specifies the static IP address on master 0 for a DCOS cluster
+	DefaultDCOSFirstConsecutiveStaticIP = "192.168.255.5"
+	// DefaultDCOSBootstrapFirstConsecutiveStaticIP specifies the static IP address on bootstrap 0 for a DCOS cluster
+	DefaultDCOSBootstrapFirstConsecutiveStaticIP = "192.168.255.240"
 	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
@@ -38,16 +44,26 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// NetworkPolicyNone is the string expression for no network policy
+	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
 	NetworkPolicyNone = "none"
-	// NetworkPolicyAzure is the string expression for Azure CNI network policy
-	NetworkPolicyAzure = "azure"
+	// NetworkPolicyCalico is the string expression for calico network policy config option
+	NetworkPolicyCalico = "calico"
+	// NetworkPolicyFlannel is the string expression for flannel network policy config option
+	NetworkPolicyFlannel = "flannel"
+	// NetworkPolicyCilium is the string expression for cilium network policy config option
+	NetworkPolicyCilium = "cilium"
+	// NetworkPluginAzure is the string expression for Azure CNI network policy
+	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
-	// DefaultNetworkPolicy defines the network policy to use by default
-	DefaultNetworkPolicy = NetworkPolicyNone
-	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = NetworkPolicyNone
+	// DefaultNetworkPlugin defines the network plugin to use by default
+	DefaultNetworkPlugin = NetworkPluginKubenet
+	// DefaultNetworkPolicy defines the network policy implementation to use by default
+	DefaultNetworkPolicy = ""
+	// DefaultNetworkPluginWindows defines the network plugin implementation to use by default for clusters with Windows agent pools
+	DefaultNetworkPluginWindows = NetworkPluginKubenet
+	// DefaultNetworkPolicyWindows defines the network policy implementation to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = ""
 	// DefaultContainerRuntime is docker
 	DefaultContainerRuntime = "docker"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/

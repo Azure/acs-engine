@@ -52,3 +52,11 @@
     - name: Import openshift_examples role from openshift-ansible to deploy the examples
       import_role:
         name: openshift_examples
+
+    - name: Import openshift_hosted_templates role from openshift-ansible to deploy the hosted templates
+      import_role:
+        name: openshift_hosted_templates
+
+    - name: Import cockpit_ui role from openshift-ansible to deploy the registry console
+      import_role:
+        name: cockpit-ui

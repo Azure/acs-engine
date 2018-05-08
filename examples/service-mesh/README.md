@@ -6,11 +6,53 @@ Some service mesh implementations **may** benefit from or require additional [cu
 
 ## Istio
 
-The `istio.json` file in this directory enables the kubernetes API server options to support automatic sidecar injection using [Isitio](https://istio.io/).  If automatic sidecar injection isn't enabled, then all services must then manually inject the sidecar configuration into every deployment, every time.  
+The `istio.json` file in this directory enables the kubernetes API server options to support automatic sidecar injection using [Isitio](https://istio.io/).  If automatic sidecar injection isn't enabled, then all services must then manually inject the sidecar configuration into every deployment, every time.
 
-The main changes this configuration makes is adding these flags to the apiserver `Initializers,MutatingAdmissionWebhook,ValidatingAdmissionWebhook` and starting using the `runtime-config` with `admissionregistration.k8s.io/v1alpha1`.
+The main changes this configuration makes is adding these flags to the apiserver `MutatingAdmissionWebhook,ValidatingAdmissionWebhook`.
 
-> Note: The default acs-engine apiserver options `AlwaysPullImages` and `SecurityContextDeny` were removed from this configuration in order to have the Istio book info examples work without any errors.  Consider enabling these for a production cluster.
+### Installation
+
+#### Create Azure Resources
+
+1. Create Resource Group
+
+    ```
+    az group create --name "<resourceGroupName>" --location "eastus"
+    ```
+
+2. Create Service Principal
+
+    ```
+    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>"
+    ```
+
+#### Update istio.json
+
+3. Ensure `orchestratorRelease` is 1.9+. 
+4. Update `--admission-control` to include `MutatingAdmissionWebhook,ValidatingAdmissionWebhook`
+
+    **Note**: admission-controls need to be entered in the order defined on the kubernetes [docs](https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use).
+
+    Your updates should look like this.
+    ```
+    "orchestratorProfile": {
+        "orchestratorType": "Kubernetes",
+        "orchestratorRelease": "1.9",
+        "kubernetesConfig": {
+            "apiServerConfig": {
+            "--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,ValidatingAdmissionWebhook,ResourceQuota",
+            }
+        }
+    }
+    ```
+
+4. Add Service Principal ID and Secret
+    ```
+    "servicePrincipalProfile": {
+        "clientId": "<Insert Service Principal Client ID>",
+        "secret": "<Insert Service Principal Client Secret>"
+    }
+    ```
 
 
 ### Post installation
