@@ -138,6 +138,7 @@ jobs:
           echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
           echo 'export CREATE_VNET=false' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=false' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV

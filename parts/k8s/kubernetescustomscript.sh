@@ -3,15 +3,21 @@
 # This script runs on every Kubernetes VM
 # Exit codes represent the following:
 # | exit code number | meaning |
-# | 20 | Timeout waiting for docker install to finish |
 # | 3 | Service could not be enabled by systemctl |
 # | 4 | Service could not be started by systemctl |
 # | 5 | Timeout waiting for cloud-init runcmd to complete |
 # | 6 | Timeout waiting for a file |
 # | 7 | Error placing apt-mark hold on walinuxagent
 # | 8 | Error releasing apt-mark hold on walinuxagent
+# | 9 | Timeout installing apt packages
 # | 10 | Etcd data dir not found |
 # | 11 | Timeout waiting for etcd to be accessible |
+# | 12 | Timeout waiting for etcd download(s) |
+# | 13 | Unable to mount etcd volume |
+# | 14 | Unable to start etcd service |
+# | 15 | Unable to configure etcd membership |
+# | 20 | Timeout waiting for docker install to finish |
+# | 21 | Timeout waiting for docker download(s) |
 # | 30 | Timeout waiting for k8s cluster to be healthy|
 # | 31 | Timeout waiting for k8s download(s)|
 # | 32 | Timeout waiting for kubectl|
