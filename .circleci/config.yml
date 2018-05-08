@@ -142,6 +142,7 @@ jobs:
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV # TODO remove this before merging!
       - run:
           name: compile
           command: make build-binary
