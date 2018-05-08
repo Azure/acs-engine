@@ -28,3 +28,4 @@ then
     /sbin/mkfs.ext4 $PARTITION -L etcd_disk -F -E lazy_itable_init=1,lazy_journal_init=1
 fi
 mount $MOUNTPOINT
+/bin/chown -R etcd:etcd /var/lib/etcddisk
