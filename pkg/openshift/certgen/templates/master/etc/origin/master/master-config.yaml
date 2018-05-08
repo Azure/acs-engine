@@ -106,7 +106,7 @@ kubernetesMasterConfig:
     cloud-provider:
     - "azure"
     cloud-config:
-    - "/etc/azure/azure.conf"
+    - "/etc/origin/cloudprovider/azure.conf"
   controllerArguments:
     cluster-signing-cert-file:
     - "/etc/origin/master/ca.crt"
@@ -115,7 +115,7 @@ kubernetesMasterConfig:
     cloud-provider:
     - "azure"
     cloud-config:
-    - "/etc/azure/azure.conf"
+    - "/etc/origin/cloudprovider/azure.conf"
   masterCount: 1
   masterIP: {{ (index .Master.IPs 0).String }}
   podEvictionTimeout: null

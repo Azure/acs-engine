@@ -13,7 +13,7 @@ VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
 	IMAGE_TYPE=ose
-	IMAGE_PREFIX="registry.access.redhat.com/openshift3"
+	IMAGE_PREFIX="registry.reg-aws.openshift.com:443/openshift3"
 	ANSIBLE_CONTAINER_VERSION="v${VERSION}"
 	PROMETHEUS_EXPORTER_VERSION="v${VERSION}"
 	COCKPIT_PREFIX="${IMAGE_PREFIX}"
@@ -42,9 +42,11 @@ done
 
 iptables-save >/etc/sysconfig/iptables
 
-sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/${SERVICE_TYPE}-master-api
+#sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/${SERVICE_TYPE}-master-api
 
-rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
+rm -rf /etc/etcd/* /etc/origin/master/*
+
+mkdir -p /etc/origin/master
 
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
@@ -60,7 +62,7 @@ update-ca-trust
 rpm -i https://packages.microsoft.com/yumrepos/azure-cli/azure-cli-2.0.31-1.el7.x86_64.rpm
 
 set +x
-. <(sed -e 's/: */=/' /etc/azure/azure.conf)
+. <(sed -e 's/: */=/' /etc/origin/cloudprovider/azure.conf)
 az login --service-principal -u "$aadClientId" -p "$aadClientSecret" --tenant "$aadTenantId" &>/dev/null
 REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$(az storage account list -g "$resourceGroup" --query "[?ends_with(name, 'registry')].name" -o tsv)
 REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$(az storage account keys list -g "$resourceGroup" -n "$REGISTRY_STORAGE_AZURE_ACCOUNTNAME" --query "[?keyName == 'key1'].value" -o tsv)
@@ -95,14 +97,25 @@ for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansi
     sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
 done
 
+# backup the current node.kubeconfig
+cp /etc/origin/node/bootstrap.kubeconfig /etc/origin/node/bootstrap.kubeconfig.orig
+
+mkdir -p /root/.kube
+
+for loc in /root/.kube/config /etc/origin/node/bootstrap.kubeconfig /etc/origin/node/node.kubeconfig; do
+  cp /etc/origin/master/admin.kubeconfig "$loc"
+done
+
+systemctl start ${SERVICE_TYPE}-node
+
 # note: ${SERVICE_TYPE}-node crash loops until master is up
-for unit in etcd.service ${SERVICE_TYPE}-master-api.service ${SERVICE_TYPE}-master-controllers.service; do
-	systemctl enable $unit
-	systemctl start $unit
+for pod in /etc/origin/node/disabled/*;
+do
+    cp "$pod" /etc/origin/node/pods
 done
 
 mkdir -p /root/.kube
-cp /etc/origin/master/admin.kubeconfig /root/.kube/config
+
 
 export KUBECONFIG=/etc/origin/master/admin.kubeconfig
 
@@ -113,6 +126,7 @@ done
 while ! oc get svc kubernetes &>/dev/null; do
 	sleep 1
 done
+
 
 oc create -f - <<'EOF'
 kind: StorageClass
@@ -134,8 +148,17 @@ oc create configmap node-config-infra --namespace openshift-node --from-file=nod
 
 # must start ${SERVICE_TYPE}-node after master is fully up and running
 # otherwise the implicit dns change may cause master startup to fail
-systemctl enable ${SERVICE_TYPE}-node.service
-systemctl start ${SERVICE_TYPE}-node.service &
+cp /etc/origin/node/bootstrap.kubeconfig.orig /etc/origin/node/bootstrap.kubeconfig
+
+#systemctl restart ${SERVICE_TYPE}-node
+
+# Currently the SDN requires node-config.yaml file to be the config file it uses instead of bootstrap-node-config.yaml
+cp /tmp/bootstrapconfigs/master-config.yaml /etc/origin/node/node-config.yaml
+sed -i 's#^CONFIG_FILE=.*$#CONFIG_FILE=/etc/origin/node/node-config.yaml#' /etc/sysconfig/${SERVICE_TYPE}-node
+systemctl restart ${SERVICE_TYPE}-node
+
+#systemctl enable ${SERVICE_TYPE}-node.service
+#systemctl start ${SERVICE_TYPE}-node.service &
 
 chmod +x /tmp/ansible/ansible.sh
 
