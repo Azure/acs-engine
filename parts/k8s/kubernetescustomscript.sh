@@ -126,12 +126,11 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     retrycmd_if_failure 5 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit 11
 else
     echo "skipping master node provision operations, this is an agent node"
-    retrycmd_if_failure 10 1 3 systemctl enable rpcbind rpc-statd || exit 3
-    systemctl_restart 20 1 10 rpcbind || exit 4
-    systemctl_restart 20 1 10 rpc-statd || exit 4
+    retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent || exit 7
+    apt_get_update || exit 9
 fi
 
-retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent  || exit 7
+retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent || exit 7
 apt_get_update || exit 9
 retrycmd_if_failure 5 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
 retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
