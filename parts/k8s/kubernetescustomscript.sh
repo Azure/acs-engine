@@ -123,6 +123,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     set -x
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
+    wait_for_file 900 1 /opt/azure/containers/runcmd.complete || exit 5
     /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
