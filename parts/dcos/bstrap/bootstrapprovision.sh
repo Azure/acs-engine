@@ -7,11 +7,12 @@ retrycmd_if_failure() { retries=$1; wait=$2; timeout=$3; shift && shift && shift
 TMPDIR="/tmp/dcos"
 mkdir -p $TMPDIR
 
-curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/key https://download.docker.com/linux/ubuntu/gpg &
+# default dc/os component download address (Azure CDN)
+LIBLTDL_DOWNLOAD_URL=https://dcos-mirror.azureedge.net/pkg/libltdl7_2.4.6-0.1_amd64.deb
+DOCKER_CE_DOWNLOAD_URL=https://dcos-mirror.azureedge.net/pkg/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb
+
+curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/1.deb $LIBLTDL_DOWNLOAD_URL &
+curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/2.deb $DOCKER_CE_DOWNLOAD_URL &
 wait
 
-apt-key add $TMPDIR/key
-apt-key fingerprint 0EBFCD88
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-retrycmd_if_failure 10 10 120 apt-get update
-retrycmd_if_failure 10 10 120 apt-get install docker-ce=17.06.2~ce-0~ubuntu -y
+retrycmd_if_failure 10 10 120 dpkg -i $TMPDIR/{1,2}.deb
