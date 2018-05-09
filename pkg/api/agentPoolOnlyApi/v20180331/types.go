@@ -189,6 +189,13 @@ type AccessProfile struct {
 	KubeConfig string `json:"kubeConfig"`
 }
 
+type AuthenticatorType string
+
+const (
+	OIDC    AuthenticatorType = "OIDC"
+	Webhook AuthenticatorType = "Webhook"
+)
+
 // AADProfile specifies attributes for AAD integration
 type AADProfile struct {
 	// The client AAD application ID.
@@ -201,6 +208,12 @@ type AADProfile struct {
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
 	TenantID string `json:"tenantID,omitempty"`
+	// The Azure Active Directory Group Object ID that will be assigned the
+	// cluster-admin RBAC role.
+	// Optional
+	AdminGroupID string `json:"adminGroupID,omitempty"`
+	// The authenticator to use, either "OIDC" or "Webhook".
+	Authenticator AuthenticatorType `json:"authenticator"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

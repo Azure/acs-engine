@@ -353,8 +353,14 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	if obj.ServicePrincipalProfile != nil {
 		properties.ServicePrincipalProfile = convertV20180331AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
+
 	if obj.AddonProfiles != nil {
 		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
+	}
+
+	// TODO: validate that API is v20180331
+	if obj.AADProfile != nil {
+		properties.AADProfile = convertV20180331AgentPoolOnlyAADProfile(obj.AADProfile)
 	}
 
 	return properties
@@ -509,4 +515,16 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 		}
 	}
 	return api
+}
+
+func convertV20180331AgentPoolOnlyAADProfile(obj *v20180331.AADProfile) *AADProfile {
+	aadProfile := &AADProfile{
+		ClientAppID: obj.ClientAppID,
+		ServerAppID: obj.ServerAppID,
+		TenantID:    obj.TenantID,
+	}
+	if obj.Authenticator == v20180331.OIDC {
+		aadProfile.AdminGroupID = obj.AdminGroupID
+	}
+	return aadProfile
 }

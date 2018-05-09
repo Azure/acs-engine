@@ -505,12 +505,21 @@ type HostedMasterProfile struct {
 	Subnet string `json:"subnet"`
 }
 
+type AuthenticatorType string
+
+const (
+	OIDC    AuthenticatorType = "OIDC"
+	Webhook AuthenticatorType = "Webhook"
+)
+
 // AADProfile specifies attributes for AAD integration
 type AADProfile struct {
 	// The client AAD application ID.
 	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.
 	ServerAppID string `json:"serverAppID,omitempty"`
+	// The server AAD application secret
+	ServerAppSecret string `json:"serverAppSecret,omitempty"`
 	// The AAD tenant ID to use for authentication.
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
@@ -519,6 +528,8 @@ type AADProfile struct {
 	// cluster-admin RBAC role.
 	// Optional
 	AdminGroupID string `json:"adminGroupID,omitempty"`
+	// The authenticator to use, either "OIDC" or "Webhook".
+	Authenticator AuthenticatorType `json:"authenticator"`
 }
 
 // CustomProfile specifies custom properties that are used for

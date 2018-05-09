@@ -41,6 +41,16 @@ func (l *LinuxProfile) Validate() error {
 	return nil
 }
 
+// Validate implements APIObject
+func (a *AADProfile) Validate() error {
+	// Don't need to call validate.Struct(l)
+	// It is handled by Properties.Validate()
+	if e := validate.Var(a.ServerAppSecret, "required"); e != nil {
+		return fmt.Errorf("ServerAppSecret in AADProfile cannot be empty string")
+	}
+	return nil
+}
+
 func handleValidationErrors(e validator.ValidationErrors) error {
 	err := e[0]
 	ns := err.Namespace()
@@ -99,6 +109,12 @@ func (a *Properties) Validate() error {
 
 	if e := validateVNET(a); e != nil {
 		return e
+	}
+
+	if a.AADProfile != nil {
+		if e := a.AADProfile.Validate(); e != nil {
+			return e
+		}
 	}
 
 	return nil
