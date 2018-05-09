@@ -546,3 +546,38 @@ func TestIsNSeriesSKU(t *testing.T) {
 		}
 	}
 }
+
+func TestIsCustomVNET(t *testing.T) {
+
+	a := []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "subnetlink2",
+		},
+	}
+
+	if !isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
+	}
+
+	a = []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "",
+		},
+	}
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
+	}
+
+	a = nil
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
+	}
+}

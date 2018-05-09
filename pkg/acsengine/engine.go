@@ -2002,6 +2002,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"subtract": func(a, b int) int {
 			return a - b
 		},
+		"IsCustomVNET": func() bool {
+			return isCustomVNET(cs.Properties.AgentPoolProfiles)
+		},
 	}
 }
 
@@ -2182,6 +2185,18 @@ func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorV
 
 func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
 	return strings.Contains(profile.VMSize, "Standard_N")
+}
+
+func isCustomVNET(a []*api.AgentPoolProfile) bool {
+	if a != nil {
+		for _, agentPoolProfile := range a {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
