@@ -182,5 +182,4 @@ runcmd:
   {{GetGPUDriversInstallScript .}}
 {{end}}
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
-- echo `date`,`hostname`, endruncmd>>/opt/m
 {{end}}

@@ -43,62 +43,6 @@ if [[ $OS == $COREOS_OS_NAME ]]; then
     KUBECTL=/opt/kubectl
 fi
 
-ensureRunCommandCompleted()
-{
-    echo "waiting for runcmd to finish"
-    wait_for_file 900 1 /opt/azure/containers/runcmd.complete
-    if [ $? -ne 0 ]; then
-        echo "Timeout waiting for cloud-init runcmd to complete"
-        exit 5
-    fi
-}
-
-ensureDockerInstallCompleted()
-{
-    echo "waiting for docker install to finish"
-    wait_for_file 3600 1 /opt/azure/containers/dockerinstall.complete
-    if [ $? -ne 0 ]; then
-        echo "Timeout waiting for docker install to finish"
-        exit 20
-    fi
-}
-
-configAddons() {
-    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
-        configClusterAutoscalerAddon
-    fi
-    echo `date`,`hostname`, configAddonsDone>>/opt/m
-}
-
-configClusterAutoscalerAddon() {
-    echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
-
-    if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
-        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityStart>>/opt/m
-        CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT="- mountPath: /var/lib/waagent/\n\          name: waagent\n\          readOnly: true"
-        CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
-        CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
-
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityDone>>/opt/m
-    elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    fi
-
-    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
-}
-
 echo `date`,`hostname`, startscript>>/opt/m
 
 if [ -f /var/run/reboot-required ]; then
@@ -193,7 +137,7 @@ retrycmd_if_failure 5 1 120 apt-get install -y apt-transport-https ca-certificat
 retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
 retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg || exit 9
 echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-"echo \"Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
 apt_get_update || exit 9
 retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit 20
 echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
@@ -256,6 +200,15 @@ cat << EOF > "${AZURE_JSON_PATH}"
 EOF
 
 set -x
+
+function ensureRunCommandCompleted() {
+    echo "waiting for runcmd to finish"
+    wait_for_file 900 1 /opt/azure/containers/runcmd.complete
+    if [ $? -ne 0 ]; then
+        echo "Timeout waiting for cloud-init runcmd to complete"
+        exit 5
+    fi
+}
 
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
@@ -461,7 +414,7 @@ function ensureK8s() {
 function ensureEtcd() {
     etcdIsRunning=1
     for i in {1..600}; do
-        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
+        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines
         if [ $? -eq 0 ]; then
             etcdIsRunning=0
             echo "Etcd setup successfully, took $i seconds"
@@ -477,7 +430,7 @@ function ensureEtcd() {
 
 function ensureEtcdDataDir() {
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
-    if [ "$?" = "0" ]; then
+    if [ $? -eq 0 ]; then
         echo "Etcd is running with data dir at: /var/lib/etcddisk"
         return
     else
@@ -545,6 +498,42 @@ users:
     set -x
 }
 
+function configAddons() {
+    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
+        configClusterAutoscalerAddon
+    fi
+    echo `date`,`hostname`, configAddonsDone>>/opt/m
+}
+
+function configClusterAutoscalerAddon() {
+    echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
+
+    if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
+        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityStart>>/opt/m
+        CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT="- mountPath: /var/lib/waagent/\n\          name: waagent\n\          readOnly: true"
+        CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
+        CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
+
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityDone>>/opt/m
+    elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    fi
+
+    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
+}
+
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# If the container runtime is "clear-containers" we need to ensure the
 	# run command is completed _before_ we start installing all the dependencies
@@ -563,8 +552,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     
 fi
 
-echo `date`,`hostname`, EnsureDockerStart>>/opt/m
-ensureDockerInstallCompleted
 ensureDocker
 echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
 configNetworkPlugin
