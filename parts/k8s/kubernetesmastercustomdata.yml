@@ -407,5 +407,4 @@ runcmd:
 - set -x
 - . /opt/azure/containers/provision_source.sh
 - {{GetKubernetesMasterPreprovisionYaml}}
-- touch /opt/azure/containers/runcmd.complete
 {{end}}

@@ -181,5 +181,4 @@ runcmd:
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}
-- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 {{end}}

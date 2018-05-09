@@ -201,15 +201,6 @@ EOF
 
 set -x
 
-function ensureRunCommandCompleted() {
-    echo "waiting for runcmd to finish"
-    wait_for_file 900 1 /opt/azure/containers/runcmd.complete
-    if [ $? -ne 0 ]; then
-        echo "Timeout waiting for cloud-init runcmd to complete"
-        exit 5
-    fi
-}
-
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
@@ -581,8 +572,6 @@ ensureKubelet
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
-ensureRunCommandCompleted
-echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
