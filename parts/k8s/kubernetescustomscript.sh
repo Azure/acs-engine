@@ -168,13 +168,41 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     set -x
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
-    mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
-
-    echo `date`,`hostname`, configAddonsStart>>/opt/m
-    configAddons
+    /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
+    RET=$?
+    if [ $RET -ne 0 ]; then
+        exit $RET
+    fi
+    apt_get_update || exit 9
+    retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent  || exit 7
+    /opt/azure/containers/mountetcd.sh || exit 13
+    systemctl_restart 10 1 5 etcd || exit 14
+    MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
+    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit 15
+    retrycmd_if_failure 5 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit 11
 else
     echo "skipping master node provision operations, this is an agent node"
+    retrycmd_if_failure 10 1 3 systemctl enable rpcbind rpc-statd || exit 3
+    systemctl_restart 20 1 10 rpcbind || exit 4
+    systemctl_restart 20 1 10 rpc-statd || exit 4
 fi
+
+retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent  || exit 7
+apt_get_update || exit 9
+retrycmd_if_failure 5 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
+retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
+retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg || exit 9
+echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+"echo \"Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+apt_get_update || exit 9
+retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit 20
+echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+mkdir -p /etc/kubernetes/manifests
+usermod -aG docker ${ADMINUSER}
+retrycmd_if_failure 20 1 10 /usr/lib/apt/apt.systemd.daily || exit 9
+# TODO {{if EnableAggregatedAPIs}}
+bash /etc/kubernetes/generate-proxy-certs.sh
+retrycmd_if_failure 20 1 5 apt-mark unhold walinuxagent || exit 8
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"

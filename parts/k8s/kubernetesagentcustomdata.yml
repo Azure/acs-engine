@@ -175,37 +175,12 @@ coreos:
 {{else}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
-# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
 - set -x
 - . /opt/azure/containers/provision_source.sh
-- retrycmd_if_failure 20 1 5 apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}} || exit 7
-- echo `date`,`hostname`, preaptupdate>>/opt/m
-- apt_get_update || exit 9
-- echo `date`,`hostname`, postaptupdate>>/opt/m
-- retrycmd_if_failure 5 10 120 apt-get install -y apt-transport-https ca-certificates nfs-common iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
-- echo `date`,`hostname`, aptinstall>>/opt/m
-- retrycmd_if_failure 10 1 3 systemctl enable rpcbind rpc-statd || exit 3
-- systemctl_restart 20 1 10 rpcbind || exit 4
-- systemctl_restart 20 1 10 rpc-statd || exit 4
-- echo `date`,`hostname`, predockerinstall>>/opt/m
-- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
-- retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg || exit 9
-- echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-- "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt_get_update || exit 9
-- retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit 20
-- echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-- touch /opt/azure/containers/dockerinstall.complete
-- echo `date`,`hostname`, postdockerinstall>>/opt/m
-- mkdir -p /etc/kubernetes/manifests
-- usermod -aG docker {{WrapAsVariable "username"}}
+- {{GetKubernetesAgentPreprovisionYaml .}}
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}
-- echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
-- retrycmd_if_failure 20 1 10 /usr/lib/apt/apt.systemd.daily || exit 9
-- echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
-- retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent || exit 8
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 - echo `date`,`hostname`, endruncmd>>/opt/m
 {{end}}
