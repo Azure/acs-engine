@@ -11,6 +11,7 @@ import (
 func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	orchestratorVersion := "1.7.9"
 	networkPlugin := "azure"
+	networkPolicy := "azure"
 	serviceCIDR := "10.0.0.0/8"
 	dnsServiceIP := "10.0.0.10"
 	dockerBridgeSubnet := "172.17.0.1/16"
@@ -99,6 +100,39 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
 	}
 
+	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin
+	kubernetesConfig = &KubernetesConfig{
+		NetworkPolicy:      networkPolicy,
+		ServiceCIDR:        serviceCIDR,
+		DNSServiceIP:       dnsServiceIP,
+		DockerBridgeSubnet: dockerBridgeSubnet,
+	}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if string(p.NetworkPlugin) != networkPlugin {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if p.ServiceCidr != serviceCIDR {
+		t.Error("error in orchestrator profile serviceCidr conversion")
+	}
+
+	if p.DNSServiceIP != dnsServiceIP {
+		t.Error("error in orchestrator profile dnsServiceIP conversion")
+	}
+
+	if p.DockerBridgeCidr != dockerBridgeSubnet {
+		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
+	}
 }
 
 func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
