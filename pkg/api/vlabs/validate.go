@@ -280,7 +280,10 @@ func validateImageNameAndGroup(name, resourceGroup string) error {
 }
 
 // Validate implements APIObject
-func (m *MasterProfile) Validate() error {
+func (m *MasterProfile) Validate(o *OrchestratorProfile) error {
+	if o.OrchestratorType == OpenShift && m.Count != 1 {
+		return errors.New("openshift can only deployed with one master")
+	}
 	if m.ImageRef != nil {
 		if err := validateImageNameAndGroup(m.ImageRef.Name, m.ImageRef.ResourceGroup); err != nil {
 			return err
@@ -454,7 +457,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateAddons(); e != nil {
 		return e
 	}
-	if e := a.MasterProfile.Validate(); e != nil {
+	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
 		return e
 	}
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {

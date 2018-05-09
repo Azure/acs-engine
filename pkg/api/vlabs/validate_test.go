@@ -829,6 +829,56 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 	}
 }
 
+func TestMasterProfileValidate(t *testing.T) {
+	tests := []struct {
+		orchestratorType string
+		masterProfile    MasterProfile
+		expectedErr      string
+	}{
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "bad!",
+			},
+			expectedErr: "DNS name 'bad!' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+			expectedErr: "openshift can only deployed with one master",
+		},
+	}
+
+	for i, test := range tests {
+		err := test.masterProfile.Validate(&OrchestratorProfile{OrchestratorType: test.orchestratorType})
+		if test.expectedErr == "" && err != nil ||
+			test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
+			t.Errorf("test %d: unexpected error %q\n", i, err)
+		}
+	}
+}
+
 func TestOpenshiftValidate(t *testing.T) {
 	tests := []struct {
 		name string
