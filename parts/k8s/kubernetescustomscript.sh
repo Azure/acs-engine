@@ -123,17 +123,14 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     systemctl_restart 10 1 5 etcd || exit 14
     MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit 15
-    retrycmd_if_failure 5 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit 11
 else
     echo "skipping master node provision operations, this is an agent node"
     retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent || exit 7
     apt_get_update || exit 9
 fi
 
-retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent || exit 7
-apt_get_update || exit 9
-retrycmd_if_failure 5 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
-retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
+retrycmd_if_failure 20 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
+retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
 retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg || exit 9
 echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
@@ -402,20 +399,7 @@ function ensureK8s() {
 }
 
 function ensureEtcd() {
-    etcdIsRunning=1
-    for i in {1..600}; do
-        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines
-        if [ $? -eq 0 ]; then
-            etcdIsRunning=0
-            echo "Etcd setup successfully, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
-    if [ $etcdIsRunning -ne 0 ]; then
-        echo "Etcd not accessible after $i seconds"
-        exit 11
-    fi
+    retrycmd_if_failure 100 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit 11
 }
 
 function ensureEtcdDataDir() {
