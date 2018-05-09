@@ -1949,8 +1949,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				Location               string
 			}{
 				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]),
-				ExternalMasterHostname: cs.Properties.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname,
-				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
+				ExternalMasterHostname: fmt.Sprintf("%s.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
+				RouterLBHostname:       fmt.Sprintf("%s-router.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
 				Location:               cs.Properties.AzProfile.Location,
 			})
 			return b.String(), err

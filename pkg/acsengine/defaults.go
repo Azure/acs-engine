@@ -769,8 +769,6 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
-	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
-	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
 	c := certgen.Config{
 		Master: &certgen.Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
@@ -779,7 +777,7 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 			},
 			Port: 8443,
 		},
-		ExternalMasterHostname:  externalMasterHostname,
+		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location),
 		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
@@ -792,8 +790,6 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 			Location:        a.AzProfile.Location,
 		},
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
-	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname
 
 	err := c.PrepareMasterCerts()
 	if err != nil {
