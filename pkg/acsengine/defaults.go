@@ -769,6 +769,11 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
+	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]) > 0 &&
+		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]) > 0 {
+		return true, nil
+	}
+
 	c := certgen.Config{
 		Master: &certgen.Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),

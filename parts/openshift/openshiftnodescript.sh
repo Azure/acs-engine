@@ -23,3 +23,8 @@ update-ca-trust
 # note: ${SERVICE_TYPE}-node crash loops until master is up
 systemctl enable ${SERVICE_TYPE}-node.service
 systemctl start ${SERVICE_TYPE}-node.service &
+
+while [[ $(KUBECONFIG=/etc/origin/node/node.kubeconfig oc get node $(hostname) -o template \
+    --template '{{`{{range .status.conditions}}{{if eq .type "Ready"}}{{.status}}{{end}}{{end}}`}}') != True ]]; do
+    sleep 1
+done

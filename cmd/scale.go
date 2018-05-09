@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
 
@@ -51,8 +53,8 @@ type scaleCmd struct {
 
 const (
 	scaleName             = "scale"
-	scaleShortDescription = "Scale an existing Kubernetes cluster"
-	scaleLongDescription  = "Scale an existing Kubernetes cluster by specifying increasing or decreasing the node count of an agentpool"
+	scaleShortDescription = "Scale an existing Kubernetes or OpenShift cluster"
+	scaleLongDescription  = "Scale an existing Kubernetes or OpenShift cluster by specifying increasing or decreasing the node count of an agentpool"
 )
 
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
@@ -237,11 +239,31 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				vmsToDelete = append(vmsToDelete, indexToVM[i])
 			}
 
-			if orchestratorInfo.OrchestratorType == api.Kubernetes {
-				err = sc.drainNodes(vmsToDelete)
+			switch orchestratorInfo.OrchestratorType {
+			case api.Kubernetes:
+				kubeConfig, err := acsengine.GenerateKubeConfig(sc.containerService.Properties, sc.location)
+				if err != nil {
+					log.Errorf("failed to generate kube config: %v", err)
+					return err
+				}
+				err = sc.drainNodes(kubeConfig, vmsToDelete)
 				if err != nil {
 					log.Errorf("Got error %+v, while draining the nodes to be deleted", err)
 					return err
+				}
+			case api.OpenShift:
+				bundle := bytes.NewReader(sc.containerService.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"])
+				fs, err := filesystem.NewTGZReader(bundle)
+				if err != nil {
+					return fmt.Errorf("failed to read master bundle: %v", err)
+				}
+				kubeConfig, err := fs.ReadFile("etc/origin/master/admin.kubeconfig")
+				if err != nil {
+					return fmt.Errorf("failed to read kube config: %v", err)
+				}
+				err = sc.drainNodes(string(kubeConfig), vmsToDelete)
+				if err != nil {
+					return fmt.Errorf("Got error %v, while draining the nodes to be deleted", err)
 				}
 			}
 
@@ -320,6 +342,14 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	addValue(parametersJSON, sc.agentPool.Name+"Count", countForTemplate)
 
 	switch orchestratorInfo.OrchestratorType {
+	case api.OpenShift:
+		err = transformer.NormalizeForOpenShiftVMASScalingUp(sc.logger, sc.agentPool.Name, templateJSON)
+		if err != nil {
+			return fmt.Errorf("error tranforming the template for scaling template %s: %v", sc.apiModelPath, err)
+		}
+		if sc.agentPool.IsAvailabilitySets() {
+			addValue(parametersJSON, fmt.Sprintf("%sOffset", sc.agentPool.Name), highestUsedIndex+1)
+		}
 	case api.Kubernetes:
 		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
 		if err != nil {
@@ -387,11 +417,7 @@ func addValue(m paramsMap, k string, v interface{}) {
 	}
 }
 
-func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
-	kubeConfig, err := acsengine.GenerateKubeConfig(sc.containerService.Properties, sc.location)
-	if err != nil {
-		log.Fatalf("failed to generate kube config: %v", err) // TODO: cleanup
-	}
+func (sc *scaleCmd) drainNodes(kubeConfig string, vmsToDelete []string) error {
 	masterURL := sc.masterFQDN
 	if !strings.HasPrefix(masterURL, "https://") {
 		masterURL = fmt.Sprintf("https://%s", masterURL)
@@ -401,7 +427,7 @@ func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
 	defer close(errChan)
 	for _, vmName := range vmsToDelete {
 		go func(vmName string) {
-			err = operations.SafelyDrainNode(sc.client, sc.logger,
+			err := operations.SafelyDrainNode(sc.client, sc.logger,
 				masterURL, kubeConfig, vmName, time.Duration(60)*time.Minute)
 			if err != nil {
 				log.Errorf("Failed to drain node %s, got error %v", vmName, err)
