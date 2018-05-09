@@ -51,6 +51,17 @@ else
     REBOOTREQUIRED=false
 fi
 
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
+    apt_get_update || exit 9
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
+    if [ $? -ne 0 ]; then
+        echo "error placing apt-mark hold on walinuxagent"
+        exit 7
+    fi
+    
+fi
+
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
 
@@ -117,16 +128,12 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     if [ $RET -ne 0 ]; then
         exit $RET
     fi
-    apt_get_update || exit 9
-    retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent  || exit 7
     /opt/azure/containers/mountetcd.sh || exit 13
     systemctl_restart 10 1 5 etcd || exit 14
     MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit 15
 else
     echo "skipping master node provision operations, this is an agent node"
-    retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent || exit 7
-    apt_get_update || exit 9
 fi
 
 retrycmd_if_failure 20 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
@@ -142,7 +149,6 @@ usermod -aG docker ${ADMINUSER}
 retrycmd_if_failure 20 1 10 /usr/lib/apt/apt.systemd.daily || exit 9
 # TODO {{if EnableAggregatedAPIs}}
 bash /etc/kubernetes/generate-proxy-certs.sh
-retrycmd_if_failure 20 1 5 apt-mark unhold walinuxagent || exit 8
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
@@ -507,24 +513,6 @@ function configClusterAutoscalerAddon() {
     sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
 }
-
-if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	# If the container runtime is "clear-containers" we need to ensure the
-	# run command is completed _before_ we start installing all the dependencies
-	# for clear-containers to make sure there is not a dpkg lock.
-	ensureRunCommandCompleted
-	echo `date`,`hostname`, RunCmdCompleted>>/opt/m
-fi
-
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
-    if [ $? -ne 0 ]; then
-        echo "error placing apt-mark hold on walinuxagent"
-        exit 7
-    fi
-    
-fi
 
 ensureDocker
 echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
