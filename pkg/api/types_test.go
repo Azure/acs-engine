@@ -144,6 +144,36 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 	}
 }
 
+func TestIsClusterAutoscalerEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsClusterAutoscalerEnabled()
+	if enabled != DefaultClusterAutoscalerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", DefaultClusterAutoscalerAddonEnabled, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultClusterAutoscalerAddonName))
+	enabled = c.IsClusterAutoscalerEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return true when cluster autoscaler has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultClusterAutoscalerAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsClusterAutoscalerEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return false when cluster autoscaler addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestIsDashboardEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{

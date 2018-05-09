@@ -451,6 +451,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateContainerRuntime(); e != nil {
 		return e
 	}
+	if e := a.validateAddons(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -983,6 +986,25 @@ func (a *Properties) validateContainerRuntime() error {
 		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
+	return nil
+}
+
+func (a *Properties) validateAddons() error {
+	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
+		var isAvailabilitySets bool
+
+		for _, agentPool := range a.AgentPoolProfiles {
+			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+				isAvailabilitySets = true
+			}
+		}
+
+		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
+				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
+			}
+		}
+	}
 	return nil
 }
 

@@ -58,6 +58,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled(),
 		},
 		{
+			"kubernetesmasteraddons-cluster-autoscaler-deployment.yaml",
+			"cluster-autoscaler-deployment.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
 			"kube-rescheduler-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled(),

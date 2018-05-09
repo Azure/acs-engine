@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -686,6 +687,31 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	if err := p.validateContainerRuntime(); err == nil {
 		t.Errorf(
 			"should error on clear-containers for windows clusters",
+		)
+	}
+}
+
+func Test_Properties_ValidateAddons(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    "cluster-autoscaler",
+				Enabled: helpers.PointerToBool(true),
+			},
+		},
+	}
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			AvailabilityProfile: AvailabilitySet,
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"should error on cluster-autoscaler with availability sets",
 		)
 	}
 }
