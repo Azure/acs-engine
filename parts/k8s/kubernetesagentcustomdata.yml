@@ -174,11 +174,10 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-- echo `date`,`hostname`, startruncmd>>/opt/m
 - set -x
-- {{GetKubernetesAgentPreprovisionYaml .}}
+- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}
-- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
+- {{GetKubernetesAgentPreprovisionYaml .}}
 {{end}}
