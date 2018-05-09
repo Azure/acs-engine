@@ -403,8 +403,6 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
 - set -x
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
-- {{GetKubernetesMasterPreprovisionYaml}}
 {{end}}
