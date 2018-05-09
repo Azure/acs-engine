@@ -272,7 +272,7 @@ Install-VnetPlugins()
 }
 
 function
-Set-AzureNetworkPolicy()
+Set-AzureNetworkPlugin()
 {
     # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
     Set-VnetPluginMode "tunnel"
@@ -296,12 +296,12 @@ Set-AzureCNIConfig()
 function
 Set-NetworkConfig
 {
-    Write-Log "Configuring networking with NetworkPolicy:$global:NetworkPolicy"
+    Write-Log "Configuring networking with NetworkPlugin:$global:NetworkPlugin"
 
     # Configure network policy.
-    if ($global:NetworkPolicy -eq "azure") {
+    if ($global:NetworkPlugin -eq "azure") {
         Install-VnetPlugins
-        Set-AzureNetworkPolicy
+        Set-AzureNetworkPlugin
         Set-AzureCNIConfig
     }
 }
@@ -349,15 +349,15 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
-`$global:NetworkPolicy="$global:NetworkPolicy"
+`$global:NetworkPlugin="$global:NetworkPlugin"
 
 "@
 
-    if ($global:NetworkPolicy -eq "azure") {
+    if ($global:NetworkPlugin -eq "azure") {
         $global:KubeNetwork = "azure"
         $global:NetworkMode = "L2Tunnel"
         $kubeStartStr += @"
-Write-Host "NetworkPolicy azure, starting kubelet."
+Write-Host "NetworkPlugin azure, starting kubelet."
 $KubeletCommandLine
 
 "@
