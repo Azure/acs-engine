@@ -63,6 +63,81 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
+		It("should have functional DNS", func() {
+			if !eng.HasWindowsAgents() {
+				kubeConfig, err := GetConfig()
+				Expect(err).NotTo(HaveOccurred())
+				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+
+				sshKeyPath := cfg.GetSSHKeyPath()
+
+				By("Ensuring that we have a valid connection to our resolver")
+				digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
+				cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				By("Ensuring that we get a DNS lookup answer response for the master hostname")
+				digCmd = fmt.Sprintf("dig +short +search +answer `hostname` | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring that we get a DNS lookup answer response for each node hostname")
+				nodeList, err := node.Get()
+				Expect(err).NotTo(HaveOccurred())
+				for _, node := range nodeList.Nodes {
+					digCmd = fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
+					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+					util.PrintCommand(cmd)
+					out, err = cmd.CombinedOutput()
+					if err != nil {
+						log.Printf("Error while querying DNS: %s\n", out)
+					}
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+				By("Ensuring that we get a DNS lookup answer response for external names")
+				digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
+				digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+			}
+		})
+
 		It("should be running the expected version", func() {
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
