@@ -40,8 +40,10 @@ const (
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 	// OpenShift custom scripts
-	openshiftNodeScript   = "openshift/openshiftnodescript.sh"
-	openshiftMasterScript = "openshift/openshiftmasterscript.sh"
+	openshiftNodeScript     = "openshift/unstable/openshiftnodescript.sh"
+	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
+	openshift39NodeScript   = "openshift/release-3.9/openshiftnodescript.sh"
+	openshift39MasterScript = "openshift/release-3.9/openshiftmasterscript.sh"
 )
 
 const (
@@ -123,7 +125,31 @@ var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAge
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
-var openshiftTemplateFiles = append(kubernetesTemplateFiles, openshiftNodeScript, openshiftMasterScript)
+var openshiftTemplateFiles = append(
+	kubernetesTemplateFiles,
+	openshiftNodeScript,
+	openshiftMasterScript,
+	openshift39NodeScript,
+	openshift39MasterScript,
+)
+
+func getOpenshiftMasterShAsset(version string) string {
+	switch version {
+	case common.OpenShiftVersion3Dot9Dot0:
+		return openshift39MasterScript
+	default:
+		return openshiftMasterScript
+	}
+}
+
+func getOpenshiftNodeShAsset(version string) string {
+	switch version {
+	case common.OpenShiftVersion3Dot9Dot0:
+		return openshift39NodeScript
+	default:
+		return openshiftNodeScript
+	}
+}
 
 /**
  The following parameters could be either a plain text, or referenced to a secret in a keyvault:
@@ -1936,7 +1962,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
 		"OpenShiftGetMasterSh": func() (string, error) {
-			tb := MustAsset(openshiftMasterScript)
+			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			tb := MustAsset(masterShAsset)
 			t, err := template.New("master").Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -1956,7 +1983,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return b.String(), err
 		},
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
-			tb := MustAsset(openshiftNodeScript)
+			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			tb := MustAsset(nodeShAsset)
 			t, err := template.New("node").Parse(string(tb))
 			if err != nil {
 				return "", err
