@@ -52,80 +52,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     
 fi
 
-if [[ ! -z "${MASTER_NODE}" ]]; then
-    echo "executing master node provision operations"
-    installEtcd    
-else
-    echo "skipping master node provision operations, this is an agent node"
-fi
-
-retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
-retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
-retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
-echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
-retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
-echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-mkdir -p /etc/kubernetes/manifests
-usermod -aG docker ${ADMINUSER}
-retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
-# TODO {{if EnableAggregatedAPIs}}
-bash /etc/kubernetes/generate-proxy-certs.sh
-
-KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
-touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
-chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
-
-APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
-touch "${APISERVER_PUBLIC_KEY_PATH}"
-chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
-chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
-
-AZURE_JSON_PATH="/etc/kubernetes/azure.json"
-touch "${AZURE_JSON_PATH}"
-chmod 0600 "${AZURE_JSON_PATH}"
-chown root:root "${AZURE_JSON_PATH}"
-
-set +x
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
-cat << EOF > "${AZURE_JSON_PATH}"
-{
-    "cloud":"${TARGET_ENVIRONMENT}",
-    "tenantId": "${TENANT_ID}",
-    "subscriptionId": "${SUBSCRIPTION_ID}",
-    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
-    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
-    "resourceGroup": "${RESOURCE_GROUP}",
-    "location": "${LOCATION}",
-    "vmType": "${VM_TYPE}",
-    "subnetName": "${SUBNET}",
-    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
-    "vnetName": "${VIRTUAL_NETWORK}",
-    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
-    "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
-    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
-    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
-    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
-    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
-    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
-    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
-    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
-    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
-    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
-    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
-    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
-    "providerKeyName": "k8s",
-    "providerKeyVersion": ""
-}
-EOF
-
-set -x
-
 function installEtcd() {
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
@@ -197,16 +123,78 @@ function installEtcd() {
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
-function ensureFilepath() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    wait_for_file 600 1 $1
-    if [ $? -ne 0 ]; then
-        echo "Timeout waiting for $1"
-        exit $ERR_FILE_WATCH_TIMEOUT
-    fi
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    echo "executing master node provision operations"
+    installEtcd    
+else
+    echo "skipping master node provision operations, this is an agent node"
+fi
+
+retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
+retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
+retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
+echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+mkdir -p /etc/kubernetes/manifests
+usermod -aG docker ${ADMINUSER}
+retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
+# TODO {{if EnableAggregatedAPIs}}
+bash /etc/kubernetes/generate-proxy-certs.sh
+
+KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
+touch "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
+chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
+
+APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
+touch "${APISERVER_PUBLIC_KEY_PATH}"
+chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
+chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
+
+AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+touch "${AZURE_JSON_PATH}"
+chmod 0600 "${AZURE_JSON_PATH}"
+chown root:root "${AZURE_JSON_PATH}"
+
+set +x
+echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+cat << EOF > "${AZURE_JSON_PATH}"
+{
+    "cloud":"${TARGET_ENVIRONMENT}",
+    "tenantId": "${TENANT_ID}",
+    "subscriptionId": "${SUBSCRIPTION_ID}",
+    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
+    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
+    "resourceGroup": "${RESOURCE_GROUP}",
+    "location": "${LOCATION}",
+    "vmType": "${VM_TYPE}",
+    "subnetName": "${SUBNET}",
+    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
+    "vnetName": "${VIRTUAL_NETWORK}",
+    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
+    "routeTableName": "${ROUTE_TABLE}",
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
+    "providerKeyName": "k8s",
+    "providerKeyVersion": ""
 }
+EOF
+set -x
 
 function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
@@ -502,8 +490,8 @@ echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
-    ensureFilepath $KUBECTL
-    ensureFilepath $DOCKER
+    wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
+    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     ensureEtcd
     ensureK8s
 fi
