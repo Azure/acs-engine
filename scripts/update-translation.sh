@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GO_SOURCE="pkg/acsengine/*.go pkg/api/*.go pkg/operations/*.go pkg/operations/kubernetesupgrade/*.go"
+GO_SOURCE="pkg/acsengine/*.go pkg/acsengine/transform/*.go pkg/api/*.go pkg/operations/*.go pkg/operations/kubernetesupgrade/*.go"
 LANGUAGE="en_US"
 DOMAIN="acsengine"
 generate_po="false"
@@ -33,7 +33,7 @@ done
 
 if ! which go-xgettext > /dev/null; then
   echo 'Can not find go-xgettext, install with:'
-  echo 'go get github.com/gosexy/gettext/go-xgettext'
+  echo 'go get github.com/JiangtianLi/gettext/go-xgettext'
   exit 1
 fi
 
