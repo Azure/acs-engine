@@ -1702,12 +1702,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					} else {
 						val = ""
 					}
-				case "kubernetesACIConnectorEnabled":
-					if aC > -1 {
-						val = strconv.FormatBool(*aciConnectorAddon.Enabled)
-					} else {
-						val = "false"
-					}
 				case "kubernetesClusterAutoscalerSpec":
 					if aS > -1 {
 						if clusterAutoscalerAddon.Containers[aS].Image != "" {

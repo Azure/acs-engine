@@ -347,7 +347,7 @@
       "type": "string"
     },
     "kubernetesACIConnectorEnabled": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorEnabled"}}
+      "defaultValue": false,
       "metadata": {
         "description": "ACI Connector Status"
       },
