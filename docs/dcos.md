@@ -26,7 +26,7 @@ The following image shows the architecture of a container service cluster with 3
 
 In the image above, you can see the following parts:
 
-1. **Admin Router on port 80** - The admin router enables you to access all DC/OS services.  For example, if you create an SSH tunnel to port 80 you can access the services on the following urls, you can see the DC/OS dashboard by browing to <http://localhost/>
+1. **Admin Router on port 80** - The admin router enables you to access all DC/OS services.  For example, if you create an SSH tunnel to port 80 you can access the services on the following urls, you can see the DC/OS dashboard by browsing to <http://localhost/>
 2. **Masters** - Masters run the DC/OS processes that schedule and manage workloads on the agent nodes.
 3. **Public Agents** - Public agents, deployed in a VM scale set, are publically accessible through the Azure Load Balancer to ports 80, 443, and 8080.  Jobs can be assigned to public agents using role `slave_public`.
 4. **Private Agents** - Private agents, deployed in a VM scale set, are not publically accessible.  Workloads are scheduled to private agents by default.
