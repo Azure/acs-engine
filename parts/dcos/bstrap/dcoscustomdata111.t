@@ -35,24 +35,9 @@ runcmd: PREPROVISION_EXTENSION
 - systemctl disable --now unscd.service
 - systemctl stop --now unscd.service
 - /opt/azure/containers/provision.sh
-- systemctl start dcos-docker-install.service
-- systemctl restart systemd-journald.service
 - bash /tmp/dcos/dcos_install.sh ROLENAME
 - bash /opt/azure/dcos/diagnostics_fix.sh
 write_files:
-- content: |
-    [Unit]
-    After=network-online.target
-    Wants=network-online.target
-    [Service]
-    Type=oneshot
-    Environment=DEBIAN_FRONTEND=noninteractive
-    StandardOutput=journal+console
-    StandardError=journal+console
-    ExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /var/tmp/d.deb https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb
-    ExecStart=/usr/bin/bash -c "try=1;until dpkg -D3 -i /var/tmp/d.deb || ((try>9));do echo retry $((try++));sleep $((try*try));done;systemctl restart docker.socket;systemctl --now start docker"
-  path: /etc/systemd/system/dcos-docker-install.service
-  permissions: '0644'
 - content: |
     [Service]
     Restart=always
