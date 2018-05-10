@@ -95,12 +95,8 @@
     "kubernetesTillerCPULimit": "[parameters('kubernetesTillerCPULimit')]",
     "kubernetesTillerMemoryLimit": "[parameters('kubernetesTillerMemoryLimit')]",
     "kubernetesTillerMaxHistory": "[parameters('kubernetesTillerMaxHistory')]",
+    "kubernetesACIConnectorEnabled": "[parameters('kubernetesACIConnectorEnabled')]",
     "kubernetesACIConnectorSpec": "[parameters('kubernetesACIConnectorSpec')]",
-    "kubernetesACIConnectorClientId": "[parameters('kubernetesACIConnectorClientId')]",
-    "kubernetesACIConnectorClientKey": "[parameters('kubernetesACIConnectorClientKey')]",
-    "kubernetesACIConnectorTenantId": "[parameters('kubernetesACIConnectorTenantId')]",
-    "kubernetesACIConnectorSubscriptionId": "[parameters('kubernetesACIConnectorSubscriptionId')]",
-    "kubernetesACIConnectorResourceGroup": "[parameters('kubernetesACIConnectorResourceGroup')]",
     "kubernetesACIConnectorNodeName": "[parameters('kubernetesACIConnectorNodeName')]",
     "kubernetesACIConnectorOS": "[parameters('kubernetesACIConnectorOS')]",
     "kubernetesACIConnectorTaint": "[parameters('kubernetesACIConnectorTaint')]",
@@ -237,7 +233,7 @@
     "mountetcdScript": "{{GetKubernetesB64Mountetcd}}",
 {{if not IsOpenShift}}
 {{if not IsHostedMaster}}
-    "provisionScriptParametersMaster": "[concat('MASTER_VM_NAME=',variables('masterVMNames')[variables('masterOffset')],' ETCD_PEER_URL=',variables('masterEtcdPeerURLs')[variables('masterOffset')],' ETCD_CLIENT_URL=',variables('masterEtcdClientURLs')[variables('masterOffset')],' MASTER_NODE=true CLUSTER_AUTOSCALER_ADDON=',variables('kubernetesClusterAutoscalerEnabled'),' APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ETCD_SERVER_CERTIFICATE=',variables('etcdServerCertificate'),' ETCD_CLIENT_CERTIFICATE=',variables('etcdClientCertificate'),' ETCD_SERVER_PRIVATE_KEY=',variables('etcdServerPrivateKey'),' ETCD_CLIENT_PRIVATE_KEY=',variables('etcdClientPrivateKey'),' ETCD_PEER_CERTIFICATES=',string(variables('etcdPeerCertificates')),' ETCD_PEER_PRIVATE_KEYS=',string(variables('etcdPeerPrivateKeys')))]",
+    "provisionScriptParametersMaster": "[concat('MASTER_VM_NAME=',variables('masterVMNames')[variables('masterOffset')],' ETCD_PEER_URL=',variables('masterEtcdPeerURLs')[variables('masterOffset')],' ETCD_CLIENT_URL=',variables('masterEtcdClientURLs')[variables('masterOffset')],' MASTER_NODE=true CLUSTER_AUTOSCALER_ADDON=',variables('kubernetesClusterAutoscalerEnabled'),' ACI_CONNECTOR_ADDON=',variables('kubernetesACIConnectorEnabled'),' APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ETCD_SERVER_CERTIFICATE=',variables('etcdServerCertificate'),' ETCD_CLIENT_CERTIFICATE=',variables('etcdClientCertificate'),' ETCD_SERVER_PRIVATE_KEY=',variables('etcdServerPrivateKey'),' ETCD_CLIENT_PRIVATE_KEY=',variables('etcdClientPrivateKey'),' ETCD_PEER_CERTIFICATES=',string(variables('etcdPeerCertificates')),' ETCD_PEER_PRIVATE_KEYS=',string(variables('etcdPeerPrivateKeys')))]",
   {{if EnableEncryptionWithExternalKms}}
     {{ if not UseManagedIdentity}}
     "servicePrincipalObjectId": "[parameters('servicePrincipalObjectId')]",

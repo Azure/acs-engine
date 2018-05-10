@@ -346,45 +346,17 @@
       },
       "type": "string"
     },
+    "kubernetesACIConnectorEnabled": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorEnabled"}}
+      "metadata": {
+        "description": "ACI Connector Status"
+      },
+      "type": "bool"
+    },
     "kubernetesACIConnectorSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSpec"}}
       "metadata": {
         "description": "The container spec for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorClientId": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorClientId"}}
-      "metadata": {
-        "description": "Client id for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorClientKey": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorClientKey"}}
-      "metadata": {
-        "description": "Client key for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorTenantId": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorTenantId"}}
-      "metadata": {
-        "description": "Tenant id for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorSubscriptionId": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSubscriptionId"}}
-      "metadata": {
-        "description": "Subscription id for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorResourceGroup": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorResourceGroup"}}
-      "metadata": {
-        "description": "Resource group for ACI Connector."
       },
       "type": "string"
     },

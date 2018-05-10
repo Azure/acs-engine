@@ -15,11 +15,6 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
               "name": "aci-connector",
               "enabled" : true,
               "config": {
-                  "clientId": "",
-                  "clientKey": "",
-                  "tenantId": "",
-                  "subscriptionId": "",
-                  "resourceGroup": "",
                   "region": "",
                   "nodeName": "",
                   "os": "",
