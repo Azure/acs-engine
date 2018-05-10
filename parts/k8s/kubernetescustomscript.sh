@@ -54,7 +54,7 @@ fi
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
     apt_get_update || exit 9
 	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 5 apt-mark hold walinuxagent
+	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent
     if [ $? -ne 0 ]; then
         echo "error placing apt-mark hold on walinuxagent"
         exit 7
@@ -137,9 +137,9 @@ else
     echo "skipping master node provision operations, this is an agent node"
 fi
 
-retrycmd_if_failure 20 1 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
+retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
 retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
-retrycmd_if_failure 10 1 5 apt-key add /tmp/aptdocker.gpg || exit 9
+retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit 9
 echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
 apt_get_update || exit 9
@@ -147,7 +147,7 @@ retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit 2
 echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 mkdir -p /etc/kubernetes/manifests
 usermod -aG docker ${ADMINUSER}
-retrycmd_if_failure 20 1 10 /usr/lib/apt/apt.systemd.daily || exit 9
+retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit 9
 # TODO {{if EnableAggregatedAPIs}}
 bash /etc/kubernetes/generate-proxy-certs.sh
 
@@ -559,7 +559,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    retrycmd_if_failure 20 5 5 apt-mark unhold walinuxagent
+    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent
     if [ $? -ne 0 ]; then
         echo "error releasing apt-mark hold on walinuxagent"
         exit 8
