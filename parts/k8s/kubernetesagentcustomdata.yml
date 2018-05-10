@@ -175,7 +175,7 @@ coreos:
 {{else}}
 runcmd:
 - set -x
-- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
+- mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}

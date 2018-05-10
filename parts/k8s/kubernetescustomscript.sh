@@ -1,30 +1,24 @@
 #!/bin/bash
-
-# This script runs on every Kubernetes VM
-# Exit codes represent the following:
-# | exit code number | meaning |
-# | 3 | Service could not be enabled by systemctl |
-# | 4 | Service could not be started by systemctl |
-# | 5 | Timeout waiting for cloud-init runcmd to complete |
-# | 6 | Timeout waiting for a file |
-# | 7 | Error placing apt-mark hold on walinuxagent
-# | 8 | Error releasing apt-mark hold on walinuxagent
-# | 9 | Timeout installing apt packages
-# | 10 | Etcd data dir not found |
-# | 11 | Timeout waiting for etcd to be accessible |
-# | 12 | Timeout waiting for etcd download(s) |
-# | 13 | Unable to mount etcd volume |
-# | 14 | Unable to start etcd service |
-# | 15 | Unable to configure etcd membership |
-# | 20 | Timeout waiting for docker install to finish |
-# | 21 | Timeout waiting for docker download(s) |
-# | 30 | Timeout waiting for k8s cluster to be healthy|
-# | 31 | Timeout waiting for k8s download(s)|
-# | 32 | Timeout waiting for kubectl|
-# | 41 | Timeout waiting for CNI download(s)|
-
 set -x
 source /opt/azure/containers/provision_source.sh
+ERR_SYSTEMCTL_ENABLE_FAIL=3
+ERR_SYSTEMCTL_START_FAIL=4
+ERR_CLOUD_INIT_TIMEOUT=5
+ERR_FILE_WATCH_TIMEOUT=6
+ERR_HOLD_WALINUXAGENT=7
+ERR_RELEASE_HOLD_WALINUXAGENT=8
+ERR_APT_INSTALL_TIMEOUT=9
+ERR_ETCD_DATA_DIR_NOT_FOUND=10
+ERR_ETCD_RUNNING_TIMEOUT=11
+ERR_ETCD_VOL_MOUNT_FAIL=13
+ERR_ETCD_START_TIMEOUT=14
+ERR_ETCD_CONFIG_FAIL=15
+ERR_DOCKER_INSTALL_TIMEOUT=20
+ERR_DOCKER_DOWNLOAD_TIMEOUT=21
+ERR_K8S_RUNNING_TIMEOUT=30
+ERR_K8S_DOWNLOAD_TIMEOUT=31
+ERR_KUBECTL_NOT_FOUND=32
+ERR_CNI_DOWNLOAD_TIMEOUT=41
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -52,19 +46,87 @@ else
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    apt_get_update || exit 9
+    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
 	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent
-    if [ $? -ne 0 ]; then
-        echo "error placing apt-mark hold on walinuxagent"
-        exit 7
-    fi
+	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     
 fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
+    installEtcd    
+else
+    echo "skipping master node provision operations, this is an agent node"
+fi
 
+retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
+retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
+retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
+echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+mkdir -p /etc/kubernetes/manifests
+usermod -aG docker ${ADMINUSER}
+retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
+# TODO {{if EnableAggregatedAPIs}}
+bash /etc/kubernetes/generate-proxy-certs.sh
+
+KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
+touch "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
+chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
+
+APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
+touch "${APISERVER_PUBLIC_KEY_PATH}"
+chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
+chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
+
+AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+touch "${AZURE_JSON_PATH}"
+chmod 0600 "${AZURE_JSON_PATH}"
+chown root:root "${AZURE_JSON_PATH}"
+
+set +x
+echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+cat << EOF > "${AZURE_JSON_PATH}"
+{
+    "cloud":"${TARGET_ENVIRONMENT}",
+    "tenantId": "${TENANT_ID}",
+    "subscriptionId": "${SUBSCRIPTION_ID}",
+    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
+    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
+    "resourceGroup": "${RESOURCE_GROUP}",
+    "location": "${LOCATION}",
+    "vmType": "${VM_TYPE}",
+    "subnetName": "${SUBNET}",
+    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
+    "vnetName": "${VIRTUAL_NETWORK}",
+    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
+    "routeTableName": "${ROUTE_TABLE}",
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
+    "providerKeyName": "k8s",
+    "providerKeyVersion": ""
+}
+EOF
+
+set -x
+
+function installEtcd() {
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd"
@@ -123,86 +185,17 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     set -x
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
-    wait_for_file 900 1 /opt/azure/containers/runcmd.complete || exit 5
+    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
     /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
         exit $RET
     fi
-    /opt/azure/containers/mountetcd.sh || exit 13
-    systemctl_restart 10 1 5 etcd || exit 14
+    /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
+    systemctl_restart 10 5 30 etcd || exit $ERR_ETCD_START_TIMEOUT
     MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
-    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit 15
-else
-    echo "skipping master node provision operations, this is an agent node"
-fi
-
-retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit 9
-retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit 21
-retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit 9
-echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-apt_get_update || exit 9
-retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit 20
-echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-mkdir -p /etc/kubernetes/manifests
-usermod -aG docker ${ADMINUSER}
-retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit 9
-# TODO {{if EnableAggregatedAPIs}}
-bash /etc/kubernetes/generate-proxy-certs.sh
-
-KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
-touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
-chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
-
-APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
-touch "${APISERVER_PUBLIC_KEY_PATH}"
-chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
-chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
-
-AZURE_JSON_PATH="/etc/kubernetes/azure.json"
-touch "${AZURE_JSON_PATH}"
-chmod 0600 "${AZURE_JSON_PATH}"
-chown root:root "${AZURE_JSON_PATH}"
-
-set +x
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
-cat << EOF > "${AZURE_JSON_PATH}"
-{
-    "cloud":"${TARGET_ENVIRONMENT}",
-    "tenantId": "${TENANT_ID}",
-    "subscriptionId": "${SUBSCRIPTION_ID}",
-    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
-    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
-    "resourceGroup": "${RESOURCE_GROUP}",
-    "location": "${LOCATION}",
-    "vmType": "${VM_TYPE}",
-    "subnetName": "${SUBNET}",
-    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
-    "vnetName": "${VIRTUAL_NETWORK}",
-    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
-    "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
-    "primaryScaleSetName": "${PRIMARY_SCALE_SET}",
-    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
-    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
-    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
-    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
-    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
-    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
-    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
-    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
-    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA},
-    "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
-    "providerKeyName": "k8s",
-    "providerKeyVersion": ""
+    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
-EOF
-
-set -x
 
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
@@ -211,7 +204,7 @@ function ensureFilepath() {
     wait_for_file 600 1 $1
     if [ $? -ne 0 ]; then
         echo "Timeout waiting for $1"
-        exit 6
+        exit $ERR_FILE_WATCH_TIMEOUT
     fi
 }
 
@@ -226,7 +219,7 @@ function installCNI() {
     retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
         echo "could not download required CNI artifact at ${CNI_PLUGINS_URL}"
-        exit 41
+        exit $ERR_CNI_DOWNLOAD_TIMEOUT
     fi
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
@@ -244,7 +237,7 @@ function configAzureCNI() {
     retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
         echo "could not download required CNI artifact at ${VNET_CNI_PLUGINS_URL}"
-        exit 41
+        exit $ERR_CNI_DOWNLOAD_TIMEOUT
     fi
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     installCNI
@@ -295,7 +288,7 @@ function installContainerd() {
     retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
     if [ $? -ne 0 ]; then
         echo "could not download required CNI artifact at $CONTAINERD_DOWNLOAD_URL"
-        exit 41
+        exit $ERR_CNI_DOWNLOAD_TIMEOUT
     fi
 	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
 	rm -f "$CONTAINERD_TGZ_TMP"
@@ -340,12 +333,12 @@ function systemctlEnableAndStart() {
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     if [ $RESTART_STATUS -ne 0 ]; then
         echo "$1 could not be started"
-        exit 4
+        exit $ERR_SYSTEMCTL_START_FAIL
     fi
     retrycmd_if_failure 10 1 3 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
-        exit 3
+        exit $ERR_SYSTEMCTL_ENABLE_FAIL
     fi
 }
 
@@ -364,7 +357,7 @@ function extractHyperkube(){
     retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
     if [ $? -ne 0 ]; then
         echo "required kubernetes docker image could not be downloaded at $HYPERKUBE_URL"
-        exit 31
+        exit $ERR_K8S_DOWNLOAD_TIMEOUT
     fi
     systemctlEnableAndStart hyperkube-extract
 }
@@ -381,58 +374,16 @@ function ensureK8s() {
     if $REBOOTREQUIRED; then
         return
     fi
-    k8sHealthy=1
-    nodesActive=1
-    nodesReady=1
-    wait_for_file 600 1 $KUBECTL
-    if [ $? -ne 0 ]; then
-        echo "could not find kubectl at $KUBECTL"
-        exit 32
-    fi
-    for i in {1..600}; do
-        $KUBECTL 2>/dev/null cluster-info
-            if [ $? -eq 0 ]; then
-                echo "k8s cluster is healthy, took $i seconds"
-                k8sHealthy=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $k8sHealthy -ne 0 ]; then
-        echo "k8s cluster is not healthy after $i seconds"
-        exit 30
-    fi
+    wait_for_file 600 1 $KUBECTL || exit $ERR_KUBECTL_NOT_FOUND
+    retrycmd_if_failure 100 1 10 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
-    retrycmd_if_failure 100 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit 11
+    retrycmd_if_failure 100 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
 }
 
-function ensureEtcdDataDir() {
-    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
-    if [ $? -eq 0 ]; then
-        echo "Etcd is running with data dir at: /var/lib/etcddisk"
-        return
-    else
-        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
-        s = 5
-        for i in {1..60}; do
-            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
-            if [ "$?" = "0" ]; then
-                (( t = ${i} * ${s} ))
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
-                return
-            fi
-            sleep $s
-        done
-    fi
-
-   echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 10
-}
-
-function ensurePodSecurityPolicy(){
+function ensurePodSecurityPolicy() {
     if $REBOOTREQUIRED; then
         return
     fi
@@ -518,8 +469,12 @@ function configClusterAutoscalerAddon() {
 ensureDocker
 echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
 configNetworkPlugin
-echo `date`,`hostname`, configAddonsStart>>/opt/m
-configAddons
+
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    echo `date`,`hostname`, configAddonsStart>>/opt/m
+    configAddons
+fi
+
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
@@ -549,7 +504,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureFilepath $KUBECTL
     ensureFilepath $DOCKER
-    ensureEtcdDataDir
     ensureEtcd
     ensureK8s
 fi
@@ -562,7 +516,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent
     if [ $? -ne 0 ]; then
         echo "error releasing apt-mark hold on walinuxagent"
-        exit 8
+        exit $ERR_RELEASE_HOLD_WALINUXAGENT
     fi
 fi
 

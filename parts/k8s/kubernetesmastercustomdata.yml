@@ -347,17 +347,19 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
+    ERR_ETCD_DOWNLOAD_TIMEOUT=12
+    ERR_SYSTEMCTL_ENABLE_FAIL=3
     source /opt/azure/containers/provision_source.sh
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
     if [ $? -ne 0 ]; then
-        exit 12
+        exit $ERR_ETCD_DOWNLOAD_TIMEOUT
     fi
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     retrycmd_if_failure 10 1 3 systemctl enable etcd.service
     if [ $? -ne 0 ]; then
-        exit 3
+        exit $ERR_SYSTEMCTL_ENABLE_FAIL
     fi
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
@@ -404,5 +406,5 @@ coreos:
 {{else}}
 runcmd:
 - set -x
-- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
+- mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
 {{end}}
