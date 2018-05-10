@@ -526,6 +526,8 @@ workflows:
             branches:
               only: master
       - openshift-3.9-rhel-e2e:
+          requires:
+            - test
           filters:
             branches:
               only: master
