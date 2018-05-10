@@ -494,7 +494,7 @@
       "type": "string"
     },
     "kubernetesClusterAutoscalerEnabled": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerEnabled"}}
+      "defaultValue": false,
       "metadata": {
         "description": "Cluster autoscaler status"
       },

@@ -1759,12 +1759,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					} else {
 						val = ""
 					}
-				case "kubernetesClusterAutoscalerEnabled":
-					if aS > -1 {
-						val = strconv.FormatBool(*clusterAutoscalerAddon.Enabled)
-					} else {
-						val = "false"
-					}
 				case "kubernetesClusterAutoscalerUseManagedIdentity":
 					if aS > -1 {
 						if cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
