@@ -9,6 +9,14 @@ config_updater:
     .prowci/plugins.yaml:
       name: plugins
 
+label:
+  additional_labels:
+  - orchestrator/k8s
+  - orchestrator/openshift
+  - orchestrator/dcos
+  - orchestrator/swarm
+  - DO-NOT-MERGE
+
 plugins:
   Azure/acs-engine:
   - approve
