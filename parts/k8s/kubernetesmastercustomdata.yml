@@ -406,5 +406,7 @@ coreos:
 {{else}}
 runcmd:
 - set -x
+- apt-mark hold walinuxagent{{GetKubernetesMasterPreprovisionYaml}}
+- apt-mark unhold walinuxagent
 - mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
 {{end}}

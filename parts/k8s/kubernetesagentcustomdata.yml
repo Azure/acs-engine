@@ -175,8 +175,11 @@ coreos:
 {{else}}
 runcmd:
 - set -x
-- mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
+- . /opt/azure/containers/provision_source.sh
+- apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
+- apt-mark unhold walinuxagent
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}
+- mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
 {{end}}
