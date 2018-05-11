@@ -347,9 +347,9 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
+    source /opt/azure/containers/provision_source.sh
     ERR_ETCD_DOWNLOAD_TIMEOUT=12
     ERR_SYSTEMCTL_ENABLE_FAIL=3
-    source /opt/azure/containers/provision_source.sh
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     retrycmd_get_tarball 60 1 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz

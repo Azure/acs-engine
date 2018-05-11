@@ -1,24 +1,24 @@
 #!/bin/bash
 set -x
 source /opt/azure/containers/provision_source.sh
-ERR_SYSTEMCTL_ENABLE_FAIL=3
-ERR_SYSTEMCTL_START_FAIL=4
-ERR_CLOUD_INIT_TIMEOUT=5
-ERR_FILE_WATCH_TIMEOUT=6
-ERR_HOLD_WALINUXAGENT=7
-ERR_RELEASE_HOLD_WALINUXAGENT=8
-ERR_APT_INSTALL_TIMEOUT=9
-ERR_ETCD_DATA_DIR_NOT_FOUND=10
-ERR_ETCD_RUNNING_TIMEOUT=11
-ERR_ETCD_VOL_MOUNT_FAIL=13
-ERR_ETCD_START_TIMEOUT=14
-ERR_ETCD_CONFIG_FAIL=15
-ERR_DOCKER_INSTALL_TIMEOUT=20
-ERR_DOCKER_DOWNLOAD_TIMEOUT=21
-ERR_K8S_RUNNING_TIMEOUT=30
-ERR_K8S_DOWNLOAD_TIMEOUT=31
-ERR_KUBECTL_NOT_FOUND=32
-ERR_CNI_DOWNLOAD_TIMEOUT=41
+ERR_SYSTEMCTL_ENABLE_FAIL=3 # Service could not be enabled by systemctl
+ERR_SYSTEMCTL_START_FAIL=4 # Service could not be started by systemctl
+ERR_CLOUD_INIT_TIMEOUT=5 # Timeout waiting for cloud-init runcmd to complete
+ERR_FILE_WATCH_TIMEOUT=6 # Timeout waiting for a file
+ERR_HOLD_WALINUXAGENT=7 # Unable to place walinuxagent apt package on hold during install
+ERR_RELEASE_HOLD_WALINUXAGENT=8 # Unable to release hold on walinuxagent apt package after install
+ERR_APT_INSTALL_TIMEOUT=9 # Timeout installing required apt packages
+ERR_ETCD_DATA_DIR_NOT_FOUND=10 # Etcd data dir not found
+ERR_ETCD_RUNNING_TIMEOUT=11 # Timeout waiting for etcd to be accessible
+ERR_ETCD_VOL_MOUNT_FAIL=13 # Unable to mount etcd disk volume
+ERR_ETCD_START_TIMEOUT=14 # Unable to start etcd runtime
+ERR_ETCD_CONFIG_FAIL=15 # Unable to configure etcd cluster
+ERR_DOCKER_INSTALL_TIMEOUT=20 # Timeout waiting for docker install to finish
+ERR_DOCKER_DOWNLOAD_TIMEOUT=21 # Timout waiting for docker download(s)
+ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
+ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
+ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
+ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -52,13 +52,16 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     
 fi
 
+function waitForCloudInit() {
+    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+}
+
 function installEtcd() {
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd"
     id "etcd"
 
-    echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
@@ -110,59 +113,60 @@ function installEtcd() {
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
     set -x
 
-    echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
-    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    waitForCloudInit
+
     /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
         exit $RET
     fi
+
     /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
     systemctl_restart 10 5 30 etcd || exit $ERR_ETCD_START_TIMEOUT
     MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
-if [[ ! -z "${MASTER_NODE}" ]]; then
-    echo "executing master node provision operations"
-    installEtcd    
-else
-    echo "skipping master node provision operations, this is an agent node"
-fi
+function installDocker() {
+    apt_get_install 20 30 120 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
+    echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+    printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 1 120 ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+    usermod -aG docker ${ADMINUSER}
+}
 
-retrycmd_if_failure 20 30 120 apt-get install -y apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
-retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
-retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
-echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
-retrycmd_if_failure 20 1 120 apt-get install -y ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
-echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-mkdir -p /etc/kubernetes/manifests
-usermod -aG docker ${ADMINUSER}
-retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
-# TODO {{if EnableAggregatedAPIs}}
-bash /etc/kubernetes/generate-proxy-certs.sh
+function runAptDaily() {
+    retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
+}
 
-KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
-touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
-chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
+function generateAggregatedAPICerts() {
+    wait_for_file 1 1 /etc/kubernetes/generate-proxy-certs.sh && /etc/kubernetes/generate-proxy-certs.sh
+}
 
-APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
-touch "${APISERVER_PUBLIC_KEY_PATH}"
-chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
-chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
+function configureK8s() {
+    KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
+    touch "${KUBELET_PRIVATE_KEY_PATH}"
+    chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
+    chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
 
-AZURE_JSON_PATH="/etc/kubernetes/azure.json"
-touch "${AZURE_JSON_PATH}"
-chmod 0600 "${AZURE_JSON_PATH}"
-chown root:root "${AZURE_JSON_PATH}"
+    APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
+    touch "${APISERVER_PUBLIC_KEY_PATH}"
+    chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
+    chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
 
-set +x
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
-cat << EOF > "${AZURE_JSON_PATH}"
+    AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+    touch "${AZURE_JSON_PATH}"
+    chmod 0600 "${AZURE_JSON_PATH}"
+    chown root:root "${AZURE_JSON_PATH}"
+
+    set +x
+    echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+    echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+    cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
     "tenantId": "${TENANT_ID}",
@@ -194,7 +198,9 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "providerKeyVersion": ""
 }
 EOF
-set -x
+    set -x
+    generateAggregatedAPICerts
+}
 
 function setKubeletOpts () {
 	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
@@ -255,8 +261,7 @@ function installClearContainersRuntime() {
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-	apt-get update && apt-get install --no-install-recommends -y \
-		cc-runtime
+	apt_get_install 20 30 120 cc-runtime
 
 	# Install the systemd service and socket files.
 	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
@@ -266,23 +271,6 @@ function installClearContainersRuntime() {
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy
-}
-
-function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	local CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
-
-    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 1 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
-    if [ $? -ne 0 ]; then
-        echo "could not download required CNI artifact at $CONTAINERD_DOWNLOAD_URL"
-        exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    fi
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-
-	echo "Successfully installed cri-containerd..."
-	setupContainerd;
 }
 
 function setupContainerd() {
@@ -331,6 +319,7 @@ function systemctlEnableAndStart() {
 }
 
 function ensureDocker() {
+    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
 }
 function ensureKMS() {
@@ -342,11 +331,7 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL
-    if [ $? -ne 0 ]; then
-        echo "required kubernetes docker image could not be downloaded at $HYPERKUBE_URL"
-        exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    fi
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL || $ERR_K8S_DOWNLOAD_TIMEOUT
     systemctlEnableAndStart hyperkube-extract
 }
 
@@ -358,11 +343,11 @@ function ensureJournal(){
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
 }
 
-function ensureK8s() {
+function ensureK8sControlPlane() {
     if $REBOOTREQUIRED; then
         return
     fi
-    wait_for_file 600 1 $KUBECTL || exit $ERR_KUBECTL_NOT_FOUND
+    wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
     retrycmd_if_failure 100 1 10 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
@@ -418,13 +403,6 @@ users:
     set -x
 }
 
-function configAddons() {
-    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
-        configClusterAutoscalerAddon
-    fi
-    echo `date`,`hostname`, configAddonsDone>>/opt/m
-}
-
 function configClusterAutoscalerAddon() {
     echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
 
@@ -454,19 +432,41 @@ function configClusterAutoscalerAddon() {
     echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
 }
 
-ensureDocker
-echo `date`,`hostname`, configNetworkPluginStart>>/opt/m
-configNetworkPlugin
+function configAddons() {
+    if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
+        configClusterAutoscalerAddon
+    fi
+    echo `date`,`hostname`, configAddonsDone>>/opt/m
+}
+
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    echo "executing master node provision operations"
+    installEtcd &
+else
+    echo "skipping master node provision operations, this is an agent node"
+fi
+
+installDocker &
+
+wait
+
+runAptDaily &
+configureK8s &
+ensureDocker &
+configNetworkPlugin &
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo `date`,`hostname`, configAddonsStart>>/opt/m
-    configAddons
+    configAddons &
 fi
+
+extractHyperkube &
+
+wait
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
-		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
 	fi
 fi
@@ -479,21 +479,18 @@ ensureContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
 if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
-    echo `date`,`hostname`, ensureKMSStart>>/opt/m
     ensureKMS
 fi
-echo `date`,`hostname`, ensureKubeletStart>>/opt/m
+
 ensureKubelet
-echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
-echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    writeKubeConfig
-    wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
-    ensureEtcd
-    ensureK8s
+    writeKubeConfig &
+    ensureEtcd &
+    ensureK8sControlPlane &
+    
+    wait
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
@@ -501,22 +498,16 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent
-    if [ $? -ne 0 ]; then
-        echo "error releasing apt-mark hold on walinuxagent"
-        exit $ERR_RELEASE_HOLD_WALINUXAGENT
-    fi
+    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENTs
 fi
 
 echo "Install complete successfully"
+
+mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
+ps auxfww > /opt/azure/provision-ps.log &
 
 if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
 fi
-
-echo `date`,`hostname`, endscript>>/opt/m
-
-mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
-ps auxfww > /opt/azure/provision-ps.log &
