@@ -441,28 +441,23 @@ function configAddons() {
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
-    installEtcd &
+    installEtcd
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
 
-installDocker &
-
-wait
-
-runAptDaily &
-configureK8s &
-ensureDocker &
-configNetworkPlugin &
+installDocker
+runAptDaily
+configureK8s
+ensureDocker
+configNetworkPlugin
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo `date`,`hostname`, configAddonsStart>>/opt/m
-    configAddons &
+    configAddons
 fi
 
-extractHyperkube &
-
-wait
+extractHyperkube
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
@@ -486,11 +481,9 @@ ensureKubelet
 ensureJournal
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    writeKubeConfig &
-    ensureEtcd &
-    ensureK8sControlPlane &
-    
-    wait
+    writeKubeConfig
+    ensureEtcd
+    ensureK8sControlPlane
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
