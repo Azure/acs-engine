@@ -67,7 +67,7 @@ func (c *Config) GetKubeConfig() string {
 		masterTarball := filepath.Join(artifactsDir, "master.tar.gz")
 		out, err := exec.Command("tar", "-xzf", masterTarball, "-C", artifactsDir).CombinedOutput()
 		if err != nil {
-			log.Fatalf("Cannot untar master tarball: %v: %v", out, err)
+			log.Fatalf("Cannot untar master tarball: %v: %v", string(out), err)
 		}
 		kubeconfigPath = filepath.Join(artifactsDir, "etc", "origin", "master", "admin.kubeconfig")
 	}
