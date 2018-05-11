@@ -133,6 +133,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				if err != nil {
 					log.Printf("Error while querying DNS: %s\n", out)
 				}
+
+				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+				Expect(err).NotTo(HaveOccurred())
+				ready, err := j.WaitOnReady(5*time.Second, 30*time.Second)
+				delErr := j.Delete()
+				if delErr != nil {
+					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+					fmt.Println(delErr)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
 			}
 		})
 
