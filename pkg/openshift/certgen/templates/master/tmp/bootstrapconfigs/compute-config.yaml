@@ -18,7 +18,7 @@ kubeletArguments:
   cloud-provider:
   - "azure"
   cloud-config:
-  - "/etc/azure/azure.conf"
+  - "/etc/origin/cloudprovider/azure.conf"
 masterClientConnectionOverrides:
   acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
   contentType: application/vnd.kubernetes.protobuf

@@ -3,6 +3,10 @@
   gather_facts: false
 
   tasks:
+    - name: bring up the sdn
+      import_role:
+        name: openshift_sdn
+        
     - name: Import openshift_bootstrap_autoapprover role from openshift-ansible to deploy node bootstrap auto approver
       import_role:
         name: openshift_bootstrap_autoapprover
