@@ -578,11 +578,15 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 		if api.OpenShiftConfig != nil && api.OpenShiftConfig.KubernetesConfig != nil {
 			api.KubernetesConfig = api.OpenShiftConfig.KubernetesConfig
 		}
-		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
-			vlabscs.OrchestratorType,
-			vlabscs.OrchestratorRelease,
-			vlabscs.OrchestratorVersion,
-			false)
+		if vlabscs.OrchestratorVersion != common.OpenShiftVersionUnstable {
+			api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+				vlabscs.OrchestratorType,
+				vlabscs.OrchestratorRelease,
+				vlabscs.OrchestratorVersion,
+				false)
+		} else {
+			api.OrchestratorVersion = vlabscs.OrchestratorVersion
+		}
 	case Kubernetes:
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}

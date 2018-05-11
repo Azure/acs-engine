@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -633,8 +634,12 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
-		sv, _ := semver.NewVersion(o.OrchestratorVersion)
-		o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		// Enable using "unstable" as a valid version in the openshift orchestrator.
+		// Required for progressing on an unreleased version.
+		if api.OpenShiftConfig == nil || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
+			sv, _ := semver.NewVersion(o.OrchestratorVersion)
+			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		}
 	}
 
 	if api.KubernetesConfig != nil {
