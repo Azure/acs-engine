@@ -358,6 +358,10 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
         $global:NetworkMode = "L2Tunnel"
         $kubeStartStr += @"
 Write-Host "NetworkPlugin azure, starting kubelet."
+
+# Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
+netsh advfirewall set allprofiles state off
+
 $KubeletCommandLine
 
 "@
