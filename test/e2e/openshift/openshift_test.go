@@ -56,6 +56,32 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 		Expect(ready).To(Equal(true))
 	})
 
+	It("should label nodes correctly", func() {
+		labels := map[string]map[string]string{
+			"master": {
+				"node-role.kubernetes.io/master": "true",
+				"openshift-infra":                "apiserver",
+			},
+			"compute": {
+				"node-role.kubernetes.io/compute": "true",
+				"region": "primary",
+			},
+			"infra": {
+				"region": "infra",
+			},
+		}
+		list, err := knode.Get()
+		Expect(err).NotTo(HaveOccurred())
+
+		for _, node := range list.Nodes {
+			kind := strings.Split(node.Metadata.Name, "-")[1]
+			Expect(labels).To(HaveKey(kind))
+			for k, v := range labels[kind] {
+				Expect(node.Metadata.Labels).To(HaveKeyWithValue(k, v))
+			}
+		}
+	})
+
 	It("should be running the expected version", func() {
 		version, err := node.Version()
 		Expect(err).NotTo(HaveOccurred())

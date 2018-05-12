@@ -102,7 +102,7 @@ func certAsBytes(cert *x509.Certificate) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func writeCert(fs filesystem.Filesystem, filename string, cert *x509.Certificate) error {
+func writeCert(fs filesystem.Writer, filename string, cert *x509.Certificate) error {
 	b, err := certAsBytes(cert)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func privateKeyAsBytes(key *rsa.PrivateKey) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func writePrivateKey(fs filesystem.Filesystem, filename string, key *rsa.PrivateKey) error {
+func writePrivateKey(fs filesystem.Writer, filename string, key *rsa.PrivateKey) error {
 	b, err := privateKeyAsBytes(key)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func writePrivateKey(fs filesystem.Filesystem, filename string, key *rsa.Private
 	return fs.WriteFile(filename, b, fi)
 }
 
-func writePublicKey(fs filesystem.Filesystem, filename string, key *rsa.PublicKey) error {
+func writePublicKey(fs filesystem.Writer, filename string, key *rsa.PublicKey) error {
 	buf := &bytes.Buffer{}
 
 	b, err := x509.MarshalPKIXPublicKey(key)
@@ -411,7 +411,7 @@ func (c *Config) PrepareMasterCerts() error {
 }
 
 // WriteMasterCerts writes the master certs
-func (c *Config) WriteMasterCerts(fs filesystem.Filesystem) error {
+func (c *Config) WriteMasterCerts(fs filesystem.Writer) error {
 	for filename, ca := range c.cas {
 		err := writeCert(fs, fmt.Sprintf("%s.crt", filename), ca.cert)
 		if err != nil {
@@ -468,7 +468,7 @@ func (c *Config) WriteMasterCerts(fs filesystem.Filesystem) error {
 }
 
 // WriteBootstrapCerts writes the node bootstrap certs
-func (c *Config) WriteBootstrapCerts(fs filesystem.Filesystem) error {
+func (c *Config) WriteBootstrapCerts(fs filesystem.Writer) error {
 	err := writeCert(fs, "etc/origin/node/ca.crt", c.cas["etc/origin/master/ca"].cert)
 	if err != nil {
 		return err
@@ -483,7 +483,7 @@ func (c *Config) WriteBootstrapCerts(fs filesystem.Filesystem) error {
 }
 
 // WriteMasterKeypair writes the master service account keypair
-func (c *Config) WriteMasterKeypair(fs filesystem.Filesystem) error {
+func (c *Config) WriteMasterKeypair(fs filesystem.Writer) error {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return err

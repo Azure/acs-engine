@@ -661,6 +661,7 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	vl.ClusterUsername = api.ClusterUsername
 	vl.ClusterPassword = api.ClusterPassword
 	vl.EnableAADAuthentication = api.EnableAADAuthentication
+	vl.ConfigBundles = api.ConfigBundles
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
@@ -987,6 +988,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 		p.ImageRef.Name = api.ImageRef.Name
 		p.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
+	p.Role = vlabs.AgentPoolProfileRole(api.Role)
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, dp *v20160930.DiagnosticsProfile) {

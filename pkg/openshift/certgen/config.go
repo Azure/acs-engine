@@ -66,7 +66,7 @@ func (s *serial) Get() *big.Int {
 }
 
 // WriteMaster writes the config files for a Master node to a Filesystem.
-func (c *Config) WriteMaster(fs filesystem.Filesystem) error {
+func (c *Config) WriteMaster(fs filesystem.Writer) error {
 	err := c.WriteMasterCerts(fs)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (c *Config) WriteMaster(fs filesystem.Filesystem) error {
 }
 
 // WriteNode writes the config files for bootstrapping a node to a Filesystem.
-func (c *Config) WriteNode(fs filesystem.Filesystem) error {
+func (c *Config) WriteNode(fs filesystem.Writer) error {
 	err := c.WriteBootstrapCerts(fs)
 	if err != nil {
 		return err
