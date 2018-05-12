@@ -28,7 +28,7 @@ func (fakefilesystem) Close() error {
 	return nil
 }
 
-var _ filesystem.Filesystem = &fakefilesystem{}
+var _ filesystem.Writer = &fakefilesystem{}
 
 func TestConfigFilePermissions(t *testing.T) {
 	c := Config{

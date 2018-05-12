@@ -262,7 +262,7 @@ func (c *Config) PrepareBootstrapKubeConfig() error {
 }
 
 // WriteMasterKubeConfigs writes the master kubeconfigs
-func (c *Config) WriteMasterKubeConfigs(fs filesystem.Filesystem) error {
+func (c *Config) WriteMasterKubeConfigs(fs filesystem.Writer) error {
 	for filename, kubeconfig := range c.Master.kubeconfigs {
 		b, err := yaml.Marshal(&kubeconfig)
 		if err != nil {
@@ -278,7 +278,7 @@ func (c *Config) WriteMasterKubeConfigs(fs filesystem.Filesystem) error {
 }
 
 // WriteBootstrapKubeConfig writes the node bootstrap kubeconfig
-func (c *Config) WriteBootstrapKubeConfig(fs filesystem.Filesystem) error {
+func (c *Config) WriteBootstrapKubeConfig(fs filesystem.Writer) error {
 	b, err := yaml.Marshal(&c.Bootstrap)
 	if err != nil {
 		return err

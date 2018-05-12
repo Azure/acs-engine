@@ -26,6 +26,35 @@ const exampleAPIModel = `{
 }
 `
 
+func TestIsAzureCNI(t *testing.T) {
+	k := &KubernetesConfig{
+		NetworkPlugin: "azure",
+	}
+
+	o := &OrchestratorProfile{
+		KubernetesConfig: k,
+	}
+	if !o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is using Azure CNI from NetworkPlugin=%s", o.KubernetesConfig.NetworkPlugin)
+	}
+
+	k = &KubernetesConfig{
+		NetworkPlugin: "none",
+	}
+
+	o = &OrchestratorProfile{
+		KubernetesConfig: k,
+	}
+	if o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is not using Azure CNI from NetworkPlugin=%s", o.KubernetesConfig.NetworkPlugin)
+	}
+
+	o = &OrchestratorProfile{}
+	if o.IsAzureCNI() {
+		t.Fatalf("unable to detect orchestrator profile is not using Azure CNI from nil KubernetesConfig")
+	}
+}
+
 func TestIsDCOS(t *testing.T) {
 	dCOSProfile := &OrchestratorProfile{
 		OrchestratorType: "DCOS",
@@ -141,6 +170,36 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 	enabled = c.IsACIConnectorEnabled()
 	if !enabled {
 		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return false when ACI connector addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
+func TestIsClusterAutoscalerEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsClusterAutoscalerEnabled()
+	if enabled != DefaultClusterAutoscalerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", DefaultClusterAutoscalerAddonEnabled, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultClusterAutoscalerAddonName))
+	enabled = c.IsClusterAutoscalerEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return true when cluster autoscaler has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultClusterAutoscalerAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsClusterAutoscalerEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return false when cluster autoscaler addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 

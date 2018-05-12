@@ -4,10 +4,10 @@
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition (or apimodel) is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition (or apimodel) is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
 The cluster definition file enables you to customize your Docker enabled cluster in many ways including:
-* choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
+* choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
    * standard or premium VM Sizes, including GPU optimized VM sizes
    * node count
@@ -23,6 +23,7 @@ The cluster definition file enables you to customize your Docker enabled cluster
 * [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
+* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET
@@ -43,7 +44,7 @@ Please follow these instructions before submitting a PR:
 2. Manually test deployments if you are making modifications to the templates.
    For example, if you have to change the expected resulting templates then you
    should deploy the relevant example cluster definitions to ensure that you are not introducing any regressions.
-   
+
 3. Make sure that your changes are properly documented and include relevant unit tests.
 
 ## Usage

@@ -77,7 +77,7 @@ func (c *Config) PrepareMasterFiles() error {
 }
 
 // WriteMasterFiles writes the templated master config
-func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
+func (c *Config) WriteMasterFiles(fs filesystem.Writer) error {
 
 	// create special case directories
 	specialCaseDirs := map[string]filesystem.Fileinfo{
@@ -136,7 +136,7 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 }
 
 // WriteNodeFiles writes the templated node config
-func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
+func (c *Config) WriteNodeFiles(fs filesystem.Writer) error {
 	for _, name := range templates.AssetNames() {
 		if !strings.HasPrefix(name, "node/") {
 			continue

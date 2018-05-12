@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -690,6 +691,31 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	}
 }
 
+func Test_Properties_ValidateAddons(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    "cluster-autoscaler",
+				Enabled: helpers.PointerToBool(true),
+			},
+		},
+	}
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			AvailabilityProfile: AvailabilitySet,
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"should error on cluster-autoscaler with availability sets",
+		)
+	}
+}
+
 func TestWindowsVersions(t *testing.T) {
 	for _, version := range common.GetAllSupportedKubernetesVersionsWindows() {
 		p := getK8sDefaultProperties(true)
@@ -799,6 +825,56 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
 		if !reflect.DeepEqual(gotErr, test.expectedErr) {
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
+		}
+	}
+}
+
+func TestMasterProfileValidate(t *testing.T) {
+	tests := []struct {
+		orchestratorType string
+		masterProfile    MasterProfile
+		expectedErr      string
+	}{
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "bad!",
+			},
+			expectedErr: "DNS name 'bad!' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+			expectedErr: "openshift can only deployed with one master",
+		},
+	}
+
+	for i, test := range tests {
+		err := test.masterProfile.Validate(&OrchestratorProfile{OrchestratorType: test.orchestratorType})
+		if test.expectedErr == "" && err != nil ||
+			test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
+			t.Errorf("test %d: unexpected error %q\n", i, err)
 		}
 	}
 }

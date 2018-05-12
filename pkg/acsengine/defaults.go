@@ -244,6 +244,25 @@ var (
 		},
 	}
 
+	// DefaultClusterAutoscalerAddonsConfig is the default cluster autoscaler addon config
+	DefaultClusterAutoscalerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultClusterAutoscalerAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
+		Config: map[string]string{
+			"minNodes": "1",
+			"maxNodes": "5",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultClusterAutoscalerAddonName,
+				CPURequests:    "100m",
+				MemoryRequests: "300Mi",
+				CPULimits:      "100m",
+				MemoryLimits:   "300Mi",
+			},
+		},
+	}
+
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
@@ -352,6 +371,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
 				DefaultACIConnectorAddonsConfig,
+				DefaultClusterAutoscalerAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
@@ -368,6 +388,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if a < 0 {
 				// Provide default acs-engine config for ACI Connector
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
+			}
+			s := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+			if s < 0 {
+				// Provide default acs-engine config for cluster autoscaler
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonsConfig)
 			}
 			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
 			if d < 0 {
@@ -464,6 +489,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		c := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
+		}
+		s := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[s].IsEnabled(api.DefaultClusterAutoscalerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[s] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[s], DefaultClusterAutoscalerAddonsConfig)
 		}
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
@@ -740,8 +769,11 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
-	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
-	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
+	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]) > 0 &&
+		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]) > 0 {
+		return true, nil
+	}
+
 	c := certgen.Config{
 		Master: &certgen.Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
@@ -750,7 +782,7 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 			},
 			Port: 8443,
 		},
-		ExternalMasterHostname:  externalMasterHostname,
+		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location),
 		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
@@ -763,8 +795,6 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 			Location:        a.AzProfile.Location,
 		},
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
-	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname
 
 	err := c.PrepareMasterCerts()
 	if err != nil {
@@ -803,12 +833,12 @@ func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
 	return true, nil
 }
 
-type writeFn func(filesystem.Filesystem) error
+type writeFn func(filesystem.Writer) error
 
 func getConfigBundle(write writeFn) ([]byte, error) {
 	b := &bytes.Buffer{}
 
-	fs, err := filesystem.NewTGZFile(b)
+	fs, err := filesystem.NewTGZWriter(b)
 	if err != nil {
 		return nil, err
 	}

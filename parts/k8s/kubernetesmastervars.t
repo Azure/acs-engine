@@ -109,6 +109,15 @@
     "kubernetesACIConnectorMemoryRequests": "[parameters('kubernetesACIConnectorMemoryRequests')]",
     "kubernetesACIConnectorCPULimit": "[parameters('kubernetesACIConnectorCPULimit')]",
     "kubernetesACIConnectorMemoryLimit": "[parameters('kubernetesACIConnectorMemoryLimit')]",
+    "kubernetesClusterAutoscalerSpec": "[parameters('kubernetesClusterAutoscalerSpec')]",
+    "kubernetesClusterAutoscalerCPULimit": "[parameters('kubernetesClusterAutoscalerCPULimit')]",
+    "kubernetesClusterAutoscalerMemoryLimit": "[parameters('kubernetesClusterAutoscalerMemoryLimit')]",
+    "kubernetesClusterAutoscalerCPURequests": "[parameters('kubernetesClusterAutoscalerCPURequests')]",
+    "kubernetesClusterAutoscalerMemoryRequests": "[parameters('kubernetesClusterAutoscalerMemoryRequests')]",
+    "kubernetesClusterAutoscalerMinNodes": "[parameters('kubernetesClusterAutoscalerMinNodes')]",
+    "kubernetesClusterAutoscalerMaxNodes": "[parameters('kubernetesClusterAutoscalerMaxNodes')]",
+    "kubernetesClusterAutoscalerEnabled": "[parameters('kubernetesClusterAutoscalerEnabled')]",
+    "kubernetesClusterAutoscalerUseManagedIdentity": "[parameters('kubernetesClusterAutoscalerUseManagedIdentity')]",
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",
@@ -139,7 +148,7 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
-{{if EnableDataEncryptionAtRest}} 
+{{if EnableDataEncryptionAtRest}}
     "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
 {{end}}
 {{ if UseManagedIdentity }}
@@ -228,7 +237,7 @@
     "mountetcdScript": "{{GetKubernetesB64Mountetcd}}",
 {{if not IsOpenShift}}
 {{if not IsHostedMaster}}
-    "provisionScriptParametersMaster": "[concat('MASTER_NODE=true APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ETCD_SERVER_CERTIFICATE=',variables('etcdServerCertificate'),' ETCD_CLIENT_CERTIFICATE=',variables('etcdClientCertificate'),' ETCD_SERVER_PRIVATE_KEY=',variables('etcdServerPrivateKey'),' ETCD_CLIENT_PRIVATE_KEY=',variables('etcdClientPrivateKey'),' ETCD_PEER_CERTIFICATES=',string(variables('etcdPeerCertificates')),' ETCD_PEER_PRIVATE_KEYS=',string(variables('etcdPeerPrivateKeys')),' ADMINUSER=',variables('username'))]",
+    "provisionScriptParametersMaster": "[concat('MASTER_NODE=true CLUSTER_AUTOSCALER_ADDON=',variables('kubernetesClusterAutoscalerEnabled'),' APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ETCD_SERVER_CERTIFICATE=',variables('etcdServerCertificate'),' ETCD_CLIENT_CERTIFICATE=',variables('etcdClientCertificate'),' ETCD_SERVER_PRIVATE_KEY=',variables('etcdServerPrivateKey'),' ETCD_CLIENT_PRIVATE_KEY=',variables('etcdClientPrivateKey'),' ETCD_PEER_CERTIFICATES=',string(variables('etcdPeerCertificates')),' ETCD_PEER_PRIVATE_KEYS=',string(variables('etcdPeerPrivateKeys')),' ADMINUSER=',variables('username'))]",
   {{if EnableEncryptionWithExternalKms}}
     {{ if not UseManagedIdentity}}
     "servicePrincipalObjectId": "[parameters('servicePrincipalObjectId')]",
@@ -276,12 +285,21 @@
   {{end}}
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
+  {{if IsCustomVNET}}
+    "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
+    "subnetNameResourceSegmentIndex": 10,
+    "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "vnetNameResourceSegmentIndex": 8,
+    "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "vnetResourceGroupNameResourceSegmentIndex": 4,
+    "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+  {{else}}
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
-    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "''",
+  {{end}}
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
     "kubeDNSServiceIP": "[parameters('kubeDNSServiceIP')]",

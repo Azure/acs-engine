@@ -104,8 +104,8 @@ const (
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
 	DefaultDashboardAddonName = "kubernetes-dashboard"
-	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
-	DefaultACIConnectorImage = "virtual-kubelet:latest"
+	// DefaultClusterAutoscalerAddonName is the name of the autoscaler addon deployment
+	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"

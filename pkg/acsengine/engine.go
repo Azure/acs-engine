@@ -658,6 +658,23 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
 			}
 		}
+		clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+		c = getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", clusterAutoscalerAddon.Enabled)
+			addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
+			if clusterAutoscalerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+			}
+		}
 		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 		if c > -1 {
@@ -1563,6 +1580,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
 				aciConnectorAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 				aC := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
+				clusterAutoscalerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+				aS := getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
 				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
@@ -1707,6 +1726,46 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						val = aciConnectorAddon.Containers[aC].MemoryLimits
 					} else {
 						val = ""
+					}
+				case "kubernetesClusterAutoscalerSpec":
+					if aS > -1 {
+						if clusterAutoscalerAddon.Containers[aS].Image != "" {
+							val = clusterAutoscalerAddon.Containers[aS].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
+						}
+					}
+				case "kubernetesClusterAutoscalerCPURequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryRequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerCPULimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryLimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerUseManagedIdentity":
+					if aS > -1 {
+						if cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+							val = strings.ToLower(strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity))
+						} else {
+							val = "false"
+						}
 					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {
@@ -1890,8 +1949,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				Location               string
 			}{
 				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]),
-				ExternalMasterHostname: cs.Properties.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname,
-				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
+				ExternalMasterHostname: fmt.Sprintf("%s.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
+				RouterLBHostname:       fmt.Sprintf("%s-router.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
 				Location:               cs.Properties.AzProfile.Location,
 			})
 			return b.String(), err
@@ -1936,6 +1995,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"subtract": func(a, b int) int {
 			return a - b
+		},
+		"IsCustomVNET": func() bool {
+			return isCustomVNET(cs.Properties.AgentPoolProfiles)
 		},
 	}
 }
@@ -2117,6 +2179,18 @@ func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorV
 
 func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
 	return strings.Contains(profile.VMSize, "Standard_N")
+}
+
+func isCustomVNET(a []*api.AgentPoolProfile) bool {
+	if a != nil {
+		for _, agentPoolProfile := range a {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {

@@ -444,6 +444,69 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerSpec"}}
+      "metadata": {
+        "description": "The container spec for the cluster autoscaler."
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryLimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPURequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryRequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMinNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMinNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler min nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMaxNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMaxNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler max nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerEnabled": {
+      "defaultValue": false,
+      "metadata": {
+        "description": "Cluster autoscaler status"
+      },
+      "type": "bool"
+    },
+    "kubernetesClusterAutoscalerUseManagedIdentity": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerUseManagedIdentity"}}
+      "metadata": {
+        "description": "Managed identity for the cluster autoscaler addon"
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
@@ -706,9 +769,9 @@
       },
       "type": "string"
     },
-    "etcdEncryptionKey": { 
+    "etcdEncryptionKey": {
       "metadata": {
-        "description": "Encryption at rest key for etcd" 
+        "description": "Encryption at rest key for etcd"
       },
       "type": "string"
     }

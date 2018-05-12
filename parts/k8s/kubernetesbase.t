@@ -70,52 +70,54 @@
     {{if not IsHostedMaster}}
       ,{{template "k8s/kubernetesmasterresources.t" .}}
     {{else}}
-    ,{
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-    {{if not IsAzureCNI}}
-        ,
-        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
-    {{end}}
-      ],
-      "location": "[variables('location')]",
-      "name": "[variables('virtualNetworkName')]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('vnetCidr')]"
+      {{if not IsCustomVNET}}
+      ,{
+        "apiVersion": "[variables('apiVersionDefault')]",
+        "dependsOn": [
+          "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+      {{if not IsAzureCNI}}
+          ,
+          "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+      {{end}}
+        ],
+        "location": "[variables('location')]",
+        "name": "[variables('virtualNetworkName')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[variables('vnetCidr')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "[variables('subnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('subnet')]",
+                "networkSecurityGroup": {
+                  "id": "[variables('nsgID')]"
+                }
+      {{if not IsAzureCNI}}
+                ,
+                "routeTable": {
+                  "id": "[variables('routeTableID')]"
+                }
+      {{end}}
+              }
+            }
           ]
         },
-        "subnets": [
-          {
-            "name": "[variables('subnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('subnet')]",
-              "networkSecurityGroup": {
-                "id": "[variables('nsgID')]"
-              }
-    {{if not IsAzureCNI}}
-              ,
-              "routeTable": {
-                "id": "[variables('routeTableID')]"
-              }
+        "type": "Microsoft.Network/virtualNetworks"
+      }
     {{end}}
-            }
-          }
-        ]
-      },
-      "type": "Microsoft.Network/virtualNetworks"
-    },
     {{if not IsAzureCNI}}
-    {
+    ,{
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
-    },
+    }
     {{end}}
-    {
+    ,{
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",

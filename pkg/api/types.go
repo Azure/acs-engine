@@ -345,9 +345,7 @@ type OpenShiftConfig struct {
 	// EnableAADAuthentication is temporary, do not rely on it.
 	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
 
-	ConfigBundles          map[string][]byte `json:"-"`
-	ExternalMasterHostname string            `json:"-"`
-	RouterLBHostname       string            `json:"-"`
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -773,12 +771,10 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 
 // IsAzureCNI returns true if Azure CNI network plugin is enabled
 func (o *OrchestratorProfile) IsAzureCNI() bool {
-	switch o.OrchestratorType {
-	case Kubernetes:
+	if o.KubernetesConfig != nil {
 		return o.KubernetesConfig.NetworkPlugin == "azure"
-	default:
-		return false
 	}
+	return false
 }
 
 // RequireRouteTable returns true if this deployment requires routing table
@@ -844,6 +840,17 @@ func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 		}
 	}
 	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
+}
+
+// IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
+func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
+	var clusterAutoscalerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
+			clusterAutoscalerAddon = k.Addons[i]
+		}
+	}
+	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
