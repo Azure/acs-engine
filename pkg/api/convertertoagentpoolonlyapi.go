@@ -519,12 +519,12 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 
 func convertV20180331AgentPoolOnlyAADProfile(obj *v20180331.AADProfile) *AADProfile {
 	aadProfile := &AADProfile{
-		ClientAppID: obj.ClientAppID,
-		ServerAppID: obj.ServerAppID,
-		TenantID:    obj.TenantID,
+		ClientAppID:     obj.ClientAppID,
+		ServerAppID:     obj.ServerAppID,
+		ServerAppSecret: obj.ServerAppSecret,
+		TenantID:        obj.TenantID,
+		Authenticator:   Webhook,
 	}
-	if obj.Authenticator == v20180331.OIDC {
-		aadProfile.AdminGroupID = obj.AdminGroupID
-	}
+
 	return aadProfile
 }
