@@ -19,10 +19,11 @@ import (
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	DataModel     *api.ContainerService
-	Location      string
-	ResourceGroup string
-	NameSuffix    string
+	DataModel      *api.ContainerService
+	SubscriptionID string
+	Location       string
+	ResourceGroup  string
+	NameSuffix     string
 
 	AgentPoolsToUpgrade map[string]bool
 	AgentPools          map[string]*AgentPoolTopology
@@ -59,6 +60,7 @@ const MasterPoolName = "master"
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, resourceGroup string,
 	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string, acsengineVersion string) error {
 	uc.ClusterTopology = ClusterTopology{}
+	uc.SubscriptionID = subscriptionID.String()
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix

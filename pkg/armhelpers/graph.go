@@ -37,6 +37,15 @@ func (az *AzureClient) CreateRoleAssignment(scope string, roleAssignmentName str
 	return az.authorizationClient.Create(scope, roleAssignmentName, parameters)
 }
 
+func (az *AzureClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
+	return az.authorizationClient.DeleteByID(roleAssignmentID)
+}
+
+func (az *AzureClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
+	filter := fmt.Sprintf("principalId eq '%s'", principalID)
+	return az.authorizationClient.ListForScope(scope, filter)
+}
+
 // CreateApp is a simpler method for creating an application
 func (az *AzureClient) CreateApp(appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()

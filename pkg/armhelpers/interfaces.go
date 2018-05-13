@@ -70,6 +70,8 @@ type ACSEngineClient interface {
 	// RBAC
 	CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
 	CreateRoleAssignmentSimple(applicationID, roleID string) error
+	DeleteRoleAssignmentByID(roleAssignmentNameID string) (authorization.RoleAssignment, error)
+	ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error)
 
 	// MANAGED DISKS
 	DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)

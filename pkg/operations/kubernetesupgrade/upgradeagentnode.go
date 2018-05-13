@@ -30,6 +30,7 @@ type UpgradeAgentNode struct {
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
+	SubscriptionID          string
 	ResourceGroup           string
 	Client                  armhelpers.ACSEngineClient
 	kubeConfig              string
@@ -62,7 +63,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 		}
 	}
 	// Delete VM in ARM
-	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
+	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.SubscriptionID, kan.ResourceGroup, *vmName); err != nil {
 		return err
 	}
 	// Delete VM in api server
