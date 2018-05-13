@@ -106,7 +106,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
 		_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(*roleAssignment.ID)
 		if deleteRoleAssignmentErr != nil {
-			logger.Errorf("failed to delete role assignment: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
+			logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
 			return deleteRoleAssignmentErr
 		}
 	}

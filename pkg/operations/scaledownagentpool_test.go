@@ -18,7 +18,7 @@ var _ = Describe("Scale down vms operation tests", func() {
 	It("Should return error messages for failing vms", func() {
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailGetVirtualMachine = true
-		errs := ScaleDownVMs(&mockClient, log.NewEntry(log.New()), "sid","rg", "vm1", "vm2", "vm3", "vm5")
+		errs := ScaleDownVMs(&mockClient, log.NewEntry(log.New()), "sid", "rg", "vm1", "vm2", "vm3", "vm5")
 		Expect(errs.Len()).To(Equal(4))
 		for e := errs.Front(); e != nil; e = e.Next() {
 			output := e.Value.(*VMScalingErrorDetails)
