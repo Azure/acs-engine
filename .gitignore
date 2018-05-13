@@ -32,3 +32,4 @@ test/e2e/openshift/translations/
 # test outputs
 cmd/_test_output
 
+.idea
