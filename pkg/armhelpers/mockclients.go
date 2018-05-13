@@ -472,7 +472,7 @@ func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string)
 	return authorization.RoleAssignment{}, nil
 }
 
-// List all role assignments for a principal (e.g. a VM) via the scope and the unique identifier of the principal
+// ListRoleAssignmentsForPrincipal (e.g. a VM) via the scope and the unique identifier of the principal
 func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
 	roleAssignments := []authorization.RoleAssignment{}
 	return authorization.RoleAssignmentListResult{
