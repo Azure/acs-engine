@@ -274,6 +274,8 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 
+	principalID := "00000000-1111-2222-3333-444444444444"
+
 	tags := map[string]*string{
 		creationSourceString:     &creationSource,
 		orchestratorString:       &orchestrator,
@@ -284,6 +286,8 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 	return compute.VirtualMachine{
 		Name: &vm1Name,
 		Tags: &tags,
+		Identity: &compute.VirtualMachineIdentity{
+			PrincipalID: &principalID},
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			StorageProfile: &compute.StorageProfile{
 				OsDisk: &compute.OSDisk{
@@ -461,4 +465,14 @@ func (mc *MockACSEngineClient) ListDeploymentOperations(resourceGroupName string
 // ListDeploymentOperationsNextResults retrieves the next set of results, if any.
 func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error) {
 	return resources.DeploymentOperationsListResult{}, nil
+}
+
+func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
+	return authorization.RoleAssignment{}, nil
+}
+
+func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
+	roleAssignments := []authorization.RoleAssignment{}
+	return authorization.RoleAssignmentListResult{
+		Value: &roleAssignments}, nil
 }
