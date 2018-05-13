@@ -37,10 +37,12 @@ func (az *AzureClient) CreateRoleAssignment(scope string, roleAssignmentName str
 	return az.authorizationClient.Create(scope, roleAssignmentName, parameters)
 }
 
+// DeleteRoleAssignmentByID deletes a roleAssignment via its unique identifier
 func (az *AzureClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
 	return az.authorizationClient.DeleteByID(roleAssignmentID)
 }
 
+// List all role assignments for a principal (e.g. a VM) via the scope and the unique identifier of the principal
 func (az *AzureClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
 	filter := fmt.Sprintf("principalId eq '%s'", principalID)
 	return az.authorizationClient.ListForScope(scope, filter)
