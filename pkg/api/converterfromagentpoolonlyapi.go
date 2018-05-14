@@ -180,6 +180,10 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 		p.AddonProfiles = make(map[string]v20180331.AddonProfile)
 		convertAddonsProfileToV20180331AgentPoolOnly(api.AddonProfiles, p.AddonProfiles)
 	}
+	if api.AADProfile != nil {
+		p.AADProfile = &v20180331.AADProfile{}
+		convertAADProfileToV20180331AgentPoolOnly(api.AADProfile, p.AADProfile)
+	}
 }
 
 func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile) (kubernetesVersion string, networkProfile *v20180331.NetworkProfile) {
@@ -260,5 +264,14 @@ func convertAddonsProfileToV20180331AgentPoolOnly(api map[string]AddonProfile, p
 			Enabled: v.Enabled,
 			Config:  v.Config,
 		}
+	}
+}
+
+func convertAADProfileToV20180331AgentPoolOnly(api *AADProfile, v20180331 *v20180331.AADProfile) {
+	v20180331.ClientAppID = api.ClientAppID
+	v20180331.ServerAppID = api.ServerAppID
+	v20180331.TenantID = api.TenantID
+	if api.Authenticator == Webhook {
+		v20180331.ServerAppSecret = api.ServerAppSecret
 	}
 }
