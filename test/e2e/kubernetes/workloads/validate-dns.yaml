@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: validate-dns
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: validate-bing
+        image: busybox
+        command: ['sh', '-c', 'until nslookup www.bing.com; do echo waiting for DNS resolution; sleep 1; done;']
+      - name: validate-google
+        image: busybox
+        command: ['sh', '-c', 'until nslookup google.com; do echo waiting for DNS resolution; sleep 1; done;']
