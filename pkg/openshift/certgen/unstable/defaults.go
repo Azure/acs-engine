@@ -9,6 +9,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 )
 
+// OpenShiftSetDefaultCerts sets default certificate and configuration properties in the
+// openshift orchestrator.
 func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID string) (bool, error) {
 	version := a.OrchestratorProfile.OrchestratorVersion
 	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"]) > 0 &&
