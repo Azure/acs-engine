@@ -506,8 +506,10 @@ type HostedMasterProfile struct {
 type AuthenticatorType string
 
 const (
-	OIDC    AuthenticatorType = "OIDC"
-	Webhook AuthenticatorType = "Webhook"
+	// OIDC represent cluster setup in OIDC auth mode
+	OIDC AuthenticatorType = "oidc"
+	// Webhook represent cluster setup in wehhook auth mode
+	Webhook AuthenticatorType = "webHook"
 )
 
 // AADProfile specifies attributes for AAD integration
