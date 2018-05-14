@@ -137,8 +137,10 @@ func getOpenshiftMasterShAsset(version string) string {
 	switch version {
 	case common.OpenShiftVersion3Dot9Dot0:
 		return openshift39MasterScript
-	default:
+	case common.OpenShiftVersionUnstable:
 		return openshiftMasterScript
+	default:
+		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
 	}
 }
 
@@ -146,8 +148,10 @@ func getOpenshiftNodeShAsset(version string) string {
 	switch version {
 	case common.OpenShiftVersion3Dot9Dot0:
 		return openshift39NodeScript
+	case common.OpenShiftVersionUnstable:
+		return openshiftMasterScript
 	default:
-		return openshiftNodeScript
+		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
 	}
 }
 
