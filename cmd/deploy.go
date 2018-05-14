@@ -29,6 +29,14 @@ const (
 	deployName             = "deploy"
 	deployShortDescription = "Deploy an Azure Resource Manager template"
 	deployLongDescription  = "Deploy an Azure Resource Manager template, parameters file and other assets for a cluster"
+
+	// aadServicePrincipal is a hard-coded service principal which represents
+	// Azure Active Dirctory (see az ad sp list)
+	aadServicePrincipal = "00000002-0000-0000-c000-000000000000"
+
+	// aadPermissionUserRead is the User.Read hard-coded permission on
+	// aadServicePrincipal (see az ad sp list)
+	aadPermissionUserRead = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
 )
 
 type deployCmd struct {
@@ -233,21 +241,17 @@ func autofillApimodel(dc *deployCmd) {
 				appName = fmt.Sprintf("%s.%s.cloudapp.azure.com", appName, dc.containerService.Properties.AzProfile.Location)
 				appURL = fmt.Sprintf("https://%s:8443/", appName)
 				replyURLs = to.StringSlicePtr([]string{fmt.Sprintf("https://%s:8443/oauth2callback/Azure%%20AD", appName)})
-				ra := []graphrbac.ResourceAccess{
+				requiredResourceAccess = &[]graphrbac.RequiredResourceAccess{
 					{
-						// TODO: where is this UUID defined?
-						ID:   to.StringPtr("311a71cc-e848-46a1-bdf8-97ff7156d8e6"),
-						Type: to.StringPtr("Scope"),
+						ResourceAppID: to.StringPtr(aadServicePrincipal),
+						ResourceAccess: &[]graphrbac.ResourceAccess{
+							{
+								ID:   to.StringPtr(aadPermissionUserRead),
+								Type: to.StringPtr("Scope"),
+							},
+						},
 					},
 				}
-				rra := []graphrbac.RequiredResourceAccess{
-					{
-						// TODO: where is this UUID defined?
-						ResourceAppID:  to.StringPtr("00000002-0000-0000-c000-000000000000"),
-						ResourceAccess: &ra,
-					},
-				}
-				requiredResourceAccess = &rra
 			}
 			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
