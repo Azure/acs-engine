@@ -1,4 +1,4 @@
-package certgen
+package release39
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
+	"github.com/Azure/acs-engine/pkg/openshift/certgen/release39/templates"
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"golang.org/x/crypto/bcrypt"
 )

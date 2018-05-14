@@ -1,4 +1,4 @@
-package certgen
+package unstable
 
 import (
 	"fmt"

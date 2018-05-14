@@ -14,7 +14,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen"
-	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"github.com/Masterminds/semver"
 )
 
@@ -768,97 +767,9 @@ func setStorageDefaults(a *api.Properties) {
 	}
 }
 
-func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
-	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]) > 0 &&
-		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]) > 0 {
-		return true, nil
-	}
-
-	c := certgen.Config{
-		Master: &certgen.Master{
-			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
-			IPs: []net.IP{
-				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
-			},
-			Port: 8443,
-		},
-		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location),
-		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
-		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
-		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
-		AzureConfig: certgen.AzureConfig{
-			TenantID:        a.AzProfile.TenantID,
-			SubscriptionID:  a.AzProfile.SubscriptionID,
-			AADClientID:     a.ServicePrincipalProfile.ClientID,
-			AADClientSecret: a.ServicePrincipalProfile.Secret,
-			ResourceGroup:   a.AzProfile.ResourceGroup,
-			Location:        a.AzProfile.Location,
-		},
-	}
-
-	err := c.PrepareMasterCerts()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterKubeConfigs()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterFiles()
-	if err != nil {
-		return false, err
-	}
-
-	err = c.PrepareBootstrapKubeConfig()
-	if err != nil {
-		return false, err
-	}
-
-	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles == nil {
-		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
-	}
-
-	masterBundle, err := getConfigBundle(c.WriteMaster)
-	if err != nil {
-		return false, err
-	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
-
-	nodeBundle, err := getConfigBundle(c.WriteNode)
-	if err != nil {
-		return false, err
-	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
-
-	return true, nil
-}
-
-type writeFn func(filesystem.Writer) error
-
-func getConfigBundle(write writeFn) ([]byte, error) {
-	b := &bytes.Buffer{}
-
-	fs, err := filesystem.NewTGZWriter(b)
-	if err != nil {
-		return nil, err
-	}
-
-	err = write(fs)
-	if err != nil {
-		return nil, err
-	}
-
-	err = fs.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
-}
-
 func setDefaultCerts(a *api.Properties) (bool, error) {
 	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return openShiftSetDefaultCerts(a)
+		return certgen.OpenShiftSetDefaultCerts(a, DefaultOpenshiftOrchestratorName, GenerateClusterID(a))
 	}
 
 	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {
