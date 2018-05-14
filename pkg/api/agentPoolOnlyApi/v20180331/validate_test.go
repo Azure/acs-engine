@@ -468,7 +468,7 @@ func TestValidateAADProfile(t *testing.T) {
 	mc.Properties.AADProfile = &AADProfile{
 		ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 	}
-	if err := mc.Properties.AADProfile.Validate(); err != ErrorRBACNotEnabledForAAD {
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorRBACNotEnabledForAAD {
 		t.Errorf("Expected to fail because RBAC is not enabled")
 	}
 
@@ -479,7 +479,7 @@ func TestValidateAADProfile(t *testing.T) {
 	mc.Properties.AADProfile = &AADProfile{
 		ServerAppSecret: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 	}
-	if err := mc.Properties.AADProfile.Validate(); err != ErrorAADServerAppIDNotSet {
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADServerAppIDNotSet {
 		t.Errorf("Expected to fail because ServerAppID is not set")
 	}
 
@@ -490,7 +490,7 @@ func TestValidateAADProfile(t *testing.T) {
 	mc.Properties.AADProfile = &AADProfile{
 		ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 	}
-	if err := mc.Properties.AADProfile.Validate(); err != ErrorAADServerAppSecretNotSet {
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADServerAppSecretNotSet {
 		t.Errorf("Expected to fail because ServerAppSecret is not set")
 	}
 
@@ -502,7 +502,7 @@ func TestValidateAADProfile(t *testing.T) {
 		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
 	}
-	if err := mc.Properties.AADProfile.Validate(); err != ErrorAADClientAppIDNotSet {
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADClientAppIDNotSet {
 		t.Errorf("Expected to fail because ClientAppID is not set")
 	}
 
@@ -515,7 +515,7 @@ func TestValidateAADProfile(t *testing.T) {
 		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
 		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
 	}
-	if err := mc.Properties.AADProfile.Validate(); err != ErrorAADTenantIDNotSet {
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADTenantIDNotSet {
 		t.Errorf("Expected to fail because TenantID is not set")
 	}
 }

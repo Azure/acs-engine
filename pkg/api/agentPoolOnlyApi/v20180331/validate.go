@@ -42,7 +42,11 @@ func (l *LinuxProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AADProfile) Validate() error {
+func (a *AADProfile) Validate(rbacEnabled *bool) error {
+	if rbacEnabled == nil || *rbacEnabled == false {
+		return ErrorRBACNotEnabledForAAD
+	}
+
 	if e := validate.Var(a.ServerAppID, "required"); e != nil {
 		return ErrorAADServerAppIDNotSet
 	}
@@ -125,10 +129,7 @@ func (a *Properties) Validate() error {
 	}
 
 	if a.AADProfile != nil {
-		if a.EnableRBAC == nil || *a.EnableRBAC == false {
-			return ErrorRBACNotEnabledForAAD
-		}
-		if e := a.AADProfile.Validate(); e != nil {
+		if e := a.AADProfile.Validate(a.EnableRBAC); e != nil {
 			return e
 		}
 	}
