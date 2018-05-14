@@ -636,7 +636,7 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 		o.OrchestratorVersion = api.OrchestratorVersion
 		// Enable using "unstable" as a valid version in the openshift orchestrator.
 		// Required for progressing on an unreleased version.
-		if api.OpenShiftConfig == nil || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
+		if !api.IsOpenShift() || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
 			sv, _ := semver.NewVersion(o.OrchestratorVersion)
 			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
 		}
