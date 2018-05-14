@@ -1962,8 +1962,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
 		"OpenShiftGetMasterSh": func() (string, error) {
-			version := cs.Properties.OrchestratorProfile.OrchestratorVersion
-			masterShAsset := getOpenshiftMasterShAsset(version)
+			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
 			t, err := template.New("master").Parse(string(tb))
 			if err != nil {
@@ -1976,7 +1975,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				RouterLBHostname       string
 				Location               string
 			}{
-				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"]),
+				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]),
 				ExternalMasterHostname: fmt.Sprintf("%s.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
 				RouterLBHostname:       fmt.Sprintf("%s-router.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
 				Location:               cs.Properties.AzProfile.Location,
@@ -1984,8 +1983,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return b.String(), err
 		},
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
-			version := cs.Properties.OrchestratorProfile.OrchestratorVersion
-			nodeShAsset := getOpenshiftNodeShAsset(version)
+			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(nodeShAsset)
 			t, err := template.New("node").Parse(string(tb))
 			if err != nil {
@@ -1996,7 +1994,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				ConfigBundle string
 				Role         api.AgentPoolProfileRole
 			}{
-				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["bootstrap"]),
+				ConfigBundle: base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]),
 				Role:         profile.Role,
 			})
 			return b.String(), err

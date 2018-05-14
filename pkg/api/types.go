@@ -345,7 +345,7 @@ type OpenShiftConfig struct {
 	// EnableAADAuthentication is temporary, do not rely on it.
 	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
 
-	ConfigBundles map[string]map[string][]byte `json:"configBundles,omitempty"`
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

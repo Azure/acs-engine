@@ -252,8 +252,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 					return err
 				}
 			case api.OpenShift:
-				version := sc.containerService.Properties.OrchestratorProfile.OrchestratorVersion
-				bundle := bytes.NewReader(sc.containerService.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"])
+				bundle := bytes.NewReader(sc.containerService.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"])
 				fs, err := filesystem.NewTGZReader(bundle)
 				if err != nil {
 					return fmt.Errorf("failed to read master bundle: %v", err)

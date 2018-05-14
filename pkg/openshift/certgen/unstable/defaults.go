@@ -12,9 +12,8 @@ import (
 // OpenShiftSetDefaultCerts sets default certificate and configuration properties in the
 // openshift orchestrator.
 func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID string) (bool, error) {
-	version := a.OrchestratorProfile.OrchestratorVersion
-	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"]) > 0 &&
-		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["bootstrap"]) > 0 {
+	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]) > 0 &&
+		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]) > 0 {
 		return true, nil
 	}
 
@@ -59,23 +58,20 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 	}
 
 	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles == nil {
-		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string]map[string][]byte)
-	}
-	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version] == nil {
-		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version] = make(map[string][]byte)
+		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
 	}
 
 	masterBundle, err := getConfigBundle(c.WriteMaster)
 	if err != nil {
 		return false, err
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"] = masterBundle
+	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 
 	nodeBundle, err := getConfigBundle(c.WriteNode)
 	if err != nil {
 		return false, err
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["bootstrap"] = nodeBundle
+	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
 
 	return true, nil
 }

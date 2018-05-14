@@ -124,14 +124,13 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 			}
 		}
 	} else if properties.OrchestratorProfile.IsOpenShift() {
-		version := properties.OrchestratorProfile.OrchestratorVersion
 		masterTarballPath := filepath.Join(artifactsDir, "master.tar.gz")
-		masterBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["master"]
+		masterBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]
 		if err := ioutil.WriteFile(masterTarballPath, masterBundle, 0644); err != nil {
 			return err
 		}
 		nodeTarballPath := filepath.Join(artifactsDir, "node.tar.gz")
-		nodeBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles[version]["bootstrap"]
+		nodeBundle := properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]
 		return ioutil.WriteFile(nodeTarballPath, nodeBundle, 0644)
 	}
 
