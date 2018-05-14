@@ -521,14 +521,14 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = "1.6.9"
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
+		api.OrchestratorVersion = common.DCOSVersion1Dot9Dot0
 	}
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
+		api.OrchestratorVersion = common.DCOSVersion1Dot9Dot0
 	}
 }
 
@@ -537,7 +537,7 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = common.GetDefaultKubernetesVersion()
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
+		api.OrchestratorVersion = common.DCOSVersion1Dot9Dot0
 	}
 }
 
@@ -553,10 +553,10 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		api.OrchestratorVersion = common.GetSupportedKubernetesVersion(v20170701cs.OrchestratorVersion)
 	case DCOS:
 		switch v20170701cs.OrchestratorVersion {
-		case DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
+		case common.DCOSVersion1Dot10Dot0, common.DCOSVersion1Dot9Dot0, common.DCOSVersion1Dot8Dot8:
 			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
-			api.OrchestratorVersion = DCOSVersion1Dot9Dot0
+			api.OrchestratorVersion = common.DCOSVersion1Dot9Dot0
 		}
 	default:
 		break
