@@ -44,21 +44,21 @@ func (l *LinuxProfile) Validate() error {
 // Validate implements APIObject
 func (a *AADProfile) Validate() error {
 	if e := validate.Var(a.ServerAppID, "required"); e != nil {
-		return fmt.Errorf("ServerAppID in AADProfile cannot be empty string")
+		return ErrorAADServerAppIDNotSet
 	}
 
 	// Don't need to call validate.Struct(l)
 	// It is handled by Properties.Validate()
 	if e := validate.Var(a.ServerAppSecret, "required"); e != nil {
-		return fmt.Errorf("ServerAppSecret in AADProfile cannot be empty string")
+		return ErrorAADServerAppSecretNotSet
 	}
 
 	if e := validate.Var(a.ClientAppID, "required"); e != nil {
-		return fmt.Errorf("ClientAppID in AADProfile cannot be empty string")
+		return ErrorAADClientAppIDNotSet
 	}
 
 	if e := validate.Var(a.TenantID, "required"); e != nil {
-		return fmt.Errorf("TenantID in AADProfile cannot be empty string")
+		return ErrorAADTenantIDNotSet
 	}
 
 	return nil
@@ -126,7 +126,7 @@ func (a *Properties) Validate() error {
 
 	if a.AADProfile != nil {
 		if a.EnableRBAC == nil || *a.EnableRBAC == false {
-			return fmt.Errorf("RBAC must be enabled for AAD to be enabled")
+			return ErrorRBACNotEnabledForAAD
 		}
 		if e := a.AADProfile.Validate(); e != nil {
 			return e
