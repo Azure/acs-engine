@@ -509,7 +509,7 @@ const (
 	// OIDC represent cluster setup in OIDC auth mode
 	OIDC AuthenticatorType = "oidc"
 	// Webhook represent cluster setup in wehhook auth mode
-	Webhook AuthenticatorType = "webHook"
+	Webhook AuthenticatorType = "webhook"
 )
 
 // AADProfile specifies attributes for AAD integration
