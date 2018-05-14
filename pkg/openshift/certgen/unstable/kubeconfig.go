@@ -1,4 +1,4 @@
-package certgen
+package unstable
 
 import (
 	"encoding/base64"
@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // KubeConfig represents a kubeconfig
