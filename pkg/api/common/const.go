@@ -86,11 +86,13 @@ var AllDCOSSupportedVersions = []string{
 const (
 	// OpenShiftVersion3Dot9Dot0 is the major.minor.patch string for the 3.9.0 version of OpenShift
 	OpenShiftVersion3Dot9Dot0 string = "3.9.0"
+	// OpenShiftVersionUnstable is used for development in acs-engine and should not be used by end-users.
+	OpenShiftVersionUnstable string = "unstable"
 	// OpenShiftDefaultVersion is the default major.minor.patch version for OpenShift
 	OpenShiftDefaultVersion string = OpenShiftVersion3Dot9Dot0
 )
 
 // GetAllSupportedOpenShiftVersions returns a slice of all supported OpenShift versions.
 func GetAllSupportedOpenShiftVersions() []string {
-	return []string{OpenShiftVersion3Dot9Dot0}
+	return []string{OpenShiftVersion3Dot9Dot0, OpenShiftVersionUnstable}
 }

@@ -1,4 +1,4 @@
-package certgen
+package release39
 
 import (
 	"bytes"
