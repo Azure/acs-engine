@@ -7,6 +7,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/openshift/certgen/unstable"
 )
 
+// OpenShiftSetDefaultCerts sets default certificate and configuration properties in the
+// openshift orchestrator.
 func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID string) (bool, error) {
 	switch a.OrchestratorProfile.OrchestratorVersion {
 	case common.OpenShiftVersion3Dot9Dot0:

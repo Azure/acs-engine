@@ -2,7 +2,7 @@
 
 # TODO: /etc/dnsmasq.d/origin-upstream-dns.conf is currently hardcoded; it
 # probably shouldn't be
-
+echo "UNSTABLE!"
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	SERVICE_TYPE=atomic-openshift
 else
