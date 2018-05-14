@@ -503,6 +503,8 @@ type HostedMasterProfile struct {
 	Subnet string `json:"subnet"`
 }
 
+// AuthenticatorType represents the authenticator type the cluster was
+// set up with.
 type AuthenticatorType string
 
 const (
