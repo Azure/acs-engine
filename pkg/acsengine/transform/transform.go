@@ -143,7 +143,7 @@ func (t *Transformer) NormalizeForOpenShiftVMASScalingUp(logger *logrus.Entry, a
 	templateMap[resourcesFieldName] = resources
 
 	// remove all outputs: they may depend on deleted resources
-	templateMap[outputsFieldName] = []interface{}{}
+	templateMap[outputsFieldName] = map[string]interface{}{}
 
 	return
 }
