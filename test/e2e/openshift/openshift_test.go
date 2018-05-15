@@ -3,6 +3,7 @@ package openshift
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"time"
@@ -19,8 +20,11 @@ import (
 )
 
 var (
-	cfg config.Config
-	eng engine.Engine
+	cfg         config.Config
+	eng         engine.Engine
+	ch          = make(chan os.Signal, 1)
+	failed      bool
+	interrupted bool
 )
 
 var _ = BeforeSuite(func() {
@@ -42,9 +46,9 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition:  csInput,
 		ExpandedDefinition: csGenerated,
 	}
+	signal.Notify(ch, os.Interrupt)
 })
 
-var failed = false
 var _ = AfterEach(func() {
 	// Recommended way to optionally act on failures after
 	// tests finish - see https://github.com/onsi/ginkgo/issues/361
@@ -52,7 +56,14 @@ var _ = AfterEach(func() {
 })
 
 var _ = AfterSuite(func() {
-	if !failed {
+	select {
+	case <-ch:
+		// interrupt
+		interrupted = true
+	default:
+	}
+
+	if !failed && !interrupted {
 		return
 	}
 
