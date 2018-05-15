@@ -330,3 +330,37 @@ func TestIfMasterProfileIsPresentThenApiModelIsFullCluster(t *testing.T) {
 		t.Error("Expected JSON with masterProfile not to be interpreted as agent pool, but it was")
 	}
 }
+
+func TestConvertFromV20180331AADProfile(t *testing.T) {
+	aadProfile := v20180331.AADProfile{
+		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
+		TenantID:        "dcbfaea3-7312-497e-81d9-9ad9b8a99852",
+	}
+	api := convertV20180331AgentPoolOnlyAADProfile(&aadProfile)
+
+	if api.AdminGroupID != "" {
+		t.Error("AdminGroupID should be empty")
+	}
+
+	if api.ServerAppID != "ccbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppID not set to expected value")
+	}
+
+	if api.ServerAppSecret != "bcbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppSecret not set to expected value")
+	}
+
+	if api.ClientAppID != "acbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ClientAppID not set to expected value")
+	}
+
+	if api.TenantID != "dcbfaea3-7312-497e-81d9-9ad9b8a99852" {
+		t.Error("TenantID not set to expected value")
+	}
+
+	if api.Authenticator != Webhook {
+		t.Error("Authenticator not set to Webhook")
+	}
+}
