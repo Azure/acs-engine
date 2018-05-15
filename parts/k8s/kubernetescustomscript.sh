@@ -210,7 +210,7 @@ function installCNI() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 1 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
+    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
         echo "could not download required CNI artifact at ${CNI_PLUGINS_URL}"
         exit $ERR_CNI_DOWNLOAD_TIMEOUT
@@ -228,7 +228,7 @@ function configAzureCNI() {
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_get_tarball 60 1 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
+    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
     if [ $? -ne 0 ]; then
         echo "could not download required CNI artifact at ${VNET_CNI_PLUGINS_URL}"
         exit $ERR_CNI_DOWNLOAD_TIMEOUT
@@ -261,7 +261,8 @@ function installClearContainersRuntime() {
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-	apt_get_install 20 30 120 cc-runtime
+    apt_get_update
+    apt_get_install 20 30 120 cc-runtime
 
 	# Install the systemd service and socket files.
 	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
