@@ -908,10 +908,9 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("scenario %q", test.name)
-
 		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
 		if !reflect.DeepEqual(gotErr, test.expectedErr) {
+			t.Logf("scenario %q", test.name)
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
 		}
 	}
@@ -1111,10 +1110,9 @@ func TestOpenshiftValidate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("running scenario %q", test.name)
-
 		gotErr := test.properties.Validate(test.isUpgrade)
 		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+			t.Logf("running scenario %q", test.name)
 			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
 	}
