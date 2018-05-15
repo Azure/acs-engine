@@ -8,7 +8,7 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
 
 ### Prerequisites
 * Azure Storage Account and Azure Storage Container to store Windows binaries
-* Access to [wincni.exe] (https://github.com/Microsoft/SDN/tree/master/Kubernetes/windows/cni) stored in a storage container. Windows CNI is a plugin that supports the Container Network Interface (CNI) network model and interfaces with the Windows Host Networking Service (HNS) to configure host networking and policy.
+* Access to [wincni.exe] and [hns.psm1] (https://github.com/Microsoft/SDN/tree/master/Kubernetes/windows/). Windows CNI is a plugin that supports the Container Network Interface (CNI) network model and interfaces with the Windows Host Networking Service (HNS) to configure host networking and policy.
 * Docker installed and running. MacOS users using Docker for Mac must have at [least 3GB of memory allocated to Docker](https://github.com/kubernetes/kubernetes/tree/master/build/#requirements) or building will likely fail.
 
 [build-windows-k8s.sh](../scripts/build-windows-k8s.sh) does the following:
@@ -16,7 +16,7 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
 - Builds kubelet.exe and kube-proxy.exe from source in a Docker container
 - Downloads kubectl.exe for desired release
 - Downloads [NSSM](https://nssm.cc) which is used to start kubelet and kube-proxy on Windows
-- Downloads [Windows CNI](https://github.com/Microsoft/SDN/tree/master/Kubernetes/windows/cni)
+- Downloads [Windows CNI exe and script] (https://github.com/Microsoft/SDN/tree/master/Kubernetes/windows/)
 - Creates an .zip archive of these Windows components
 - Uploads archive to Azure Blob Storage
 
@@ -24,7 +24,7 @@ More information about building Kubernetes binaries from source here: https://gi
 
 ### Set Azure Storage credentials and Container name
 
-A storage container is used to download winnat.sys during the build phase and to upload the resulting archive artifact.
+A storage container is used to upload the resulting archive artifact.
 ```
 $ export AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=MyStorageAccountName;AccountKey=..." \
 AZURE_STORAGE_CONTAINER_NAME=MyStorageContainerName
