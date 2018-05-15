@@ -216,6 +216,19 @@ function
 New-InfraContainer()
 {
     cd $global:KubeDir
+    $computerInfo = Get-ComputerInfo
+    $windowsBase = if ($computerInfo.WindowsVersion -eq "1709") {
+        "microsoft/nanoserver:1709"
+    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) { 
+        "microsoft/nanoserver:1803"
+    } else { 
+        # This is a temporary workaround. As of May 2018, Windows Server Insider builds still report 1803 which is wrong.
+        # Once that is fixed, add another elseif ( -eq "nnnn") instead and remove the StartsWith("17134") above
+        "microsoft/nanoserver-insider"
+    }
+    
+    "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
+    "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
     docker build -t kubletwin/pause .
 }
 
