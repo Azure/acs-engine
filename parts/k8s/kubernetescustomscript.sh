@@ -253,8 +253,10 @@ function configNetworkPlugin() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key > /tmp/clear-containers-release.key || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/clear-containers-release.key || exit $ERR_APT_INSTALL_TIMEOUT
+    CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
+    CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -267,14 +269,29 @@ function installClearContainersRuntime() {
 
 	# Install the systemd service and socket files.
 	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > /tmp/cc-proxy.service.in
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > /tmp/cc-proxy.socket.in
-    cat /tmp/cc-proxy.service.in | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
-    cat /tmp/cc-proxy.socket.in sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
+    CC_SERVICE_IN_TMP=/tmp/cc-proxy.service.in
+    CC_SOCKET_IN_TMP=/tmp/cc-proxy.socket.in
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+    cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
+    cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
 
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy
+}
+
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0"
+	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+
+    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+	rm -f "$CONTAINERD_TGZ_TMP"
+
+	echo "Successfully installed cri-containerd..."
+	setupContainerd
 }
 
 function setupContainerd() {
