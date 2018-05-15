@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
 source /opt/azure/containers/provision_source.sh
+# TODO standardize/generalize CSE exit codes
 ERR_SYSTEMCTL_ENABLE_FAIL=3 # Service could not be enabled by systemctl
 ERR_SYSTEMCTL_START_FAIL=4 # Service could not be started by systemctl
 ERR_CLOUD_INIT_TIMEOUT=5 # Timeout waiting for cloud-init runcmd to complete
@@ -10,6 +11,7 @@ ERR_RELEASE_HOLD_WALINUXAGENT=8 # Unable to release hold on walinuxagent apt pac
 ERR_APT_INSTALL_TIMEOUT=9 # Timeout installing required apt packages
 ERR_ETCD_DATA_DIR_NOT_FOUND=10 # Etcd data dir not found
 ERR_ETCD_RUNNING_TIMEOUT=11 # Timeout waiting for etcd to be accessible
+ERR_ETCD_DOWNLOAD_TIMEOUT=12 # Timeout waiting for etcd to download
 ERR_ETCD_VOL_MOUNT_FAIL=13 # Unable to mount etcd disk volume
 ERR_ETCD_START_TIMEOUT=14 # Unable to start etcd runtime
 ERR_ETCD_CONFIG_FAIL=15 # Unable to configure etcd cluster

@@ -348,6 +348,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     #!/bin/bash
     set -x
     source /opt/azure/containers/provision_source.sh
+    # TODO standardize/generalize CSE exit codes
     ERR_ETCD_DOWNLOAD_TIMEOUT=12
     ERR_SYSTEMCTL_ENABLE_FAIL=3
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
