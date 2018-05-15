@@ -117,3 +117,53 @@ Run `acs-engine generate examples/openshift.json`
 After couple of minutes, your OpenShift web console should be accessible at `https://${dnsprefix}.${location}.cloudapp.azure.com:8443/`. You can log in with `clusterUsername` and `clusterPassword` values you set in the `openshift.json` file or with your Azure account if you've used AAD integration.
 
 For next steps, see [getting started documentation](https://docs.openshift.org/latest/getting_started/index.html) on OpenShift website.
+
+## Custom VNET
+
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the master IP address in `firstConsecutiveStaticIP`. Additionally, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET. Note: Currently OpenShift clusters cannot be set up in the 172.30.0.0/16 range. 
+
+To create a vnet and a subnet, for example:
+
+```bash
+az network vnet create -g $RESOURCE_GROUP -n $VNET_NAME --address-prefixes 10.239.0.0/16 --subnet-name $SUBNET_NAME --subnet-prefix 10.239.0.0/24
+```
+To get the `vnetSubnetId`:
+
+```bash
+az network vnet subnet show -n $SUBNET_NAME -g $RESOURCE_GROUP --vnet-name $VNET_NAME --query id
+```
+
+Edit the [OpenShift with custom vnet cluster definition](/examples/vnet/openshift-vnet.json) and fill out the required values (every value with empty default `""` must be filled in).
+
+To avoid IP address allocation collision during deployment:
+
+* If possible, assign to the `firstConsecutiveStaticIP` configuration property an IP address that is near the "end" of the available IP address space in the desired  subnet.
+* For example, if the desired subnet is a `/24`, choose the "239" address in that network space
+
+In larger subnets (e.g., `/16`) it's not as practically useful to push static IP assignment to the very "end" of large subnet, but as long as it's not in the "first" `/24` (for example) your deployment will be resilient to this edge case behavior.
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
+
+```json
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+  "firstConsecutiveStaticIP": "10.239.0.239",
+  "vnetCidr": "10.239.0.0/24",
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "compute",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+    ...
+  },
+  {
+    ...
+    "name": "infra",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+    ...
+  },
+```
