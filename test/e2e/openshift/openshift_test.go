@@ -1,6 +1,7 @@
 package openshift
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,6 +42,26 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition:  csInput,
 		ExpandedDefinition: csGenerated,
 	}
+})
+
+var failed = false
+var _ = AfterEach(func() {
+	// Recommended way to optionally act on failures after
+	// tests finish - see https://github.com/onsi/ginkgo/issues/361
+	failed = failed || CurrentGinkgoTestDescription().Failed
+})
+
+var _ = AfterSuite(func() {
+	if !failed {
+		return
+	}
+
+	nodeOut, _ := util.DumpNodes()
+	fmt.Println(nodeOut)
+	podOut, _ := util.DumpPods()
+	fmt.Println(podOut)
+	diagnosticsOut, _ := util.RunDiagnostics()
+	fmt.Println(diagnosticsOut)
 })
 
 var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", func() {

@@ -99,3 +99,39 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 	}
 	return fmt.Errorf("unexpected response status: %v", resp.Status)
 }
+
+// DumpNodes dumps information about nodes.
+func DumpNodes() (string, error) {
+	cmd := exec.Command("oc", "get", "nodes", "-o", "wide")
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to list nodes: %s", string(out))
+		return "", err
+	}
+	return string(out), nil
+}
+
+// DumpPods dumps the pods from all namespaces.
+func DumpPods() (string, error) {
+	cmd := exec.Command("oc", "get", "pods", "--all-namespaces", "-o", "wide")
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to list pods from all namespaces: %s", string(out))
+		return "", err
+	}
+	return string(out), nil
+}
+
+// RunDiagnostics runs the openshift diagnostics command.
+func RunDiagnostics() (string, error) {
+	cmd := exec.Command("oc", "adm", "diagnostics")
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to run diagnostics: %s", string(out))
+		return "", err
+	}
+	return string(out), nil
+}
