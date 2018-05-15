@@ -267,5 +267,33 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 	if !*enableRBAC {
 		t.Error("EnableRBAC expected to be true")
 	}
+}
 
+func TestConvertToV20180331AADProfile(t *testing.T) {
+	api := AADProfile{
+		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
+		TenantID:        "dcbfaea3-7312-497e-81d9-9ad9b8a99852",
+		Authenticator:   Webhook,
+	}
+
+	p := v20180331.AADProfile{}
+	convertAADProfileToV20180331AgentPoolOnly(&api, &p)
+
+	if p.ClientAppID != "acbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ClientAppID not set to expected value")
+	}
+
+	if p.ServerAppSecret != "bcbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppSecret not set to expected value")
+	}
+
+	if p.ServerAppID != "ccbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppID not set to expected value")
+	}
+
+	if p.TenantID != "dcbfaea3-7312-497e-81d9-9ad9b8a99852" {
+		t.Error("TenantID not set to expected value")
+	}
 }
