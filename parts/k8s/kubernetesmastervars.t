@@ -456,7 +456,7 @@
     "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServerSemiAnnual",
-    "agentWindowsSku": "Datacenter-Core-1803-with-Containers-smalldisk",
+    "agentWindowsSku": "[parameters('agentWindowsSku')]",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
