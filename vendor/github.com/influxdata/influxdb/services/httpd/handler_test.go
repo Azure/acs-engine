@@ -31,7 +31,7 @@ import (
 // Ensure the handler returns results from a query (including nil results).
 func TestHandler_Query(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT * FROM bar` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `foo` {
@@ -54,7 +54,7 @@ func TestHandler_Query(t *testing.T) {
 // Ensure the handler returns results from a query passed as a file.
 func TestHandler_Query_File(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT * FROM bar` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `foo` {
@@ -123,7 +123,7 @@ func TestHandler_Query_Auth(t *testing.T) {
 	}
 
 	// Set mock statement executor for handler to use.
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT * FROM bar` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `foo` {
@@ -238,7 +238,7 @@ func TestHandler_Query_Auth(t *testing.T) {
 // Ensure the handler returns results from a query (including nil results).
 func TestHandler_QueryRegex(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT * FROM test WHERE url =~ /http\:\/\/www.akamai\.com/` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `test` {
@@ -255,7 +255,7 @@ func TestHandler_QueryRegex(t *testing.T) {
 // Ensure the handler merges results from the same statement.
 func TestHandler_Query_MergeResults(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		ctx.Results <- &query.Result{StatementID: 1, Series: models.Rows([]*models.Row{{Name: "series0"}})}
 		ctx.Results <- &query.Result{StatementID: 1, Series: models.Rows([]*models.Row{{Name: "series1"}})}
 		return nil
@@ -273,7 +273,7 @@ func TestHandler_Query_MergeResults(t *testing.T) {
 // Ensure the handler merges results from the same statement.
 func TestHandler_Query_MergeEmptyResults(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		ctx.Results <- &query.Result{StatementID: 1, Series: models.Rows{}}
 		ctx.Results <- &query.Result{StatementID: 1, Series: models.Rows([]*models.Row{{Name: "series1"}})}
 		return nil
@@ -291,7 +291,7 @@ func TestHandler_Query_MergeEmptyResults(t *testing.T) {
 // Ensure the handler can parse chunked and chunk size query parameters.
 func TestHandler_Query_Chunked(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if ctx.ChunkSize != 2 {
 			t.Fatalf("unexpected chunk size: %d", ctx.ChunkSize)
 		}
@@ -315,7 +315,7 @@ func TestHandler_Query_Chunked(t *testing.T) {
 func TestHandler_Query_Async(t *testing.T) {
 	done := make(chan struct{})
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT * FROM bar` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `foo` {
@@ -449,7 +449,7 @@ func TestHandler_Query_ErrAuthorize(t *testing.T) {
 // Ensure the handler returns a status 200 if an error is returned in the result.
 func TestHandler_Query_ErrResult(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		return errors.New("measurement not found")
 	}
 
@@ -470,9 +470,9 @@ func TestHandler_Query_CloseNotify(t *testing.T) {
 
 	interrupted := make(chan struct{})
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		select {
-		case <-ctx.InterruptCh:
+		case <-ctx.Done():
 		case <-done:
 		}
 		close(interrupted)
@@ -614,7 +614,7 @@ func TestHandler_PromRead(t *testing.T) {
 	b := bytes.NewReader(compressed)
 
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		if stmt.String() != `SELECT f64 FROM foo.._ WHERE eq = 'a' AND neq != 'b' AND regex =~ /c/ AND neqregex !~ /d/ AND time >= '1970-01-01T00:00:00.001Z' AND time <= '1970-01-01T00:00:00.002Z' GROUP BY *` {
 			t.Fatalf("unexpected query: %s", stmt.String())
 		} else if ctx.Database != `foo` {
@@ -678,7 +678,7 @@ func TestHandler_Ping(t *testing.T) {
 // Ensure the handler returns the version correctly from the different endpoints.
 func TestHandler_Version(t *testing.T) {
 	h := NewHandler(false)
-	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx query.ExecutionContext) error {
+	h.StatementExecutor.ExecuteStatementFn = func(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 		return nil
 	}
 	tests := []struct {
@@ -766,6 +766,32 @@ func TestHandler_Write_EntityTooLarge_ContentLength(t *testing.T) {
 	h.ServeHTTP(w, MustNewRequest("POST", "/write?db=foo", b))
 	if w.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("unexpected status: %d", w.Code)
+	}
+}
+
+func TestHandler_Write_SuppressLog(t *testing.T) {
+	var buf bytes.Buffer
+	c := httpd.NewConfig()
+	c.SuppressWriteLog = true
+	h := NewHandlerWithConfig(c)
+	h.CLFLogger = log.New(&buf, "", log.LstdFlags)
+	h.MetaClient.DatabaseFn = func(name string) *meta.DatabaseInfo {
+		return &meta.DatabaseInfo{}
+	}
+	h.PointsWriter.WritePointsFn = func(database, retentionPolicy string, consistencyLevel models.ConsistencyLevel, user meta.User, points []models.Point) error {
+		return nil
+	}
+
+	b := strings.NewReader("cpu,host=server01 value=2\n")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, MustNewRequest("POST", "/write?db=foo", b))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("unexpected status: %d", w.Code)
+	}
+
+	// If the log has anything in it, this failed.
+	if buf.Len() > 0 {
+		t.Fatalf("expected no bytes to be written to the log, got %d", buf.Len())
 	}
 }
 
@@ -914,7 +940,10 @@ func NewHandler(requireAuthentication bool) *Handler {
 	config := httpd.NewConfig()
 	config.AuthEnabled = requireAuthentication
 	config.SharedSecret = "super secret key"
+	return NewHandlerWithConfig(config)
+}
 
+func NewHandlerWithConfig(config httpd.Config) *Handler {
 	h := &Handler{
 		Handler: httpd.NewHandler(config),
 	}
@@ -922,7 +951,7 @@ func NewHandler(requireAuthentication bool) *Handler {
 	h.MetaClient = &internal.MetaClientMock{}
 
 	h.Handler.MetaClient = h.MetaClient
-	h.Handler.QueryExecutor = query.NewQueryExecutor()
+	h.Handler.QueryExecutor = query.NewExecutor()
 	h.Handler.QueryExecutor.StatementExecutor = &h.StatementExecutor
 	h.Handler.QueryAuthorizer = &h.QueryAuthorizer
 	h.Handler.PointsWriter = &h.PointsWriter
@@ -933,10 +962,10 @@ func NewHandler(requireAuthentication bool) *Handler {
 
 // HandlerStatementExecutor is a mock implementation of Handler.StatementExecutor.
 type HandlerStatementExecutor struct {
-	ExecuteStatementFn func(stmt influxql.Statement, ctx query.ExecutionContext) error
+	ExecuteStatementFn func(stmt influxql.Statement, ctx *query.ExecutionContext) error
 }
 
-func (e *HandlerStatementExecutor) ExecuteStatement(stmt influxql.Statement, ctx query.ExecutionContext) error {
+func (e *HandlerStatementExecutor) ExecuteStatement(stmt influxql.Statement, ctx *query.ExecutionContext) error {
 	return e.ExecuteStatementFn(stmt, ctx)
 }
 

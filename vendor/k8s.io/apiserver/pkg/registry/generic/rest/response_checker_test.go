@@ -25,8 +25,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 func TestGenericHttpResponseChecker(t *testing.T) {
@@ -90,6 +90,6 @@ func TestGenericHttpResponseCheckerLimitReader(t *testing.T) {
 		t.Error("unexpected non-error")
 	}
 	if len(err.Error()) != maxReadLength {
-		t.Errorf("expected lenth of error message: %d, saw: %d", maxReadLength, len(err.Error()))
+		t.Errorf("expected length of error message: %d, saw: %d", maxReadLength, len(err.Error()))
 	}
 }

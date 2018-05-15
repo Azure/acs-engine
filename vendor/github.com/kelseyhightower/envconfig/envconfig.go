@@ -8,6 +8,7 @@ import (
 	"encoding"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -122,7 +123,7 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 
 		if f.Kind() == reflect.Struct {
 			// honor Decode if present
-			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil {
+			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil && binaryUnmarshaler(f) == nil  {
 				innerPrefix := prefix
 				if !ftype.Anonymous {
 					innerPrefix = info.Key
@@ -140,6 +141,37 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 		}
 	}
 	return infos, nil
+}
+
+// CheckDisallowed checks that no environment variables with the prefix are set
+// that we don't know how or want to parse. This is likely only meaningful with
+// a non-empty prefix.
+func CheckDisallowed(prefix string, spec interface{}) error {
+	infos, err := gatherInfo(prefix, spec)
+	if err != nil {
+		return err
+	}
+
+	vars := make(map[string]struct{})
+	for _, info := range infos {
+		vars[info.Key] = struct{}{}
+	}
+
+	if prefix != "" {
+		prefix = strings.ToUpper(prefix) + "_"
+	}
+
+	for _, env := range os.Environ() {
+		if !strings.HasPrefix(env, prefix) {
+			continue
+		}
+		v := strings.SplitN(env, "=", 2)[0]
+		if _, found := vars[v]; !found {
+			return fmt.Errorf("unknown environment variable %s", v)
+		}
+	}
+
+	return nil
 }
 
 // Process populates the specified struct based on environment variables
@@ -207,6 +239,10 @@ func processField(value string, field reflect.Value) error {
 
 	if t := textUnmarshaler(field); t != nil {
 		return t.UnmarshalText([]byte(value))
+	}
+
+	if b := binaryUnmarshaler(field); b != nil {
+		return b.UnmarshalBinary([]byte(value))
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -318,6 +354,11 @@ func setterFrom(field reflect.Value) (s Setter) {
 func textUnmarshaler(field reflect.Value) (t encoding.TextUnmarshaler) {
 	interfaceFrom(field, func(v interface{}, ok *bool) { t, *ok = v.(encoding.TextUnmarshaler) })
 	return t
+}
+
+func binaryUnmarshaler(field reflect.Value) (b encoding.BinaryUnmarshaler) {
+	interfaceFrom(field, func(v interface{}, ok *bool) { b, *ok = v.(encoding.BinaryUnmarshaler) })
+	return b
 }
 
 func isTrue(s string) bool {

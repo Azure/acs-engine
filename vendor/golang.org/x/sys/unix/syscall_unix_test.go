@@ -138,9 +138,6 @@ func TestPassFD(t *testing.T) {
 		uc.Close()
 	})
 	_, oobn, _, _, err := uc.ReadMsgUnix(buf, oob)
-	if err != nil {
-		t.Fatalf("ReadMsgUnix: %v", err)
-	}
 	closeUnix.Stop()
 
 	scms, err := unix.ParseSocketControlMessage(oob[:oobn])
@@ -338,9 +335,6 @@ func TestDup(t *testing.T) {
 		t.Fatalf("Write to dup2 fd failed: %v", err)
 	}
 	_, err = unix.Seek(f, 0, 0)
-	if err != nil {
-		t.Fatalf("Seek failed: %v", err)
-	}
 	_, err = unix.Read(f, b2)
 	if err != nil {
 		t.Fatalf("Read back failed: %v", err)
@@ -375,54 +369,6 @@ func TestPoll(t *testing.T) {
 	if n != 0 {
 		t.Errorf("Poll: wrong number of events: got %v, expected %v", n, 0)
 		return
-	}
-}
-
-func TestGetwd(t *testing.T) {
-	fd, err := os.Open(".")
-	if err != nil {
-		t.Fatalf("Open .: %s", err)
-	}
-	defer fd.Close()
-	// These are chosen carefully not to be symlinks on a Mac
-	// (unlike, say, /var, /etc)
-	dirs := []string{"/", "/usr/bin"}
-	if runtime.GOOS == "darwin" {
-		switch runtime.GOARCH {
-		case "arm", "arm64":
-			d1, err := ioutil.TempDir("", "d1")
-			if err != nil {
-				t.Fatalf("TempDir: %v", err)
-			}
-			d2, err := ioutil.TempDir("", "d2")
-			if err != nil {
-				t.Fatalf("TempDir: %v", err)
-			}
-			dirs = []string{d1, d2}
-		}
-	}
-	oldwd := os.Getenv("PWD")
-	for _, d := range dirs {
-		err = os.Chdir(d)
-		if err != nil {
-			t.Fatalf("Chdir: %v", err)
-		}
-		pwd, err := unix.Getwd()
-		if err != nil {
-			t.Fatalf("Getwd in %s: %s", d, err)
-		}
-		os.Setenv("PWD", oldwd)
-		err = fd.Chdir()
-		if err != nil {
-			// We changed the current directory and cannot go back.
-			// Don't let the tests continue; they'll scribble
-			// all over some other directory.
-			fmt.Fprintf(os.Stderr, "fchdir back to dot failed: %s\n", err)
-			os.Exit(1)
-		}
-		if pwd != d {
-			t.Fatalf("Getwd returned %q want %q", pwd, d)
-		}
 	}
 }
 

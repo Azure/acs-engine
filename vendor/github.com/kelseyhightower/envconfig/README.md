@@ -150,7 +150,7 @@ environment variable is set.
 
 ## Supported Struct Field Types
 
-envconfig supports supports these struct field types:
+envconfig supports these struct field types:
 
   * string
   * int8, int16, int32, int64
@@ -159,6 +159,7 @@ envconfig supports supports these struct field types:
   * slices of any supported type
   * maps (keys and values of any supported type)
   * [encoding.TextUnmarshaler](https://golang.org/pkg/encoding/#TextUnmarshaler)
+  * [encoding.BinaryUnmarshaler](https://golang.org/pkg/encoding/#BinaryUnmarshaler)
 
 Embedded structs using these fields are also supported.
 

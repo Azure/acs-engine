@@ -7,10 +7,12 @@ import (
 	"github.com/influxdata/influxql"
 )
 
+var measurementRemap = map[string]string{"_measurement": "_name"}
+
 // NodeToExpr transforms a predicate node to an influxql.Expr.
-func NodeToExpr(node *Node) (influxql.Expr, error) {
-	var v nodeToExprVisitor
-	WalkNode(&v, node)
+func NodeToExpr(node *Node, remap map[string]string) (influxql.Expr, error) {
+	v := &nodeToExprVisitor{remap: remap}
+	WalkNode(v, node)
 	if err := v.Err(); err != nil {
 		return nil, err
 	}
@@ -27,6 +29,7 @@ func NodeToExpr(node *Node) (influxql.Expr, error) {
 }
 
 type nodeToExprVisitor struct {
+	remap map[string]string
 	exprs []influxql.Expr
 	err   error
 }
@@ -124,9 +127,10 @@ func (v *nodeToExprVisitor) Visit(n *Node) NodeVisitor {
 
 	case NodeTypeTagRef:
 		ref := n.GetTagRefValue()
-		if ref == "_measurement" {
-			// as tsdb.Index expects _name for measurement name
-			ref = "_name"
+		if v.remap != nil {
+			if nk, ok := v.remap[ref]; ok {
+				ref = nk
+			}
 		}
 
 		v.exprs = append(v.exprs, &influxql.VarRef{Val: ref})
@@ -202,35 +206,40 @@ func (v *nodeToExprVisitor) pop2() (influxql.Expr, influxql.Expr) {
 
 type hasRefs struct {
 	refs  []string
-	found bool
+	found []bool
+}
+
+func (v *hasRefs) allFound() bool {
+	for _, val := range v.found {
+		if !val {
+			return false
+		}
+	}
+	return true
 }
 
 func (v *hasRefs) Visit(node influxql.Node) influxql.Visitor {
-	if v.found {
+	if v.allFound() {
 		return nil
 	}
 
 	if n, ok := node.(*influxql.VarRef); ok {
-		for _, r := range v.refs {
-			if r == n.Val {
-				v.found = true
-				return nil
+		for i, r := range v.refs {
+			if !v.found[i] && r == n.Val {
+				v.found[i] = true
+				if v.allFound() {
+					return nil
+				}
 			}
 		}
 	}
 	return v
 }
 
-func HasFieldKey(expr influxql.Expr) bool {
-	refs := hasRefs{refs: []string{"_field"}}
+func HasFieldKeyOrValue(expr influxql.Expr) (bool, bool) {
+	refs := hasRefs{refs: []string{"_field", "$"}, found: make([]bool, 2)}
 	influxql.Walk(&refs, expr)
-	return refs.found
-}
-
-func HasFieldKeyOrValue(expr influxql.Expr) bool {
-	refs := hasRefs{refs: []string{"_field", "$"}}
-	influxql.Walk(&refs, expr)
-	return refs.found
+	return refs.found[0], refs.found[1]
 }
 
 func RewriteExprRemoveFieldKeyAndValue(expr influxql.Expr) influxql.Expr {

@@ -33,9 +33,10 @@ import (
 	client "github.com/influxdata/usage-client/v1"
 	"go.uber.org/zap"
 
-	// Initialize the engine & index packages
 	"github.com/influxdata/influxdb/services/storage"
+	// Initialize the engine package
 	_ "github.com/influxdata/influxdb/tsdb/engine"
+	// Initialize the index package
 	_ "github.com/influxdata/influxdb/tsdb/index"
 )
 
@@ -70,7 +71,7 @@ type Server struct {
 	MetaClient *meta.Client
 
 	TSDBStore     *tsdb.Store
-	QueryExecutor *query.QueryExecutor
+	QueryExecutor *query.Executor
 	PointsWriter  *coordinator.PointsWriter
 	Subscriber    *subscriber.Service
 
@@ -178,11 +179,11 @@ func NewServer(c *Config, buildInfo *BuildInfo) (*Server, error) {
 	s.PointsWriter.TSDBStore = s.TSDBStore
 
 	// Initialize query executor.
-	s.QueryExecutor = query.NewQueryExecutor()
+	s.QueryExecutor = query.NewExecutor()
 	s.QueryExecutor.StatementExecutor = &coordinator.StatementExecutor{
 		MetaClient:  s.MetaClient,
 		TaskManager: s.QueryExecutor.TaskManager,
-		TSDBStore:   coordinator.LocalTSDBStore{Store: s.TSDBStore},
+		TSDBStore:   s.TSDBStore,
 		ShardMapper: &coordinator.LocalShardMapper{
 			MetaClient: s.MetaClient,
 			TSDBStore:  coordinator.LocalTSDBStore{Store: s.TSDBStore},

@@ -48,11 +48,14 @@ func New() locales.Translator {
 		pluralsCardinal:        []locales.PluralRule{6},
 		pluralsOrdinal:         []locales.PluralRule{6},
 		pluralsRange:           []locales.PluralRule{6},
+		decimal:                ".",
+		group:                  ",",
+		minus:                  "-",
 		percent:                "%",
 		perMille:               "‰",
 		timeSeparator:          ":",
 		inifinity:              "∞",
-		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
 		currencyPositivePrefix: " ",
 		currencyNegativePrefix: " ",
 		monthsAbbreviated:      []string{"", "ဇန်", "ဖေ", "မတ်", "ဧ", "မေ", "ဇွန်", "ဇူ", "ဩ", "စက်", "အောက်", "နို", "ဒီ"},
@@ -68,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"ဘီစီ", "အေဒီ"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"ခရစ်တော် မပေါ်မီနှစ်", "ခရစ်နှစ်"},
-		timezones:              map[string]string{"ART": "အာဂျင်တီးနား စံတော်ချိန်", "HEEG": "အရှေ့ဂရင်းလန် နွေရာသီ စံတော်ချိန်", "GYT": "ဂိုင်ယာနာ အချိန်", "HNPMX": "မက္ကဆီကန် ပစိဖိတ် စံတော်ချိန်", "ACWDT": "ဩစတြေးလျား အလယ်အနောက်ပိုင်း နွေရာသီ အချိန်", "PDT": "မြောက်အမေရိက ပစိဖိတ် နွေရာသီစံတော်ချိန်", "AWST": "အနောက်ဩစတြေးလျား စံတော်ချိန်", "UYST": "ဥရုဂွေး နွေရာသီ အချိန်", "WIT": "အရှေ့ပိုင်း အင်ဒိုနီးရှား အချိန်", "LHST": "လော့ဒ်ဟောင်စံတော်ချိန်", "HAT": "နယူးဖောင်လန် နွေရာသီ စံတော်ချိန်", "WESZ": "အနောက်ဥရောပ နွေရာသီ အချိန်", "HEPMX": "မက္ကစီကန် ပစိဖိတ် နွေရာသီ စံတော်ချိန်", "COT": "ကိုလံဘီယာ စံတော်ချိန်", "ACDT": "ဩစတြေးလျား အလယ်ပိုင်း နွေရာသီ အချိန်", "PST": "မြောက်အမေရိက ပစိဖိတ်စံတော်ချိန်", "MEZ": "ဥရောပ အလယ်ပိုင်း စံတော်ချိန်", "VET": "ဗင်နီဇွဲလား အချိန်", "AEDT": "အရှေ့ဩစတြေးလျား နွေရာသီ အချိန်", "SAST": "တောင်အာဖရိက အချိန်", "HKST": "ဟောင်ကောင် နွေရာသီ အချိန်", "WEZ": "အနောက်ဥရောပ စံတော်ချိန်", "GMT": "ဂရင်းနစ် စံတော်ချိန်", "ACWST": "ဩစတြေးလျား အလယ်အနောက်ပိုင်း စံတော်ချိန်", "HAST": "ဟာဝိုင်ယီ အယ်လူးရှန်း စံတော်ချိန်", "HENOMX": "အနောက်တောင် မက္ကစီကို နွေရာသီ စံတော်ချိန်", "EAT": "အရှေ့အာဖရိက အချိန်", "HNEG": "အရှေ့ဂရင်းလန်း စံတော်ချိန်", "GFT": "ပြင်သစ် ဂီအားနား အချိန်", "CST": "မြောက်အမေရိက အလယ်ပိုင်းစံတော်ချိန်", "AWDT": "ဩစတြေးလျား နွေရာသီ အချိန်", "HNPM": "စိန့်ပီအဲနှင့်မီခွီလွန်စံတော်ချိန်", "BT": "ဘူတန် အချိန်", "OESZ": "အရှေ့ဥရောပ နွေရာသီ အချိန်", "HNOG": "အနောက် ဂရင်းလန်း စံတော်ချိန်", "WAT": "အနောက်အာဖရိက စံတော်ချိန်", "SGT": "စင်္ကာပူ အချိန်", "HECU": "ကျူးဘား နွေရာသီ စံတော်ချိန်", "UYT": "ဥရုဂွေး စံတော်ချိန်", "HKT": "ဟောင်ကောင် စံတော်ချိန်", "EST": "မြောက်အမေရိက အရှေ့ပိုင်းစံတော်ချိန်", "EDT": "မြောက်အမေရိက အရှေ့ပိုင်း နွေရာသီစံတော်ချိန်", "ChST": "ချာမိုရိုအချိန်", "BOT": "ဘိုလီးဘီးယား အချိန်", "WART": "အနောက် အာဂျင်တီးနား စံတော်ချိန်", "ECT": "အီကွေဒေါ အချိန်", "MYT": "မလေးရှား အချိန်", "HADT": "ဟာဝိုင်ယီ အယ်လူးရှန်း နွေရာသီ စံတော်ချိန်", "WITA": "အလယ်ပိုင်း အင်ဒိုနီးရှား အချိန်", "WARST": "အနောက် အာဂျင်တီးနား နွေရာသီ အချိန်", "MST": "မကာအို စံတော်ချိန်", "MESZ": "ဥရောပ အလယ်ပိုင်း နွေရာသီ အချိန်", "ADT": "အတ္တလန်တစ် နွေရာသီ စံတော်ချိန်", "HEOG": "အနောက် ဂရင်းလန် နွေရာသီ စံတော်ချိန်", "SRT": "စူးရီနာမ်အချိန်", "JDT": "ဂျပန် နွေရာသီ အချိန်", "JST": "ဂျပန် စံတော်ချိန်", "HNNOMX": "အနောက်တောင် မက္ကဆီကို စံတော်ချိန်", "ARST": "အာဂျင်တီးနား နွေရာသီအချိန်", "MDT": "မကာအို နွေရာသီ အချိန်", "TMT": "တာ့ခ်မင်နစ္စတန် စံတော်ချိန်", "OEZ": "အရှေ့ဥရောပ စံတော်ချိန်", "AST": "အတ္တလန်တစ် စံတော်ချိန်", "AEST": "အရှေ့ဩစတြေးလျား စံတော်ချိန်", "CAT": "အလယ်အာဖရိက အချိန်", "CDT": "မြောက်အမေရိက အလယ်ပိုင်း နွေရာသီစံတော်ချိန်", "IST": "အိန္ဒိယ စံတော်ချိန်", "WAST": "အနောက်အာဖရိက နွေရာသီ အချိန်", "COST": "ကိုလံဘီယာ နွေရာသီ အချိန်", "AKST": "အလားစကားစံတော်ချိန်", "CHAST": "ချားသမ်စံတော်ချိန်", "HNCU": "ကျူးဘား စံတော်ချိန်", "NZDT": "နယူးဇီလန် နွေရာသီ အချိန်", "TMST": "တာ့ခ်မင်နစ္စတန် နွေရာသီ အချိန်", "HEPM": "စိန့်ပီအဲနှင့် မီခွီလွန် နွေရာသီ စံတော်ချိန်", "NZST": "နယူးဇီလန် စံတော်ချိန်", "WIB": "အနောက်ပိုင်း အင်ဒိုနီးရှား အချိန်", "AKDT": "အလားစကား နွေရာသီစံတော်ချိန်", "ACST": "ဩစတြေးလျား အလယ်ပိုင်း စံတော်ချိန်", "∅∅∅": "ပီရူး နွေရာသီ အချိန်", "CLST": "ချီလီ နွေရာသီ အချိန်", "HNT": "နယူးဖောင်လန် စံတော်ချိန်", "CLT": "ချီလီ စံတော်ချိန်", "CHADT": "ချာသမ် နွေရာသီ အချိန်", "LHDT": "လော့ဒ်ဟောင် နွေရာသီ အချိန်"},
+		timezones:              map[string]string{"MST": "မြောက်အမေရိက တောင်တန်းဒေသစံတော်ချိန်", "BOT": "ဘိုလီးဘီးယား အချိန်", "JDT": "ဂျပန် နွေရာသီ အချိန်", "HENOMX": "အနောက်တောင် မက္ကစီကို နွေရာသီ စံတော်ချိန်", "GMT": "ဂရင်းနစ် စံတော်ချိန်", "EDT": "မြောက်အမေရိက အရှေ့ပိုင်း နွေရာသီစံတော်ချိန်", "HKST": "ဟောင်ကောင် နွေရာသီ အချိန်", "WIT": "အရှေ့ပိုင်း အင်ဒိုနီးရှား အချိန်", "OESZ": "အရှေ့ဥရောပ နွေရာသီ အချိန်", "AWDT": "ဩစတြေးလျ နွေရာသီ အချိန်", "AEDT": "အရှေ့ဩစတြေးလျ နွေရာသီ အချိန်", "ECT": "အီကွေဒေါ အချိန်", "ACWDT": "သြစတြေးလျား အနောက်အလယ်ပိုင်း နွေရာသီ အချိန်", "HEPM": "စိန့်ပီအဲနှင့် မီခွီလွန် နွေရာသီ စံတော်ချိန်", "HNT": "နယူးဖောင်လန် စံတော်ချိန်", "CAT": "အလယ်အာဖရိက အချိန်", "GYT": "ဂိုင်ယာနာ အချိန်", "AKST": "အလာစကာ စံတော်ချိန်", "MEZ": "ဥရောပအလယ်ပိုင်း စံတော်ချိန်", "HECU": "ကျူးဘား နွေရာသီ စံတော်ချိန်", "WAT": "အနောက်အာဖရိက စံတော်ချိန်", "WAST": "အနောက်အာဖရိက နွေရာသီ အချိန်", "SAST": "တောင်အာဖရိက အချိန်", "BT": "ဘူတန် အချိန်", "SGT": "စင်္ကာပူ အချိန်", "LHDT": "လော့ဒ်ဟောင် နွေရာသီ အချိန်", "WART": "အနောက် အာဂျင်တီးနား စံတော်ချိန်", "CLT": "ချီလီ စံတော်ချိန်", "ART": "အာဂျင်တီးနား စံတော်ချိန်", "AEST": "အရှေ့ဩစတြေးလျ စံတော်ချိန်", "MYT": "မလေးရှား အချိန်", "ACST": "ဩစတြေးလျ အလယ်ပိုင်း စံတော်ချိန်", "TMT": "တာ့ခ်မင်နစ္စတန် စံတော်ချိန်", "HNCU": "ကျူးဘား စံတော်ချိန်", "AKDT": "အလာစကာ နွေရာသီ စံတော်ချိန်", "LHST": "လော့ဒ်ဟောင် စံတော်ချိန်", "WARST": "အနောက် အာဂျင်တီးနား နွေရာသီ အချိန်", "TMST": "တာ့ခ်မင်နစ္စတန် နွေရာသီ အချိန်", "HADT": "ဟာဝိုင်ယီ အယ်လူးရှန်း နွေရာသီ စံတော်ချိန်", "AWST": "အနောက်ဩစတြေးလျ စံတော်ချိန်", "GFT": "ပြင်သစ် ဂီအားနား အချိန်", "HNOG": "အနောက် ဂရင်းလန်း စံတော်ချိန်", "HEOG": "အနောက် ဂရင်းလန် နွေရာသီ စံတော်ချိန်", "WITA": "အလယ်ပိုင်း အင်ဒိုနီးရှား အချိန်", "HAT": "နယူးဖောင်လန် နွေရာသီ စံတော်ချိန်", "COST": "ကိုလံဘီယာ နွေရာသီ အချိန်", "PST": "မြောက်အမေရိက ပစိဖိတ်စံတော်ချိန်", "CST": "မြောက်အမေရိက အလယ်ပိုင်းစံတော်ချိန်", "WEZ": "အနောက်ဥရောပ စံတော်ချိန်", "WIB": "အနောက်ပိုင်း အင်ဒိုနီးရှား အချိန်", "NZDT": "နယူးဇီလန် နွေရာသီ အချိန်", "EAT": "အရှေ့အာဖရိက အချိန်", "CDT": "မြောက်အမေရိက အလယ်ပိုင်း နွေရာသီစံတော်ချိန်", "ACDT": "ဩစတြေးလျ အလယ်ပိုင်း နွေရာသီ အချိန်", "COT": "ကိုလံဘီယာ စံတော်ချိန်", "OEZ": "အရှေ့ဥရောပ စံတော်ချိန်", "UYT": "ဥရုဂွေး စံတော်ချိန်", "ChST": "ချာမိုရို အချိန်", "WESZ": "အနောက်ဥရောပ နွေရာသီ အချိန်", "JST": "ဂျပန် စံတော်ချိန်", "ACWST": "သြစတြေးလျား အနောက်အလယ်ပိုင်း စံတော်ချိန်", "HKT": "ဟောင်ကောင် စံတော်ချိန်", "SRT": "စူးရီနာမ်အချိန်", "UYST": "ဥရုဂွေး နွေရာသီ အချိန်", "HEPMX": "မက္ကစီကန် ပစိဖိတ် နွေရာသီ စံတော်ချိန်", "MDT": "မြောက်အမေရိက တောင်တန်းဒေသ နွေရာသီစံတော်ချိန်", "EST": "မြောက်အမေရိက အရှေ့ပိုင်းစံတော်ချိန်", "ARST": "အာဂျင်တီးနား နွေရာသီအချိန်", "NZST": "နယူးဇီလန် စံတော်ချိန်", "VET": "ဗင်နီဇွဲလား အချိန်", "HNPM": "စိန့်ပီအဲနှင့်မီခွီလွန်စံတော်ချိန်", "CHAST": "ချားသမ်စံတော်ချိန်", "CHADT": "ချာသမ် နွေရာသီ အချိန်", "PDT": "မြောက်အမေရိက ပစိဖိတ် နွေရာသီစံတော်ချိန်", "ADT": "အတ္တလန်တစ် နွေရာသီ စံတော်ချိန်", "MESZ": "ဥရောပအလယ်ပိုင်း နွေရာသီ အချိန်", "CLST": "ချီလီ နွေရာသီ အချိန်", "∅∅∅": "ဘရာဇီး နွေရာသီ အချိန်", "HNPMX": "မက္ကဆီကန် ပစိဖိတ် စံတော်ချိန်", "AST": "အတ္တလန်တစ် စံတော်ချိန်", "HEEG": "အရှေ့ဂရင်းလန် နွေရာသီ စံတော်ချိန်", "IST": "အိန္ဒိယ စံတော်ချိန်", "HNNOMX": "အနောက်တောင် မက္ကဆီကို စံတော်ချိန်", "HNEG": "အရှေ့ဂရင်းလန်း စံတော်ချိန်", "HAST": "ဟာဝိုင်ယီ အယ်လူးရှန်း စံတော်ချိန်"},
 	}
 }
 
@@ -196,7 +199,7 @@ func (my *my_MM) Minus() string {
 func (my *my_MM) FmtNumber(num float64, v uint64) string {
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 0
+	l := len(s) + 2 + 1*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -237,7 +240,7 @@ func (my *my_MM) FmtNumber(num float64, v uint64) string {
 // NOTE: 'num' passed into FmtPercent is assumed to be in percent already
 func (my *my_MM) FmtPercent(num float64, v uint64) string {
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 1
+	l := len(s) + 3
 	b := make([]byte, 0, l)
 
 	for i := len(s) - 1; i >= 0; i-- {
@@ -269,7 +272,7 @@ func (my *my_MM) FmtCurrency(num float64, v uint64, currency currency.Type) stri
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := my.currencies[currency]
-	l := len(s) + len(symbol) + 2
+	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -331,7 +334,7 @@ func (my *my_MM) FmtAccounting(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := my.currencies[currency]
-	l := len(s) + len(symbol) + 2
+	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -433,16 +436,16 @@ func (my *my_MM) FmtDateMedium(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
-	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0x20}...)
-	b = append(b, my.monthsAbbreviated[t.Month()]...)
-	b = append(b, []byte{0x20}...)
-
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
+
+	b = append(b, []byte{0xe1, 0x81, 0x8a, 0x20}...)
+	b = append(b, my.monthsAbbreviated[t.Month()]...)
+	b = append(b, []byte{0x20}...)
+	b = strconv.AppendInt(b, int64(t.Day()), 10)
 
 	return string(b)
 }
@@ -452,16 +455,16 @@ func (my *my_MM) FmtDateLong(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
-	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0x20}...)
-	b = append(b, my.monthsWide[t.Month()]...)
-	b = append(b, []byte{0x20}...)
-
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
+
+	b = append(b, []byte{0xe1, 0x81, 0x8a, 0x20}...)
+	b = strconv.AppendInt(b, int64(t.Day()), 10)
+	b = append(b, []byte{0x20}...)
+	b = append(b, my.monthsWide[t.Month()]...)
 
 	return string(b)
 }
@@ -471,18 +474,18 @@ func (my *my_MM) FmtDateFull(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
-	b = append(b, my.daysWide[t.Weekday()]...)
-	b = append(b, []byte{0x20}...)
-	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0x20}...)
-	b = append(b, my.monthsWide[t.Month()]...)
-	b = append(b, []byte{0x20}...)
-
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
+
+	b = append(b, []byte{0xe1, 0x81, 0x8a, 0x20}...)
+	b = append(b, my.monthsWide[t.Month()]...)
+	b = append(b, []byte{0x20}...)
+	b = strconv.AppendInt(b, int64(t.Day()), 10)
+	b = append(b, []byte{0xe1, 0x81, 0x8a, 0x20}...)
+	b = append(b, my.daysWide[t.Weekday()]...)
 
 	return string(b)
 }
@@ -492,10 +495,7 @@ func (my *my_MM) FmtTimeShort(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
-	if t.Hour() < 10 {
-		b = append(b, '0')
-	}
-
+	b = append(b, []byte{0x42, 0x20}...)
 	b = strconv.AppendInt(b, int64(t.Hour()), 10)
 	b = append(b, my.timeSeparator...)
 
@@ -512,6 +512,8 @@ func (my *my_MM) FmtTimeShort(t time.Time) string {
 func (my *my_MM) FmtTimeMedium(t time.Time) string {
 
 	b := make([]byte, 0, 32)
+
+	b = append(b, []byte{0x42, 0x20}...)
 
 	if t.Hour() < 10 {
 		b = append(b, '0')

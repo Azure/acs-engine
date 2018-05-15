@@ -10,64 +10,68 @@ import (
 )
 
 type zh_Hant struct {
-	locale             string
-	pluralsCardinal    []locales.PluralRule
-	pluralsOrdinal     []locales.PluralRule
-	pluralsRange       []locales.PluralRule
-	decimal            string
-	group              string
-	minus              string
-	percent            string
-	perMille           string
-	timeSeparator      string
-	inifinity          string
-	currencies         []string // idx = enum of currency code
-	monthsAbbreviated  []string
-	monthsNarrow       []string
-	monthsWide         []string
-	daysAbbreviated    []string
-	daysNarrow         []string
-	daysShort          []string
-	daysWide           []string
-	periodsAbbreviated []string
-	periodsNarrow      []string
-	periodsShort       []string
-	periodsWide        []string
-	erasAbbreviated    []string
-	erasNarrow         []string
-	erasWide           []string
-	timezones          map[string]string
+	locale                 string
+	pluralsCardinal        []locales.PluralRule
+	pluralsOrdinal         []locales.PluralRule
+	pluralsRange           []locales.PluralRule
+	decimal                string
+	group                  string
+	minus                  string
+	percent                string
+	perMille               string
+	timeSeparator          string
+	inifinity              string
+	currencies             []string // idx = enum of currency code
+	currencyNegativePrefix string
+	currencyNegativeSuffix string
+	monthsAbbreviated      []string
+	monthsNarrow           []string
+	monthsWide             []string
+	daysAbbreviated        []string
+	daysNarrow             []string
+	daysShort              []string
+	daysWide               []string
+	periodsAbbreviated     []string
+	periodsNarrow          []string
+	periodsShort           []string
+	periodsWide            []string
+	erasAbbreviated        []string
+	erasNarrow             []string
+	erasWide               []string
+	timezones              map[string]string
 }
 
 // New returns a new instance of translator for the 'zh_Hant' locale
 func New() locales.Translator {
 	return &zh_Hant{
-		locale:             "zh_Hant",
-		pluralsCardinal:    []locales.PluralRule{6},
-		pluralsOrdinal:     []locales.PluralRule{6},
-		pluralsRange:       []locales.PluralRule{6},
-		decimal:            ".",
-		group:              ",",
-		minus:              "-",
-		percent:            "%",
-		perMille:           "‰",
-		timeSeparator:      ":",
-		inifinity:          "∞",
-		currencies:         []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AU$", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "R$", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CA$", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CN¥", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "€", "FIM", "FJD", "FKP", "FRF", "£", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HK$", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "₪", "₹", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "¥", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "￦", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MX$", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZ$", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "$", "TZS", "UAH", "UAK", "UGS", "UGX", "US$", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "₫", "VNN", "VUV", "WST", "FCFA", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "EC$", "XDR", "XEU", "XFO", "XFU", "CFA", "XPD", "CFPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
-		monthsAbbreviated:  []string{"", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
-		monthsNarrow:       []string{"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-		monthsWide:         []string{"", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
-		daysAbbreviated:    []string{"週日", "週一", "週二", "週三", "週四", "週五", "週六"},
-		daysNarrow:         []string{"日", "一", "二", "三", "四", "五", "六"},
-		daysShort:          []string{"日", "一", "二", "三", "四", "五", "六"},
-		daysWide:           []string{"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},
-		periodsAbbreviated: []string{"上午", "下午"},
-		periodsNarrow:      []string{"上午", "下午"},
-		periodsWide:        []string{"上午", "下午"},
-		erasAbbreviated:    []string{"西元前", "西元"},
-		erasNarrow:         []string{"西元前", "西元"},
-		erasWide:           []string{"西元前", "西元"},
-		timezones:          map[string]string{"∅∅∅": "巴西利亞夏令時間", "AWST": "澳洲西部標準時間", "AEDT": "澳洲東部夏令時間", "ADT": "大西洋夏令時間", "WIB": "印尼西部時間", "CHADT": "查坦群島夏令時間", "TMT": "土庫曼標準時間", "EAT": "東非時間", "MEZ": "中歐標準時間", "WARST": "阿根廷西部夏令時間", "WAT": "西非標準時間", "HNPMX": "墨西哥太平洋標準時間", "HECU": "古巴夏令時間", "HNPM": "聖皮埃爾和密克隆群島標準時間", "HEPM": "聖皮埃爾和密克隆群島夏令時間", "AWDT": "澳洲西部夏令時間", "HEEG": "格陵蘭東部夏令時間", "HKT": "香港標準時間", "EDT": "東部夏令時間", "HEPMX": "墨西哥太平洋夏令時間", "PST": "太平洋標準時間", "UYT": "烏拉圭標準時間", "COT": "哥倫比亞標準時間", "ChST": "查莫洛時間", "OEZ": "東歐標準時間", "AST": "大西洋標準時間", "SAST": "南非標準時間", "HNEG": "格陵蘭東部標準時間", "BOT": "玻利維亞時間", "CST": "中部標準時間", "TMST": "土庫曼夏令時間", "EST": "東部標準時間", "CLST": "智利夏令時間", "GYT": "蓋亞那時間", "ACDT": "澳洲中部夏令時間", "MST": "澳門標準時間", "LHDT": "豪勳爵島夏令時間", "ARST": "阿根廷夏令時間", "HNOG": "格陵蘭西部標準時間", "CLT": "智利標準時間", "SGT": "新加坡標準時間", "ART": "阿根廷標準時間", "COST": "哥倫比亞夏令時間", "GFT": "法屬圭亞那時間", "BT": "不丹時間", "WART": "阿根廷西部標準時間", "HENOMX": "墨西哥西北部夏令時間", "JST": "日本標準時間", "AEST": "澳洲東部標準時間", "AKST": "阿拉斯加標準時間", "HKST": "香港夏令時間", "AKDT": "阿拉斯加夏令時間", "WEZ": "西歐標準時間", "HNCU": "古巴標準時間", "SRT": "蘇利南時間", "ACWDT": "澳洲中西部夏令時間", "WITA": "印尼中部時間", "HEOG": "格陵蘭西部夏令時間", "CDT": "中部夏令時間", "WIT": "印尼東部時間", "WESZ": "西歐夏令時間", "HNT": "紐芬蘭標準時間", "HAT": "紐芬蘭夏令時間", "ECT": "厄瓜多時間", "CHAST": "查坦群島標準時間", "MDT": "澳門夏令時間", "MYT": "馬來西亞時間", "VET": "委內瑞拉時間", "JDT": "日本夏令時間", "GMT": "格林威治標準時間", "UYST": "烏拉圭夏令時間", "HNNOMX": "墨西哥西北部標準時間", "OESZ": "東歐夏令時間", "WAST": "西非夏令時間", "HAST": "夏威夷-阿留申標準時間", "HADT": "夏威夷-阿留申夏令時間", "MESZ": "中歐夏令時間", "IST": "印度標準時間", "ACWST": "澳洲中西部標準時間", "NZDT": "紐西蘭夏令時間", "ACST": "澳洲中部標準時間", "CAT": "中非時間", "PDT": "太平洋夏令時間", "NZST": "紐西蘭標準時間", "LHST": "豪勳爵島標準時間"},
+		locale:                 "zh_Hant",
+		pluralsCardinal:        []locales.PluralRule{6},
+		pluralsOrdinal:         []locales.PluralRule{6},
+		pluralsRange:           []locales.PluralRule{6},
+		decimal:                ".",
+		group:                  ",",
+		minus:                  "-",
+		percent:                "%",
+		perMille:               "‰",
+		timeSeparator:          ":",
+		inifinity:              "∞",
+		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AU$", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "R$", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CA$", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CN¥", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "€", "FIM", "FJD", "FKP", "FRF", "£", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HK$", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "₪", "₹", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "¥", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "￦", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MX$", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZ$", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "$", "TZS", "UAH", "UAK", "UGS", "UGX", "US$", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "₫", "VNN", "VUV", "WST", "FCFA", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "EC$", "XDR", "XEU", "XFO", "XFU", "CFA", "XPD", "CFPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		currencyNegativePrefix: "(",
+		currencyNegativeSuffix: ")",
+		monthsAbbreviated:      []string{"", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
+		monthsNarrow:           []string{"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
+		monthsWide:             []string{"", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
+		daysAbbreviated:        []string{"週日", "週一", "週二", "週三", "週四", "週五", "週六"},
+		daysNarrow:             []string{"日", "一", "二", "三", "四", "五", "六"},
+		daysShort:              []string{"日", "一", "二", "三", "四", "五", "六"},
+		daysWide:               []string{"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},
+		periodsAbbreviated:     []string{"上午", "下午"},
+		periodsNarrow:          []string{"上午", "下午"},
+		periodsWide:            []string{"上午", "下午"},
+		erasAbbreviated:        []string{"西元前", "西元"},
+		erasNarrow:             []string{"西元前", "西元"},
+		erasWide:               []string{"西元前", "西元"},
+		timezones:              map[string]string{"MEZ": "中歐標準時間", "GMT": "格林威治標準時間", "WEZ": "西歐標準時間", "TMT": "土庫曼標準時間", "GYT": "蓋亞那時間", "CST": "中部標準時間", "GFT": "法屬圭亞那時間", "WART": "阿根廷西部標準時間", "HENOMX": "墨西哥西北部夏令時間", "EAT": "東非時間", "OEZ": "東歐標準時間", "HADT": "夏威夷-阿留申夏令時間", "UYT": "烏拉圭標準時間", "AEDT": "澳洲東部夏令時間", "MYT": "馬來西亞時間", "HEOG": "格陵蘭西部夏令時間", "TMST": "土庫曼夏令時間", "OESZ": "東歐夏令時間", "PDT": "太平洋夏令時間", "HKST": "香港夏令時間", "WITA": "印尼中部時間", "SRT": "蘇利南時間", "MESZ": "中歐夏令時間", "NZST": "紐西蘭標準時間", "SGT": "新加坡標準時間", "ACST": "澳洲中部標準時間", "WARST": "阿根廷西部夏令時間", "HEPM": "聖皮埃與密克隆群島夏令時間", "COST": "哥倫比亞夏令時間", "AWDT": "澳洲西部夏令時間", "PST": "太平洋標準時間", "MDT": "山區夏令時間", "WIB": "印尼西部時間", "NZDT": "紐西蘭夏令時間", "JDT": "日本夏令時間", "AKDT": "阿拉斯加夏令時間", "UYST": "烏拉圭夏令時間", "∅∅∅": "巴西利亞夏令時間", "HKT": "香港標準時間", "IST": "印度標準時間", "LHDT": "豪勳爵島夏令時間", "HECU": "古巴夏令時間", "AST": "大西洋標準時間", "AEST": "澳洲東部標準時間", "MST": "山區標準時間", "WAT": "西非標準時間", "JST": "日本標準時間", "EST": "東部標準時間", "VET": "委內瑞拉時間", "CDT": "中部夏令時間", "CLST": "智利夏令時間", "COT": "哥倫比亞標準時間", "HNNOMX": "墨西哥西北部標準時間", "BT": "不丹時間", "HNT": "紐芬蘭標準時間", "CHADT": "查坦群島夏令時間", "WESZ": "西歐夏令時間", "HNOG": "格陵蘭西部標準時間", "LHST": "豪勳爵島標準時間", "CLT": "智利標準時間", "ADT": "大西洋夏令時間", "HEPMX": "墨西哥太平洋夏令時間", "SAST": "南非標準時間", "BOT": "玻利維亞時間", "HNEG": "格陵蘭東部標準時間", "HAST": "夏威夷-阿留申標準時間", "HNPMX": "墨西哥太平洋標準時間", "ACDT": "澳洲中部夏令時間", "ACWST": "澳洲中西部標準時間", "HNCU": "古巴標準時間", "WAST": "西非夏令時間", "ECT": "厄瓜多時間", "HEEG": "格陵蘭東部夏令時間", "WIT": "印尼東部時間", "ARST": "阿根廷夏令時間", "CHAST": "查坦群島標準時間", "AKST": "阿拉斯加標準時間", "HAT": "紐芬蘭夏令時間", "ChST": "查莫洛時間", "EDT": "東部夏令時間", "ACWDT": "澳洲中西部夏令時間", "HNPM": "聖皮埃與密克隆群島標準時間", "CAT": "中非時間", "ART": "阿根廷標準時間", "AWST": "澳洲西部標準時間"},
 	}
 }
 
@@ -326,7 +330,7 @@ func (zh *zh_Hant) FmtAccounting(num float64, v uint64, currency currency.Type) 
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := zh.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 1*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -357,7 +361,7 @@ func (zh *zh_Hant) FmtAccounting(num float64, v uint64, currency currency.Type) 
 			b = append(b, symbol[j])
 		}
 
-		b = append(b, zh.minus[0])
+		b = append(b, zh.currencyNegativePrefix[0])
 
 	} else {
 
@@ -381,6 +385,10 @@ func (zh *zh_Hant) FmtAccounting(num float64, v uint64, currency currency.Type) 
 		for i := 0; i < 2-int(v); i++ {
 			b = append(b, '0')
 		}
+	}
+
+	if num < 0 {
+		b = append(b, zh.currencyNegativeSuffix...)
 	}
 
 	return string(b)

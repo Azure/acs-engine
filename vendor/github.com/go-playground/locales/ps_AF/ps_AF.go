@@ -46,8 +46,8 @@ func New() locales.Translator {
 	return &ps_AF{
 		locale:                 "ps_AF",
 		pluralsCardinal:        []locales.PluralRule{2, 6},
-		pluralsOrdinal:         nil,
-		pluralsRange:           nil,
+		pluralsOrdinal:         []locales.PluralRule{6},
+		pluralsRange:           []locales.PluralRule{2, 6},
 		decimal:                "٫",
 		group:                  "٬",
 		minus:                  "‎-‎",
@@ -55,22 +55,23 @@ func New() locales.Translator {
 		perMille:               "؉",
 		timeSeparator:          ":",
 		inifinity:              "∞",
-		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
 		currencyPositiveSuffix: " ",
 		currencyNegativeSuffix: " ",
-		monthsAbbreviated:      []string{"", "جنوري", "فبروري", "مارچ", "اپریل", "مۍ", "جون", "جولای", "اګست", "سپتمبر", "اکتوبر", "نومبر", "دسمبر"},
-		monthsNarrow:           []string{"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-		monthsWide:             []string{"", "جنوري", "فبروري", "مارچ", "اپریل", "مۍ", "جون", "جولای", "اګست", "سپتمبر", "اکتوبر", "نومبر", "دسمبر"},
-		daysAbbreviated:        []string{"یکشنبه", "دوشنبه", "سه\u200cشنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"},
-		daysShort:              []string{"یکشنبه", "دوشنبه", "سه\u200cشنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"},
-		daysWide:               []string{"یکشنبه", "دوشنبه", "سه\u200cشنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"},
+		monthsAbbreviated:      []string{"", "جنوري", "فبروري", "مارچ", "اپریل", "مۍ", "جون", "جولای", "اگست", "سېپتمبر", "اکتوبر", "نومبر", "دسمبر"},
+		monthsNarrow:           []string{"", "ج", "ف", "م", "ا", "م", "ج", "ج", "ا", "س", "ا", "ن", "د"},
+		monthsWide:             []string{"", "جنوري", "فبروري", "مارچ", "اپریل", "مۍ", "جون", "جولای", "اگست", "سېپتمبر", "اکتوبر", "نومبر", "دسمبر"},
+		daysAbbreviated:        []string{"يونۍ", "دونۍ", "درېنۍ", "څلرنۍ", "پينځنۍ", "جمعه", "اونۍ"},
+		daysNarrow:             []string{"S", "M", "T", "W", "T", "F", "S"},
+		daysShort:              []string{"يونۍ", "دونۍ", "درېنۍ", "څلرنۍ", "پينځنۍ", "جمعه", "اونۍ"},
+		daysWide:               []string{"يونۍ", "دونۍ", "درېنۍ", "څلرنۍ", "پينځنۍ", "جمعه", "اونۍ"},
 		periodsAbbreviated:     []string{"غ.م.", "غ.و."},
 		periodsNarrow:          []string{"غ.م.", "غ.و."},
 		periodsWide:            []string{"غ.م.", "غ.و."},
 		erasAbbreviated:        []string{"له میلاد وړاندې", "م."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"له میلاد څخه وړاندې", "له میلاد څخه وروسته"},
-		timezones:              map[string]string{"MEZ": "MEZ", "HADT": "HADT", "LHDT": "LHDT", "HEEG": "HEEG", "VET": "VET", "CLST": "CLST", "WESZ": "د لودیځې اورپا د اوړي وخت", "MDT": "MDT", "UYT": "UYT", "NZST": "NZST", "HNNOMX": "HNNOMX", "OEZ": "OEZ", "PST": "PST", "BOT": "BOT", "NZDT": "NZDT", "HNOG": "HNOG", "AKST": "AKST", "ACDT": "ACDT", "HNPMX": "HNPMX", "CAT": "CAT", "WEZ": "د لودیځې اروپا معیاري وخت", "CDT": "CDT", "∅∅∅": "∅∅∅", "WIT": "WIT", "WITA": "WITA", "OESZ": "OESZ", "AWDT": "AWDT", "AST": "AST", "WAT": "WAT", "HNT": "HNT", "HEPM": "HEPM", "CST": "CST", "LHST": "LHST", "HEOG": "HEOG", "EDT": "EDT", "AKDT": "AKDT", "CLT": "CLT", "ECT": "ECT", "ACWST": "ACWST", "ACWDT": "ACWDT", "MYT": "MYT", "WARST": "WARST", "WAST": "WAST", "BT": "BT", "EST": "EST", "PDT": "PDT", "CHAST": "CHAST", "CHADT": "CHADT", "HNPM": "HNPM", "COT": "COT", "GFT": "GFT", "MESZ": "MESZ", "TMT": "TMT", "HENOMX": "HENOMX", "JST": "JST", "ARST": "ARST", "SRT": "SRT", "AEDT": "AEDT", "HNEG": "HNEG", "HAT": "HAT", "WIB": "WIB", "HAST": "HAST", "IST": "IST", "ART": "ART", "GYT": "GYT", "TMST": "TMST", "JDT": "JDT", "HKT": "HKT", "HKST": "HKST", "HECU": "HECU", "ADT": "ADT", "AEST": "AEST", "COST": "COST", "SGT": "SGT", "UYST": "UYST", "SAST": "SAST", "MST": "MST", "ACST": "ACST", "GMT": "گرينويچ وخت", "HEPMX": "HEPMX", "AWST": "AWST", "WART": "WART", "EAT": "EAT", "ChST": "ChST", "HNCU": "HNCU"},
+		timezones:              map[string]string{"EDT": "ختيځ د رڼا ورځې وخت", "HEOG": "لویدیځ ګرینلینډ اوړي وخت", "WARST": "غربي ارجنټاین اوړي وخت", "AWDT": "د اسټرالیا لویدیځ د ورځې وخت", "SGT": "د سنګاپور معیاري وخت", "CHADT": "د چتام ورځی وخت", "AEDT": "د اسټرالیا ختیځ ختیځ ورځی وخت", "WAST": "د افریقا افریقا لویدیځ وخت", "MYT": "ملائیشیا وخت", "JST": "د جاپان معياري وخت", "JDT": "جاپان د رڼا ورځې وخت", "UYT": "یوروګوای معياري وخت", "CHAST": "د چمتم معياري وخت", "SAST": "جنوبي افريقا معياري وخت", "ECT": "د اکوادور وخت", "MESZ": "د مرکزي اروپا د اوړي وخت", "HNT": "د نوي فیلډلینډ معیاری وخت", "EAT": "ختيځ افريقا وخت", "CLT": "چلی معیاری وخت", "AWST": "د اسټرالیا لویدیز معیار", "AST": "اتلانتیک معياري وخت", "ACWDT": "د آسټرالیا مرکزي مرکزی لویدیځ د وخت وخت", "HEPM": "سینټ پییرا و ميکلين رڼا ورځې وخت", "CST": "مرکزي معياري وخت", "CDT": "مرکزي رڼا ورځې وخت", "OESZ": "Eastern European Summer Time", "ARST": "ارجنټاین اوړي وخت", "GMT": "گرينويچ وخت", "GYT": "د ګوانانا وخت", "ChST": "چمارو معياري وخت", "BT": "د بوتان وخت", "MDT": "MDT", "SRT": "سورینام وخت", "WART": "غربي ارجنټاین معیاری وخت", "LHST": "رب های معیاري وخت", "HAT": "د نوي فیلډلینډ رڼا ورځې وخت", "HNNOMX": "د شمال لویدیځ مکسیکو معیاري وخت", "WIT": "د اندونیزیا وخت", "UYST": "یوروګوای اوړي وخت", "ART": "ارجنټاین معیاری وخت", "∅∅∅": "ایمیزون اوړي وخت", "PST": "د پیسفک معياري وخت", "HNPMX": "مکسیکن پیسفک معیاری وخت", "CLST": "چلی اوړي وخت", "OEZ": "Eastern European Standard Time", "HNEG": "د ختیځ ګرینلینډ معياري وخت", "COT": "کولمبیا معیاری وخت", "HNCU": "کیوبا معياري وخت", "ACDT": "د آسټرالیا مرکزي مرکزی ورځ", "HNPM": "سینټ پییرا و ميکلين معیاری وخت", "NZST": "د نیوزی لینڈ معیاري وخت", "BOT": "بولیویا وخت", "MEZ": "د مرکزي اروپا معیاري وخت", "WITA": "د اندونیزیا مرکزي وخت", "HAST": "هوایی الیوتین معیاری وخت", "WESZ": "د لودیځې اورپا د اوړي وخت", "WIB": "د لویدیځ اندونیزیا وخت", "ACST": "د اسټرالیا مرکزي مرکزي معیار", "IST": "د هند معیاري وخت", "LHDT": "رب هاو د ورځې د رڼا وخت", "VET": "وینزویلا وخت", "HENOMX": "د شمال لویدیځ مکسیکو رڼا ورځې وخت", "TMT": "ترکمنستان معياري وخت", "TMST": "ترکمنستان اوړي وخت", "COST": "کولمبیا اوړي وخت", "WEZ": "د لودیځې اروپا معیاري وخت", "CAT": "منځنی افريقا وخت", "HADT": "هوایی الیوتین رڼا ورځې وخت", "NZDT": "د نیوزی لینڈ د ورځې د رڼا وخت", "AKST": "الاسکا معياري وخت", "MST": "MST", "ADT": "اتلانتیک د رڼا ورځې وخت", "AEST": "د آسټرالیا ختیځ معیاري وخت", "ACWST": "د آسټرالیا مرکزي لویدیځ معیاري وخت", "WAT": "لویدیځ افریقایي معیاري وخت", "HKST": "د هانګ کانګ اوړي وخت", "HEPMX": "مکسیکن پیسفک رڼا ورځې وخت", "GFT": "د فرانسوي ګانا وخت", "AKDT": "د الاسکا د ورځې روښانه کول", "EST": "ختيځ معياري وخت", "HEEG": "د ختیځ ګرینلینډ اوړي وخت", "HNOG": "لویدیځ ګرینلینډ معياري وخت", "HECU": "کیوبا د رڼا ورځې وخت", "PDT": "پیسفک د رڼا ورځې وخت", "HKT": "د هانګ کانګ معياري وخت"},
 	}
 }
 
@@ -108,12 +109,23 @@ func (ps *ps_AF) CardinalPluralRule(num float64, v uint64) locales.PluralRule {
 
 // OrdinalPluralRule returns the ordinal PluralRule given 'num' and digits/precision of 'v' for 'ps_AF'
 func (ps *ps_AF) OrdinalPluralRule(num float64, v uint64) locales.PluralRule {
-	return locales.PluralRuleUnknown
+	return locales.PluralRuleOther
 }
 
 // RangePluralRule returns the ordinal PluralRule given 'num1', 'num2' and digits/precision of 'v1' and 'v2' for 'ps_AF'
 func (ps *ps_AF) RangePluralRule(num1 float64, v1 uint64, num2 float64, v2 uint64) locales.PluralRule {
-	return locales.PluralRuleUnknown
+
+	start := ps.CardinalPluralRule(num1, v1)
+	end := ps.CardinalPluralRule(num2, v2)
+
+	if start == locales.PluralRuleOne && end == locales.PluralRuleOne {
+		return locales.PluralRuleOne
+	} else if start == locales.PluralRuleOne && end == locales.PluralRuleOther {
+		return locales.PluralRuleOther
+	}
+
+	return locales.PluralRuleOther
+
 }
 
 // MonthAbbreviated returns the locales abbreviated month given the 'month' provided

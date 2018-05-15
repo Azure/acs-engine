@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate protoc -I$GOPATH/src -I. --plugin=protoc-gen-yarpc=$GOPATH/bin/protoc-gen-yarpc --yarpc_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. --gogofaster_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. storage.proto predicate.proto
+//go:generate protoc -I$GOPATH/src/github.com/influxdata/influxdb/vendor -I. --plugin=protoc-gen-yarpc=$GOPATH/bin/protoc-gen-yarpc --yarpc_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. --gogofaster_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. storage.proto predicate.proto
 //go:generate tmpl -data=@batch_cursor.gen.go.tmpldata batch_cursor.gen.go.tmpl
 //go:generate tmpl -data=@batch_cursor.gen.go.tmpldata response_writer.gen.go.tmpl
 
@@ -47,10 +47,8 @@ func (r *rpcService) Read(req *ReadRequest, stream Storage_ReadServer) error {
 	var wire opentracing.SpanContext
 
 	if len(req.Trace) > 0 {
-		wire, err = opentracing.GlobalTracer().Extract(opentracing.TextMap, opentracing.TextMapCarrier(req.Trace))
-		if err != nil {
-			// TODO(sgc): log it?
-		}
+		wire, _ = opentracing.GlobalTracer().Extract(opentracing.TextMap, opentracing.TextMapCarrier(req.Trace))
+		// TODO(sgc): Log ignored error?
 	}
 
 	span := opentracing.StartSpan("storage.read", ext.RPCServerOption(wire))
