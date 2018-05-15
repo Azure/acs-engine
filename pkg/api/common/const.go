@@ -60,6 +60,8 @@ const (
 )
 
 const (
+	// DCOSVersion1Dot11Dot2 is the major.minor.patch string for 1.11.0 versions of DCOS
+	DCOSVersion1Dot11Dot2 string = "1.11.2"
 	// DCOSVersion1Dot11Dot0 is the major.minor.patch string for 1.11.0 versions of DCOS
 	DCOSVersion1Dot11Dot0 string = "1.11.0"
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
@@ -76,6 +78,7 @@ const (
 
 // AllDCOSSupportedVersions maintain a list of available dcos versions in acs-engine
 var AllDCOSSupportedVersions = []string{
+	DCOSVersion1Dot11Dot2,
 	DCOSVersion1Dot11Dot0,
 	DCOSVersion1Dot10Dot0,
 	DCOSVersion1Dot9Dot8,
