@@ -79,7 +79,7 @@ var (
 	NetworkPolicyValues = [...]string{"", "calico", "cilium", "azure", "none", "flannel"}
 
 	// ContainerRuntimeValues holds the valid values for container runtimes
-	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers"}
+	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers", "containerd"}
 )
 
 // Kubernetes configuration
