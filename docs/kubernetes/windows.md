@@ -132,7 +132,7 @@ After completing this walkthrough you will know how to:
       spec:
         containers:
         - name: windowswebserver
-          image: microsoft/windowsservercore:1709
+          image: microsoft/windowsservercore:1803
           command:
           - powershell.exe
           - -command
@@ -253,7 +253,7 @@ spec:
       containers:
 
         - name: iis-container
-          image: microsoft/iis:windowsservercore-1709
+          image: microsoft/iis:windowsservercore-1803
           volumeMounts:
           - name: shared-data
             mountPath: /wwwcache
@@ -263,7 +263,7 @@ spec:
           - "while ($true) { Start-Sleep -Seconds 10; Copy-Item -Path C:\\wwwcache\\iisstart.htm -Destination C:\\inetpub\\wwwroot\\iisstart.htm; }"            
 
         - name: servercore-container
-          image: microsoft/windowsservercore:1709
+          image: microsoft/windowsservercore:1803
           volumeMounts:
           - name: shared-data
             mountPath: /poddata
