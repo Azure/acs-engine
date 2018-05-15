@@ -2103,9 +2103,9 @@ func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) strin
 	if profile.OrchestratorType == api.DCOS {
 		switch profile.OrchestratorVersion {
 		case common.DCOSVersion1Dot11Dot2:
-			return "https://downloads.dcos.io/dcos/stable/1.11.2/dcos_generate_config.sh"
+			return "https://dcos-mirror.azureedge.net/dcos-1-11-2/dcos_generate_config.sh"
 		case common.DCOSVersion1Dot11Dot0:
-			return "https://downloads.dcos.io/dcos/stable/1.11.0/dcos_generate_config.sh"
+			return "https://dcos-mirror.azureedge.net/dcos-1-11-0/dcos_generate_config.sh"
 		}
 	}
 	return ""
