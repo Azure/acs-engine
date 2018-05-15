@@ -253,7 +253,8 @@ function configNetworkPlugin() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key > /tmp/clear-containers-release.key || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add /tmp/clear-containers-release.key || exit $ERR_APT_INSTALL_TIMEOUT
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -266,8 +267,10 @@ function installClearContainersRuntime() {
 
 	# Install the systemd service and socket files.
 	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
-	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "${repo_uri}/cc-proxy.service.in" | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
-	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "${repo_uri}/cc-proxy.socket.in" | sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > /tmp/cc-proxy.service.in
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > /tmp/cc-proxy.socket.in
+    cat /tmp/cc-proxy.service.in | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
+    cat /tmp/cc-proxy.socket.in sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
 
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
