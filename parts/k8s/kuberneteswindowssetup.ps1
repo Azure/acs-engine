@@ -118,19 +118,6 @@ Get-KubeBinaries()
     Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
-function
-Install-Package($package)
-{
-    $pkgFile = [Io.path]::Combine($global:KubeDir, $package)
-    $url = $global:WindowsPackageSASURLBase + $package
-    Invoke-WebRequest -Uri $url -OutFile $pkgFile
-    & "$pkgFile" /q /norestart
-
-    $procName = [IO.Path]::GetFileNameWithoutExtension($package)
-    Wait-Process -Name $procName
-    Write-Log "$package installed"
-}
-
 function DownloadFileOverHttp($Url, $DestinationPath)
 {
      $secureProtocols = @()
@@ -163,14 +150,6 @@ function Update-WinCNI()
 function
 Update-WindowsPackages()
 {
-    bcdedit /set TESTSIGNING on
-
-    $packages = @("Windows10.0-KB123456-x64-InstallForTestingPurposesOnly.exe", "Windows10.0-KB999999-x64-InstallForTestingPurposesOnly.exe")
-    foreach ($pkg in $packages)
-    {
-        Install-Package($pkg)
-    }
-
     Update-WinCNI
     Get-HnsPsm1
 }
