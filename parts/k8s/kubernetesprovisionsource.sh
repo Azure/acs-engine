@@ -54,10 +54,10 @@ wait_for_file() {
     done
 }
 apt_get_update() {
-    retries=100
+    retries=10
     for i in $(seq 1 $retries); do
-        dpkg --configure -a
-        apt-get update 2>&1 | grep -x "[WE]:.*"
+        timeout 30 dpkg --configure -a
+        timeout 120 apt-get update 2>&1 | grep -x "[WE]:.*"
         [ $? -ne 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
@@ -69,7 +69,7 @@ apt_get_update() {
 apt_get_install() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
     for i in $(seq 1 $retries); do
-        timeout $timeout dpkg --configure -a
+        timeout 30 dpkg --configure -a
         timeout $timeout apt-get install --no-install-recommends -y ${@}
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
