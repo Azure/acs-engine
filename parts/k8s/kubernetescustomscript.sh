@@ -260,22 +260,13 @@ function configAzureCNI() {
     /sbin/ebtables -t nat --list
 }
 
-function configKubenet() {
-    installCNI
-}
-
-function configFlannel() {
-    installCNI
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-}
-
 function configNetworkPlugin() {
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
-    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
+    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
+		installCNI
+	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
-    elif [[ "${NETWORK_POLICY}" = "flannel" ]] ; then
-        configCNINetworkPolicy
     fi
 }
 
@@ -301,8 +292,6 @@ function installClearContainersRuntime() {
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy
-
-	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
 function installContainerd() {
@@ -327,21 +316,24 @@ function setupContainerd() {
 	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
 	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+		echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	else
+		echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+	fi
 	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+
+	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
 function ensureContainerd() {
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-		# Make sure we can nest virtualization
-		if grep -q vmx /proc/cpuinfo; then
-			# Enable and start cri-containerd service
-			# Make sure this is done after networking plugins are installed
-			echo "Enabling and starting cri-containerd service..."
-			systemctlEnableAndStart containerd
-		fi
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+		# Enable and start cri-containerd service
+		# Make sure this is done after networking plugins are installed
+		echo "Enabling and starting cri-containerd service..."
+		systemctlEnableAndStart containerd
 	fi
 }
 
@@ -542,9 +534,11 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
-		echo `date`,`hostname`, installContainerdStart>>/opt/m
-		installContainerd
 	fi
+fi
+if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+	echo `date`,`hostname`, installContainerdStart>>/opt/m
+	installContainerd
 fi
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd

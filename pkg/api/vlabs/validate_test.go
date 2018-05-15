@@ -689,6 +689,18 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 			"should error on clear-containers for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "containerd"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on containerd for windows clusters",
+		)
+	}
 }
 
 func Test_Properties_ValidateAddons(t *testing.T) {

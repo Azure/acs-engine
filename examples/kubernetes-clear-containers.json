@@ -5,8 +5,7 @@
       "orchestratorType": "Kubernetes",
       "orchestratorRelease": "1.10",
       "kubernetesConfig": {
-        "networkPlugin": "kubenet",
-        "networkPolicy": "flannel",
+        "networkPlugin": "flannel",
         "containerRuntime": "clear-containers",
         "addons": [
           {

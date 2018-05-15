@@ -42,24 +42,28 @@ var (
 			networkPolicy: "",
 		},
 		{
+			networkPlugin: "flannel",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "cilium",
+		},
+		{
 			networkPlugin: "kubenet",
 			networkPolicy: "calico",
 		},
 		{
-			networkPlugin: "kubenet",
-			networkPolicy: "cilium",
-		},
-		{
 			networkPlugin: "",
 			networkPolicy: "calico",
 		},
 		{
 			networkPlugin: "",
 			networkPolicy: "cilium",
-		},
-		{
-			networkPlugin: "",
-			networkPolicy: "flannel",
 		},
 		{
 			networkPlugin: "",
@@ -987,7 +991,7 @@ func (a *Properties) validateContainerRuntime() error {
 	}
 
 	// Make sure we don't use clear containers on windows.
-	if containerRuntime == "clear-containers" && a.HasWindows() {
+	if (containerRuntime == "clear-containers" || containerRuntime == "containerd") && a.HasWindows() {
 		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 

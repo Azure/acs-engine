@@ -3,10 +3,8 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
-        "networkPlugin": "flannel",
-        "containerRuntime": "clear-containers"
+        "networkPlugin":"flannel",
       }
     },
     "masterProfile": {
@@ -16,9 +14,9 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
+        "name": "linuxpool1",
         "count": 3,
-        "vmSize": "Standard_D4s_v3",
+        "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet"
       }
     ],
@@ -35,6 +33,7 @@
     "servicePrincipalProfile": {
       "clientId": "",
       "secret": ""
-    }
+    },
+    "certificateProfile": {}
   }
 }

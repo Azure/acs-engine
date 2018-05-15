@@ -414,19 +414,9 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
 	setOrchestratorDefaults(&mockCS)
-	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "cilium" {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
-	}
-
-	mockCS = getMockBaseContainerService("1.8.10")
-	properties = mockCS.Properties
-	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
-	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
-	setOrchestratorDefaults(&mockCS)
-	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
-		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "cilium")
 	}
 
 	mockCS = getMockBaseContainerService("1.8.10")

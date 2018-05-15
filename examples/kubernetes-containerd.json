@@ -6,7 +6,17 @@
       "orchestratorRelease": "1.10",
       "kubernetesConfig": {
         "networkPlugin": "flannel",
-        "containerRuntime": "clear-containers"
+        "containerRuntime": "containerd",
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled" : false
+          },
+          {
+            "name": "kubernetes-dashboard",
+            "enabled" : false
+          }
+        ]
       }
     },
     "masterProfile": {

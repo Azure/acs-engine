@@ -4,6 +4,8 @@ There are 2 different Network Plugin options :
 
 - Azure Container Networking (default)
 - Kubenet
+- Flannel (docs are //TODO) 
+- Cilium (docs are //TODO)
 
 ## Azure Container Networking (default)
 
