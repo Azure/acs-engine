@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -10,6 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -20,8 +24,8 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	onode "github.com/Azure/acs-engine/test/e2e/openshift/node"
+	outil "github.com/Azure/acs-engine/test/e2e/openshift/util"
 	"github.com/Azure/acs-engine/test/e2e/remote"
-	"github.com/kelseyhightower/envconfig"
 )
 
 // CLIProvisioner holds the configuration needed to provision a clusters
@@ -282,4 +286,45 @@ func (cli *CLIProvisioner) IsPrivate() bool {
 	return (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) &&
 		cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
+}
+
+type resource struct {
+	kind      string
+	namespace string
+	name      string
+}
+
+func (r resource) String() string {
+	return fmt.Sprintf("%s_%s", r.namespace, r.name)
+}
+
+// FetchOpenShiftInfraLogs returns logs for Openshift infra components.
+func (cli *CLIProvisioner) FetchOpenShiftInfraLogs(logPath string) error {
+	infraResources := []resource{
+		// TODO: Maybe collapse this list and the actual readiness check tests
+		// in openshift e2e.
+		{kind: "deploymentconfig", namespace: "default", name: "router"},
+		{kind: "deploymentconfig", namespace: "default", name: "docker-registry"},
+		{kind: "deploymentconfig", namespace: "default", name: "registry-console"},
+		{kind: "statefulset", namespace: "openshift-infra", name: "bootstrap-autoapprover"},
+		{kind: "statefulset", namespace: "openshift-metrics", name: "prometheus"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "apiserver"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "controller-manager"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb-etcd"},
+		{kind: "daemonset", namespace: "openshift-template-service-broker", name: "apiserver"},
+		{kind: "deployment", namespace: "openshift-web-console", name: "webconsole"},
+	}
+
+	var errs []error
+	for _, r := range infraResources {
+		log := outil.FetchLogs(r.kind, r.namespace, r.name)
+		path := filepath.Join(logPath, r.String())
+		err := ioutil.WriteFile(path, []byte(log), 0644)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
 }

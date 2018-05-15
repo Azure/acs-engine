@@ -135,3 +135,14 @@ func RunDiagnostics() (string, error) {
 	}
 	return string(out), nil
 }
+
+// FetchLogs returns logs for the provided kind/name in namespace.
+func FetchLogs(kind, namespace, name string) string {
+	cmd := exec.Command("oc", "logs", fmt.Sprintf("%s/%s", kind, name), "-n", namespace)
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Sprintf("Error trying to fetch logs from %s/%s in %s: %s", kind, name, namespace, string(out))
+	}
+	return string(out)
+}
