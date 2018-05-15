@@ -260,22 +260,13 @@ function configAzureCNI() {
     /sbin/ebtables -t nat --list
 }
 
-function configKubenet() {
-    installCNI
-}
-
-function configFlannel() {
-    installCNI
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-}
-
 function configNetworkPlugin() {
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
-    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]] ; then
+    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
+		installCNI
+	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
-    elif [[ "${NETWORK_POLICY}" = "flannel" ]] ; then
-        configCNINetworkPolicy
     fi
 }
 

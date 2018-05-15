@@ -42,24 +42,28 @@ var (
 			networkPolicy: "",
 		},
 		{
+			networkPlugin: "flannel",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "cilium",
+		},
+		{
 			networkPlugin: "kubenet",
 			networkPolicy: "calico",
 		},
 		{
-			networkPlugin: "kubenet",
-			networkPolicy: "cilium",
-		},
-		{
 			networkPlugin: "",
 			networkPolicy: "calico",
 		},
 		{
 			networkPlugin: "",
 			networkPolicy: "cilium",
-		},
-		{
-			networkPlugin: "",
-			networkPolicy: "flannel",
 		},
 		{
 			networkPlugin: "",
