@@ -454,8 +454,8 @@
     "windowsPackageSASURLBase": "[parameters('windowsPackageSASURLBase')]",
     "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
     "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
-    "agentWindowsPublisher": "MicrosoftWindowsServer",
-    "agentWindowsOffer": "WindowsServerSemiAnnual",
+    "agentWindowsPublisher": "[parameters('agentWindowsPublisher')]",
+    "agentWindowsOffer": "[parameters('agentWindowsOffer')]",
     "agentWindowsSku": "[parameters('agentWindowsSku')]",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
