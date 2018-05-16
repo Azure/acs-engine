@@ -2190,7 +2190,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - apt_get_update
-- retrycmd_if_failure 5 10 120 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
 - mkdir -p %s
 - cd %s`, dest, dest)
 
@@ -2200,7 +2200,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
 	installScript += fmt.Sprintf(`
-- retrycmd_if_failure 5 10 30 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
+- retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
 - mkdir -p lib64 overlay-workdir
 - mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
 
@@ -2214,8 +2214,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - ldconfig
 - umount /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
-- %s/bin/nvidia-smi
-- systemctl_restart 10 1 10 kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- %s/bin/nvidia-smi`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.

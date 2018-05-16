@@ -38,6 +38,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.8.10":         true,
 	"1.8.11":         true,
 	"1.8.12":         true,
+	"1.8.13":         true,
 	"1.9.0":          true,
 	"1.9.1":          true,
 	"1.9.2":          true,
@@ -58,6 +59,11 @@ var AllKubernetesSupportedVersions = map[string]bool{
 // GetDefaultKubernetesVersion returns the default Kubernetes version, that is the latest patch of the default release
 func GetDefaultKubernetesVersion() string {
 	return GetLatestPatchVersion(KubernetesDefaultRelease, GetAllSupportedKubernetesVersions())
+}
+
+// GetDefaultKubernetesVersionWindows returns the default Kubernetes version for Windows, that is the latest patch of the default release
+func GetDefaultKubernetesVersionWindows() string {
+	return GetLatestPatchVersion(KubernetesDefaultReleaseWindows, GetAllSupportedKubernetesVersionsWindows())
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -200,6 +206,7 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.6.13",
 		"1.7.0",
 		"1.7.1",
+		"1.8.13",
 		"1.10.0-beta.2",
 		"1.10.0-beta.4",
 		"1.10.0-rc.1",
@@ -225,7 +232,7 @@ func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, 
 	switch orchType {
 	case Kubernetes:
 		if hasWindows {
-			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersion()
+			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersionWindows()
 		}
 		return GetAllSupportedKubernetesVersions(), GetDefaultKubernetesVersion()
 
