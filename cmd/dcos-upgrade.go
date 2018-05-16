@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -33,14 +34,16 @@ type dcosUpgradeCmd struct {
 	deploymentDirectory string
 	upgradeVersion      string
 	location            string
-	timeoutInMinutes    int
+	sshPrivateKeyPath   string
 
 	// derived
-	containerService *api.ContainerService
-	apiVersion       string
-	client           armhelpers.ACSEngineClient
-	locale           *gotext.Locale
-	nameSuffix       string
+	containerService   *api.ContainerService
+	apiVersion         string
+	currentDcosVersion string
+	client             armhelpers.ACSEngineClient
+	locale             *gotext.Locale
+	nameSuffix         string
+	sshPrivateKey      []byte
 }
 
 func newDcosUpgradeCmd() *cobra.Command {
@@ -59,6 +62,7 @@ func newDcosUpgradeCmd() *cobra.Command {
 	f.StringVarP(&uc.location, "location", "l", "", "location the cluster is deployed in (required)")
 	f.StringVarP(&uc.resourceGroupName, "resource-group", "g", "", "the resource group where the cluster is deployed (required)")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate` (required)")
+	f.StringVar(&uc.sshPrivateKeyPath, "ssh-private-key-path", "", "ssh private key path (default: <deployment-dir>/id_rsa)")
 	f.StringVar(&uc.upgradeVersion, "upgrade-version", "", "desired DC/OS version (required)")
 	addAuthFlags(&uc.authArgs, f)
 
@@ -75,25 +79,33 @@ func (uc *dcosUpgradeCmd) validate(cmd *cobra.Command) error {
 		return fmt.Errorf("error loading translation files: %s", err.Error())
 	}
 
-	if uc.resourceGroupName == "" {
+	if len(uc.resourceGroupName) == 0 {
 		cmd.Usage()
 		return fmt.Errorf("--resource-group must be specified")
 	}
 
-	if uc.location == "" {
+	if len(uc.location) == 0 {
 		cmd.Usage()
 		return fmt.Errorf("--location must be specified")
 	}
 	uc.location = helpers.NormalizeAzureRegion(uc.location)
 
-	if uc.upgradeVersion == "" {
+	if len(uc.upgradeVersion) == 0 {
 		cmd.Usage()
 		return fmt.Errorf("--upgrade-version must be specified")
 	}
 
-	if uc.deploymentDirectory == "" {
+	if len(uc.deploymentDirectory) == 0 {
 		cmd.Usage()
 		return fmt.Errorf("--deployment-dir must be specified")
+	}
+
+	if len(uc.sshPrivateKeyPath) == 0 {
+		uc.sshPrivateKeyPath = filepath.Join(uc.deploymentDirectory, "id_rsa")
+	}
+	if uc.sshPrivateKey, err = ioutil.ReadFile(uc.sshPrivateKeyPath); err != nil {
+		cmd.Usage()
+		return fmt.Errorf("ssh-private-key-path must be specified: %s", err)
 	}
 
 	if err = uc.authArgs.validateAuthArgs(); err != nil {
@@ -130,8 +142,9 @@ func (uc *dcosUpgradeCmd) loadCluster(cmd *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("error parsing the api model: %s", err.Error())
 	}
+	uc.currentDcosVersion = uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion
 
-	if uc.containerService.Location == "" {
+	if len(uc.containerService.Location) == 0 {
 		uc.containerService.Location = uc.location
 	} else if uc.containerService.Location != uc.location {
 		return fmt.Errorf("--location does not match api model location")
@@ -196,8 +209,8 @@ func (uc *dcosUpgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
-		uc.containerService, uc.nameSuffix); err != nil {
+	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName, uc.currentDcosVersion,
+		uc.containerService, uc.nameSuffix, uc.sshPrivateKey); err != nil {
 		log.Fatalf("Error upgrading cluster: %v", err)
 	}
 

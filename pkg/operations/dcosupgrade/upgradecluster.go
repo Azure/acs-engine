@@ -15,10 +15,12 @@ import (
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	DataModel     *api.ContainerService
-	Location      string
-	ResourceGroup string
-	NameSuffix    string
+	DataModel          *api.ContainerService
+	Location           string
+	ResourceGroup      string
+	CurrentDcosVersion string
+	NameSuffix         string
+	SSHKey             []byte
 
 	AgentPoolsToUpgrade map[string]bool
 	AgentPools          map[string]*AgentPoolTopology
@@ -47,12 +49,14 @@ type UpgradeCluster struct {
 }
 
 // UpgradeCluster runs the workflow to upgrade a DCOS cluster.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, nameSuffix string) error {
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup, currentDcosVersion string,
+	cs *api.ContainerService, nameSuffix string, sshKey []byte) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
+	uc.CurrentDcosVersion = currentDcosVersion
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix
+	uc.SSHKey = sshKey
 	uc.BootstrapVMs = &[]compute.VirtualMachine{}
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
@@ -102,9 +106,4 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		}
 	}
 	return nil
-}
-
-func (uc *UpgradeCluster) runUpgrade() error {
-	return uc.setBootstrapNode()
-	//return nil
 }

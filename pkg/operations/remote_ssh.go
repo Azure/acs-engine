@@ -2,7 +2,7 @@ package operations
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net"
 
@@ -10,14 +10,9 @@ import (
 )
 
 // RemoteRun executes remote command
-func RemoteRun(user string, addr string, privateKey string, cmd string) (string, error) {
+func RemoteRun(user string, addr string, port int, sshKey []byte, cmd string) (string, error) {
 	// Create the Signer for this private key.
-	key, err := ioutil.ReadFile("/home/dima/.ssh/id_rsa_test")
-	if err != nil {
-		log.Fatalf("unable to read private key: %v", err)
-	}
-
-	signer, err := ssh.ParsePrivateKey(key)
+	signer, err := ssh.ParsePrivateKey(sshKey)
 	if err != nil {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
@@ -31,7 +26,7 @@ func RemoteRun(user string, addr string, privateKey string, cmd string) (string,
 		HostKeyCallback: func(string, net.Addr, ssh.PublicKey) error { return nil },
 	}
 	// Connect
-	client, err := ssh.Dial("tcp", addr+":22", config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", addr, port), config)
 	if err != nil {
 		return "", err
 	}
