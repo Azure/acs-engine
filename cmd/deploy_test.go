@@ -72,6 +72,20 @@ func getAPIModelWithoutServicePrincipalProfile(baseAPIModel string, useManagedId
 		strconv.FormatBool(useManagedIdentity))
 }
 
+func TestNewDeployCmd(t *testing.T) {
+	output := newDeployCmd()
+	if output.Use != deployName || output.Short != deployShortDescription || output.Long != deployLongDescription {
+		t.Fatalf("deploy command should have use %s equal %s, short %s equal %s and long %s equal to %s", output.Use, deployName, output.Short, deployShortDescription, output.Long, versionLongDescription)
+	}
+
+	expectedFlags := []string{"api-model", "dns-prefix", "auto-suffix", "output-directory", "ca-private-key-path", "resource-group", "location", "force-overwrite"}
+	for _, f := range expectedFlags {
+		if output.Flags().Lookup(f) == nil {
+			t.Fatalf("deploy command should have flag %s", f)
+		}
+	}
+}
+
 func TestAutofillApimodelWithoutManagedIdentityCreatesCreds(t *testing.T) {
 	testAutodeployCredentialHandling(t, false, "", "")
 }
