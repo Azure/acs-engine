@@ -4,12 +4,6 @@
       },
       "type": "string"
     },
-    "bootstrapEndpointDNSNamePrefix": {
-      "metadata": {
-        "description": "Sets the Domain name label for the bootstrap IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
-      },
-      "type": "string"
-    },
     {{range .ExtensionProfiles}}
       "{{.Name}}Parameters": {
         "metadata": {
@@ -34,7 +28,7 @@
       "type": "string"
     },
 {{else}}
-    "bootstrapFirstConsecutiveStaticIP": {
+    "bootstrapStaticIP": {
       "metadata": {
         "description": "Sets the static IP of the first bootstrap"
       },
@@ -46,12 +40,6 @@
         "description": "The size of the Virtual Machine."
       },
       "type": "string"
-    },
-    "bootstrapCount": {
-      "metadata": {
-        "description": "The number of the Virtual Machines in the set."
-      },
-      "type": "int"
     },
 {{end}}
     "sshRSAPublicKey": {
