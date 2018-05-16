@@ -157,6 +157,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be running the expected version", func() {
+			hasWindows := eng.HasWindowsAgents()
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -167,13 +168,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
-					false)
+					hasWindows)
 			} else {
 				expectedVersion = common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.Config.OrchestratorRelease,
 					eng.Config.OrchestratorVersion,
-					false)
+					hasWindows)
 			}
 			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
 			Expect(version).To(Equal("v" + expectedVersionRationalized))
