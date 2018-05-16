@@ -733,8 +733,8 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
 			if a.OrchestratorProfile.IsAzureCNI() {
-					agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
-					profile.IPAddressCount += agentPoolMaxPods
+				agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
+				profile.IPAddressCount += agentPoolMaxPods
 			}
 		}
 	}
