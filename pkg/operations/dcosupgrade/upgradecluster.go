@@ -25,10 +25,7 @@ type ClusterTopology struct {
 	AgentPoolsToUpgrade map[string]bool
 	AgentPools          map[string]*AgentPoolTopology
 
-	BootstrapVMs      *[]compute.VirtualMachine
-	MasterVMs         *[]compute.VirtualMachine
-	AgentVMs          *[]compute.VirtualMachine
-	UpgradedMasterVMs *[]compute.VirtualMachine
+	AgentVMs *[]compute.VirtualMachine
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -57,12 +54,11 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix
 	uc.SSHKey = sshKey
-	uc.BootstrapVMs = &[]compute.VirtualMachine{}
-	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
-	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentPools = make(map[string]*AgentPoolTopology)
 	uc.AgentPoolsToUpgrade = make(map[string]bool)
+
+	uc.Logger.Infof("Upgrading DCOS from %s to %s", uc.CurrentDcosVersion, uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
 	for _, pool := range cs.Properties.AgentPoolProfiles {
 		uc.AgentPoolsToUpgrade[pool.Name] = true
@@ -89,17 +85,15 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	if err != nil {
 		return err
 	}
-	bootstrapPrefix := fmt.Sprintf("bootstrap-%s-", uc.NameSuffix)
+	bootstrapName := fmt.Sprintf("bootstrap-%s", uc.NameSuffix)
 	masterPrefix := fmt.Sprintf("dcos-master-%s-", uc.NameSuffix)
 
 	for _, vm := range *vmListResult.Value {
 
-		if strings.HasPrefix(*(vm.Name), bootstrapPrefix) {
+		if strings.Compare(*(vm.Name), bootstrapName) == 0 {
 			uc.Logger.Infof("Bootstrap VM name: %s", *vm.Name)
-			*uc.BootstrapVMs = append(*uc.BootstrapVMs, vm)
 		} else if strings.HasPrefix(*(vm.Name), masterPrefix) {
 			uc.Logger.Infof("Master VM name: %s", *vm.Name)
-			*uc.MasterVMs = append(*uc.MasterVMs, vm)
 		} else {
 			uc.Logger.Infof("Agent VM name: %s", *vm.Name)
 			*uc.AgentVMs = append(*uc.AgentVMs, vm)

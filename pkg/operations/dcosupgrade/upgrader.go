@@ -50,8 +50,6 @@ bash ./dcos_node_upgrade.sh
 `
 
 func (uc *UpgradeCluster) runUpgrade() error {
-	uc.Logger.Info("Running DCOS upgrade")
-
 	if uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig == nil ||
 		uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile == nil {
 		return fmt.Errorf("BootstrapProfile is not set")
@@ -114,7 +112,7 @@ func (uc *UpgradeCluster) upgradeBootstrapNode(masterDNS, bootstrapIP, bootstrap
 	}
 	// copy bootstrap script to the bootstrap node
 	uc.Logger.Infof("Copy bootstrap script to the bootstrap node")
-	cmd := fmt.Sprintf("scp -i .ssh/id_rsa_cluster bootstrap_upgrade.sh %s:", bootstrapIP)
+	cmd := fmt.Sprintf("scp -i .ssh/id_rsa_cluster -o ConnectTimeout=30 -o StrictHostKeyChecking=no bootstrap_upgrade.sh %s:", bootstrapIP)
 	out, err = operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, cmd)
 	if err != nil {
 		uc.Logger.Errorf(out)
@@ -149,9 +147,19 @@ func (uc *UpgradeCluster) upgradeMasterNodes(masterDNS string, masterCount int, 
 	// run master upgrade script
 	catCmd := fmt.Sprintf("cat << END > node_upgrade.sh\n%s\nEND\n", nodeScript)
 	for i := 0; i < masterCount; i++ {
-		uc.Logger.Infof("Running master #%d upgrade script", i+1)
+		uc.Logger.Infof("Upgrading master node #%d", i+1)
+		// check current version
+		out, err := operations.RemoteRun("azureuser", masterDNS, 2200+i, uc.SSHKey, "grep version /opt/mesosphere/etc/dcos-version.json | cut -d '\"' -f 4")
+		if err != nil {
+			uc.Logger.Errorf(out)
+			return err
+		}
+		if strings.TrimSpace(out) == uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
+			uc.Logger.Infof("Master node is up-to-date. Skipping upgrade")
+			continue
+		}
 		// copy script to the node
-		out, err := operations.RemoteRun("azureuser", masterDNS, 2200+i, uc.SSHKey, catCmd)
+		out, err = operations.RemoteRun("azureuser", masterDNS, 2200+i, uc.SSHKey, catCmd)
 		if err != nil {
 			uc.Logger.Errorf(out)
 			return err
@@ -174,5 +182,5 @@ func (uc *UpgradeCluster) upgradeMasterNodes(masterDNS string, masterCount int, 
 }
 
 func (uc *UpgradeCluster) upgradeAgentNodes(masterDNS string) error {
-	return fmt.Errorf("N/A")
+	return fmt.Errorf("AgentNode N/A")
 }
