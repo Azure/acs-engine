@@ -95,7 +95,7 @@ func masterEtcEtcdEtcdConf() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/etc/etcd/etcd.conf", size: 1586, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/etc/etcd/etcd.conf", size: 1586, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -115,7 +115,7 @@ func masterEtcOriginMasterHtpasswd() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/etc/origin/master/htpasswd", size: 53, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/etc/origin/master/htpasswd", size: 53, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -135,7 +135,7 @@ func masterEtcOriginMasterMasterConfigYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/etc/origin/master/master-config.yaml", size: 6051, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/etc/origin/master/master-config.yaml", size: 6051, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -155,7 +155,7 @@ func masterEtcOriginMasterSchedulerJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/etc/origin/master/scheduler.json", size: 1893, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/etc/origin/master/scheduler.json", size: 1893, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -175,7 +175,7 @@ func masterEtcOriginMasterSessionSecretsYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/etc/origin/master/session-secrets.yaml", size: 116, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/etc/origin/master/session-secrets.yaml", size: 116, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -195,7 +195,7 @@ func masterTmpAnsibleAnsibleSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/ansible/ansible.sh", size: 4311, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/ansible/ansible.sh", size: 4311, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -215,7 +215,7 @@ func masterTmpAnsibleAzureLocalMasterInventoryYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/ansible/azure-local-master-inventory.yml", size: 3071, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/ansible/azure-local-master-inventory.yml", size: 3071, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -235,7 +235,7 @@ func masterTmpAnsibleAzureOcpDeployYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/ansible/azure-ocp-deploy.yml", size: 780, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/ansible/azure-ocp-deploy.yml", size: 780, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -255,7 +255,7 @@ func masterTmpAnsibleServiceCatalogYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/ansible/service-catalog.yaml", size: 4867, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/ansible/service-catalog.yaml", size: 4867, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -275,7 +275,7 @@ func masterTmpBootstrapconfigsComputeConfigYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/compute-config.yaml", size: 1232, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/compute-config.yaml", size: 1232, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -295,7 +295,7 @@ func masterTmpBootstrapconfigsInfraConfigYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/infra-config.yaml", size: 1189, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/infra-config.yaml", size: 1189, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -315,7 +315,7 @@ func masterTmpBootstrapconfigsMasterConfigYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/master-config.yaml", size: 1242, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "master/tmp/bootstrapconfigs/master-config.yaml", size: 1242, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -335,7 +335,7 @@ func nodeEtcAzureAzureConf() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "node/etc/azure/azure.conf", size: 311, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "node/etc/azure/azure.conf", size: 311, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -355,7 +355,7 @@ func nodeEtcOriginNodeNodeDnsmasqConf() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "node/etc/origin/node/node-dnsmasq.conf", size: 63, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "node/etc/origin/node/node-dnsmasq.conf", size: 63, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -375,7 +375,7 @@ func nodeEtcOriginNodeResolvConf() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "node/etc/origin/node/resolv.conf", size: 25, mode: os.FileMode(436), modTime: time.Unix(1, 0)}
+	info := bindataFileInfo{name: "node/etc/origin/node/resolv.conf", size: 25, mode: os.FileMode(493), modTime: time.Unix(1, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
