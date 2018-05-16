@@ -60,6 +60,11 @@ func GetDefaultKubernetesVersion() string {
 	return GetLatestPatchVersion(KubernetesDefaultRelease, GetAllSupportedKubernetesVersions())
 }
 
+// GetDefaultKubernetesVersionWindows returns the default Kubernetes version for Windows, that is the latest patch of the default release
+func GetDefaultKubernetesVersionWindows() string {
+	return GetLatestPatchVersion(KubernetesDefaultReleaseWindows, GetAllSupportedKubernetesVersionsWindows())
+}
+
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
 func GetSupportedKubernetesVersion(version string) string {
 	if k8sVersion := version; AllKubernetesSupportedVersions[k8sVersion] {
@@ -225,7 +230,7 @@ func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, 
 	switch orchType {
 	case Kubernetes:
 		if hasWindows {
-			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersion()
+			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersionWindows()
 		}
 		return GetAllSupportedKubernetesVersions(), GetDefaultKubernetesVersion()
 
