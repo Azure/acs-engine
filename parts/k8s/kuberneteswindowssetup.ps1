@@ -114,7 +114,15 @@ function
 Get-KubeBinaries()
 {
     $zipfile = "c:\k.zip"
-    Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
+    for ($i=0; $i -le 10; $i++)
+    {
+        Start-BitsTransfer -Source $global:KubeBinariesSASURL -Destination $zipfile
+        if ($?) {
+            break
+        } else {
+            Write-Log $Error[0].Exception.Message
+        }
+    }
     Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
