@@ -17,8 +17,8 @@ const (
 	DefaultDCOSMasterSubnet = "192.168.255.0/24"
 	// DefaultDCOSFirstConsecutiveStaticIP  specifies the static IP address on master 0 for a DCOS cluster
 	DefaultDCOSFirstConsecutiveStaticIP = "192.168.255.5"
-	// DefaultDCOSBootstrapFirstConsecutiveStaticIP specifies the static IP address on bootstrap 0 for a DCOS cluster
-	DefaultDCOSBootstrapFirstConsecutiveStaticIP = "192.168.255.240"
+	// DefaultDCOSBootstrapStaticIP specifies the static IP address on bootstrap for a DCOS cluster
+	DefaultDCOSBootstrapStaticIP = "192.168.255.240"
 	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.

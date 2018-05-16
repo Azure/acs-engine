@@ -1,97 +1,4 @@
     {
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "location": "[variables('location')]",
-      "name": "[variables('bootstrapAvailabilitySet')]",
-      "properties": {
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "3",
-        "managed": "true"
-      },
-      "type": "Microsoft.Compute/availabilitySets"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[variables('location')]",
-      "name": "[variables('bootstrapPublicIPAddressName')]",
-      "properties": {
-        "dnsSettings": {
-          "domainNameLabel": "[variables('bootstrapEndpointDNSNamePrefix')]"
-        },
-        "publicIPAllocationMethod": "Dynamic"
-      },
-      "type": "Microsoft.Network/publicIPAddresses"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('bootstrapPublicIPAddressName'))]"
-      ],
-      "location": "[variables('location')]",
-      "name": "[variables('bootstrapLbName')]",
-      "properties": {
-        "backendAddressPools": [
-          {
-            "name": "[variables('bootstrapLbBackendPoolName')]"
-          }
-        ],
-        "frontendIPConfigurations": [
-          {
-            "name": "[variables('bootstrapLbIPConfigName')]",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('bootstrapPublicIPAddressName'))]"
-              }
-            }
-          }
-        ]
-      },
-      "type": "Microsoft.Network/loadBalancers"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[variables('bootstrapCount')]",
-        "name": "bootstrapLbLoopNode"
-      },
-      "dependsOn": [
-        "[variables('bootstrapLbID')]"
-      ],
-      "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapLbName'), '/', 'SSH-', variables('bootstrapVMNamePrefix'), copyIndex())]",
-      "properties": {
-        "backendPort": 22,
-        "enableFloatingIP": false,
-        "frontendIPConfiguration": {
-          "id": "[variables('bootstrapLbIPConfigID')]"
-        },
-        "frontendPort": "[copyIndex(22)]",
-        "protocol": "tcp"
-      },
-      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[variables('bootstrapCount')]",
-        "name": "bootstrapLbLoopNode"
-      },
-      "dependsOn": [
-        "[variables('bootstrapLbID')]"
-      ],
-      "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapLbName'), '/', 'bootstrapService-', variables('bootstrapVMNamePrefix'), copyIndex())]",
-      "properties": {
-        "backendPort": 8086,
-        "enableFloatingIP": false,
-        "frontendIPConfiguration": {
-          "id": "[variables('bootstrapLbIPConfigID')]"
-        },
-        "frontendPort": "[copyIndex(8086)]",
-        "protocol": "tcp"
-      },
-      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
-    },
-    {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('bootstrapNSGName')]",
@@ -131,48 +38,28 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[variables('bootstrapCount')]",
-        "name": "nicLoopNode"
-      },
       "dependsOn": [
-        "[variables('bootstrapNSGID')]",
 {{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]",
 {{end}}
-        "[variables('bootstrapLbID')]",
-        "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'),copyIndex())]",
-        "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'),copyIndex())]"
+        "[variables('bootstrapNSGID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapVMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('bootstrapVMName'), '-nic')]",
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipConfigNode",
             "properties": {
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[concat(variables('bootstrapLbID'), '/backendAddressPools/', variables('bootstrapLbBackendPoolName'))]"
-                }
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[concat(variables('bootstrapLbID'),'/inboundNatRules/SSH-',variables('bootstrapVMNamePrefix'),copyIndex())]"
-                },
-                {
-                  "id": "[concat(variables('bootstrapLbID'),'/inboundNatRules/bootstrapService-',variables('bootstrapVMNamePrefix'),copyIndex())]"
-                }
-              ],
-              "privateIPAddress": "[concat(variables('bootstrapFirstAddrPrefix'), copyIndex(int(variables('bootstrapFirstAddrOctet4'))))]",
+              "privateIPAddress": "[variables('bootstrapStaticIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('masterVnetSubnetID')]"
               }
             }
           }
-        ]
-        ,"networkSecurityGroup": {
+        ],
+        "networkSecurityGroup": {
           "id": "[variables('bootstrapNSGID')]"
         }
       },
@@ -180,13 +67,8 @@
     },
     {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "copy": {
-        "count": "[variables('bootstrapCount')]",
-        "name": "vmLoopNode"
-      },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('bootstrapVMNamePrefix'), 'nic-', copyIndex())]",
-        "[concat('Microsoft.Compute/availabilitySets/',variables('bootstrapAvailabilitySet'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('bootstrapVMName'), '-nic')]",
 {{if .MasterProfile.IsStorageAccount}}
         "[variables('masterStorageAccountName')]",
 {{end}}
@@ -194,27 +76,24 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('bootstrapVMNamePrefix'), copyIndex())]"
+        "creationSource" : "[concat('acsengine-', variables('bootstrapVMName'))]"
       },
       "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapVMNamePrefix'), copyIndex())]",
+      "name": "[variables('bootstrapVMName')]",
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('bootstrapAvailabilitySet'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[variables('bootstrapVMSize')]"
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('bootstrapVMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('bootstrapVMName'), '-nic'))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('bootstrapVMNamePrefix'), copyIndex())]",
+          "computername": "[variables('bootstrapVMName')]",
           {{GetDCOSBootstrapCustomData}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -243,9 +122,9 @@
             "caching": "ReadWrite"
             ,"createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
-            ,"name": "[concat(variables('bootstrapVMNamePrefix'), copyIndex(),'-osdisk')]"
+            ,"name": "[concat(variables('bootstrapVMName'), '-osdisk')]"
             ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('bootstrapVMNamePrefix'),copyIndex(),'-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('bootstrapVMName'),-osdisk.vhd')]"
             }
 {{end}}
 {{if ne .OrchestratorProfile.DcosConfig.BootstrapProfile.OSDiskSizeGB 0}}
@@ -259,15 +138,15 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMName'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('bootstrapVMNamePrefix'), sub(variables('bootstrapCount'), 1), '/bootstrapready')]",
+      "name": "[concat(variables('bootstrapVMName'), '/bootstrapready')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {
-          "commandToExecute": "[concat('/bin/bash -c \"until curl -f http://', variables('bootstrapFirstConsecutiveStaticIP'), ':8086/dcos_install.sh > /dev/null; do echo waiting for bootstrap node; sleep 15; done; echo bootstrap node up\"')]"
+          "commandToExecute": "[concat('/bin/bash -c \"until curl -f http://', variables('bootstrapStaticIP'), ':8086/dcos_install.sh > /dev/null; do echo waiting for bootstrap node; sleep 15; done; echo bootstrap node up\"')]"
         },
         "type": "CustomScriptForLinux",
         "typeHandlerVersion": "1.4"

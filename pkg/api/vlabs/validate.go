@@ -124,11 +124,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 			}
 			if o.DcosConfig != nil && o.DcosConfig.BootstrapProfile != nil {
-				if len(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) > 0 {
-					bootstrapFirstIP := net.ParseIP(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
-					if bootstrapFirstIP == nil {
-						return fmt.Errorf("DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address",
-							o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+				if len(o.DcosConfig.BootstrapProfile.StaticIP) > 0 {
+					if net.ParseIP(o.DcosConfig.BootstrapProfile.StaticIP) == nil {
+						return fmt.Errorf("DcosConfig.BootstrapProfile.StaticIP '%s' is an invalid IP address",
+							o.DcosConfig.BootstrapProfile.StaticIP)
 					}
 				}
 			}
