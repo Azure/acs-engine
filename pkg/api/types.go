@@ -402,21 +402,23 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string               `json:"name"`
-	Count               int                  `json:"count"`
-	VMSize              string               `json:"vmSize"`
-	OSDiskSizeGB        int                  `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix           string               `json:"dnsPrefix,omitempty"`
-	OSType              OSType               `json:"osType,omitempty"`
-	Ports               []int                `json:"ports,omitempty"`
-	AvailabilityProfile string               `json:"availabilityProfile"`
-	StorageProfile      string               `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int                `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string               `json:"vnetSubnetID,omitempty"`
-	Subnet              string               `json:"subnet"`
-	IPAddressCount      int                  `json:"ipAddressCount,omitempty"`
-	Distro              Distro               `json:"distro,omitempty"`
-	Role                AgentPoolProfileRole `json:"role,omitempty"`
+	Name                   string               `json:"name"`
+	Count                  int                  `json:"count"`
+	VMSize                 string               `json:"vmSize"`
+	OSDiskSizeGB           int                  `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix              string               `json:"dnsPrefix,omitempty"`
+	OSType                 OSType               `json:"osType,omitempty"`
+	Ports                  []int                `json:"ports,omitempty"`
+	AvailabilityProfile    string               `json:"availabilityProfile"`
+	ScaleSetPriority       string               `json:"scaleSetPriority,omitempty"`
+	ScaleSetEvictionPolicy string               `json:"scaleSetEvictionPolicy,omitempty"`
+	StorageProfile         string               `json:"storageProfile,omitempty"`
+	DiskSizesGB            []int                `json:"diskSizesGB,omitempty"`
+	VnetSubnetID           string               `json:"vnetSubnetID,omitempty"`
+	Subnet                 string               `json:"subnet"`
+	IPAddressCount         int                  `json:"ipAddressCount,omitempty"`
+	Distro                 Distro               `json:"distro,omitempty"`
+	Role                   AgentPoolProfileRole `json:"role,omitempty"`
 
 	FQDN                  string            `json:"fqdn,omitempty"`
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
@@ -648,6 +650,16 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 	return false
 }
 
+// HasLowPriorityScaleSets returns true if the cluster contains Virtual Machine Scale Sets with Low Priority
+func (p *Properties) HasLowPriorityScaleSets() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.ScaleSetPriority == ScaleSetPriorityLow {
+			return true
+		}
+	}
+	return false
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -706,6 +718,11 @@ func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 // IsVirtualMachineScaleSets returns true if the agent pool availability profile is VMSS
 func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 	return a.AvailabilityProfile == VirtualMachineScaleSets
+}
+
+// IsLowPriorityScaleSet returns true if the VMSS is Low Priority
+func (a *AgentPoolProfile) IsLowPriorityScaleSet() bool {
+	return a.ScaleSetPriority == ScaleSetPriorityLow
 }
 
 // IsManagedDisks returns true if the customer specified disks

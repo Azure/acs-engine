@@ -63,6 +63,14 @@ const (
 	AvailabilitySet = "AvailabilitySet"
 	// VirtualMachineScaleSets means that the vms are in a virtual machine scaleset
 	VirtualMachineScaleSets = "VirtualMachineScaleSets"
+	// ScaleSetPriorityRegular is the default ScaleSet Priority
+	ScaleSetPriorityRegular = "Regular"
+	// ScaleSetPriorityLow means the ScaleSet will use Low-priority VMs
+	ScaleSetPriorityLow = "Low"
+	// ScaleSetEvictionPolicyDelete is the default Eviction Policy for Low-priority VM ScaleSets
+	ScaleSetEvictionPolicyDelete = "Delete"
+	// ScaleSetEvictionPolicyDeallocate means a Low-priority VM ScaleSet will deallocated rather than delete VMs.
+	ScaleSetEvictionPolicyDeallocate = "Deallocate"
 )
 
 // storage profiles

@@ -310,6 +310,9 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		if e := validate.Var(a.Ports, "len=0"); e != nil {
 			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
 		}
+		if validate.Var(a.ScaleSetPriority, "eq=Regular") == nil && validate.Var(a.ScaleSetEvictionPolicy, "len=0") != nil {
+			return fmt.Errorf("property 'AgentPoolProfile.ScaleSetEvictionPolicy' must be empty for AgentPoolProfile.Priority of Regular")
+		}
 	}
 
 	if a.DNSPrefix != "" {
