@@ -176,8 +176,8 @@ coreos:
 runcmd:
 - set -x
 - . /opt/azure/containers/provision_source.sh
-- apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
-- apt-mark unhold walinuxagent
+- timeout 10 apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
+- timeout 10 apt-mark unhold walinuxagent
 {{if IsNSeriesSKU .}}
 - . /opt/azure/containers/provision_source.sh
   {{GetGPUDriversInstallScript .}}

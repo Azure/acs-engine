@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
+echo `date`,`hostname`, startscript>>/opt/m
 source /opt/azure/containers/provision_source.sh
 # TODO standardize/generalize CSE exit codes
 ERR_SYSTEMCTL_ENABLE_FAIL=3 # Service could not be enabled by systemctl
@@ -15,12 +16,16 @@ ERR_ETCD_DOWNLOAD_TIMEOUT=12 # Timeout waiting for etcd to download
 ERR_ETCD_VOL_MOUNT_FAIL=13 # Unable to mount etcd disk volume
 ERR_ETCD_START_TIMEOUT=14 # Unable to start etcd runtime
 ERR_ETCD_CONFIG_FAIL=15 # Unable to configure etcd cluster
-ERR_DOCKER_INSTALL_TIMEOUT=20 # Timeout waiting for docker install to finish
+ERR_DOCKER_INSTALL_TIMEOUT=20 # Timeout waiting for docker install
 ERR_DOCKER_DOWNLOAD_TIMEOUT=21 # Timout waiting for docker download(s)
+ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT=22 # Timeout waiting to download docker repo key
+ERR_DOCKER_APT_KEY_TIMEOUT=23 # Timeout waiting for docker apt-key
 ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
+ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
+ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -28,6 +33,7 @@ RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
+CNI_BIN_DIR=/opt/cni/bin
 
 set +x
 ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
@@ -39,19 +45,10 @@ if [[ $OS == $COREOS_OS_NAME ]]; then
     KUBECTL=/opt/kubectl
 fi
 
-echo `date`,`hostname`, startscript>>/opt/m
-
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
 else
     REBOOTREQUIRED=false
-fi
-
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
-	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
-    
 fi
 
 function waitForCloudInit() {
@@ -115,8 +112,6 @@ function installEtcd() {
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
     set -x
 
-    waitForCloudInit
-
     /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
@@ -131,18 +126,18 @@ function installEtcd() {
 
 function installDocker() {
     apt_get_install 20 30 120 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
     echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
     printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
     apt_get_install 20 30 120 ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
 }
 
 function runAptDaily() {
-    retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_DAILY_TIMEOUT
 }
 
 function generateAggregatedAPICerts() {
@@ -209,14 +204,9 @@ function setKubeletOpts () {
 }
 
 function installCNI() {
-    CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL}
-    if [ $? -ne 0 ]; then
-        echo "could not download required CNI artifact at ${CNI_PLUGINS_URL}"
-        exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    fi
+    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -227,14 +217,9 @@ function configAzureCNI() {
     mkdir -p $CNI_CONFIG_DIR
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-    CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL}
-    if [ $? -ne 0 ]; then
-        echo "could not download required CNI artifact at ${VNET_CNI_PLUGINS_URL}"
-        exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    fi
+    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -249,6 +234,21 @@ function configNetworkPlugin() {
 		installCNI
 	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
+    fi
+}
+
+function systemctlEnableAndStart() {
+    systemctl_restart 20 1 10 $1
+    RESTART_STATUS=$?
+    systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    if [ $RESTART_STATUS -ne 0 ]; then
+        echo "$1 could not be started"
+        exit $ERR_SYSTEMCTL_START_FAIL
+    fi
+    retrycmd_if_failure 10 1 3 systemctl enable $1
+    if [ $? -ne 0 ]; then
+        echo "$1 could not be enabled by systemctl"
+        exit $ERR_SYSTEMCTL_ENABLE_FAIL
     fi
 }
 
@@ -326,21 +326,6 @@ function ensureContainerd() {
 	fi
 }
 
-function systemctlEnableAndStart() {
-    systemctl_restart 20 1 10 $1
-    RESTART_STATUS=$?
-    systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
-    if [ $RESTART_STATUS -ne 0 ]; then
-        echo "$1 could not be started"
-        exit $ERR_SYSTEMCTL_START_FAIL
-    fi
-    retrycmd_if_failure 10 1 3 systemctl enable $1
-    if [ $? -ne 0 ]; then
-        echo "$1 could not be enabled by systemctl"
-        exit $ERR_SYSTEMCTL_ENABLE_FAIL
-    fi
-}
-
 function ensureDocker() {
     wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
@@ -366,27 +351,24 @@ function ensureJournal(){
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
 }
 
+function ensurePodSecurityPolicy() {
+    POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
+    if [ -f $POD_SECURITY_POLICY_FILE ]; then
+        $KUBECTL create -f $POD_SECURITY_POLICY_FILE
+    fi
+}
+
 function ensureK8sControlPlane() {
     if $REBOOTREQUIRED; then
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 100 1 10 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    retrycmd_if_failure 100 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
     retrycmd_if_failure 100 1 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
-}
-
-function ensurePodSecurityPolicy() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
-    if [ -f $POD_SECURITY_POLICY_FILE ]; then
-        $KUBECTL create -f $POD_SECURITY_POLICY_FILE
-    fi
 }
 
 function writeKubeConfig() {
@@ -427,10 +409,7 @@ users:
 }
 
 function configClusterAutoscalerAddon() {
-    echo `date`,`hostname`, configClusterAutoscalerAddonStart>>/opt/m
-
     if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
-        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityStart>>/opt/m
         CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT="- mountPath: /var/lib/waagent/\n\          name: waagent\n\          readOnly: true"
         CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
         CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
@@ -438,7 +417,6 @@ function configClusterAutoscalerAddon() {
         sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
         sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
         sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        echo `date`,`hostname`, configClusterAutoscalerAddonManagedIdentityDone>>/opt/m
     elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
         sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
         sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
@@ -452,15 +430,24 @@ function configClusterAutoscalerAddon() {
     sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    echo `date`,`hostname`, configClusterAutoscalerAddonDone>>/opt/m
 }
 
 function configAddons() {
     if [[ "${CLUSTER_AUTOSCALER_ADDON}" = True ]]; then
         configClusterAutoscalerAddon
     fi
-    echo `date`,`hostname`, configAddonsDone>>/opt/m
 }
+
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
+    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
+    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    echo `date`,`hostname`, apt-get_update_end>>/opt/m
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+    
+fi
+
+waitForCloudInit
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
@@ -478,9 +465,12 @@ configNetworkPlugin
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo `date`,`hostname`, configAddonsStart>>/opt/m
     configAddons
+    echo `date`,`hostname`, configAddonsDone>>/opt/m
 fi
 
+echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
+echo `date`,`hostname`, extractHyperkubeDone>>/opt/m
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
@@ -494,8 +484,7 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" =
 fi
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
-echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
-extractHyperkube
+
 if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
     ensureKMS
 fi
