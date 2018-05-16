@@ -17,8 +17,8 @@ const (
 	DefaultDCOSMasterSubnet = "192.168.255.0/24"
 	// DefaultDCOSFirstConsecutiveStaticIP  specifies the static IP address on master 0 for a DCOS cluster
 	DefaultDCOSFirstConsecutiveStaticIP = "192.168.255.5"
-	// DefaultDCOSBootstrapFirstConsecutiveStaticIP specifies the static IP address on bootstrap 0 for a DCOS cluster
-	DefaultDCOSBootstrapFirstConsecutiveStaticIP = "192.168.255.240"
+	// DefaultDCOSBootstrapStaticIP specifies the static IP address on bootstrap for a DCOS cluster
+	DefaultDCOSBootstrapStaticIP = "192.168.255.240"
 	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
@@ -48,14 +48,14 @@ const (
 	NetworkPolicyNone = "none"
 	// NetworkPolicyCalico is the string expression for calico network policy config option
 	NetworkPolicyCalico = "calico"
-	// NetworkPolicyFlannel is the string expression for flannel network policy config option
-	NetworkPolicyFlannel = "flannel"
 	// NetworkPolicyCilium is the string expression for cilium network policy config option
 	NetworkPolicyCilium = "cilium"
 	// NetworkPluginAzure is the string expression for Azure CNI network policy
 	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
+	// NetworkPluginFlannel is the string expression for flannel network policy config option
+	NetworkPluginFlannel = "flannel"
 	// DefaultNetworkPlugin defines the network plugin to use by default
 	DefaultNetworkPlugin = NetworkPluginKubenet
 	// DefaultNetworkPolicy defines the network policy implementation to use by default

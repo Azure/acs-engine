@@ -146,9 +146,9 @@
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
-    "agentWindowsPublisher": "MicrosoftWindowsServer",
-    "agentWindowsOffer": "WindowsServer",
-    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsPublisher": "[parameters('agentWindowsPublisher')]",
+    "agentWindowsOffer": "[parameters('agentWindowsOffer')]",
+    "agentWindowsSku": "[parameters('agentWindowsSku')]",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
     "singleQuote": "'",
     "windowsCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'),'-SwarmMasterIP ', variables('masterFirstAddrPrefix'), variables('masterFirstAddrOctet4'), variables('singleQuote'), ' ; ')]",

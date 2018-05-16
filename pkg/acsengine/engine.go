@@ -872,10 +872,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "dcosProviderPackageID", dcosProviderPackageID)
 
 		if properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-			addValue(parametersMap, "bootstrapEndpointDNSNamePrefix", "bstrap-"+properties.MasterProfile.DNSPrefix)
-			addValue(parametersMap, "bootstrapFirstConsecutiveStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+			addValue(parametersMap, "bootstrapStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP)
 			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.VMSize)
-			addValue(parametersMap, "bootstrapCount", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count)
 		}
 	}
 
@@ -1021,9 +1019,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					cs.Properties.OrchestratorProfile.OrchestratorVersion == common.DCOSVersion1Dot9Dot8)
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint(">=" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
+			return cs.Properties.OrchestratorProfile.IsKubernetes() && common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"IsKubernetesVersionLt": func(version string) bool {
 			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
@@ -1176,21 +1172,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
-		"GetBootstrapHTTPSourceAddressPrefix": func() string {
-			return fmt.Sprintf("%s", "*")
-		},
 		"GetDCOSBootstrapCustomData": func() string {
 			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			for i, v := range masterIPList {
 				masterIPList[i] = "    - " + v
 			}
-			bootstrapIP := generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				dcos2BootstrapCustomdata,
-				cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count,
+				dcos2BootstrapCustomdata, 0,
 				map[string]string{
 					"PROVISION_STR":
 					// transform the provision script content
@@ -1198,7 +1189,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
 						"\n", "\n\n    ", -1),
 					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
-					"BOOTSTRAP_IP":            bootstrapIP,
+					"BOOTSTRAP_IP":            cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP,
 					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled)})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
@@ -1213,7 +1204,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			var bootstrapIP string
 			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+				bootstrapIP = cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
 			}
 
 			str := getSingleLineDCOSCustomData(
@@ -1249,7 +1240,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				agentRoleName = "slave"
 			}
 			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+				bootstrapIP = cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
 			}
 
 			str := getSingleLineDCOSCustomData(

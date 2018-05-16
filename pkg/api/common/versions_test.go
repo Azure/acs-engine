@@ -71,6 +71,50 @@ func TestGetVersionsGt(t *testing.T) {
 	}
 }
 
+func TestIsKubernetesVersionGe(t *testing.T) {
+	cases := []struct {
+		version        string
+		actualVersion  string
+		expectedResult bool
+	}{
+		{
+			version:        "1.6.0",
+			actualVersion:  "1.11.0-alpha.1",
+			expectedResult: true,
+		},
+		{
+			version:        "1.8.0",
+			actualVersion:  "1.7.12",
+			expectedResult: false,
+		},
+		{
+			version:        "1.9.6",
+			actualVersion:  "1.9.6",
+			expectedResult: true,
+		},
+		{
+			version:        "1.9.0",
+			actualVersion:  "1.10.0-beta.2",
+			expectedResult: true,
+		},
+		{
+			version:        "1.7.0",
+			actualVersion:  "1.8.7",
+			expectedResult: true,
+		},
+	}
+	for _, c := range cases {
+		if c.expectedResult != IsKubernetesVersionGe(c.actualVersion, c.version) {
+			if c.expectedResult {
+				t.Errorf("Expected version %s to be greater or equal than version %s", c.actualVersion, c.version)
+			} else {
+				t.Errorf("Expected version %s to not be greater or equal than version %s", c.actualVersion, c.version)
+			}
+
+		}
+	}
+}
+
 func TestGetVersionsLt(t *testing.T) {
 	versions := []string{"1.1.0", "1.2.0-rc.1", "1.2.0", "1.2.1"}
 	expected := []string{"1.2.0", "1.2.1"}

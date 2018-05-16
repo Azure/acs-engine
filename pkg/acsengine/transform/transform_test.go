@@ -99,8 +99,8 @@ func TestNormalizeForOpenShiftVMASScalingUp(t *testing.T) {
 						},
 					},
 				},
-				"outputs": []interface{}{
-					"junk",
+				"outputs": map[string]interface{}{
+					"junk": "junk",
 				},
 			},
 			expectedTemplateMap: map[string]interface{}{
@@ -112,7 +112,7 @@ func TestNormalizeForOpenShiftVMASScalingUp(t *testing.T) {
 						},
 					},
 				},
-				"outputs": []interface{}{},
+				"outputs": map[string]interface{}{},
 			},
 		},
 	}

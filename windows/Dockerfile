@@ -1,3 +1,3 @@
-FROM microsoft/nanoserver:1709
+FROM microsoft/nanoserver:1803
 
 CMD cmd /c ping -t localhost

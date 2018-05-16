@@ -80,7 +80,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 		{
 			"kubernetesmasteraddons-flannel-daemonset.yaml",
 			"flannel-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyFlannel,
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginFlannel,
 		},
 		{
 			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",

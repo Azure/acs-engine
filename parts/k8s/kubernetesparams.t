@@ -646,37 +646,39 @@
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
-        "description": "The network policy enforcement to use (calico|cilium|flannel); 'none' and 'azure' here for backwards compatibility"
+        "description": "The network policy enforcement to use (calico|cilium); 'none' and 'azure' here for backwards compatibility"
       },
       "allowedValues": [
         "",
         "none",
         "azure",
         "calico",
-        "cilium",
-        "flannel"
+        "cilium"
       ],
       "type": "string"
     },
     "networkPlugin": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPlugin}}",
       "metadata": {
-        "description": "The network plugin to use for Kubernetes (kubenet|azure)"
+        "description": "The network plugin to use for Kubernetes (kubenet|azure|flannel|cilium)"
       },
       "allowedValues": [
         "kubenet",
-        "azure"
+        "azure",
+        "flannel",
+        "cilium"
       ],
       "type": "string"
     },
     "containerRuntime": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
       "metadata": {
-        "description": "The container runtime to use (docker|clear-containers)"
+        "description": "The container runtime to use (docker|clear-containers|containerd)"
       },
       "allowedValues": [
         "docker",
-        "clear-containers"
+        "clear-containers",
+        "containerd"
       ],
       "type": "string"
     },
