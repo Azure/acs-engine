@@ -37,7 +37,7 @@
       ],
       "defaultValue": "{{.ScaleSetEvictionPolicy}}",
       "metadata": {
-        "description": "The Eviction Policy for a Low Priority VM Scale Set."
+        "description": "The Eviction Policy for a Low-priority VM Scale Set."
       },
       "type": "string"
     },

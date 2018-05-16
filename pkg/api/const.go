@@ -69,7 +69,7 @@ const (
 	ScaleSetPriorityLow = "Low"
 	// ScaleSetEvictionPolicyDelete is the default Eviction Policy for Low-priority VM ScaleSets
 	ScaleSetEvictionPolicyDelete = "Delete"
-	// ScaleSetEvictionPolicyDeallocate means a Low-priority VM ScaleSet will deallocated rather than delete VMs.
+	// ScaleSetEvictionPolicyDeallocate means a Low-priority VM ScaleSet will deallocate, rather than delete, VMs.
 	ScaleSetEvictionPolicyDeallocate = "Deallocate"
 )
 

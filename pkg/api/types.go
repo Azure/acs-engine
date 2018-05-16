@@ -650,16 +650,6 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 	return false
 }
 
-// HasLowPriorityScaleSets returns true if the cluster contains Virtual Machine Scale Sets with Low Priority
-func (p *Properties) HasLowPriorityScaleSets() bool {
-	for _, agentPoolProfile := range p.AgentPoolProfiles {
-		if agentPoolProfile.ScaleSetPriority == ScaleSetPriorityLow {
-			return true
-		}
-	}
-	return false
-}
-
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
