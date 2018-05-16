@@ -112,7 +112,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	if err = sc.authArgs.validateAuthArgs(); err != nil {
-		log.Fatal("%s", err)
+		log.Fatalf("%s", err)
 	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
