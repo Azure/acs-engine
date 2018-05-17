@@ -3,12 +3,12 @@
 ## Supported Windows versions
 Prior to acs-engine v0.9.2, Kubernetes Windows cluster uses Windows Server 2016. There are a few restrictions in Windows Networking for Kubernetes as documented in https://blogs.technet.microsoft.com/networking/2017/04/04/windows-networking-for-kubernetes/. Besides, Windows POD deployment performanace is limited due to the bottleneck of container image size and configuration at container start time. 
 
-With the release of new Windows Server version 1709 (a.k.a, RS3), acs-engine v0.9.2 and beyond has leveraged the new Windows version to deploy Kubernetes Windows cluster with signifcant improvement in Windows container and networking performance, as well as new features in storage. Specifically,
+With the release of new Windows Server version 1709, acs-engine v0.9.2 and beyond has leveraged the new Windows version to deploy Kubernetes Windows cluster with signifcant improvement in Windows container and networking performance, as well as new features in storage. Specifically,
 1. Windows is now on par with Linux in terms of networking. New features including hostport have been implemented in kube-proxy and Windows platform and CNI to enhance networking performance. Please refer to http://blog.kubernetes.io/2017/09/windows-networking-at-parity-with-linux.html for details.
 2. Azure Files and Disks are now supported to mount on Kubernetes Windows cluster with the new SMB feature in Windows.
 3. Multiple containers in POD are now supported on Kubernetes Windows cluster.
 
-Note, with the rollout of new Windows version in acs-engine, the workload deployed on Windows cluster requires compatible container image, as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility
+Note, with the rollout of new Windows Server versions in acs-engine, the workload deployed on Windows cluster should match as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility .
 
 ## Deployment
 
@@ -20,35 +20,52 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
 4. edit the [Kubernetes windows example](../../examples/windows/kubernetes.json) and fill in the blank strings
 5. [generate the template](../acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
-7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.6.0:
-    1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
-       The route table resource id is of the format:
-       `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
-    2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
-        ```shell
-        "routeTable": {
-                "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
-              }
-        ```
 
-        E.g.:
-        ```shell
-        "subnets": [
-            {
-              "name": "subnetname",
-              "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
-              "properties": {
-                "provisioningState": "Succeeded",
-                "addressPrefix": "10.240.0.0/16",
-                "routeTable": {
-                  "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
-                }
-              ....
-              }
-              ....
-            }
-        ]
-        ```
+### Common customizations
+
+As part of step 4, edit the [Kubernetes windows example](../../examples/windows/kubernetes.json), you can also make some changes to how Windows is deployed.
+
+#### Changing the OS disk size
+
+The Windows Server deployments default to 30GB for the OS drive (C:), which may not be enough. You can change this size by adding `osDiskSizeGB` under the `agentPoolProfiles`, such as:
+
+```
+"agentPoolProfiles": [
+      {
+        "name": "windowspool2",
+        "count": 2,
+        "vmSize": "Standard_D2_v3",
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows",
+        "osDiskSizeGB": 127
+     }
+```
+
+#### Choosing the Windows Server version
+
+If you want to deploy a specific Windows Server version, you can find available versions with `az vm image list --publisher MicrosoftWindowsServer --all -o table`
+
+```
+$ az vm image list --publisher MicrosoftWindowsServer --all -o table                                                                                        
+
+Offer                    Publisher                      Sku                                             Urn                                                                                                            Version
+-----------------------  -----------------------------  ----------------------------------------------  -------------------------------------------------------------------------------------------------------------  -----------------
+...
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
+```
+
+You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `widndowsVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
+
+```
+"windowsProfile": {
+            "adminUsername": "azureuser",
+            "adminPassword": "...",
+            "windowsPublisher": "MicrosoftWindowsServer",
+            "windowsOffer": "WindowsServerSemiAnnual",
+            "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk"
+     },
+```
 
 ## Walkthrough
 
@@ -141,9 +158,9 @@ After completing this walkthrough you will know how to:
           beta.kubernetes.io/os: windows
   ```
 
-5. Type `watch kubectl get pods` to watch the deployment of the service that takes about 30 seconds.  Once running, type `kubectl get svc` and curl the 10.x address to see the output, eg. `curl 10.244.1.4`
+5. Type `kubectl get pods -w` to watch the deployment of the service that takes about 30 seconds.  Once running, type `kubectl get svc` and curl the 10.x address to see the output, eg. `curl 10.244.1.4`
 
-6. Type `watch kubectl get svc` to watch the addition of the external IP address that will take about 2-5 minutes.  Once there, you can take the external IP and view in your web browser.
+6. Type `kubectl get svc -w` to watch the addition of the external IP address that will take about 2-5 minutes.  Once there, you can take the external IP and view in your web browser.
 
 ## Example using Azure Files and Azure Disks
 ### Create Azure File workload
