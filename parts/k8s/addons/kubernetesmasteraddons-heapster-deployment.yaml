@@ -104,3 +104,5 @@ spec:
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+      nodeSelector:
+        beta.kubernetes.io/os: linux    
