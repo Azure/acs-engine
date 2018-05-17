@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
-	"github.com/satori/uuid"
+	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 

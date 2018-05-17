@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
-	"github.com/satori/uuid"
+	"github.com/satori/go.uuid"
 )
 
 const defaultTestClusterVer = "1.7.12"
