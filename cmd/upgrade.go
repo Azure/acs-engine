@@ -106,15 +106,15 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 		cmd.Usage()
 		return fmt.Errorf("--deployment-dir must be specified")
 	}
-
-	if err = uc.authArgs.validateAuthArgs(); err != nil {
-		return fmt.Errorf("%s", err)
-	}
 	return nil
 }
 
 func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	var err error
+
+	if err = uc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err)
+	}
 
 	if uc.client, err = uc.authArgs.getClient(); err != nil {
 		return fmt.Errorf("Failed to get client: %s", err)

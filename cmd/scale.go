@@ -34,21 +34,21 @@ type scaleCmd struct {
 	resourceGroupName    string
 	deploymentDirectory  string
 	newDesiredAgentCount int
-	containerService     *api.ContainerService
-	apiVersion           string
 	location             string
 	agentPoolToScale     string
 	classicMode          bool
+	masterFQDN           string
 
 	// derived
-	apiModelPath   string
-	agentPool      *api.AgentPoolProfile
-	client         armhelpers.ACSEngineClient
-	locale         *gotext.Locale
-	nameSuffix     string
-	agentPoolIndex int
-	masterFQDN     string
-	logger         *log.Entry
+	containerService *api.ContainerService
+	apiVersion       string
+	apiModelPath     string
+	agentPool        *api.AgentPoolProfile
+	client           armhelpers.ACSEngineClient
+	locale           *gotext.Locale
+	nameSuffix       string
+	agentPoolIndex   int
+	logger           *log.Entry
 }
 
 const (
@@ -84,56 +84,62 @@ func newScaleCmd() *cobra.Command {
 	return scaleCmd
 }
 
-func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
+func (sc *scaleCmd) validate(cmd *cobra.Command) error {
 	log.Infoln("validating...")
-	sc.logger = log.New().WithField("source", "scaling command line")
 	var err error
 
 	sc.locale, err = i18n.LoadTranslations()
 	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
+		return fmt.Errorf("error loading translation files: %s", err.Error())
 	}
 
 	if sc.resourceGroupName == "" {
 		cmd.Usage()
-		log.Fatal("--resource-group must be specified")
+		return fmt.Errorf("--resource-group must be specified")
 	}
 
 	if sc.location == "" {
 		cmd.Usage()
-		log.Fatal("--location must be specified")
-	} else {
-		sc.location = helpers.NormalizeAzureRegion(sc.location)
+		return fmt.Errorf("--location must be specified")
 	}
+
+	sc.location = helpers.NormalizeAzureRegion(sc.location)
 
 	if sc.newDesiredAgentCount == 0 {
 		cmd.Usage()
-		log.Fatal("--new-node-count must be specified")
-	}
-
-	if err = sc.authArgs.validateAuthArgs(); err != nil {
-		log.Fatal("%s", err)
-	}
-
-	if sc.client, err = sc.authArgs.getClient(); err != nil {
-		log.Error("Failed to get client:", err)
+		return fmt.Errorf("--new-node-count must be specified")
 	}
 
 	if sc.deploymentDirectory == "" {
 		cmd.Usage()
-		log.Fatal("--deployment-dir must be specified")
+		return fmt.Errorf("--deployment-dir must be specified")
+	}
+
+	if err = sc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err.Error())
+	}
+
+	return nil
+}
+
+func (sc *scaleCmd) load(cmd *cobra.Command) error {
+	sc.logger = log.New().WithField("source", "scaling command line")
+	var err error
+
+	if sc.client, err = sc.authArgs.getClient(); err != nil {
+		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
 	_, err = sc.client.EnsureResourceGroup(sc.resourceGroupName, sc.location, nil)
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("%s", err.Error())
 	}
 
 	// load apimodel from the deployment directory
 	sc.apiModelPath = path.Join(sc.deploymentDirectory, "apimodel.json")
 
 	if _, err = os.Stat(sc.apiModelPath); os.IsNotExist(err) {
-		log.Fatalf("specified api model does not exist (%s)", sc.apiModelPath)
+		return fmt.Errorf("specified api model does not exist (%s)", sc.apiModelPath)
 	}
 
 	apiloader := &api.Apiloader{
@@ -143,25 +149,25 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	}
 	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, true, nil)
 	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
+		return fmt.Errorf("error parsing the api model: %s", err.Error())
 	}
 
 	if sc.containerService.Location == "" {
 		sc.containerService.Location = sc.location
 	} else if sc.containerService.Location != sc.location {
-		log.Fatalf("--location does not match api model location")
+		return fmt.Errorf("--location does not match api model location")
 	}
 
 	if sc.agentPoolToScale == "" {
 		agentPoolCount := len(sc.containerService.Properties.AgentPoolProfiles)
 		if agentPoolCount > 1 {
-			log.Fatal("--node-pool is required if more than one agent pool is defined in the container service")
+			return fmt.Errorf("--node-pool is required if more than one agent pool is defined in the container service")
 		} else if agentPoolCount == 1 {
 			sc.agentPool = sc.containerService.Properties.AgentPoolProfiles[0]
 			sc.agentPoolIndex = 0
 			sc.agentPoolToScale = sc.containerService.Properties.AgentPoolProfiles[0].Name
 		} else {
-			log.Fatal("No node pools found to scale")
+			return fmt.Errorf("No node pools found to scale")
 		}
 	} else {
 		agentPoolIndex := -1
@@ -173,7 +179,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 			}
 		}
 		if agentPoolIndex == -1 {
-			log.Fatalf("node pool %s wasn't in the deployed api model", sc.agentPoolToScale)
+			return fmt.Errorf("node pool %s was not found in the deployed api model", sc.agentPoolToScale)
 		}
 	}
 
@@ -188,11 +194,17 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 
 	nameSuffixParam := templateParameters["nameSuffix"].(map[string]interface{})
 	sc.nameSuffix = nameSuffixParam["defaultValue"].(string)
-	log.Infoln(fmt.Sprintf("Name suffix: %s", sc.nameSuffix))
+	log.Infoln("Name suffix: %s", sc.nameSuffix)
+	return nil
 }
 
 func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
-	sc.validate(cmd, args)
+	if err := sc.validate(cmd); err != nil {
+		log.Fatalln("failed to validate scale command: %s", err.Error())
+	}
+	if err := sc.load(cmd); err != nil {
+		log.Fatalln("failed to load existing container service: %s", err.Error())
+	}
 
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex int
@@ -204,7 +216,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			log.Fatalln("failed to get vms in the resource group. Error: %s", err.Error())
 		} else if len(*vms.Value) < 1 {
-			log.Fatalln("The provided resource group does not contain any vms.")
+			log.Fatalln("The provided resource group does not contain any vms")
 		}
 		for _, vm := range *vms.Value {
 
