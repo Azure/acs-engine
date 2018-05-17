@@ -10,19 +10,13 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_DS2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool2",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
+        "vmSize": "Standard_DS2_v2",
         "availabilityProfile": "AvailabilitySet"
       }
     ],

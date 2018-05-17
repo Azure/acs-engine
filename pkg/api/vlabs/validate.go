@@ -1,6 +1,7 @@
 package vlabs
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -27,6 +28,52 @@ var (
 		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
 		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9", "3.2.11", "3.2.12",
 		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.3.0", "3.3.1"}
+	networkPluginPlusPolicyAllowed = []k8sNetworkConfig{
+		{
+			networkPlugin: "",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "flannel",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "calico",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "calico",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "azure", // for backwards-compatibility w/ prior networkPolicy usage
+		},
+		{
+			networkPlugin: "",
+			networkPolicy: "none", // for backwards-compatibility w/ prior networkPolicy usage
+		},
+	}
 )
 
 const (
@@ -34,6 +81,11 @@ const (
 	labelValueFormat        = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 	labelKeyFormat          = "^(([a-zA-Z0-9-]+[.])*[a-zA-Z0-9-]+[/])?([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 )
+
+type k8sNetworkConfig struct {
+	networkPlugin string
+	networkPolicy string
+}
 
 func init() {
 	validate = validator.New()
@@ -70,6 +122,14 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				false)
 			if version == "" {
 				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+			}
+			if o.DcosConfig != nil && o.DcosConfig.BootstrapProfile != nil {
+				if len(o.DcosConfig.BootstrapProfile.StaticIP) > 0 {
+					if net.ParseIP(o.DcosConfig.BootstrapProfile.StaticIP) == nil {
+						return fmt.Errorf("DcosConfig.BootstrapProfile.StaticIP '%s' is an invalid IP address",
+							o.DcosConfig.BootstrapProfile.StaticIP)
+					}
+				}
 			}
 		case Swarm:
 		case SwarmMode:
@@ -124,7 +184,12 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion, o.OrchestratorVersion)
 					}
-
+					if o.KubernetesConfig.EtcdEncryptionKey != "" {
+						_, err = base64.URLEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
+						if err != nil {
+							return fmt.Errorf("etcdEncryptionKey must be base64 encoded. Please provide a valid base64 encoded value or leave the etcdEncryptionKey empty to auto-generate the value")
+						}
+					}
 				}
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
@@ -158,13 +223,15 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
-			version := common.RationalizeReleaseAndVersion(
-				o.OrchestratorType,
-				o.OrchestratorRelease,
-				o.OrchestratorVersion,
-				false)
-			if version == "" {
-				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+			if o.OrchestratorVersion != common.OpenShiftVersionUnstable {
+				version := common.RationalizeReleaseAndVersion(
+					o.OrchestratorType,
+					o.OrchestratorRelease,
+					o.OrchestratorVersion,
+					false)
+				if version == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
 			}
 			if o.OpenShiftConfig == nil || o.OpenShiftConfig.ClusterUsername == "" || o.OpenShiftConfig.ClusterPassword == "" {
 				return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
@@ -218,7 +285,10 @@ func validateImageNameAndGroup(name, resourceGroup string) error {
 }
 
 // Validate implements APIObject
-func (m *MasterProfile) Validate() error {
+func (m *MasterProfile) Validate(o *OrchestratorProfile) error {
+	if o.OrchestratorType == OpenShift && m.Count != 1 {
+		return errors.New("openshift can only deployed with one master")
+	}
 	if m.ImageRef != nil {
 		if err := validateImageNameAndGroup(m.ImageRef.Name, m.ImageRef.ResourceGroup); err != nil {
 			return err
@@ -377,13 +447,22 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
 		return e
 	}
+	if e := a.validateNetworkPlugin(); e != nil {
+		return e
+	}
 	if e := a.validateNetworkPolicy(); e != nil {
+		return e
+	}
+	if e := a.validateNetworkPluginPlusPolicy(); e != nil {
 		return e
 	}
 	if e := a.validateContainerRuntime(); e != nil {
 		return e
 	}
-	if e := a.MasterProfile.Validate(); e != nil {
+	if e := a.validateAddons(); e != nil {
+		return e
+	}
+	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
 		return e
 	}
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
@@ -424,7 +503,11 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && a.MasterProfile.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
+	for i, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
@@ -470,6 +553,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
+		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.StorageProfile != ManagedDisks {
+			return errors.New("OpenShift orchestrator supports only ManagedDisks")
+		}
+
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -486,9 +573,77 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
 			}
 		}
+
+		// validation for VMSS for Kubernetes
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
-			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false)
+			if version == "" {
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+
+			sv, err := semver.NewVersion(version)
+			if err != nil {
+				return fmt.Errorf("could not validate version %s", version)
+			}
+			minVersion := "1.10.0"
+			cons, err := semver.NewConstraint("<" + minVersion)
+			if err != nil {
+				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+			}
+			if cons.Check(sv) {
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+					minVersion, version)
+			}
 		}
+
+		// validation for instanceMetadata using VMSS on Kubernetes
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false)
+			if version == "" {
+				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+
+			sv, err := semver.NewVersion(version)
+			if err != nil {
+				return fmt.Errorf("could not validate version %s", version)
+			}
+			minVersion := "1.10.2"
+			cons, err := semver.NewConstraint("<" + minVersion)
+			if err != nil {
+				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+			}
+			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
+				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && cons.Check(sv) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+				}
+			} else {
+				if cons.Check(sv) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+				}
+			}
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) && agentPoolProfile.StorageProfile == StorageAccount {
+			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if i == 0 {
+				continue
+			}
+			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
+				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
+			}
+		}
+
 		if agentPoolProfile.OSType == Windows {
 			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
 				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
@@ -599,7 +754,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
 		}
 
-		if a.NetworkPolicy == "azure" {
+		if a.NetworkPlugin == "azure" {
 			ones, bits := subnet.Mask.Size()
 			if bits-ones <= 8 {
 				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
@@ -733,6 +888,33 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	return nil
 }
 
+func (a *Properties) validateNetworkPlugin() error {
+	var networkPlugin string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			networkPlugin = a.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+		}
+	default:
+		return nil
+	}
+
+	// Check NetworkPlugin has a valid value.
+	valid := false
+	for _, plugin := range NetworkPluginValues {
+		if networkPlugin == plugin {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown networkPlugin '%s' specified", networkPlugin)
+	}
+
+	return nil
+}
+
 func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
 
@@ -747,8 +929,8 @@ func (a *Properties) validateNetworkPolicy() error {
 
 	// Check NetworkPolicy has a valid value.
 	valid := false
-	for _, policy := range NetworkPolicyValues {
-		if networkPolicy == policy {
+	for _, plugin := range NetworkPolicyValues {
+		if networkPolicy == plugin {
 			valid = true
 			break
 		}
@@ -758,11 +940,29 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico" || networkPolicy == "cilium") && a.HasWindows() {
+	if (networkPolicy == "calico" || networkPolicy == "cilium" || networkPolicy == "flannel") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
 	return nil
+}
+
+func (a *Properties) validateNetworkPluginPlusPolicy() error {
+	var config k8sNetworkConfig
+
+	if a.OrchestratorProfile.KubernetesConfig != nil {
+		config.networkPlugin = a.OrchestratorProfile.KubernetesConfig.NetworkPlugin
+	}
+	if a.OrchestratorProfile.KubernetesConfig != nil {
+		config.networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	}
+
+	for _, c := range networkPluginPlusPolicyAllowed {
+		if c.networkPlugin == config.networkPlugin && c.networkPolicy == config.networkPolicy {
+			return nil
+		}
+	}
+	return fmt.Errorf("networkPolicy '%s' is not supported with networkPlugin '%s'", config.networkPolicy, config.networkPlugin)
 }
 
 func (a *Properties) validateContainerRuntime() error {
@@ -790,10 +990,29 @@ func (a *Properties) validateContainerRuntime() error {
 	}
 
 	// Make sure we don't use clear containers on windows.
-	if containerRuntime == "clear-containers" && a.HasWindows() {
+	if (containerRuntime == "clear-containers" || containerRuntime == "containerd") && a.HasWindows() {
 		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
+	return nil
+}
+
+func (a *Properties) validateAddons() error {
+	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
+		var isAvailabilitySets bool
+
+		for _, agentPool := range a.AgentPoolProfiles {
+			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+				isAvailabilitySets = true
+			}
+		}
+
+		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
+				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
+			}
+		}
+	}
 	return nil
 }
 

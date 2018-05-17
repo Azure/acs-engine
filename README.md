@@ -1,20 +1,21 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
-[![Coverage Status](https://coveralls.io/repos/github/Azure/acs-engine/badge.svg?branch=master)](https://coveralls.io/github/Azure/acs-engine?branch=master)
+[![Coverage Status](https://codecov.io/gh/Azure/acs-engine/branch/master/graph/badge.svg)](https://codecov.io/gh/Azure/acs-engine)
 [![CircleCI](https://circleci.com/gh/Azure/acs-engine/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/acs-engine/tree/master)
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition (or apimodel) is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
-The cluster definition file enables the following customizations to your Docker enabled cluster:
-* choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
+The cluster definition file enables you to customize your Docker enabled cluster in many ways including:
+* choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
- * standard or premium VM Sizes,
- * node count,
- * Virtual Machine ScaleSets or Availability Sets,
- * Storage Account Disks or Managed Disks (under private preview)
-* Docker cluster sizes of 1200
+   * standard or premium VM Sizes, including GPU optimized VM sizes
+   * node count
+   * Virtual Machine ScaleSets or Availability Sets
+   * Storage Account Disks or Managed Disks
+   * OS and distro
 * Custom VNET
+* Extensions
 
 ## User guides
 
@@ -22,6 +23,7 @@ The cluster definition file enables the following customizations to your Docker 
 * [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
+* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET
@@ -31,14 +33,19 @@ The cluster definition file enables the following customizations to your Docker 
 
 ## Contributing
 
+Follow the [developers guide](docs/developers.md) to set up your environment.
+
+To build acs-engine, run `make build`. If you are developing with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` first to start a Docker container and run `make build` inside the container.
+
 Please follow these instructions before submitting a PR:
 
-1. Execute `make ci` to run the checkin validation tests.
+1. Execute `make test` to run unit tests.
 
 2. Manually test deployments if you are making modifications to the templates.
    For example, if you have to change the expected resulting templates then you
-   should deploy the relevant example cluster definitions to ensure you're not
-   introducing any sort of regression.
+   should deploy the relevant example cluster definitions to ensure that you are not introducing any regressions.
+
+3. Make sure that your changes are properly documented and include relevant unit tests.
 
 ## Usage
 

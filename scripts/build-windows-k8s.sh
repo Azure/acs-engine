@@ -38,7 +38,8 @@ KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
 KUBERNETES_TAG_BRANCH=v${version}
 ACS_VERSION=${version}-${acs_patch_version}
 ACS_BRANCH_NAME=acs-v${ACS_VERSION}
-DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}/k
+TOP_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}
+DIST_DIR=${TOP_DIR}/k
 
 fetch_k8s() {
 	git clone https://github.com/Azure/kubernetes ${GOPATH}/src/k8s.io/kubernetes || true
@@ -258,10 +259,8 @@ apply_acs_cherry_picks() {
 		k8s_17_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
 		k8s_18_cherry_pick
-	elif [ "${KUBERNETES_RELEASE}" == "1.9" ]; then
-		echo "No need to cherry-pick for 1.9!"
-	elif [ "${KUBERNETES_RELEASE}" == "1.10" ]; then
-		echo "No need to cherry-pick for 1.10!"
+	elif version_ge "${KUBERNETES_RELEASE}" "1.9"; then
+		echo "No need to cherry-pick for version greater than or equal to 1.9!"
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1
@@ -287,9 +286,39 @@ build_kubeproxy() {
 download_kubectl() {
 	kubectl="https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/windows/amd64/kubectl.exe"
 	echo "dowloading ${kubectl} ..."
-	wget ${kubectl} -P k
-	curl ${kubectl} -o ${DIST_DIR}/kubectl.exe
+	curl -L ${kubectl} -o ${DIST_DIR}/kubectl.exe
 	chmod 775 ${DIST_DIR}/kubectl.exe
+}
+
+get_kube_binaries() {
+	if version_lt "${KUBERNETES_RELEASE}" "1.9"; then
+		echo "building kubelet/kubeproxy from azure repo..."
+		fetch_k8s
+		set_git_config
+		create_version_branch
+		apply_acs_cherry_picks
+
+		# Due to what appears to be a bug in the Kubernetes Windows build system, one
+		# has to first build a linux binary to generate _output/bin/deepcopy-gen.
+		# Building to Windows w/o doing this will generate an empty deepcopy-gen.
+		build/run.sh make WHAT=cmd/kubelet KUBE_BUILD_PLATFORMS=linux/amd64
+
+		build_kubelet
+		build_kubeproxy
+
+		echo "downloading kubectl..."
+		download_kubectl
+	else
+		echo "downloading kubelet/kubeproxy/kubectl from upstream..."
+		WIN_TAR=kubernetes-node-windows-amd64.tar.gz
+		SUB_DIR=kubernetes/node/bin
+		curl -L https://storage.googleapis.com/kubernetes-release/release/v${version}/${WIN_TAR} -o ${TOP_DIR}/${WIN_TAR}
+		tar -xzvf ${TOP_DIR}/${WIN_TAR} -C ${TOP_DIR}
+		cp ${TOP_DIR}/${SUB_DIR}/kubelet.exe ${DIST_DIR}
+		cp ${TOP_DIR}/${SUB_DIR}/kube-proxy.exe ${DIST_DIR}
+		cp ${TOP_DIR}/${SUB_DIR}/kubectl.exe ${DIST_DIR}
+		chmod 775 ${DIST_DIR}/kubectl.exe
+	fi
 }
 
 download_nssm() {
@@ -305,11 +334,15 @@ download_nssm() {
 
 download_wincni() {
 	mkdir -p ${DIST_DIR}/cni/config
-	az storage blob download -f ${DIST_DIR}/cni/wincni.exe -c ${AZURE_STORAGE_CONTAINER_NAME} -n wincni.exe
+	WINSDN_URL=https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/
+	WINCNI_EXE=cni/wincni.exe
+	HNS_PSM1=hns.psm1
+	curl -L ${WINSDN_URL}${WINCNI_EXE} -o ${DIST_DIR}/${WINCNI_EXE}
+	curl -L ${WINSDN_URL}${HNS_PSM1} -o ${DIST_DIR}/${HNS_PSM1}
 }
 
-copy_dockerfile_and_hns_psm1() {
-  cp ${ACS_ENGINE_HOME}/windows/* ${DIST_DIR}
+copy_dockerfile() {
+  cp ${ACS_ENGINE_HOME}/windows/Dockerfile ${DIST_DIR}
 }
 
 create_zip() {
@@ -319,31 +352,30 @@ create_zip() {
 }
 
 upload_zip_to_blob_storage() {
-	az storage blob upload -f ${DIST_DIR}/../../v${ACS_VERSION}int.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}int.zip
+	az storage blob upload -f ${TOP_DIR}/../v${ACS_VERSION}int.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}int.zip
 }
 
 push_acs_branch() {
-  cd ${GOPATH}/src/k8s.io/kubernetes
-  git push origin ${ACS_BRANCH_NAME}
+	if version_lt "${KUBERNETES_RELEASE}" "1.9"; then
+		echo "push to azure repo..."
+		cd ${GOPATH}/src/k8s.io/kubernetes
+		git push origin ${ACS_BRANCH_NAME}
+	else
+		echo "no need to push to azure repo"
+	fi
+}
+
+cleanup_output() {
+	rm ${TOP_DIR}/../v${ACS_VERSION}int.zip
+	rm -r ${TOP_DIR}
 }
 
 create_dist_dir
-fetch_k8s
-set_git_config
-create_version_branch
-apply_acs_cherry_picks
-
-# Due to what appears to be a bug in the Kubernetes Windows build system, one
-# has to first build a linux binary to generate _output/bin/deepcopy-gen.
-# Building to Windows w/o doing this will generate an empty deepcopy-gen.
-build/run.sh make WHAT=cmd/kubelet KUBE_BUILD_PLATFORMS=linux/amd64
-
-build_kubelet
-build_kubeproxy
-download_kubectl
+get_kube_binaries
 download_nssm
 download_wincni
-copy_dockerfile_and_hns_psm1
+copy_dockerfile
 create_zip
 upload_zip_to_blob_storage
 push_acs_branch
+cleanup_output

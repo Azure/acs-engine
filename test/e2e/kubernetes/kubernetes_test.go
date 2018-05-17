@@ -63,7 +63,101 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
+		It("should have functional DNS", func() {
+			if !eng.HasWindowsAgents() {
+				kubeConfig, err := GetConfig()
+				Expect(err).NotTo(HaveOccurred())
+				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+				sshKeyPath := cfg.GetSSHKeyPath()
+
+				ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
+				cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+				util.PrintCommand(cmd)
+				out, err := cmd.CombinedOutput()
+				log.Printf("%s\n", out)
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				By("Ensuring that we have a valid connection to our resolver")
+				digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				nodeList, err := node.Get()
+				Expect(err).NotTo(HaveOccurred())
+				for _, node := range nodeList.Nodes {
+					By("Ensuring that we get a DNS lookup answer response for each node hostname")
+					digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
+					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+					util.PrintCommand(cmd)
+					out, err = cmd.CombinedOutput()
+					if err != nil {
+						log.Printf("Error while querying DNS: %s\n", out)
+					}
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+				By("Ensuring that we get a DNS lookup answer response for external names")
+				digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
+				digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+				digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", out)
+				}
+
+				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+				Expect(err).NotTo(HaveOccurred())
+				ready, err := j.WaitOnReady(5*time.Second, 2*time.Minute)
+				delErr := j.Delete()
+				if delErr != nil {
+					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+					fmt.Println(delErr)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
+			}
+		})
+
 		It("should be running the expected version", func() {
+			hasWindows := eng.HasWindowsAgents()
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -74,13 +168,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
-					false)
+					hasWindows)
 			} else {
 				expectedVersion = common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.Config.OrchestratorRelease,
 					eng.Config.OrchestratorVersion,
-					false)
+					hasWindows)
 			}
 			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
 			Expect(version).To(Equal("v" + expectedVersionRationalized))
@@ -164,12 +258,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				if !eng.HasWindowsAgents() {
 					By("Gathering connection information to determine whether or not to connect via HTTP or HTTPS")
-					dashboardPort := 80
+					dashboardPort := 443
 					version, err := node.Version()
 					Expect(err).NotTo(HaveOccurred())
-					re := regexp.MustCompile("v1.9")
+					re := regexp.MustCompile("1.(5|6|7|8).")
 					if re.FindString(version) != "" {
-						dashboardPort = 443
+						dashboardPort = 80
 					}
 					port := s.GetNodePort(dashboardPort)
 
@@ -239,6 +333,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have cluster-autoscaler running", func() {
+			if hasClusterAutoscaler, clusterAutoscalerAddon := eng.HasAddon("autoscaler"); hasClusterAutoscaler {
+				running, err := pod.WaitOnReady("cluster-autoscaler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("cluster-autoscaler", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range clusterAutoscalerAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("cluster autoscaler disabled for this cluster, will not test")
+			}
+		})
+
 		It("should have rescheduler running", func() {
 			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -284,7 +395,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				for i, curlPod := range curlPods {
 					if i < 1 {
-						pass, err := curlPod.ValidateCurlConnection(svc.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, 5*time.Minute)
+						pass, err := curlPod.ValidateCurlConnection(svc.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, cfg.Timeout)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
@@ -307,7 +418,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-				phpApacheDeploy, err := deployment.CreateLinuxDeploy("gcr.io/google_containers/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
+				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s-gcrio.azureedge.net/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -514,7 +625,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		// TODO stabilize this test
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if eng.OrchestratorVersion1Dot8AndUp() {
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion ,"1.8") {
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())

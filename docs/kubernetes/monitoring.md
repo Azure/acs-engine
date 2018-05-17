@@ -6,10 +6,11 @@ Monitoring your Kubernetes cluster is important to be able to see your cluster's
 There are five main options to monitor your cluster:
 
 1. [Kubectl](#kubectl)
-2. [Kubernetes dashboard](#kubernetes-dashboard)
-3. [Grafana and Influx DB](#grafana-and-influx-db)
-4. [Azure Operations Management Suite (OMS)](#oms)
-5. [Heapster REST API](#heapster-rest-api)
+1. [Kubernetes dashboard](#kubernetes-dashboard)
+1. [Monitoring extension](#monitoring-extension)
+1. [Grafana and Influx DB](#grafana-and-influx-db)
+1. [Azure Operations Management Suite (OMS)](#oms)
+1. [Heapster REST API](#heapster-rest-api)
 
 ## Intro to Heapster
 
@@ -64,6 +65,16 @@ The Kubernetes dashboard is an easy way to visualize your cluster metrics. The K
 Once you have opened the UI, you can explore node stats (CPU, Memory, etc...) under the nodes section on the left menu. You can also see pod level metrics under the pods section, and even drill into a specific container in a given pod.
 
 ![Image of Kuberentes dashboard](../images/k8s-monitoring-dashboard.png)
+
+## Monitoring extension
+
+A quick way to scaffold out cloud-native and open source monitoring components is to use the [acs-engine monitoring extension](https://github.com/Azure/acs-engine/tree/master/extensions/prometheus-grafana-k8s). For details on how to use the monitoring extension, please refer to the [extension documentation](https://github.com/Azure/acs-engine/tree/master/extensions/prometheus-grafana-k8s). By embedding the extension in your apimodel, the extension will do much of the work to create a monitoring solution in your cluster, which includes the following:
+
+- [cAdvisor](https://github.com/google/cadvisor) daemon set to publish container metrics
+- [Prometheus](https://prometheus.io/) for metrics collection and storage
+- [Grafana](https://grafana.com/) for dashboard and visualizations
+
+The extension wires up these components together. Post-deplyoment of the Kubernetes cluster, you just have to retrieve Grafana admin password (Kubernetes secret) and target your browser to the Grafana endpoint. There is already a pre-loaded Kubernetes cluster monitoring dashboard, so out-of-the-box you will have meaningful monitoring points with the extensibility that Prometheus and Grafana offer you.
 
 ## Grafana and Influx DB
 

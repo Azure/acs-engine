@@ -19,21 +19,25 @@ set -eo pipefail
 covermode=${COVERMODE:-atomic}
 coverdir=$(mktemp -d /tmp/coverage.XXXXXXXXXX)
 profile="${coverdir}/cover.out"
+coveragetxt="coverage.txt"
 
 hash goveralls 2>/dev/null || go get github.com/mattn/goveralls
 hash godir 2>/dev/null || go get github.com/Masterminds/godir
 
-# TODO this appears to run all unit tests, rather than just generate coverage data
 generate_cover_data() {
-  ginkgo -skipPackage test/e2e -cover -r .
-  find . -type f -name "*.coverprofile" | while read -r file; do mv $file ${coverdir}; done
-
+  ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes,test/e2e/openshift -cover -r .
+  echo "" > ${coveragetxt}  
+  find . -type f -name "*.coverprofile" | while read -r file;  do cat $file >> ${coveragetxt} && mv $file ${coverdir}; done
   echo "mode: $covermode" >"$profile"
   grep -h -v "^mode:" "$coverdir"/*.coverprofile >>"$profile"
 }
 
 push_to_coveralls() {
-  goveralls -coverprofile="${profile}" -repotoken $COVERALLS_TOKEN
+  goveralls -coverprofile="${profile}" -service=circle-ci -repotoken $COVERALLS_REPO_TOKEN || echo "push to coveralls failed"
+}
+
+push_to_codecov() {
+  bash <(curl -s https://codecov.io/bash) || echo "push to codecov failed"
 }
 
 generate_cover_data
@@ -44,10 +48,13 @@ case "${1-}" in
     go tool cover -html "${profile}"
     ;;
   --coveralls)
-		if [ -z $COVERALLS_TOKEN ]; then
-			echo '$COVERALLS_TOKEN not set. Skipping pushing coverage report to coveralls.io'
+		if [ -z $COVERALLS_REPO_TOKEN ]; then
+			echo '$COVERALLS_REPO_TOKEN not set. Skipping pushing coverage report to coveralls.io'
 			exit
 		fi
     push_to_coveralls
+    ;;
+  --codecov)
+    push_to_codecov
     ;;
 esac

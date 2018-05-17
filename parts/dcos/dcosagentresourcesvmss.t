@@ -96,6 +96,9 @@
 {{if IsPublic .Ports}}
        ,"[concat('Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'))]"
 {{end}}
+{{if and HasBootstrap (not IsHostedBootstrap)}}
+       ,"[concat('Microsoft.Compute/virtualMachines/', variables('bootstrapVMName'), '/extensions/bootstrapready')]"
+{{end}}
       ],
       "tags":
       {

@@ -25,6 +25,7 @@ type Config struct {
 	Regions           []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
 	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	CleanUpIfFail     bool          `envconfig:"CLEANUP_IF_FAIL" default:"true"`
 	RetainSSH         bool          `envconfig:"RETAIN_SSH" default:"true"`
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
@@ -37,6 +38,7 @@ const (
 	dcosOrchestrator       = "dcos"
 	swarmModeOrchestrator  = "swarmmode"
 	swarmOrchestrator      = "swarm"
+	openShiftOrchestrator  = "openshift"
 )
 
 // ParseConfig will parse needed environment variables for running the tests
@@ -53,9 +55,24 @@ func ParseConfig() (*Config, error) {
 
 // GetKubeConfig returns the absolute path to the kubeconfig for c.Location
 func (c *Config) GetKubeConfig() string {
-	file := fmt.Sprintf("kubeconfig.%s.json", c.Location)
-	kubeconfig := filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "kubeconfig", file)
-	return kubeconfig
+	var kubeconfigPath string
+
+	switch {
+	case c.IsKubernetes():
+		file := fmt.Sprintf("kubeconfig.%s.json", c.Location)
+		kubeconfigPath = filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "kubeconfig", file)
+
+	case c.IsOpenShift():
+		artifactsDir := filepath.Join(c.CurrentWorkingDir, "_output", c.Name)
+		masterTarball := filepath.Join(artifactsDir, "master.tar.gz")
+		out, err := exec.Command("tar", "-xzf", masterTarball, "-C", artifactsDir).CombinedOutput()
+		if err != nil {
+			log.Fatalf("Cannot untar master tarball: %v: %v", string(out), err)
+		}
+		kubeconfigPath = filepath.Join(artifactsDir, "etc", "origin", "master", "admin.kubeconfig")
+	}
+
+	return kubeconfigPath
 }
 
 // SetKubeConfig will set the KUBECONIFG env var
@@ -148,10 +165,15 @@ func (c *Config) IsSwarm() bool {
 	return c.Orchestrator == swarmOrchestrator
 }
 
+// IsOpenShift will return true if the ORCHESTRATOR env var is set to openshift
+func (c *Config) IsOpenShift() bool {
+	return c.Orchestrator == openShiftOrchestrator
+}
+
 // SetRandomRegion sets Location to a random region
 func (c *Config) SetRandomRegion() {
 	var regions []string
-	if c.Regions == nil {
+	if c.Regions == nil || len(c.Regions) == 0 {
 		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 	} else {
 		regions = c.Regions

@@ -444,6 +444,69 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerSpec"}}
+      "metadata": {
+        "description": "The container spec for the cluster autoscaler."
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryLimit"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory limit"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPURequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler cpu requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryRequests"}}
+      "metadata": {
+        "description": "Cluster autoscaler memory requests"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMinNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMinNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler min nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerMaxNodes": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMaxNodes"}}
+      "metadata": {
+        "description": "Cluster autoscaler max nodes"
+      },
+      "type": "string"
+    },
+    "kubernetesClusterAutoscalerEnabled": {
+      "defaultValue": false,
+      "metadata": {
+        "description": "Cluster autoscaler status"
+      },
+      "type": "bool"
+    },
+    "kubernetesClusterAutoscalerUseManagedIdentity": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerUseManagedIdentity"}}
+      "metadata": {
+        "description": "Managed identity for the cluster autoscaler addon"
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
@@ -583,9 +646,10 @@
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
-        "description": "The network policy enforcement to use (none|azure|calico|cilium)"
+        "description": "The network policy enforcement to use (calico|cilium); 'none' and 'azure' here for backwards compatibility"
       },
       "allowedValues": [
+        "",
         "none",
         "azure",
         "calico",
@@ -593,14 +657,28 @@
       ],
       "type": "string"
     },
+    "networkPlugin": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPlugin}}",
+      "metadata": {
+        "description": "The network plugin to use for Kubernetes (kubenet|azure|flannel|cilium)"
+      },
+      "allowedValues": [
+        "kubenet",
+        "azure",
+        "flannel",
+        "cilium"
+      ],
+      "type": "string"
+    },
     "containerRuntime": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
       "metadata": {
-        "description": "The container runtime to use (docker|clear-containers)"
+        "description": "The container runtime to use (docker|clear-containers|containerd)"
       },
       "allowedValues": [
         "docker",
-        "clear-containers"
+        "clear-containers",
+        "containerd"
       ],
       "type": "string"
     },
@@ -690,6 +768,12 @@
       {{PopulateClassicModeDefaultValue "etcdVersion"}}
       "metadata": {
         "description": "etcd version"
+      },
+      "type": "string"
+    },
+    "etcdEncryptionKey": {
+      "metadata": {
+        "description": "Encryption at rest key for etcd"
       },
       "type": "string"
     }

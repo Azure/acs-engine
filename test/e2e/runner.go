@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 	}
 
-	sa := new(azure.StorageAccount)
+	sa := acct.StorageAccount
 
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
@@ -114,7 +114,9 @@ func main() {
 		rgs = cliProvisioner.ResourceGroups
 		eng = cliProvisioner.Engine
 		if err != nil {
-			teardown()
+			if cfg.CleanUpIfFail {
+				teardown()
+			}
 			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
 		if cfg.SoakClusterName != "" {
@@ -185,11 +187,23 @@ func teardown() {
 		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
 		err := os.MkdirAll(logsPath, 0755)
 		if err != nil {
-			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
+			log.Printf("cannot create directory for logs: %s", err)
 		}
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
+		}
+	}
+	if cliProvisioner.Config.IsOpenShift() {
+		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
+		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
+		err := os.MkdirAll(logsPath, 0755)
+		if err != nil {
+			log.Printf("cannot create directory for logs: %s", err)
+		}
+		err = cliProvisioner.FetchOpenShiftInfraLogs(logsPath)
+		if err != nil {
+			log.Printf("cliProvisioner.FetchOpenShiftInfraLogs error: %s", err)
 		}
 	}
 	if !cfg.RetainSSH {

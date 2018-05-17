@@ -264,6 +264,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	NetworkPlugin                    string            `json:"networkPlugin,omitempty"`
 	ContainerRuntime                 string            `json:"containerRuntime,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
@@ -274,6 +275,7 @@ type KubernetesConfig struct {
 	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
 	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
+	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`
@@ -283,6 +285,7 @@ type KubernetesConfig struct {
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
+	EtcdEncryptionKey                string            `json:"etcdEncryptionKey,omitempty"`
 	EnableDataEncryptionAtRest       *bool             `json:"enableDataEncryptionAtRest,omitempty"`
 	EnableEncryptionWithExternalKms  *bool             `json:"enableEncryptionWithExternalKms,omitempty"`
 	EnablePodSecurityPolicy          *bool             `json:"enablePodSecurityPolicy,omitempty"`
@@ -308,30 +311,40 @@ type KubernetesConfig struct {
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
 }
 
+// BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
+type BootstrapProfile struct {
+	VMSize       string `json:"vmSize,omitempty"`
+	OSDiskSizeGB int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled bool   `json:"oauthEnabled,omitempty"`
+	StaticIP     string `json:"staticIP,omitempty"`
+	Subnet       string `json:"subnet,omitempty"`
+}
+
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
-	DcosBootstrapURL         string `json:"dcosBootstrapURL,omitempty"`
-	DcosWindowsBootstrapURL  string `json:"dcosWindowsBootstrapURL,omitempty"`
-	Registry                 string `json:"registry,omitempty"`
-	RegistryUser             string `json:"registryUser,omitempty"`
-	RegistryPass             string `json:"registryPassword,omitempty"`
-	DcosRepositoryURL        string `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
-	DcosClusterPackageListID string `json:"dcosClusterPackageListID,omitempty"` // all three of these items
-	DcosProviderPackageID    string `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+	DcosBootstrapURL         string            `json:"dcosBootstrapURL,omitempty"`
+	DcosWindowsBootstrapURL  string            `json:"dcosWindowsBootstrapURL,omitempty"`
+	Registry                 string            `json:"registry,omitempty"`
+	RegistryUser             string            `json:"registryUser,omitempty"`
+	RegistryPass             string            `json:"registryPassword,omitempty"`
+	DcosRepositoryURL        string            `json:"dcosRepositoryURL,omitempty"`        // For CI use, you need to specify
+	DcosClusterPackageListID string            `json:"dcosClusterPackageListID,omitempty"` // all three of these items
+	DcosProviderPackageID    string            `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
+	BootstrapProfile         *BootstrapProfile `json:"bootstrapProfile,omitempty"`
 }
 
 // OpenShiftConfig holds configuration for OpenShift
 type OpenShiftConfig struct {
 	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
-	// ClusterUsername and ClusterPassword are temporary before AAD
-	// authentication is enabled, and will be removed subsequently.
+	// ClusterUsername and ClusterPassword are temporary, do not rely on them.
 	ClusterUsername string `json:"clusterUsername,omitempty"`
 	ClusterPassword string `json:"clusterPassword,omitempty"`
 
-	ConfigBundles          map[string][]byte `json:"-"`
-	ExternalMasterHostname string            `json:"-"`
-	RouterLBHostname       string            `json:"-"`
+	// EnableAADAuthentication is temporary, do not rely on it.
+	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
+
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -489,12 +502,25 @@ type HostedMasterProfile struct {
 	Subnet string `json:"subnet"`
 }
 
+// AuthenticatorType represents the authenticator type the cluster was
+// set up with.
+type AuthenticatorType string
+
+const (
+	// OIDC represent cluster setup in OIDC auth mode
+	OIDC AuthenticatorType = "oidc"
+	// Webhook represent cluster setup in wehhook auth mode
+	Webhook AuthenticatorType = "webhook"
+)
+
 // AADProfile specifies attributes for AAD integration
 type AADProfile struct {
 	// The client AAD application ID.
 	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.
 	ServerAppID string `json:"serverAppID,omitempty"`
+	// The server AAD application secret
+	ServerAppSecret string `json:"serverAppSecret,omitempty"`
 	// The AAD tenant ID to use for authentication.
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
@@ -503,6 +529,8 @@ type AADProfile struct {
 	// cluster-admin RBAC role.
 	// Optional
 	AdminGroupID string `json:"adminGroupID,omitempty"`
+	// The authenticator to use, either "OIDC" or "Webhook".
+	Authenticator AuthenticatorType `json:"authenticator"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -624,6 +652,16 @@ func (p *Properties) TotalNodes() int {
 	return totalNodes
 }
 
+// HasVirtualMachineScaleSets returns true if the cluster contains Virtual Machine Scale Sets
+func (p *Properties) HasVirtualMachineScaleSets() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
+			return true
+		}
+	}
+	return false
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -679,6 +717,11 @@ func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet
 }
 
+// IsVirtualMachineScaleSets returns true if the agent pool availability profile is VMSS
+func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
+	return a.AvailabilityProfile == VirtualMachineScaleSets
+}
+
 // IsManagedDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
@@ -729,11 +772,22 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 	return o.OrchestratorType == DCOS
 }
 
-// IsAzureCNI returns true if Azure VNET integration is enabled
+// IsAzureCNI returns true if Azure CNI network plugin is enabled
 func (o *OrchestratorProfile) IsAzureCNI() bool {
+	if o.KubernetesConfig != nil {
+		return o.KubernetesConfig.NetworkPlugin == "azure"
+	}
+	return false
+}
+
+// RequireRouteTable returns true if this deployment requires routing table
+func (o *OrchestratorProfile) RequireRouteTable() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
-		return o.KubernetesConfig.NetworkPolicy == "azure"
+		if o.IsAzureCNI() || "cilium" == o.KubernetesConfig.NetworkPolicy {
+			return false
+		}
+		return true
 	default:
 		return false
 	}
@@ -789,6 +843,17 @@ func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 		}
 	}
 	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
+}
+
+// IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
+func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
+	var clusterAutoscalerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
+			clusterAutoscalerAddon = k.Addons[i]
+		}
+	}
+	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled

@@ -25,7 +25,7 @@ GITTAG := $(VERSION_SHORT)
 endif
 
 REPO_PATH := github.com/Azure/acs-engine
-DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.9.1
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.10.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -43,6 +43,10 @@ all: build
 .PHONY: dev
 dev:
 	$(DEV_ENV_CMD_IT) bash
+
+.PHONY: validate-generated
+validate-generated: bootstrap
+	./scripts/validate-generated.sh
 
 .PHONY: generate
 generate: bootstrap
@@ -97,7 +101,7 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test: generate
-	ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes -r .
+	ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes,test/e2e/openshift -r .
 
 .PHONY: test-style
 test-style:
@@ -145,7 +149,7 @@ ci: bootstrap test-style build test lint
 
 .PHONY: coverage
 coverage:
-	@scripts/ginkgo.coverage.sh
+	@scripts/ginkgo.coverage.sh --codecov
 
 devenv:
 	./scripts/devenv.sh

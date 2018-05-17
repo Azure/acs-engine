@@ -42,6 +42,7 @@ type Properties struct {
 	NodeResourceGroup       string                   `json:"nodeResourceGroup,omitempty"`
 	EnableRBAC              *bool                    `json:"enableRBAC,omitempty"`
 	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 }
 
 // NetworkProfile represents network related definitions
@@ -171,7 +172,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
-	MaxPods        int    `json:"maxPods,omitempty"`
+	MaxPods        *int   `json:"maxPods,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
@@ -186,6 +187,20 @@ type AgentPoolProfile struct {
 // AccessProfile represents role name and kubeconfig
 type AccessProfile struct {
 	KubeConfig string `json:"kubeConfig"`
+}
+
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
+	// The client AAD application ID.
+	ClientAppID string `json:"clientAppID,omitempty"`
+	// The server AAD application ID.
+	ServerAppID string `json:"serverAppID,omitempty"`
+	// The server AAD application secret
+	ServerAppSecret string `json:"serverAppSecret,omitempty"`
+	// The AAD tenant ID to use for authentication.
+	// If not specified, will use the tenant of the deployment subscription.
+	// Optional
+	TenantID string `json:"tenantID,omitempty"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

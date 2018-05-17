@@ -180,6 +180,10 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 		p.AddonProfiles = make(map[string]v20180331.AddonProfile)
 		convertAddonsProfileToV20180331AgentPoolOnly(api.AddonProfiles, p.AddonProfiles)
 	}
+	if api.AADProfile != nil {
+		p.AADProfile = &v20180331.AADProfile{}
+		convertAADProfileToV20180331AgentPoolOnly(api.AADProfile, p.AADProfile)
+	}
 }
 
 func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile) (kubernetesVersion string, networkProfile *v20180331.NetworkProfile) {
@@ -189,9 +193,15 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 
 	if orchestratorProfile.KubernetesConfig != nil {
 		k := orchestratorProfile.KubernetesConfig
-		if k.NetworkPolicy != "" || k.ServiceCIDR != "" || k.DNSServiceIP != "" || k.DockerBridgeSubnet != "" {
+		if k.NetworkPlugin != "" {
 			networkProfile = &v20180331.NetworkProfile{}
-			// ACS-E uses "none" in the un-versioned model to represent kubenet.
+			networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPlugin)
+			networkProfile.ServiceCidr = k.ServiceCIDR
+			networkProfile.DNSServiceIP = k.DNSServiceIP
+			networkProfile.DockerBridgeCidr = k.DockerBridgeSubnet
+		} else if k.NetworkPolicy != "" {
+			networkProfile = &v20180331.NetworkProfile{}
+			// ACS-E uses "none" in the old un-versioned model to represent kubenet.
 			if k.NetworkPolicy == "none" {
 				networkProfile.NetworkPlugin = v20180331.Kubenet
 			} else {
@@ -233,7 +243,7 @@ func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v
 	if api.KubernetesConfig != nil && api.KubernetesConfig.KubeletConfig != nil {
 		if maxPods, ok := api.KubernetesConfig.KubeletConfig["--max-pods"]; ok {
 			agentPoolMaxPods, _ := strconv.Atoi(maxPods)
-			p.MaxPods = agentPoolMaxPods
+			p.MaxPods = &agentPoolMaxPods
 		}
 	}
 }
@@ -254,5 +264,14 @@ func convertAddonsProfileToV20180331AgentPoolOnly(api map[string]AddonProfile, p
 			Enabled: v.Enabled,
 			Config:  v.Config,
 		}
+	}
+}
+
+func convertAADProfileToV20180331AgentPoolOnly(api *AADProfile, v20180331 *v20180331.AADProfile) {
+	v20180331.ClientAppID = api.ClientAppID
+	v20180331.ServerAppID = api.ServerAppID
+	v20180331.TenantID = api.TenantID
+	if api.Authenticator == Webhook {
+		v20180331.ServerAppSecret = api.ServerAppSecret
 	}
 }

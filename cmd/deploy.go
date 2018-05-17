@@ -19,13 +19,24 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 const (
 	deployName             = "deploy"
-	deployShortDescription = "deploy an Azure Resource Manager template"
-	deployLongDescription  = "deploys an Azure Resource Manager template, parameters file and other assets for a cluster"
+	deployShortDescription = "Deploy an Azure Resource Manager template"
+	deployLongDescription  = "Deploy an Azure Resource Manager template, parameters file and other assets for a cluster"
+
+	// aadServicePrincipal is a hard-coded service principal which represents
+	// Azure Active Dirctory (see az ad sp list)
+	aadServicePrincipal = "00000002-0000-0000-c000-000000000000"
+
+	// aadPermissionUserRead is the User.Read hard-coded permission on
+	// aadServicePrincipal (see az ad sp list)
+	aadPermissionUserRead = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
 )
 
 type deployCmd struct {
@@ -74,8 +85,8 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
-	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
-	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
+	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to (will use the DNS prefix from the apimodel if not specified)")
+	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to (required)")
 	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 
 	addAuthFlags(&dc.authArgs, f)
@@ -116,8 +127,9 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	if dc.location == "" {
 		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
-	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
+	dc.location = helpers.NormalizeAzureRegion(dc.location)
+
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
@@ -128,9 +140,13 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("--location does not match api model location"))
 	}
 
+	if err = dc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err)
+	}
+
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("failed to get client")) // TODO: cleanup
+		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
@@ -213,13 +229,31 @@ func autofillApimodel(dc *deployCmd) {
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
-		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil {
+		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil && (dc.ClientID.String() == "" || dc.ClientID.String() == "00000000-0000-0000-0000-000000000000") && dc.ClientSecret == "" {
 			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
 			appName := dc.containerService.Properties.MasterProfile.DNSPrefix
 			appURL := fmt.Sprintf("https://%s/", appName)
-			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL)
+			var replyURLs *[]string
+			var requiredResourceAccess *[]graphrbac.RequiredResourceAccess
+			if dc.containerService.Properties.OrchestratorProfile.OrchestratorType == api.OpenShift {
+				appName = fmt.Sprintf("%s.%s.cloudapp.azure.com", appName, dc.containerService.Properties.AzProfile.Location)
+				appURL = fmt.Sprintf("https://%s:8443/", appName)
+				replyURLs = to.StringSlicePtr([]string{fmt.Sprintf("https://%s:8443/oauth2callback/Azure%%20AD", appName)})
+				requiredResourceAccess = &[]graphrbac.RequiredResourceAccess{
+					{
+						ResourceAppID: to.StringPtr(aadServicePrincipal),
+						ResourceAccess: &[]graphrbac.ResourceAccess{
+							{
+								ID:   to.StringPtr(aadPermissionUserRead),
+								Type: to.StringPtr("Scope"),
+							},
+						},
+					},
+				}
+			}
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
 				log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
 			}
@@ -237,6 +271,11 @@ func autofillApimodel(dc *deployCmd) {
 				ClientID: applicationID,
 				Secret:   secret,
 				ObjectID: servicePrincipalObjectID,
+			}
+		} else if (dc.containerService.Properties.ServicePrincipalProfile == nil || ((dc.containerService.Properties.ServicePrincipalProfile.ClientID == "" || dc.containerService.Properties.ServicePrincipalProfile.ClientID == "00000000-0000-0000-0000-000000000000") && dc.containerService.Properties.ServicePrincipalProfile.Secret == "")) && dc.ClientID.String() != "" && dc.ClientSecret != "" {
+			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
+				ClientID: dc.ClientID.String(),
+				Secret:   dc.ClientSecret,
 			}
 		}
 	}
@@ -263,7 +302,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)

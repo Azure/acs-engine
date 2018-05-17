@@ -10,6 +10,7 @@ import (
 
 func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	orchestratorVersion := "1.7.9"
+	networkPlugin := "azure"
 	networkPolicy := "azure"
 	serviceCIDR := "10.0.0.0/8"
 	dnsServiceIP := "10.0.0.10"
@@ -17,7 +18,7 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	// all networkProfile related fields are defined in kubernetesConfig
 	kubernetesConfig := &KubernetesConfig{
-		NetworkPolicy:      networkPolicy,
+		NetworkPlugin:      networkPlugin,
 		ServiceCIDR:        serviceCIDR,
 		DNSServiceIP:       dnsServiceIP,
 		DockerBridgeSubnet: dockerBridgeSubnet,
@@ -35,7 +36,7 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 	}
 
-	if string(p.NetworkPlugin) != networkPolicy {
+	if string(p.NetworkPlugin) != networkPlugin {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -68,9 +69,9 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile networkProfile conversion")
 	}
 
-	// only networkProfile networkPolicy field is defined in kubernetesConfig
+	// only networkProfile networkPlugin field is defined in kubernetesConfig
 	kubernetesConfig = &KubernetesConfig{
-		NetworkPolicy: networkPolicy,
+		NetworkPlugin: networkPlugin,
 	}
 	api = &OrchestratorProfile{
 		OrchestratorVersion: orchestratorVersion,
@@ -83,7 +84,7 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 	}
 
-	if string(p.NetworkPlugin) != networkPolicy {
+	if string(p.NetworkPlugin) != networkPlugin {
 		t.Error("error in orchestrator profile networkPlugin conversion")
 	}
 
@@ -99,6 +100,39 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
 	}
 
+	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin
+	kubernetesConfig = &KubernetesConfig{
+		NetworkPolicy:      networkPolicy,
+		ServiceCIDR:        serviceCIDR,
+		DNSServiceIP:       dnsServiceIP,
+		DockerBridgeSubnet: dockerBridgeSubnet,
+	}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if string(p.NetworkPlugin) != networkPlugin {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if p.ServiceCidr != serviceCIDR {
+		t.Error("error in orchestrator profile serviceCidr conversion")
+	}
+
+	if p.DNSServiceIP != dnsServiceIP {
+		t.Error("error in orchestrator profile dnsServiceIP conversion")
+	}
+
+	if p.DockerBridgeCidr != dockerBridgeSubnet {
+		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
+	}
 }
 
 func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
@@ -114,7 +148,7 @@ func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
 	p := &v20180331.AgentPoolProfile{}
 	convertAgentPoolProfileToV20180331AgentPoolOnly(api, p)
 
-	if p.MaxPods != maxPods {
+	if *p.MaxPods != maxPods {
 		t.Error("error in agent pool profile max pods conversion")
 	}
 }
@@ -233,5 +267,33 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 	if !*enableRBAC {
 		t.Error("EnableRBAC expected to be true")
 	}
+}
 
+func TestConvertToV20180331AADProfile(t *testing.T) {
+	api := AADProfile{
+		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
+		TenantID:        "dcbfaea3-7312-497e-81d9-9ad9b8a99852",
+		Authenticator:   Webhook,
+	}
+
+	p := v20180331.AADProfile{}
+	convertAADProfileToV20180331AgentPoolOnly(&api, &p)
+
+	if p.ClientAppID != "acbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ClientAppID not set to expected value")
+	}
+
+	if p.ServerAppSecret != "bcbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppSecret not set to expected value")
+	}
+
+	if p.ServerAppID != "ccbfaea3-7312-497e-81d9-9ad9b8a99853" {
+		t.Error("ServerAppID not set to expected value")
+	}
+
+	if p.TenantID != "dcbfaea3-7312-497e-81d9-9ad9b8a99852" {
+		t.Error("TenantID not set to expected value")
+	}
 }

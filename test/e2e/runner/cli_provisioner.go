@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -10,6 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -19,8 +23,9 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
+	onode "github.com/Azure/acs-engine/test/e2e/openshift/node"
+	outil "github.com/Azure/acs-engine/test/e2e/openshift/util"
 	"github.com/Azure/acs-engine/test/e2e/remote"
-	"github.com/kelseyhightower/envconfig"
 )
 
 // CLIProvisioner holds the configuration needed to provision a clusters
@@ -180,7 +185,7 @@ func (cli *CLIProvisioner) generateName() string {
 }
 
 func (cli *CLIProvisioner) waitForNodes() error {
-	if cli.Config.IsKubernetes() {
+	if cli.Config.IsKubernetes() || cli.Config.IsOpenShift() {
 		if !cli.IsPrivate() {
 			cli.Config.SetKubeConfig()
 			log.Println("Waiting on nodes to go into ready state...")
@@ -188,18 +193,24 @@ func (cli *CLIProvisioner) waitForNodes() error {
 			if !ready {
 				return errors.New("Error: Not all nodes in a healthy state")
 			}
-			version, err := node.Version()
+			var version string
+			var err error
+			if cli.Config.IsKubernetes() {
+				version, err = node.Version()
+			} else if cli.Config.IsOpenShift() {
+				version, err = onode.Version()
+			}
 			if err != nil {
 				log.Printf("Ready nodes did not return a version: %s", err)
 			}
-			log.Printf("Testing a Kubernetes %s cluster...\n", version)
+			log.Printf("Testing a %s %s cluster...\n", cli.Config.Orchestrator, version)
 		} else {
 			log.Println("This cluster is private")
 			if cli.Engine.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile == nil {
 				// TODO: add "bring your own jumpbox to e2e"
 				return errors.New("Error: cannot test a private cluster without provisioning a jumpbox")
 			}
-			log.Printf("Testing a Kubernetes private cluster...")
+			log.Printf("Testing a %s private cluster...", cli.Config.Orchestrator)
 			// TODO: create SSH connection and get nodes and k8s version
 		}
 	}
@@ -272,8 +283,48 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 
 // IsPrivate will return true if the cluster has no public IPs
 func (cli *CLIProvisioner) IsPrivate() bool {
-	if cli.Config.IsKubernetes() && cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
-		return true
+	return (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) &&
+		cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
+		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
+}
+
+type resource struct {
+	kind      string
+	namespace string
+	name      string
+}
+
+func (r resource) String() string {
+	return fmt.Sprintf("%s_%s", r.namespace, r.name)
+}
+
+// FetchOpenShiftInfraLogs returns logs for Openshift infra components.
+func (cli *CLIProvisioner) FetchOpenShiftInfraLogs(logPath string) error {
+	infraResources := []resource{
+		// TODO: Maybe collapse this list and the actual readiness check tests
+		// in openshift e2e.
+		{kind: "deploymentconfig", namespace: "default", name: "router"},
+		{kind: "deploymentconfig", namespace: "default", name: "docker-registry"},
+		{kind: "deploymentconfig", namespace: "default", name: "registry-console"},
+		{kind: "statefulset", namespace: "openshift-infra", name: "bootstrap-autoapprover"},
+		{kind: "statefulset", namespace: "openshift-metrics", name: "prometheus"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "apiserver"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "controller-manager"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb-etcd"},
+		{kind: "daemonset", namespace: "openshift-template-service-broker", name: "apiserver"},
+		{kind: "deployment", namespace: "openshift-web-console", name: "webconsole"},
 	}
-	return false
+
+	var errs []error
+	for _, r := range infraResources {
+		log := outil.FetchLogs(r.kind, r.namespace, r.name)
+		path := filepath.Join(logPath, r.String())
+		err := ioutil.WriteFile(path, []byte(log), 0644)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
 }

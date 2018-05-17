@@ -9,51 +9,61 @@ import (
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
 var AllKubernetesSupportedVersions = map[string]bool{
-	"1.6.6":         true,
-	"1.6.9":         true,
-	"1.6.11":        true,
-	"1.6.12":        true,
-	"1.6.13":        true,
-	"1.7.0":         true,
-	"1.7.1":         true,
-	"1.7.2":         true,
-	"1.7.4":         true,
-	"1.7.5":         true,
-	"1.7.7":         true,
-	"1.7.9":         true,
-	"1.7.10":        true,
-	"1.7.12":        true,
-	"1.7.13":        true,
-	"1.7.14":        true,
-	"1.7.15":        true,
-	"1.7.16":        true,
-	"1.8.0":         true,
-	"1.8.1":         true,
-	"1.8.2":         true,
-	"1.8.4":         true,
-	"1.8.6":         true,
-	"1.8.7":         true,
-	"1.8.8":         true,
-	"1.8.9":         true,
-	"1.8.10":        true,
-	"1.8.11":        true,
-	"1.9.0":         true,
-	"1.9.1":         true,
-	"1.9.2":         true,
-	"1.9.3":         true,
-	"1.9.4":         true,
-	"1.9.5":         true,
-	"1.9.6":         true,
-	"1.10.0-beta.2": true,
-	"1.10.0-beta.4": true,
-	"1.10.0-rc.1":   true,
-	"1.10.0":        true,
-	"1.10.1":        true,
+	"1.6.6":          true,
+	"1.6.9":          true,
+	"1.6.11":         true,
+	"1.6.12":         true,
+	"1.6.13":         true,
+	"1.7.0":          true,
+	"1.7.1":          true,
+	"1.7.2":          true,
+	"1.7.4":          true,
+	"1.7.5":          true,
+	"1.7.7":          true,
+	"1.7.9":          true,
+	"1.7.10":         true,
+	"1.7.12":         true,
+	"1.7.13":         true,
+	"1.7.14":         true,
+	"1.7.15":         true,
+	"1.7.16":         true,
+	"1.8.0":          true,
+	"1.8.1":          true,
+	"1.8.2":          true,
+	"1.8.4":          true,
+	"1.8.6":          true,
+	"1.8.7":          true,
+	"1.8.8":          true,
+	"1.8.9":          true,
+	"1.8.10":         true,
+	"1.8.11":         true,
+	"1.8.12":         true,
+	"1.8.13":         true,
+	"1.9.0":          true,
+	"1.9.1":          true,
+	"1.9.2":          true,
+	"1.9.3":          true,
+	"1.9.4":          true,
+	"1.9.5":          true,
+	"1.9.6":          true,
+	"1.9.7":          true,
+	"1.10.0-beta.2":  true,
+	"1.10.0-beta.4":  true,
+	"1.10.0-rc.1":    true,
+	"1.10.0":         true,
+	"1.10.1":         true,
+	"1.10.2":         true,
+	"1.11.0-alpha.1": true,
 }
 
 // GetDefaultKubernetesVersion returns the default Kubernetes version, that is the latest patch of the default release
 func GetDefaultKubernetesVersion() string {
 	return GetLatestPatchVersion(KubernetesDefaultRelease, GetAllSupportedKubernetesVersions())
+}
+
+// GetDefaultKubernetesVersionWindows returns the default Kubernetes version for Windows, that is the latest patch of the default release
+func GetDefaultKubernetesVersionWindows() string {
+	return GetLatestPatchVersion(KubernetesDefaultReleaseWindows, GetAllSupportedKubernetesVersionsWindows())
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -196,9 +206,11 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.6.13",
 		"1.7.0",
 		"1.7.1",
+		"1.8.13",
 		"1.10.0-beta.2",
 		"1.10.0-beta.4",
-		"1.10.0-rc.1"} {
+		"1.10.0-rc.1",
+		"1.11.0-alpha.1"} {
 		ret[version] = false
 	}
 	return ret
@@ -220,7 +232,7 @@ func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, 
 	switch orchType {
 	case Kubernetes:
 		if hasWindows {
-			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersion()
+			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersionWindows()
 		}
 		return GetAllSupportedKubernetesVersions(), GetDefaultKubernetesVersion()
 

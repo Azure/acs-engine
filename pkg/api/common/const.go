@@ -57,9 +57,13 @@ const (
 const (
 	// KubernetesDefaultRelease is the default Kubernetes release
 	KubernetesDefaultRelease string = "1.8"
+	// KubernetesDefaultReleaseWindows is the default Kubernetes release
+	KubernetesDefaultReleaseWindows string = "1.9"
 )
 
 const (
+	// DCOSVersion1Dot11Dot2 is the major.minor.patch string for 1.11.0 versions of DCOS
+	DCOSVersion1Dot11Dot2 string = "1.11.2"
 	// DCOSVersion1Dot11Dot0 is the major.minor.patch string for 1.11.0 versions of DCOS
 	DCOSVersion1Dot11Dot0 string = "1.11.0"
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
@@ -76,6 +80,7 @@ const (
 
 // AllDCOSSupportedVersions maintain a list of available dcos versions in acs-engine
 var AllDCOSSupportedVersions = []string{
+	DCOSVersion1Dot11Dot2,
 	DCOSVersion1Dot11Dot0,
 	DCOSVersion1Dot10Dot0,
 	DCOSVersion1Dot9Dot8,
@@ -86,11 +91,13 @@ var AllDCOSSupportedVersions = []string{
 const (
 	// OpenShiftVersion3Dot9Dot0 is the major.minor.patch string for the 3.9.0 version of OpenShift
 	OpenShiftVersion3Dot9Dot0 string = "3.9.0"
+	// OpenShiftVersionUnstable is used for development in acs-engine and should not be used by end-users.
+	OpenShiftVersionUnstable string = "unstable"
 	// OpenShiftDefaultVersion is the default major.minor.patch version for OpenShift
 	OpenShiftDefaultVersion string = OpenShiftVersion3Dot9Dot0
 )
 
 // GetAllSupportedOpenShiftVersions returns a slice of all supported OpenShift versions.
 func GetAllSupportedOpenShiftVersions() []string {
-	return []string{OpenShiftVersion3Dot9Dot0}
+	return []string{OpenShiftVersion3Dot9Dot0, OpenShiftVersionUnstable}
 }

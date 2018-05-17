@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -633,8 +634,12 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
-		sv, _ := semver.NewVersion(o.OrchestratorVersion)
-		o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		// Enable using "unstable" as a valid version in the openshift orchestrator.
+		// Required for progressing on an unreleased version.
+		if !api.IsOpenShift() || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
+			sv, _ := semver.NewVersion(o.OrchestratorVersion)
+			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		}
 	}
 
 	if api.KubernetesConfig != nil {
@@ -660,26 +665,38 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	}
 	vl.ClusterUsername = api.ClusterUsername
 	vl.ClusterPassword = api.ClusterPassword
+	vl.EnableAADAuthentication = api.EnableAADAuthentication
+	vl.ConfigBundles = api.ConfigBundles
 }
 
-func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
-	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
-	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
+func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
+	vl.DcosBootstrapURL = api.DcosBootstrapURL
+	vl.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
 
 	if api.Registry != "" {
-		vlabs.Registry = api.Registry
+		vl.Registry = api.Registry
 	}
 
 	if api.RegistryUser != "" {
-		vlabs.RegistryUser = api.RegistryUser
+		vl.RegistryUser = api.RegistryUser
 	}
 
 	if api.RegistryPass != "" {
-		vlabs.RegistryPass = api.RegistryPass
+		vl.RegistryPass = api.RegistryPass
 	}
-	vlabs.DcosRepositoryURL = api.DcosRepositoryURL
-	vlabs.DcosClusterPackageListID = api.DcosClusterPackageListID
-	vlabs.DcosProviderPackageID = api.DcosProviderPackageID
+	vl.DcosRepositoryURL = api.DcosRepositoryURL
+	vl.DcosClusterPackageListID = api.DcosClusterPackageListID
+	vl.DcosProviderPackageID = api.DcosProviderPackageID
+
+	if api.BootstrapProfile != nil {
+		vl.BootstrapProfile = &vlabs.BootstrapProfile{
+			VMSize:       api.BootstrapProfile.VMSize,
+			OSDiskSizeGB: api.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled: api.BootstrapProfile.OAuthEnabled,
+			StaticIP:     api.BootstrapProfile.StaticIP,
+			Subnet:       api.BootstrapProfile.Subnet,
+		}
+	}
 }
 
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
@@ -688,6 +705,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.NetworkPlugin = api.NetworkPlugin
 	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 	vlabs.CloudProviderBackoff = api.CloudProviderBackoff
@@ -703,6 +721,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage
 	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
+	vlabs.CustomWindowsPackageURL = api.CustomWindowsPackageURL
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableSecureKubelet = api.EnableSecureKubelet
@@ -714,6 +733,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
+	vlabs.EtcdEncryptionKey = api.EtcdEncryptionKey
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)
@@ -972,6 +992,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 		p.ImageRef.Name = api.ImageRef.Name
 		p.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
+	p.Role = vlabs.AgentPoolProfileRole(api.Role)
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, dp *v20160930.DiagnosticsProfile) {

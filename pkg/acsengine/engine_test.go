@@ -19,7 +19,8 @@ import (
 )
 
 const (
-	TestDataDir = "./testdata"
+	TestDataDir          = "./testdata"
+	TestACSEngineVersion = "1.0.0"
 )
 
 func TestExpected(t *testing.T) {
@@ -75,7 +76,7 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
+		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
 		if err != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -99,7 +100,7 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
 			if err != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -292,7 +293,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false)
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
@@ -543,5 +544,40 @@ func TestIsNSeriesSKU(t *testing.T) {
 		if isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
 			t.Fatalf("Expected isNSeriesSKU(%s) to be false", sku)
 		}
+	}
+}
+
+func TestIsCustomVNET(t *testing.T) {
+
+	a := []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "subnetlink2",
+		},
+	}
+
+	if !isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
+	}
+
+	a = []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "",
+		},
+	}
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
+	}
+
+	a = nil
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
 	}
 }

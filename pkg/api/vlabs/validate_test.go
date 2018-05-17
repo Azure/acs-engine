@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -351,6 +352,113 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			"should error on cilium for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on flannel for windows clusters",
+		)
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on flannel for windows clusters",
+		)
+	}
+}
+
+func Test_Properties_ValidateNetworkPlugin(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	for _, policy := range NetworkPluginValues {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = policy
+		if err := p.validateNetworkPlugin(); err != nil {
+			t.Errorf(
+				"should not error on networkPolicy=\"%s\"",
+				policy,
+			)
+		}
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "not-existing"
+	if err := p.validateNetworkPlugin(); err == nil {
+		t.Errorf(
+			"should error on invalid networkPlugin",
+		)
+	}
+}
+
+func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	for _, config := range networkPluginPlusPolicyAllowed {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
+		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
+		if err := p.validateNetworkPluginPlusPolicy(); err != nil {
+			t.Errorf(
+				"should not error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
+				config.networkPolicy, config.networkPlugin,
+			)
+		}
+	}
+
+	for _, config := range []k8sNetworkConfig{
+		{
+			networkPlugin: "azure",
+			networkPolicy: "calico",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "cilium",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "flannel",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "azure",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "none",
+		},
+		{
+			networkPlugin: "azure",
+			networkPolicy: "none",
+		},
+		{
+			networkPlugin: "kubenet",
+			networkPolicy: "kubenet",
+		},
+	} {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
+		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
+		if err := p.validateNetworkPluginPlusPolicy(); err == nil {
+			t.Errorf(
+				"should error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
+				config.networkPolicy, config.networkPlugin,
+			)
+		}
+	}
 }
 
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
@@ -581,6 +689,43 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 			"should error on clear-containers for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "containerd"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on containerd for windows clusters",
+		)
+	}
+}
+
+func Test_Properties_ValidateAddons(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    "cluster-autoscaler",
+				Enabled: helpers.PointerToBool(true),
+			},
+		},
+	}
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			AvailabilityProfile: AvailabilitySet,
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"should error on cluster-autoscaler with availability sets",
+		)
+	}
 }
 
 func TestWindowsVersions(t *testing.T) {
@@ -692,6 +837,209 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
 		if !reflect.DeepEqual(gotErr, test.expectedErr) {
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
+		}
+	}
+}
+
+func TestMasterProfileValidate(t *testing.T) {
+	tests := []struct {
+		orchestratorType string
+		masterProfile    MasterProfile
+		expectedErr      string
+	}{
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "bad!",
+			},
+			expectedErr: "DNS name 'bad!' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     1,
+			},
+		},
+		{
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+			expectedErr: "openshift can only deployed with one master",
+		},
+	}
+
+	for i, test := range tests {
+		err := test.masterProfile.Validate(&OrchestratorProfile{OrchestratorType: test.orchestratorType})
+		if test.expectedErr == "" && err != nil ||
+			test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
+			t.Errorf("test %d: unexpected error %q\n", i, err)
+		}
+	}
+}
+
+func TestOpenshiftValidate(t *testing.T) {
+	tests := []struct {
+		name string
+
+		properties *Properties
+		isUpgrade  bool
+
+		expectedErr error
+	}{
+		{
+			name: "valid",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: ManagedDisks,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: nil,
+		},
+		{
+			name: "invalid - masterProfile.storageProfile needs to be ManagedDisks",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: StorageAccount,
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: errors.New("OpenShift orchestrator supports only ManagedDisks"),
+		},
+		{
+			name: "invalid - agentPoolProfile[0].storageProfile needs to be ManagedDisks",
+
+			properties: &Properties{
+				AzProfile: &AzProfile{
+					Location:       "eastus",
+					ResourceGroup:  "group",
+					SubscriptionID: "sub_id",
+					TenantID:       "tenant_id",
+				},
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+					OpenShiftConfig: &OpenShiftConfig{
+						ClusterUsername: "user",
+						ClusterPassword: "pass",
+					},
+				},
+				MasterProfile: &MasterProfile{
+					Count:          1,
+					DNSPrefix:      "mydns",
+					VMSize:         "Standard_D4s_v3",
+					StorageProfile: ManagedDisks,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      StorageAccount,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+				LinuxProfile: &LinuxProfile{
+					AdminUsername: "admin",
+					SSH: struct {
+						PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+					}{
+						PublicKeys: []PublicKey{
+							{KeyData: "ssh-key"},
+						},
+					},
+				},
+			},
+			isUpgrade: false,
+
+			expectedErr: errors.New("OpenShift orchestrator supports only ManagedDisks"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("running scenario %q", test.name)
+
+		gotErr := test.properties.Validate(test.isUpgrade)
+		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
 	}
 }

@@ -20,19 +20,25 @@ import (
 ///////////////////////////////////////////////////////////
 
 const (
+	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
+	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
+	// DefaultKubernetesMaxPodsKubenet is the maximum number of pods to run on a node for Kubenet.
+	DefaultKubernetesMaxPodsKubenet = "110"
+	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
+	DefaultKubernetesMaxPodsAzureCNI = "30"
 )
 
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
-	c.Location = NormalizeAzureRegion(v20170831.Location)
+	c.Location = helpers.NormalizeAzureRegion(v20170831.Location)
 	c.Name = v20170831.Name
 	if v20170831.Plan != nil {
 		c.Plan = convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831.Plan)
@@ -50,7 +56,7 @@ func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *Contain
 func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20180331.ID
-	c.Location = NormalizeAzureRegion(v20180331.Location)
+	c.Location = helpers.NormalizeAzureRegion(v20180331.Location)
 	c.Name = v20180331.Name
 	if v20180331.Plan != nil {
 		c.Plan = convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331.Plan)
@@ -107,7 +113,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
-	c.Location = NormalizeAzureRegion(vlabs.Location)
+	c.Location = helpers.NormalizeAzureRegion(vlabs.Location)
 	c.Name = vlabs.Name
 	if vlabs.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -224,7 +230,8 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableRbac:          helpers.PointerToBool(false),
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
-			NetworkPolicy:      "none",
+			NetworkPlugin:      string(v20180331.Kubenet),
+			ClusterSubnet:      DefaultKubernetesClusterSubnet,
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
@@ -333,7 +340,7 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
-		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
+		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet, obj.NetworkProfile)
 	}
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
@@ -346,8 +353,13 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	if obj.ServicePrincipalProfile != nil {
 		properties.ServicePrincipalProfile = convertV20180331AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
+
 	if obj.AddonProfiles != nil {
 		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
+	}
+
+	if obj.AADProfile != nil {
+		properties.AADProfile = convertV20180331AgentPoolOnlyAADProfile(obj.AADProfile)
 	}
 
 	return properties
@@ -372,8 +384,8 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 }
 
 func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
-	if enableRBAC == nil || *enableRBAC == true {
-		// We want default behavior to be true
+	if enableRBAC != nil && *enableRBAC == true {
+		// We set default behavior to be false
 		return &KubernetesConfig{
 			EnableRbac:          helpers.PointerToBool(true),
 			EnableSecureKubelet: helpers.PointerToBool(true),
@@ -393,7 +405,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	if networkProfile != nil {
 		switch networkProfile.NetworkPlugin {
 		case v20180331.Azure:
-			kubernetesConfig.NetworkPolicy = "azure"
+			kubernetesConfig.NetworkPlugin = "azure"
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -413,7 +425,9 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		case v20180331.Kubenet:
-			kubernetesConfig.NetworkPolicy = "none"
+			kubernetesConfig.NetworkPlugin = "kubenet"
+
+			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -433,14 +447,15 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
 		default:
-			kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPlugin)
+			kubernetesConfig.NetworkPlugin = string(networkProfile.NetworkPlugin)
 			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
 			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
 		}
 	} else {
 		// set network default for un-versioned model
-		kubernetesConfig.NetworkPolicy = "none"
+		kubernetesConfig.NetworkPlugin = string(v20180331.Kubenet)
+		kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 		kubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
@@ -453,20 +468,32 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 	}
 }
 
-func convertV20180331AgentPoolOnlyAgentPoolProfile(v20180331 *v20180331.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
+func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.AgentPoolProfile, availabilityProfile string, networkProfile *v20180331.NetworkProfile) *AgentPoolProfile {
 	api := &AgentPoolProfile{}
-	api.Name = v20180331.Name
-	api.Count = v20180331.Count
-	api.VMSize = v20180331.VMSize
-	api.OSDiskSizeGB = v20180331.OSDiskSizeGB
-	api.OSType = OSType(v20180331.OSType)
-	api.StorageProfile = v20180331.StorageProfile
-	api.VnetSubnetID = v20180331.VnetSubnetID
+	api.Name = agentPoolProfile.Name
+	api.Count = agentPoolProfile.Count
+	api.VMSize = agentPoolProfile.VMSize
+	api.OSDiskSizeGB = agentPoolProfile.OSDiskSizeGB
+	api.OSType = OSType(agentPoolProfile.OSType)
+	api.StorageProfile = agentPoolProfile.StorageProfile
+	api.VnetSubnetID = agentPoolProfile.VnetSubnetID
+	var maxPods string
+	// agentPoolProfile.MaxPods is 0 if maxPods field is not provided in API model
+	if agentPoolProfile.MaxPods == nil {
+		// default is kubenet
+		if networkProfile == nil || networkProfile.NetworkPlugin == v20180331.Kubenet {
+			maxPods = DefaultKubernetesMaxPodsKubenet
+		} else {
+			maxPods = DefaultKubernetesMaxPodsAzureCNI
+		}
+	} else {
+		maxPods = strconv.Itoa(*agentPoolProfile.MaxPods)
+	}
 	kubernetesConfig := &KubernetesConfig{
-		KubeletConfig: map[string]string{"--max-pods": strconv.Itoa(v20180331.MaxPods)},
+		KubeletConfig: map[string]string{"--max-pods": maxPods},
 	}
 	api.KubernetesConfig = kubernetesConfig
-	api.Subnet = v20180331.GetSubnet()
+	api.Subnet = agentPoolProfile.GetSubnet()
 	api.AvailabilityProfile = availabilityProfile
 	return api
 }
@@ -487,4 +514,14 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 		}
 	}
 	return api
+}
+
+func convertV20180331AgentPoolOnlyAADProfile(obj *v20180331.AADProfile) *AADProfile {
+	return &AADProfile{
+		ClientAppID:     obj.ClientAppID,
+		ServerAppID:     obj.ServerAppID,
+		ServerAppSecret: obj.ServerAppSecret,
+		TenantID:        obj.TenantID,
+		Authenticator:   Webhook,
+	}
 }

@@ -10,6 +10,11 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
+const (
+	// KubernetesMinMaxPods is the minimum valid value for MaxPods, necessary for running kube-system pods
+	KubernetesMinMaxPods = 5
+)
+
 var validate *validator.Validate
 
 func init() {
@@ -33,6 +38,33 @@ func (l *LinuxProfile) Validate() error {
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
+	return nil
+}
+
+// Validate implements APIObject
+func (a *AADProfile) Validate(rbacEnabled *bool) error {
+	if rbacEnabled == nil || *rbacEnabled == false {
+		return ErrorRBACNotEnabledForAAD
+	}
+
+	if e := validate.Var(a.ServerAppID, "required"); e != nil {
+		return ErrorAADServerAppIDNotSet
+	}
+
+	// Don't need to call validate.Struct(l)
+	// It is handled by Properties.Validate()
+	if e := validate.Var(a.ServerAppSecret, "required"); e != nil {
+		return ErrorAADServerAppSecretNotSet
+	}
+
+	if e := validate.Var(a.ClientAppID, "required"); e != nil {
+		return ErrorAADClientAppIDNotSet
+	}
+
+	if e := validate.Var(a.TenantID, "required"); e != nil {
+		return ErrorAADTenantIDNotSet
+	}
+
 	return nil
 }
 
@@ -94,6 +126,12 @@ func (a *Properties) Validate() error {
 
 	if e := validateVNET(a); e != nil {
 		return e
+	}
+
+	if a.AADProfile != nil {
+		if e := a.AADProfile.Validate(a.EnableRBAC); e != nil {
+			return e
+		}
 	}
 
 	return nil
@@ -209,6 +247,10 @@ func validateAgentPoolVNET(a []*AgentPoolProfile) error {
 			// validate each agent pool has a subnet
 			if !agentPool.IsCustomVNET() {
 				return ErrorAtLeastAgentPoolNoSubnet
+			}
+
+			if agentPool.MaxPods != nil && *agentPool.MaxPods < KubernetesMinMaxPods {
+				return ErrorInvalidMaxPods
 			}
 
 			// validate subscription, resource group and vnet are the same among subnets

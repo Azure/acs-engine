@@ -98,24 +98,24 @@ func TestKubeletConfigAzureContainerRegistryCofig(t *testing.T) {
 	}
 }
 
-func TestKubeletConfigNetworkPolicy(t *testing.T) {
-	// Test NetworkPolicy = none
+func TestKubeletConfigNetworkPlugin(t *testing.T) {
+	// Test NetworkPlugin = "kubenet"
 	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyNone
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--network-plugin"] != NetworkPluginKubenet {
-		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPolicy=none: %s",
+		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPlugin=kubenet: %s",
 			k["--network-plugin"])
 	}
 
-	// Test NetworkPolicy = azure
+	// Test NetworkPlugin = "azure"
 	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--network-plugin"] != "cni" {
-		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPolicy=azure: %s",
+		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPlugin=azure: %s",
 			k["--network-plugin"])
 	}
 
@@ -156,20 +156,20 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 
 func TestKubeletMaxPods(t *testing.T) {
 	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated) {
 		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
-			NetworkPolicyAzure, k["--max-pods"])
+			NetworkPluginAzure, k["--max-pods"])
 	}
 
 	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyNone
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPods) {
 		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
-			NetworkPolicyNone, k["--max-pods"])
+			NetworkPluginKubenet, k["--max-pods"])
 	}
 }
