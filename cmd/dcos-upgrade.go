@@ -144,6 +144,10 @@ func (uc *dcosUpgradeCmd) loadCluster(cmd *cobra.Command) error {
 	}
 	uc.currentDcosVersion = uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion
 
+	if uc.currentDcosVersion == uc.upgradeVersion {
+		return fmt.Errorf("already running DCOS %s", uc.upgradeVersion)
+	}
+
 	if len(uc.containerService.Location) == 0 {
 		uc.containerService.Location = uc.location
 	} else if uc.containerService.Location != uc.location {

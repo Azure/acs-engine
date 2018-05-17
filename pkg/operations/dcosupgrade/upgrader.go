@@ -206,22 +206,37 @@ func (uc *UpgradeCluster) upgradeMasterNodes(masterDNS string, masterCount int, 
 
 func (uc *UpgradeCluster) upgradeAgentNodes(masterDNS string, nodes *healthReport) error {
 	for _, node := range nodes.Nodes {
-		fmt.Printf("Node: %s %d %s\n", node.IP, node.Health, node.Role)
-		if node.Role != "master" {
-			uc.Logger.Infof("Upgrading %s %s", node.Role, node.IP)
-
-			// check current version
-			out, err := operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, "grep version /opt/mesosphere/etc/dcos-version.json | cut -d '\"' -f 4")
-			if err != nil {
-				uc.Logger.Errorf(out)
-				return err
-			}
-			fmt.Printf("Version %s\n", out)
-			if strings.TrimSpace(out) == uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
-				uc.Logger.Infof("Agent node is up-to-date. Skipping upgrade")
-				continue
-			}
+		if node.Role == "master" {
+			continue
 		}
+		uc.Logger.Infof("Upgrading %s %s", node.Role, node.IP)
+
+		// check current version
+		cmd := fmt.Sprintf("ssh -i .ssh/id_rsa_cluster -o ConnectTimeout=30 -o StrictHostKeyChecking=no %s grep version /opt/mesosphere/etc/dcos-version.json | cut -d '\"' -f 4", node.IP)
+		out, err := operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, cmd)
+		if err != nil {
+			uc.Logger.Errorf(out)
+			return err
+		}
+		if strings.TrimSpace(out) == uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
+			uc.Logger.Infof("Agent node is up-to-date. Skipping upgrade")
+			continue
+		}
+		// copy script to the node
+		cmd = fmt.Sprintf("scp -i .ssh/id_rsa_cluster -o ConnectTimeout=30 -o StrictHostKeyChecking=no node_upgrade.sh %s:", node.IP)
+		out, err = operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, cmd)
+		if err != nil {
+			uc.Logger.Errorf(out)
+			return err
+		}
+		// run the script
+		cmd = fmt.Sprintf("ssh -i .ssh/id_rsa_cluster -o ConnectTimeout=30 -o StrictHostKeyChecking=no %s sudo ./node_upgrade.sh", node.IP)
+		out, err = operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, cmd)
+		if err != nil {
+			uc.Logger.Errorf(out)
+			return err
+		}
+		uc.Logger.Info(out)
 	}
-	return fmt.Errorf("AgentNode N/A")
+	return nil
 }
