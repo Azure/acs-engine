@@ -24,9 +24,9 @@ func newOrchestratorsCmd() *cobra.Command {
 	oc := orchestratorsCmd{}
 
 	command := &cobra.Command{
-		Use:   cmdName,
-		Short: cmdShortDescription,
-		Long:  cmdLongDescription,
+		Use:   orchestratorsName,
+		Short: orchestratorsShortDescription,
+		Long:  orchestratorsLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return oc.run(cmd, args)
 		},
