@@ -115,16 +115,16 @@ func (sc *scaleCmd) validate(cmd *cobra.Command) error {
 		return fmt.Errorf("--deployment-dir must be specified")
 	}
 
-	if err = sc.authArgs.validateAuthArgs(); err != nil {
-		return fmt.Errorf("%s", err.Error())
-	}
-
 	return nil
 }
 
 func (sc *scaleCmd) load(cmd *cobra.Command) error {
 	sc.logger = log.New().WithField("source", "scaling command line")
 	var err error
+
+	if err = sc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err.Error())
+	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
 		return fmt.Errorf("failed to get client: %s", err.Error())
