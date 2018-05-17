@@ -185,7 +185,6 @@ func TestValidate(t *testing.T) {
 			} else if err != nil {
 				t.Fatalf("expected validate deploy command to return no error, but instead got %s", err.Error())
 			}
-
 		}
 	}
 }

@@ -74,6 +74,10 @@ func newDeployCmd() *cobra.Command {
 			if err := dc.validate(cmd, args); err != nil {
 				log.Fatalf(fmt.Sprintf("error validating deployCmd: %s", err.Error()))
 			}
+			err = sc.load(cmd, args)
+			if err != nil {
+				log.Fatalln("failed to load apimodel: %s", err.Error())
+			}
 			return dc.run()
 		},
 	}
