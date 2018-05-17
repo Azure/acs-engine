@@ -121,7 +121,7 @@ function installEtcd() {
     /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
     systemctl_restart 10 5 30 etcd || exit $ERR_ETCD_START_TIMEOUT
     for i in $(seq 1 600); do
-        MEMBER="$(etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
+        MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
         if [ "$MEMBER" != "" ]; then
             break
         else
