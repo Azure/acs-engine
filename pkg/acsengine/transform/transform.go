@@ -38,10 +38,12 @@ const (
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 	nicResourceType  = "Microsoft.Network/networkInterfaces"
+	vnetResourceType = "Microsoft.Network/virtualNetworks"
 
 	// resource ids
-	nsgID = "nsgID"
-	rtID  = "routeTableID"
+	nsgID  = "nsgID"
+	rtID   = "routeTableID"
+	vnetID = "vnetID"
 )
 
 // Translator defines all required interfaces for i18n.Translator.
@@ -155,6 +157,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	}
 	rtIndex := -1
 	nsgIndex := -1
+	vnetIndex := -1
 	resources := templateMap[resourcesFieldName].([]interface{})
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
@@ -183,6 +186,14 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 			}
 			rtIndex = index
 		}
+		if ok && resourceType == vnetResourceType {
+			if vnetIndex != -1 {
+				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", vnetResourceType)
+				logger.Warnf(err.Error())
+				return err
+			}
+			vnetIndex = index
+		}
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
@@ -192,7 +203,8 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
 			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) ||
-				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) {
+				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) ||
+				strings.Contains(dependency, vnetResourceType) || strings.Contains(dependency, vnetID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}
@@ -214,6 +226,11 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		logger.Infof("Found no resources with type %s in the template.", rtResourceType)
 	} else {
 		indexesToRemove = append(indexesToRemove, rtIndex)
+	}
+	if vnetIndex == -1 {
+		logger.Infof("Found no resources with type %s in the template.", vnetResourceType)
+	} else {
+		indexesToRemove = append(indexesToRemove, vnetIndex)
 	}
 	indexesToRemove = append(indexesToRemove, nsgIndex)
 	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
@@ -337,13 +354,36 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			continue
 		}
 
-		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType) {
+		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
+			dependency := dependencies[dIndex].(string)
+			if strings.Contains(dependency, vnetResourceType) || strings.Contains(dependency, vnetID) {
+				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
+			}
+		}
+
+		if len(dependencies) > 0 {
+			resourceMap[dependsOnFieldName] = dependencies
+		} else {
+			delete(resourceMap, dependsOnFieldName)
+		}
+
+		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType || resourceType == vnetResourceType) {
 			continue
 		}
 
 		resourceName, ok := resourceMap[nameFieldName].(string)
 		if !ok {
 			logger.Warnf("Template improperly formatted for field name: %s", nameFieldName)
+			continue
+		}
+
+		if resourceType == vnetResourceType {
+			filteredResources = filteredResources[:len(filteredResources)-1]
 			continue
 		}
 
