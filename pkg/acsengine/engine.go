@@ -740,6 +740,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
 			}
 		}
+		containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
+		c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, DefaultContainerMonitoringAddonName)
+		if c > -1 {
+			if containerMonitoringAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesContainerMonitoringSpec", containerMonitoringAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesContainerMonitoringSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultContainerMonitoringAddonName])
+			}
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
@@ -1604,6 +1613,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
+				containerMonitoringAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
+				cmC := getAddonContainersIndexByName(containerMonitoringAddon.Containers, DefaultContainerMonitoringAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1832,6 +1843,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						}
 					} else {
 						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultMetricsServerAddonName]
+					}
+				case "kubernetesContainerMonitoringSpec":
+					if cmC > -1 {
+						if containerMonitoringAddon.Containers[cmC].Image != "" {
+							val = containerMonitoringAddon.Containers[cmC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultContainerMonitoringAddonName]
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {

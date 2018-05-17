@@ -302,6 +302,17 @@ var (
 			},
 		},
 	}
+
+	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
+	DefaultMetricsServerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultContainerMonitoringAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: DefaultContainerMonitoringAddonName,
+			},
+		},
+	}
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -372,6 +383,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
+				DefaultContainerMonitoringAddonsConfig,
 			}
 			enforceK8sVersionAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
@@ -407,6 +419,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultMetricsServerAddonsConfig)
 				m = getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
+			}
+			cm := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
+			if cm < 0 {
+				// Provide default acs-engine config for Rescheduler
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultContainerMonitoringAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -502,6 +519,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		m := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultMetricsServerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
+		}
+		cm := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultContainerMonitoringAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {

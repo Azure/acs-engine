@@ -304,6 +304,13 @@
       },
       "type": "string"
     },
+    "kubernetesContainerMonitoringSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesContainerMonitoringSpec"}}
+      "metadata": {
+        "description": "The container spec for Container Monitoring."
+      },
+      "type": "string"
+    },
     "kubernetesTillerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {

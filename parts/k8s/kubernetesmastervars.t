@@ -89,6 +89,7 @@
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
     "kubernetesMetricsServerSpec": "[parameters('kubernetesMetricsServerSpec')]",
+    "kubernetesContainerMonitoringSpec": "[parameters('kubernetesContainerMonitoringSpec')]",
     "kubernetesTillerSpec": "[parameters('kubernetesTillerSpec')]",
     "kubernetesTillerCPURequests": "[parameters('kubernetesTillerCPURequests')]",
     "kubernetesTillerMemoryRequests": "[parameters('kubernetesTillerMemoryRequests')]",
