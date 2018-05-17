@@ -118,16 +118,22 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", dc.apimodelPath))
 	}
 
+	if dc.location == "" {
+		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	}
+	dc.location = helpers.NormalizeAzureRegion(dc.location)
+
+	return nil
+}
+
+func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
+	var err error
+
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{
 			Locale: dc.locale,
 		},
 	}
-
-	if dc.location == "" {
-		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
-	}
-	dc.location = helpers.NormalizeAzureRegion(dc.location)
 
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
 	if err != nil {
