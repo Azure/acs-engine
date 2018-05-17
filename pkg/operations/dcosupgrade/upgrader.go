@@ -1,12 +1,23 @@
 package dcosupgrade
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/operations"
 )
+
+type nodeHealthReport struct {
+	IP     string `json:"host_ip"`
+	Role   string `json:"role"`
+	Health int    `json:"health"`
+}
+
+type healthReport struct {
+	Nodes []nodeHealthReport `json:"nodes"`
+}
 
 var bootstrapUpgradeScript = `#!/bin/bash
 
@@ -92,8 +103,20 @@ func (uc *UpgradeCluster) runUpgrade() error {
 	if err = uc.upgradeMasterNodes(masterDNS, masterCount, nodeScript); err != nil {
 		return err
 	}
+
+	// get the node list
+	out, err = operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, "curl -s http://localhost:1050/system/health/v1/nodes")
+	if err != nil {
+		uc.Logger.Errorf(out)
+		return err
+	}
+	uc.Logger.Info(out)
+	nodes := &healthReport{}
+	if err = json.Unmarshal([]byte(out), nodes); err != nil {
+		return err
+	}
 	// upgrade agent nodes
-	return uc.upgradeAgentNodes(masterDNS)
+	return uc.upgradeAgentNodes(masterDNS, nodes)
 }
 
 func (uc *UpgradeCluster) upgradeBootstrapNode(masterDNS, bootstrapIP, bootstrapScript string) (string, error) {
@@ -181,6 +204,24 @@ func (uc *UpgradeCluster) upgradeMasterNodes(masterDNS string, masterCount int, 
 	return nil
 }
 
-func (uc *UpgradeCluster) upgradeAgentNodes(masterDNS string) error {
+func (uc *UpgradeCluster) upgradeAgentNodes(masterDNS string, nodes *healthReport) error {
+	for _, node := range nodes.Nodes {
+		fmt.Printf("Node: %s %d %s\n", node.IP, node.Health, node.Role)
+		if node.Role != "master" {
+			uc.Logger.Infof("Upgrading %s %s", node.Role, node.IP)
+
+			// check current version
+			out, err := operations.RemoteRun("azureuser", masterDNS, 2200, uc.SSHKey, "grep version /opt/mesosphere/etc/dcos-version.json | cut -d '\"' -f 4")
+			if err != nil {
+				uc.Logger.Errorf(out)
+				return err
+			}
+			fmt.Printf("Version %s\n", out)
+			if strings.TrimSpace(out) == uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
+				uc.Logger.Infof("Agent node is up-to-date. Skipping upgrade")
+				continue
+			}
+		}
+	}
 	return fmt.Errorf("AgentNode N/A")
 }

@@ -21,11 +21,6 @@ type ClusterTopology struct {
 	CurrentDcosVersion string
 	NameSuffix         string
 	SSHKey             []byte
-
-	AgentPoolsToUpgrade map[string]bool
-	AgentPools          map[string]*AgentPoolTopology
-
-	AgentVMs *[]compute.VirtualMachine
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -54,16 +49,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix
 	uc.SSHKey = sshKey
-	uc.AgentVMs = &[]compute.VirtualMachine{}
-	uc.AgentPools = make(map[string]*AgentPoolTopology)
-	uc.AgentPoolsToUpgrade = make(map[string]bool)
 
 	uc.Logger.Infof("Upgrading DCOS from %s to %s", uc.CurrentDcosVersion, uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-
-	for _, pool := range cs.Properties.AgentPoolProfiles {
-		uc.AgentPoolsToUpgrade[pool.Name] = true
-	}
-	uc.AgentPoolsToUpgrade["master"] = true
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
@@ -96,7 +83,6 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 			uc.Logger.Infof("Master VM name: %s", *vm.Name)
 		} else {
 			uc.Logger.Infof("Agent VM name: %s", *vm.Name)
-			*uc.AgentVMs = append(*uc.AgentVMs, vm)
 		}
 	}
 	return nil
