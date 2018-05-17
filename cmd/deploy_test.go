@@ -183,7 +183,7 @@ func TestValidate(t *testing.T) {
 			if c.expectedErr != nil {
 				t.Fatalf("expected validate deploy command to return error %s, but instead got no error", c.expectedErr.Error())
 			} else if err != nil {
-				t.Fatalf("expected validate deploy command to return no error, but instead got no error", err.Error())
+				t.Fatalf("expected validate deploy command to return no error, but instead got %s", err.Error())
 			}
 
 		}
