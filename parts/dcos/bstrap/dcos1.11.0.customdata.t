@@ -82,6 +82,10 @@ write_files:
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
   owner: "root"
+- content: 'PROVISION_SOURCE_STR'
+  path: /opt/azure/containers/provision_source.sh
+  permissions: "0744"
+  owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"
