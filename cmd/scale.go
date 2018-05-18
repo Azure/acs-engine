@@ -123,7 +123,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 	var err error
 
 	if err = sc.authArgs.validateAuthArgs(); err != nil {
-		return fmt.Errorf("%s", err.Error())
+		return err
 	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
@@ -132,7 +132,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 
 	_, err = sc.client.EnsureResourceGroup(sc.resourceGroupName, sc.location, nil)
 	if err != nil {
-		return fmt.Errorf("%s", err.Error())
+		return err
 	}
 
 	// load apimodel from the deployment directory
@@ -200,10 +200,10 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 
 func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	if err := sc.validate(cmd); err != nil {
-		log.Fatalln("failed to validate scale command: %s", err.Error())
+		return fmt.Errorf("failed to validate scale command: %s", err.Error())
 	}
 	if err := sc.load(cmd); err != nil {
-		log.Fatalln("failed to load existing container service: %s", err.Error())
+		return fmt.Errorf("failed to load existing container service: %s", err.Error())
 	}
 
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
@@ -214,9 +214,9 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		//TODO handle when there is a nextLink in the response and get more nodes
 		vms, err := sc.client.ListVirtualMachines(sc.resourceGroupName)
 		if err != nil {
-			log.Fatalln("failed to get vms in the resource group. Error: %s", err.Error())
+			return fmt.Errorf("failed to get vms in the resource group. Error: %s", err.Error())
 		} else if len(*vms.Value) < 1 {
-			log.Fatalln("The provided resource group does not contain any vms")
+			return fmt.Errorf("The provided resource group does not contain any vms")
 		}
 		for _, vm := range *vms.Value {
 
@@ -243,7 +243,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		if currentNodeCount > sc.newDesiredAgentCount {
 			if sc.masterFQDN == "" {
 				cmd.Usage()
-				log.Fatal("master-FQDN is required to scale down a kubernetes cluster's agent pool")
+				return fmt.Errorf("master-FQDN is required to scale down a kubernetes cluster's agent pool")
 			}
 
 			vmsToDelete := make([]string, 0)
@@ -255,12 +255,12 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			case api.Kubernetes:
 				kubeConfig, err := acsengine.GenerateKubeConfig(sc.containerService.Properties, sc.location)
 				if err != nil {
-					log.Errorf("failed to generate kube config: %v", err)
+					return fmt.Errorf("failed to generate kube config: %v", err)
 					return err
 				}
 				err = sc.drainNodes(kubeConfig, vmsToDelete)
 				if err != nil {
-					log.Errorf("Got error %+v, while draining the nodes to be deleted", err)
+					return fmt.Errorf("Got error %+v, while draining the nodes to be deleted", err)
 					return err
 				}
 			case api.OpenShift:
@@ -297,7 +297,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	} else {
 		vmssList, err := sc.client.ListVirtualMachineScaleSets(sc.resourceGroupName)
 		if err != nil {
-			log.Fatalln("failed to get vmss list in the resource group. Error: %s", err.Error())
+			return fmt.Errorf("failed to get vmss list in the resource group. Error: %s", err.Error())
 		}
 		for _, vmss := range *vmssList.Value {
 			poolName, nameSuffix, err := utils.VmssNameParts(*vmss.Name)
@@ -316,19 +316,19 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, sc.classicMode)
 	if err != nil {
-		log.Fatalln("failed to initialize template generator: %s", err.Error())
+		return fmt.Errorf("failed to initialize template generator: %s", err.Error())
 	}
 
 	sc.containerService.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{sc.agentPool}
 
 	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
-		log.Fatalf("error generating template %s: %s", sc.apiModelPath, err.Error())
+		return fmt.Errorf("error generating template %s: %s", sc.apiModelPath, err.Error())
 		os.Exit(1)
 	}
 
 	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
-		log.Fatalf("error pretty printing template: %s \n", err.Error())
+		return fmt.Errorf("error pretty printing template: %s \n", err.Error())
 	}
 
 	templateJSON := make(map[string]interface{})
@@ -336,12 +336,12 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	err = json.Unmarshal([]byte(template), &templateJSON)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = json.Unmarshal([]byte(parameters), &parametersJSON)
 	if err != nil {
-		log.Fatalln(err)
+		retur err
 	}
 
 	transformer := transform.Transformer{Translator: ctx.Translator}
@@ -365,7 +365,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	case api.Kubernetes:
 		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
 		if err != nil {
-			log.Fatalf("error tranforming the template for scaling template %s: %s", sc.apiModelPath, err.Error())
+			return fmt.Errorf("error tranforming the template for scaling template %s: %s", sc.apiModelPath, err.Error())
 			os.Exit(1)
 		}
 		if sc.agentPool.IsAvailabilitySets() {
@@ -375,7 +375,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	case api.SwarmMode:
 	case api.DCOS:
 		if sc.agentPool.IsAvailabilitySets() {
-			log.Fatalf("scaling isn't supported for orchestrator %s, with availability sets", orchestratorInfo.OrchestratorType)
+			return fmt.Errorf("scaling isn't supported for orchestrator %s, with availability sets", orchestratorInfo.OrchestratorType)
 			os.Exit(1)
 		}
 		transformer.NormalizeForVMSSScaling(sc.logger, templateJSON)
@@ -391,7 +391,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		parametersJSON,
 		nil)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	apiloader := &api.Apiloader{
