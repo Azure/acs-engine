@@ -341,7 +341,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	err = json.Unmarshal([]byte(parameters), &parametersJSON)
 	if err != nil {
-		retur err
+		return err
 	}
 
 	transformer := transform.Transformer{Translator: ctx.Translator}
