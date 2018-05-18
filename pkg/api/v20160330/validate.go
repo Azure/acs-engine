@@ -27,10 +27,7 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
 		return e
 	}
-	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	return nil
+	return validateDNSName(m.DNSPrefix)
 }
 
 // Validate implements APIObject
@@ -63,10 +60,7 @@ func (l *LinuxProfile) Validate() error {
 	if len(l.SSH.PublicKeys) != 1 {
 		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
 	}
-	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
-		return e
-	}
-	return nil
+	return validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData")
 }
 
 // Validate implements APIObject

@@ -395,10 +395,7 @@ func (l *LinuxProfile) Validate() error {
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
-	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(l.Secrets, false)
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
@@ -416,10 +413,7 @@ func (w *WindowsProfile) Validate() error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
-	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(w.Secrets, true)
 }
 
 // Validate implements APIObject

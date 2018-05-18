@@ -192,10 +192,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
 	}
-	if e := validateVNET(a); e != nil {
-		return e
-	}
-	return nil
+	return validateVNET(a)
 }
 
 func validatePoolName(poolName string) error {

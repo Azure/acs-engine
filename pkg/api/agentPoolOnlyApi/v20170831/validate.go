@@ -88,10 +88,7 @@ func (a *Properties) Validate() error {
 			return e
 		}
 	}
-	if e := validateVNET(a); e != nil {
-		return e
-	}
-	return nil
+	return validateVNET(a)
 }
 
 func validatePoolName(poolName string) error {
