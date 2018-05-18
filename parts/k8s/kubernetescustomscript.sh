@@ -346,7 +346,7 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL || $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     systemctlEnableAndStart hyperkube-extract
 }
 
