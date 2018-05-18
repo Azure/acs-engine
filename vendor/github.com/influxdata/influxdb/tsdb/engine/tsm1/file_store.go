@@ -26,9 +26,6 @@ import (
 const (
 	// The extension used to describe temporary snapshot files.
 	TmpTSMFileExtension = "tmp"
-
-	// The extension used to describe corrupt snapshot files.
-	BadTSMFileExtension = "bad"
 )
 
 // TSMFile represents an on-disk TSM file.
@@ -311,12 +308,6 @@ func (f *FileStore) WalkKeys(seek []byte, fn func(key []byte, typ byte) error) e
 		return nil
 	}
 
-	// Ensure files are not unmapped while we're iterating over them.
-	for _, r := range f.files {
-		r.Ref()
-		defer r.Unref()
-	}
-
 	ki := newMergeKeyIterator(f.files, seek)
 	f.mu.RUnlock()
 	for ki.Next() {
@@ -492,20 +483,11 @@ func (f *FileStore) Open() error {
 		go func(idx int, file *os.File) {
 			start := time.Now()
 			df, err := NewTSMReader(file)
-			f.logger.Info("Opened file",
-				zap.String("path", file.Name()),
-				zap.Int("id", idx),
-				zap.Duration("duration", time.Since(start)))
+			f.logger.Info(fmt.Sprintf("%s (#%d) opened in %v", file.Name(), idx, time.Since(start)))
 
-			// If we are unable to read a TSM file then log the error, rename
-			// the file, and continue loading the shard without it.
 			if err != nil {
-				f.logger.Error("Cannot read corrupt tsm file, renaming", zap.String("path", file.Name()), zap.Int("id", idx), zap.Error(err))
-				if e := os.Rename(file.Name(), file.Name()+"."+BadTSMFileExtension); e != nil {
-					f.logger.Error("Cannot rename corrupt tsm file", zap.String("path", file.Name()), zap.Int("id", idx), zap.Error(e))
-					readerC <- &res{r: df, err: fmt.Errorf("cannot rename corrupt file %s: %v", file.Name(), e)}
-					return
-				}
+				readerC <- &res{r: df, err: fmt.Errorf("error opening memory map for file %s: %v", file.Name(), err)}
+				return
 			}
 			readerC <- &res{r: df}
 		}(i, file)
@@ -515,12 +497,10 @@ func (f *FileStore) Open() error {
 	for range files {
 		res := <-readerC
 		if res.err != nil {
+
 			return res.err
-		} else if res.r == nil {
-			continue
 		}
 		f.files = append(f.files, res.r)
-
 		// Accumulate file store size stats
 		atomic.AddInt64(&f.stats.DiskBytes, int64(res.r.Size()))
 		for _, ts := range res.r.TombstoneFiles() {
@@ -533,7 +513,7 @@ func (f *FileStore) Open() error {
 		}
 
 	}
-	f.lastModified = time.Unix(0, lm).UTC()
+	f.lastModified = time.Unix(0, lm)
 	close(readerC)
 
 	sort.Sort(tsmReaders(f.files))
@@ -547,10 +527,7 @@ func (f *FileStore) Close() error {
 	defer f.mu.Unlock()
 
 	for _, file := range f.files {
-		err := file.Close()
-		if err != nil {
-			return err
-		}
+		file.Close()
 	}
 
 	f.lastFileStats = nil
@@ -687,7 +664,7 @@ func (f *FileStore) replace(oldFiles, newFiles []string, updatedFn func(r []TSMF
 
 		// Keep track of the new mod time
 		if stat, err := fd.Stat(); err == nil {
-			if maxTime.IsZero() || stat.ModTime().UTC().After(maxTime) {
+			if stat.ModTime().UTC().After(maxTime) {
 				maxTime = stat.ModTime().UTC()
 			}
 		}
@@ -838,6 +815,37 @@ func (f *FileStore) BlockCount(path string, idx int) int {
 	return 0
 }
 
+// walkFiles calls fn for each file in filestore in parallel.
+func (f *FileStore) walkFiles(fn func(f TSMFile) error) error {
+	// Copy the current TSM files to prevent a slow walker from
+	// blocking other operations.
+	f.mu.RLock()
+	files := make([]TSMFile, len(f.files))
+	copy(files, f.files)
+	f.mu.RUnlock()
+
+	// struct to hold the result of opening each reader in a goroutine
+	errC := make(chan error, len(files))
+	for _, f := range files {
+		go func(tsm TSMFile) {
+			if err := fn(tsm); err != nil {
+				errC <- fmt.Errorf("file %s: %s", tsm.Path(), err)
+				return
+			}
+
+			errC <- nil
+		}(f)
+	}
+
+	for i := 0; i < cap(errC); i++ {
+		res := <-errC
+		if res != nil {
+			return res
+		}
+	}
+	return nil
+}
+
 // We need to determine the possible files that may be accessed by this query given
 // the time range.
 func (f *FileStore) cost(key []byte, min, max int64) query.IteratorCost {
@@ -949,7 +957,7 @@ func (f *FileStore) locations(key []byte, t int64, ascending bool) []*location {
 // CreateSnapshot creates hardlinks for all tsm and tombstone files
 // in the path provided.
 func (f *FileStore) CreateSnapshot() (string, error) {
-	f.traceLogger.Info("Creating snapshot", zap.String("dir", f.dir))
+	f.traceLogger.Info(fmt.Sprintf("Creating snapshot in %s", f.dir))
 	files := f.Files()
 
 	f.mu.Lock()
@@ -1115,6 +1123,23 @@ func (c *KeyCursor) Close() {
 	c.buf = nil
 	c.seeks = nil
 	c.current = nil
+}
+
+// hasOverlappingBlocks returns true if blocks have overlapping time ranges.
+// This result is computed once and stored as the "duplicates" field.
+func (c *KeyCursor) hasOverlappingBlocks() bool {
+	if len(c.seeks) == 0 {
+		return false
+	}
+
+	for i := 1; i < len(c.seeks); i++ {
+		prev := c.seeks[i-1]
+		cur := c.seeks[i]
+		if prev.entry.MaxTime >= cur.entry.MinTime {
+			return true
+		}
+	}
+	return false
 }
 
 // seek positions the cursor at the given time.
@@ -1298,12 +1323,12 @@ func (p *purger) purge() {
 			for k, v := range p.files {
 				if !v.InUse() {
 					if err := v.Close(); err != nil {
-						p.logger.Info("Purge: close file", zap.Error(err))
+						p.logger.Info(fmt.Sprintf("purge: close file: %v", err))
 						continue
 					}
 
 					if err := v.Remove(); err != nil {
-						p.logger.Info("Purge: remove file", zap.Error(err))
+						p.logger.Info(fmt.Sprintf("purge: remove file: %v", err))
 						continue
 					}
 					delete(p.files, k)
@@ -1327,3 +1352,103 @@ type tsmReaders []TSMFile
 func (a tsmReaders) Len() int           { return len(a) }
 func (a tsmReaders) Less(i, j int) bool { return a[i].Path() < a[j].Path() }
 func (a tsmReaders) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+type stream struct {
+	c chan seriesKey
+	v seriesKey
+}
+
+type seriesKey struct {
+	key []byte
+	typ byte
+}
+
+// merge merges multiple channels in parallel by recursively splitting the channels
+// until a simple two-way merge can be performed.
+func merge(c ...chan seriesKey) chan seriesKey {
+	if len(c) == 0 {
+		m := make(chan seriesKey)
+		close(m)
+		return m
+	}
+
+	// Just one, drain it
+	if len(c) == 1 {
+		m := make(chan seriesKey)
+		go func() {
+			if c[0] != nil {
+				for v := range c[0] {
+					m <- v
+				}
+			}
+			close(m)
+		}()
+		return m
+	}
+
+	// More than two, split them up recursively
+	if len(c) > 2 {
+		a := merge(c[:len(c)/2]...)
+		b := merge(c[len(c)/2:]...)
+		return merge(a, b)
+	}
+
+	// Merge the two streams and drop duplicates between then
+	m := make(chan seriesKey, 1)
+	a, b := c[0], c[1]
+	go func() {
+		// buffer a and b values
+		var av, bv seriesKey
+		if a != nil {
+			av = <-a
+		}
+		if b != nil {
+			bv = <-b
+		}
+		for {
+			if len(av.key) == 0 && len(bv.key) == 0 {
+				break
+			}
+
+			if len(av.key) == 0 {
+				m <- bv
+				break
+			}
+
+			if len(bv.key) == 0 {
+				m <- av
+				break
+			}
+
+			cmp := bytes.Compare(av.key, bv.key)
+			if cmp < 0 {
+				// Send a's value, and re-prime a buffer
+				m <- av
+				av = <-a
+			} else if cmp == 0 {
+				// Send a's value, and re-prime a and b buffers
+				m <- av
+				av = <-a
+				bv = <-b
+			} else {
+				// Send b's value, and re-prime b buffer
+				m <- bv
+				bv = <-b
+			}
+		}
+
+		if a != nil {
+			for av := range a {
+				m <- av
+			}
+		}
+
+		if b != nil {
+			for bv := range b {
+				m <- bv
+			}
+		}
+		close(m)
+	}()
+	return m
+}

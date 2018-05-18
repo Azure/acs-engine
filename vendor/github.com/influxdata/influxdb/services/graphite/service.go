@@ -11,7 +11,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/monitor/diagnostics"
 	"github.com/influxdata/influxdb/services/meta"
@@ -134,9 +133,7 @@ func (s *Service) Open() error {
 	}
 	s.done = make(chan struct{})
 
-	s.logger.Info("Starting graphite service",
-		zap.Int("batch_size", s.batchSize),
-		logger.DurationLiteral("batch_timeout", s.batchTimeout))
+	s.logger.Info(fmt.Sprintf("Starting graphite service, batch size %d, batch timeout %s", s.batchSize, s.batchTimeout))
 
 	// Register diagnostics if a Monitor service is available.
 	if s.Monitor != nil {
@@ -162,12 +159,9 @@ func (s *Service) Open() error {
 		return err
 	}
 
-	s.logger.Info("Listening",
-		zap.String("protocol", s.protocol),
-		zap.Stringer("addr", s.addr))
+	s.logger.Info(fmt.Sprintf("Listening on %s: %s", strings.ToUpper(s.protocol), s.addr.String()))
 	return nil
 }
-
 func (s *Service) closeAllConnections() {
 	s.tcpConnectionsMu.Lock()
 	defer s.tcpConnectionsMu.Unlock()
@@ -323,11 +317,11 @@ func (s *Service) openTCPServer() (net.Addr, error) {
 		for {
 			conn, err := s.ln.Accept()
 			if opErr, ok := err.(*net.OpError); ok && !opErr.Temporary() {
-				s.logger.Info("Graphite TCP listener closed")
+				s.logger.Info("graphite TCP listener closed")
 				return
 			}
 			if err != nil {
-				s.logger.Info("Error accepting TCP connection", zap.Error(err))
+				s.logger.Info("error accepting TCP connection", zap.Error(err))
 				continue
 			}
 
@@ -438,7 +432,7 @@ func (s *Service) handleLine(line string) {
 				return
 			}
 		}
-		s.logger.Info("Unable to parse line", zap.String("line", line), zap.Error(err))
+		s.logger.Info(fmt.Sprintf("unable to parse line: %s: %s", line, err))
 		atomic.AddInt64(&s.stats.PointsParseFail, 1)
 		return
 	}
@@ -454,7 +448,7 @@ func (s *Service) processBatches(batcher *tsdb.PointBatcher) {
 		case batch := <-batcher.Out():
 			// Will attempt to create database if not yet created.
 			if err := s.createInternalStorage(); err != nil {
-				s.logger.Info("Required database or retention policy do not yet exist", zap.Error(err))
+				s.logger.Info(fmt.Sprintf("Required database or retention policy do not yet exist: %s", err.Error()))
 				continue
 			}
 
@@ -462,8 +456,7 @@ func (s *Service) processBatches(batcher *tsdb.PointBatcher) {
 				atomic.AddInt64(&s.stats.BatchesTransmitted, 1)
 				atomic.AddInt64(&s.stats.PointsTransmitted, int64(len(batch)))
 			} else {
-				s.logger.Info("Failed to write point batch to database",
-					logger.Database(s.database), zap.Error(err))
+				s.logger.Info(fmt.Sprintf("failed to write point batch to database %q: %s", s.database, err))
 				atomic.AddInt64(&s.stats.BatchesTransmitFail, 1)
 			}
 

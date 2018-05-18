@@ -4,16 +4,15 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/influxdb/models"
-	"github.com/influxdata/influxdb/tsdb"
+	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxql"
 )
 
 func TestPlannerCondition(t *testing.T) {
-	sqry := &floatIterator{
-		Points: []tsdb.SeriesCursorRow{
-			{Name: []byte("cpu"), Tags: models.ParseTags([]byte("cpu,host=host1"))},
-			{Name: []byte("mem"), Tags: models.ParseTags([]byte("mem,host=host1"))},
+	sitr := &floatIterator{
+		Points: []query.FloatPoint{
+			{Aux: []interface{}{"cpu,host=host1"}},
+			{Aux: []interface{}{"mem,host=host1"}},
 		},
 	}
 
@@ -23,16 +22,16 @@ func TestPlannerCondition(t *testing.T) {
 	}
 
 	p := &indexSeriesCursor{
-		sqry:            sqry,
+		sitr:            sitr,
 		fields:          []string{"user", "system", "val"},
 		cond:            cond,
 		measurementCond: influxql.Reduce(RewriteExprRemoveFieldValue(influxql.CloneExpr(cond)), nil),
 	}
 
-	var keys []string
+	keys := []string{}
 	row := p.Next()
 	for row != nil {
-		keys = append(keys, string(models.MakeKey(row.name, row.stags))+" "+row.field)
+		keys = append(keys, row.key+" "+row.field)
 		row = p.Next()
 	}
 
@@ -42,16 +41,17 @@ func TestPlannerCondition(t *testing.T) {
 	}
 }
 
-// floatIterator is a represents an iterator that reads from a slice.
+// FloatIterator is a represents an iterator that reads from a slice.
 type floatIterator struct {
-	Points []tsdb.SeriesCursorRow
+	Points []query.FloatPoint
+	stats  query.IteratorStats
 }
 
-func (itr *floatIterator) Close() error {
-	return nil
-}
+func (itr *floatIterator) Stats() query.IteratorStats { return itr.stats }
+func (itr *floatIterator) Close() error               { return nil }
 
-func (itr *floatIterator) Next() (*tsdb.SeriesCursorRow, error) {
+// Next returns the next value and shifts it off the beginning of the points slice.
+func (itr *floatIterator) Next() (*query.FloatPoint, error) {
 	if len(itr.Points) == 0 {
 		return nil, nil
 	}

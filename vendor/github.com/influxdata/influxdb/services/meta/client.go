@@ -7,6 +7,7 @@ import (
 	crand "crypto/rand"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -18,7 +19,6 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb"
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxql"
 	"go.uber.org/zap"
 
@@ -78,7 +78,7 @@ func NewClient(config *Config) *Client {
 		closing:             make(chan struct{}),
 		changed:             make(chan struct{}),
 		logger:              zap.NewNop(),
-		authCache:           make(map[string]authUser),
+		authCache:           make(map[string]authUser, 0),
 		path:                config.Dir,
 		retentionAutoCreate: config.RetentionAutoCreate,
 	}
@@ -458,7 +458,11 @@ func (c *Client) UpdateUser(name, password string) error {
 
 	delete(c.authCache, name)
 
-	return c.commit(data)
+	if err := c.commit(data); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // DropUser removes the user with the given name.
@@ -800,23 +804,16 @@ func (c *Client) PrecreateShardGroups(from, to time.Time) error {
 				nextShardGroupTime := g.EndTime.Add(1 * time.Nanosecond)
 				// if it already exists, continue
 				if sg, _ := data.ShardGroupByTimestamp(di.Name, rp.Name, nextShardGroupTime); sg != nil {
-					c.logger.Info("Shard group already exists",
-						logger.ShardGroup(sg.ID),
-						logger.Database(di.Name),
-						logger.RetentionPolicy(rp.Name))
+					c.logger.Info(fmt.Sprintf("shard group %d exists for database %s, retention policy %s", sg.ID, di.Name, rp.Name))
 					continue
 				}
 				newGroup, err := createShardGroup(data, di.Name, rp.Name, nextShardGroupTime)
 				if err != nil {
-					c.logger.Info("Failed to precreate successive shard group",
-						zap.Uint64("group_id", g.ID), zap.Error(err))
+					c.logger.Info(fmt.Sprintf("failed to precreate successive shard group for group %d: %s", g.ID, err.Error()))
 					continue
 				}
 				changed = true
-				c.logger.Info("New shard group successfully precreated",
-					logger.ShardGroup(newGroup.ID),
-					logger.Database(di.Name),
-					logger.RetentionPolicy(rp.Name))
+				c.logger.Info(fmt.Sprintf("new shard group %d successfully precreated for database %s, retention policy %s", newGroup.ID, di.Name, rp.Name))
 			}
 		}
 	}

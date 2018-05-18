@@ -14,9 +14,14 @@ import (
 )
 
 type Store struct {
-	TSDBStore  *tsdb.Store
-	MetaClient StorageMetaClient
-	Logger     *zap.Logger
+	TSDBStore *tsdb.Store
+
+	MetaClient interface {
+		Database(name string) *meta.DatabaseInfo
+		ShardGroupsByTimeRange(database, policy string, min, max time.Time) (a []meta.ShardGroupInfo, err error)
+	}
+
+	Logger *zap.Logger
 }
 
 func NewStore() *Store {
@@ -31,13 +36,8 @@ func (s *Store) WithLogger(log *zap.Logger) {
 func (s *Store) Read(ctx context.Context, req *ReadRequest) (*ResultSet, error) {
 	database, rp := req.Database, ""
 
-	if req.RequestType == ReadRequestTypeMultiTenant {
-		// TODO(sgc): this should be moved to configuration
-		database, rp = "db", "rp"
-	} else {
-		if p := strings.IndexByte(database, '/'); p > -1 {
-			database, rp = database[:p], database[p+1:]
-		}
+	if p := strings.IndexByte(database, '/'); p > -1 {
+		database, rp = database[:p], database[p+1:]
 	}
 
 	di := s.MetaClient.Database(database)

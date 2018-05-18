@@ -15,7 +15,6 @@ import (
 
 	"collectd.org/api"
 	"collectd.org/network"
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/services/meta"
 	"github.com/influxdata/influxdb/tsdb"
@@ -124,8 +123,7 @@ func (s *Service) Open() error {
 			readdir = func(path string) {
 				files, err := ioutil.ReadDir(path)
 				if err != nil {
-					s.Logger.Info("Unable to read directory",
-						zap.String("path", path), zap.Error(err))
+					s.Logger.Info(fmt.Sprintf("Unable to read directory %s: %s", path, err))
 					return
 				}
 
@@ -136,10 +134,10 @@ func (s *Service) Open() error {
 						continue
 					}
 
-					s.Logger.Info("Loading types from file", zap.String("path", fullpath))
+					s.Logger.Info(fmt.Sprintf("Loading %s", fullpath))
 					types, err := TypesDBFile(fullpath)
 					if err != nil {
-						s.Logger.Info("Unable to parse collectd types file", zap.String("path", f.Name()))
+						s.Logger.Info(fmt.Sprintf("Unable to parse collectd types file: %s", f.Name()))
 						continue
 					}
 
@@ -149,7 +147,7 @@ func (s *Service) Open() error {
 			readdir(s.Config.TypesDB)
 			s.popts.TypesDB = alltypesdb
 		} else {
-			s.Logger.Info("Loading types from file", zap.String("path", s.Config.TypesDB))
+			s.Logger.Info(fmt.Sprintf("Loading %s", s.Config.TypesDB))
 			types, err := TypesDBFile(s.Config.TypesDB)
 			if err != nil {
 				return fmt.Errorf("Open(): %s", err)
@@ -196,7 +194,7 @@ func (s *Service) Open() error {
 	}
 	s.conn = conn
 
-	s.Logger.Info("Listening on UDP", zap.Stringer("addr", conn.LocalAddr()))
+	s.Logger.Info(fmt.Sprint("Listening on UDP: ", conn.LocalAddr().String()))
 
 	// Start the points batcher.
 	s.batcher = tsdb.NewPointBatcher(s.Config.BatchSize, s.Config.BatchPending, time.Duration(s.Config.BatchDuration))
@@ -243,7 +241,7 @@ func (s *Service) Close() error {
 
 	s.conn = nil
 	s.batcher = nil
-	s.Logger.Info("Closed collectd service")
+	s.Logger.Info("collectd UDP closed")
 	s.done = nil
 	return nil
 }
@@ -347,16 +345,8 @@ func (s *Service) serve() {
 
 		n, _, err := s.conn.ReadFromUDP(buffer)
 		if err != nil {
-			if strings.Contains(err.Error(), "use of closed network connection") {
-				select {
-				case <-s.done:
-					return
-				default:
-					// The socket wasn't closed by us so consider it an error.
-				}
-			}
 			atomic.AddInt64(&s.stats.ReadFail, 1)
-			s.Logger.Info("ReadFromUDP error", zap.Error(err))
+			s.Logger.Info(fmt.Sprintf("collectd ReadFromUDP error: %s", err))
 			continue
 		}
 		if n > 0 {
@@ -370,7 +360,7 @@ func (s *Service) handleMessage(buffer []byte) {
 	valueLists, err := network.Parse(buffer, s.popts)
 	if err != nil {
 		atomic.AddInt64(&s.stats.PointsParseFail, 1)
-		s.Logger.Info("collectd parse error", zap.Error(err))
+		s.Logger.Info(fmt.Sprintf("Collectd parse error: %s", err))
 		return
 	}
 	var points []models.Point
@@ -395,8 +385,7 @@ func (s *Service) writePoints() {
 		case batch := <-s.batcher.Out():
 			// Will attempt to create database if not yet created.
 			if err := s.createInternalStorage(); err != nil {
-				s.Logger.Info("Required database not yet created",
-					logger.Database(s.Config.Database), zap.Error(err))
+				s.Logger.Info(fmt.Sprintf("Required database %s not yet created: %s", s.Config.Database, err.Error()))
 				continue
 			}
 
@@ -404,8 +393,7 @@ func (s *Service) writePoints() {
 				atomic.AddInt64(&s.stats.BatchesTransmitted, 1)
 				atomic.AddInt64(&s.stats.PointsTransmitted, int64(len(batch)))
 			} else {
-				s.Logger.Info("Failed to write point batch to database",
-					logger.Database(s.Config.Database), zap.Error(err))
+				s.Logger.Info(fmt.Sprintf("failed to write point batch to database %q: %s", s.Config.Database, err))
 				atomic.AddInt64(&s.stats.BatchesTransmitFail, 1)
 			}
 		}
@@ -451,7 +439,7 @@ func (s *Service) UnmarshalValueListPacked(vl *api.ValueList) []models.Point {
 	// Drop invalid points
 	p, err := models.NewPoint(name, models.NewTags(tags), fields, timestamp)
 	if err != nil {
-		s.Logger.Info("Dropping point", zap.String("name", name), zap.Error(err))
+		s.Logger.Info(fmt.Sprintf("Dropping point %v: %v", name, err))
 		atomic.AddInt64(&s.stats.InvalidDroppedPoints, 1)
 		return nil
 	}
@@ -465,7 +453,8 @@ func (s *Service) UnmarshalValueList(vl *api.ValueList) []models.Point {
 
 	var points []models.Point
 	for i := range vl.Values {
-		name := fmt.Sprintf("%s_%s", vl.Identifier.Plugin, vl.DSName(i))
+		var name string
+		name = fmt.Sprintf("%s_%s", vl.Identifier.Plugin, vl.DSName(i))
 		tags := make(map[string]string, 4)
 		fields := make(map[string]interface{}, 1)
 
@@ -495,7 +484,7 @@ func (s *Service) UnmarshalValueList(vl *api.ValueList) []models.Point {
 		// Drop invalid points
 		p, err := models.NewPoint(name, models.NewTags(tags), fields, timestamp)
 		if err != nil {
-			s.Logger.Info("Dropping point", zap.String("name", name), zap.Error(err))
+			s.Logger.Info(fmt.Sprintf("Dropping point %v: %v", name, err))
 			atomic.AddInt64(&s.stats.InvalidDroppedPoints, 1)
 			continue
 		}

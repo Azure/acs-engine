@@ -2,7 +2,6 @@ package monitor_test
 
 import (
 	"bytes"
-	"context"
 	"expvar"
 	"fmt"
 	"os"
@@ -61,7 +60,7 @@ func TestMonitor_SetPointsWriter_StoreEnabled(t *testing.T) {
 	defer s.Close()
 
 	// Verify that the monitor was opened by looking at the log messages.
-	if logs.FilterMessage("Starting monitor service").Len() == 0 {
+	if logs.FilterMessage("Starting monitor system").Len() == 0 {
 		t.Errorf("monitor system was never started")
 	}
 }
@@ -85,8 +84,8 @@ func TestMonitor_SetPointsWriter_StoreDisabled(t *testing.T) {
 }
 
 func TestMonitor_StoreStatistics(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	done := make(chan struct{})
+	defer close(done)
 	ch := make(chan models.Points)
 
 	var mc MetaClient
@@ -126,7 +125,7 @@ func TestMonitor_StoreStatistics(t *testing.T) {
 
 		// Attempt to write the points to the main goroutine.
 		select {
-		case <-ctx.Done():
+		case <-done:
 		case ch <- points:
 		}
 		return nil
@@ -142,7 +141,6 @@ func TestMonitor_StoreStatistics(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	defer s.Close()
-	defer cancel()
 
 	timer := time.NewTimer(100 * time.Millisecond)
 	select {
@@ -189,8 +187,8 @@ func TestMonitor_Reporter(t *testing.T) {
 		}
 	})
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	done := make(chan struct{})
+	defer close(done)
 	ch := make(chan models.Points)
 
 	var mc MetaClient
@@ -202,7 +200,7 @@ func TestMonitor_Reporter(t *testing.T) {
 	pw.WritePointsFn = func(database, policy string, points models.Points) error {
 		// Attempt to write the points to the main goroutine.
 		select {
-		case <-ctx.Done():
+		case <-done:
 		case ch <- points:
 		}
 		return nil
@@ -218,7 +216,6 @@ func TestMonitor_Reporter(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	defer s.Close()
-	defer cancel()
 
 	timer := time.NewTimer(100 * time.Millisecond)
 	select {
@@ -285,8 +282,8 @@ func expvarMap(name string, tags map[string]string, fields map[string]interface{
 }
 
 func TestMonitor_Expvar(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	done := make(chan struct{})
+	defer close(done)
 	ch := make(chan models.Points)
 
 	var mc MetaClient
@@ -298,7 +295,7 @@ func TestMonitor_Expvar(t *testing.T) {
 	pw.WritePointsFn = func(database, policy string, points models.Points) error {
 		// Attempt to write the points to the main goroutine.
 		select {
-		case <-ctx.Done():
+		case <-done:
 		case ch <- points:
 		}
 		return nil
@@ -342,7 +339,6 @@ func TestMonitor_Expvar(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	defer s.Close()
-	defer cancel()
 
 	hostname, _ := os.Hostname()
 	timer := time.NewTimer(100 * time.Millisecond)

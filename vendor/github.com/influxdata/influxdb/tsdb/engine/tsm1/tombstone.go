@@ -341,6 +341,24 @@ func (t *Tombstoner) prepareV4() error {
 	return nil
 }
 
+// writeTombstoneV4 writes v3 files that are concatenated together.  A v4 header is
+// written to indicated this is a v4 file.
+func (t *Tombstoner) writeTombstoneV4(tombstones []Tombstone) error {
+	if err := t.prepareV4(); err == errIncompatibleVersion {
+		return t.writeTombstoneV3(tombstones)
+	} else if err != nil {
+		return err
+	}
+
+	for _, ts := range tombstones {
+		if err := t.writeTombstone(t.gz, ts); err != nil {
+			return err
+		}
+	}
+
+	return t.commit()
+}
+
 func (t *Tombstoner) commit() error {
 	// No pending writes
 	if t.pendingFile == nil {
@@ -604,7 +622,7 @@ func (t *Tombstoner) readTombstoneV4(f *os.File, fn func(t Tombstone) error) err
 				}
 
 				keyLen := int(binary.BigEndian.Uint32(b[:4]))
-				if keyLen+16 > len(b) {
+				if keyLen > len(b)+16 {
 					b = make([]byte, keyLen+16)
 				}
 
@@ -693,6 +711,8 @@ func (t *Tombstoner) writeTombstone(dst io.Writer, ts Tombstone) error {
 	}
 
 	binary.BigEndian.PutUint64(t.tmp[:], uint64(ts.Max))
-	_, err := dst.Write(t.tmp[:])
-	return err
+	if _, err := dst.Write(t.tmp[:]); err != nil {
+		return err
+	}
+	return nil
 }

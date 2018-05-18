@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
-	"unsafe"
 
 	"github.com/influxdata/influxdb/pkg/estimator"
 	"github.com/influxdata/influxdb/pkg/estimator/hll"
@@ -30,21 +29,6 @@ func NewFileSet(database string, levels []CompactionLevel, sfile *tsdb.SeriesFil
 		files:    files,
 		database: database,
 	}, nil
-}
-
-// bytes estimates the memory footprint of this FileSet, in bytes.
-func (fs *FileSet) bytes() int {
-	var b int
-	for _, level := range fs.levels {
-		b += int(unsafe.Sizeof(level))
-	}
-	// Do not count SeriesFile because it belongs to the code that constructed this FileSet.
-	for _, file := range fs.files {
-		b += file.bytes()
-	}
-	b += len(fs.database)
-	b += int(unsafe.Sizeof(*fs))
-	return b
 }
 
 // Close closes all the files in the file set.
@@ -424,19 +408,6 @@ func (fs *FileSet) MeasurementsSketches() (estimator.Sketch, estimator.Sketch, e
 	return sketch, tsketch, nil
 }
 
-// SeriesSketches returns the merged measurement sketches for the FileSet.
-func (fs *FileSet) SeriesSketches() (estimator.Sketch, estimator.Sketch, error) {
-	sketch, tsketch := hll.NewDefaultPlus(), hll.NewDefaultPlus()
-
-	// Iterate over all the files and merge the sketches into the result.
-	for _, f := range fs.files {
-		if err := f.MergeSeriesSketches(sketch, tsketch); err != nil {
-			return nil, nil, err
-		}
-	}
-	return sketch, tsketch, nil
-}
-
 // File represents a log or index file.
 type File interface {
 	Close() error
@@ -447,7 +418,6 @@ type File interface {
 
 	Measurement(name []byte) MeasurementElem
 	MeasurementIterator() MeasurementIterator
-	MeasurementHasSeries(ss *tsdb.SeriesIDSet, name []byte) bool
 
 	TagKey(name, key []byte) TagKeyElem
 	TagKeyIterator(name []byte) TagKeyIterator
@@ -462,11 +432,6 @@ type File interface {
 
 	// Sketches for cardinality estimation
 	MergeMeasurementsSketches(s, t estimator.Sketch) error
-	MergeSeriesSketches(s, t estimator.Sketch) error
-
-	// Bitmap series existance.
-	SeriesIDSet() (*tsdb.SeriesIDSet, error)
-	TombstoneSeriesIDSet() (*tsdb.SeriesIDSet, error)
 
 	// Reference counting.
 	Retain()
@@ -474,9 +439,6 @@ type File interface {
 
 	// Size of file on disk
 	Size() int64
-
-	// Estimated memory footprint
-	bytes() int
 }
 
 type Files []File

@@ -15,15 +15,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/estimator"
-	"github.com/influxdata/influxdb/pkg/estimator/hll"
 	"github.com/influxdata/influxdb/pkg/limiter"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxql"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -31,8 +28,6 @@ var (
 	ErrShardNotFound = fmt.Errorf("shard not found")
 	// ErrStoreClosed is returned when trying to use a closed Store.
 	ErrStoreClosed = fmt.Errorf("store is closed")
-	// ErrShardDeletion is returned when trying to create a shard that is being deleted
-	ErrShardDeletion = errors.New("shard is being deleted")
 )
 
 // Statistics gathered by the store.
@@ -57,10 +52,6 @@ type Store struct {
 	// shared per-database indexes, only if using "inmem".
 	indexes map[string]interface{}
 
-	// Maintains a set of shards that are in the process of deletion.
-	// This prevents new shards from being created while old ones are being deleted.
-	pendingShardDeletes map[uint64]struct{}
-
 	EngineOptions EngineOptions
 
 	baseLogger *zap.Logger
@@ -76,14 +67,13 @@ type Store struct {
 func NewStore(path string) *Store {
 	logger := zap.NewNop()
 	return &Store{
-		databases:           make(map[string]struct{}),
-		path:                path,
-		sfiles:              make(map[string]*SeriesFile),
-		indexes:             make(map[string]interface{}),
-		pendingShardDeletes: make(map[uint64]struct{}),
-		EngineOptions:       NewEngineOptions(),
-		Logger:              logger,
-		baseLogger:          logger,
+		databases:     make(map[string]struct{}),
+		path:          path,
+		sfiles:        make(map[string]*SeriesFile),
+		indexes:       make(map[string]interface{}),
+		EngineOptions: NewEngineOptions(),
+		Logger:        logger,
+		baseLogger:    logger,
 	}
 }
 
@@ -108,13 +98,13 @@ func (s *Store) Statistics(tags map[string]string) []models.Statistic {
 	for _, database := range databases {
 		sc, err := s.SeriesCardinality(database)
 		if err != nil {
-			s.Logger.Info("Cannot retrieve series cardinality", zap.Error(err))
+			s.Logger.Error("cannot retrieve series cardinality", zap.Error(err))
 			continue
 		}
 
 		mc, err := s.MeasurementsCardinality(database)
 		if err != nil {
-			s.Logger.Info("Cannot retrieve measurement cardinality", zap.Error(err))
+			s.Logger.Error("cannot retrieve measurement cardinality", zap.Error(err))
 			continue
 		}
 
@@ -135,22 +125,6 @@ func (s *Store) Statistics(tags map[string]string) []models.Statistic {
 	return statistics
 }
 
-func (s *Store) IndexBytes() int {
-	// Get bytes per index.
-	// inmem indexes are shared among shards in a database, so keep individual values mapped per index.
-	indexes := map[uintptr]int{}
-	for _, sh := range s.shards {
-		b, indexRefID := sh.IndexBytes()
-		indexes[indexRefID] = b
-	}
-
-	var bytesSum int
-	for _, b := range indexes {
-		bytesSum += b
-	}
-	return bytesSum
-}
-
 // Path returns the store's root path.
 func (s *Store) Path() string { return s.path }
 
@@ -168,7 +142,7 @@ func (s *Store) Open() error {
 	s.closing = make(chan struct{})
 	s.shards = map[uint64]*Shard{}
 
-	s.Logger.Info("Using data dir", zap.String("path", s.Path()))
+	s.Logger.Info(fmt.Sprintf("Using data dir: %v", s.Path()))
 
 	// Create directory.
 	if err := os.MkdirAll(s.path, 0777); err != nil {
@@ -181,10 +155,7 @@ func (s *Store) Open() error {
 
 	s.opened = true
 	s.wg.Add(1)
-
-	if !s.EngineOptions.MonitorDisabled {
-		go s.monitorShards()
-	}
+	go s.monitorShards()
 
 	return nil
 }
@@ -225,9 +196,6 @@ func (s *Store) loadShards() error {
 		s.Logger.Info("Compaction throughput limit disabled")
 	}
 
-	log, logEnd := logger.NewOperation(s.Logger, "Open store", "tsdb_open")
-	defer logEnd()
-
 	t := limiter.NewFixed(runtime.GOMAXPROCS(0))
 	resC := make(chan *res)
 	var n int
@@ -239,14 +207,8 @@ func (s *Store) loadShards() error {
 	}
 
 	for _, db := range dbDirs {
-		dbPath := filepath.Join(s.path, db.Name())
 		if !db.IsDir() {
-			log.Info("Skipping database dir", zap.String("name", db.Name()), zap.String("reason", "not a directory"))
-			continue
-		}
-
-		if s.EngineOptions.DatabaseFilter != nil && !s.EngineOptions.DatabaseFilter(db.Name()) {
-			log.Info("Skipping database dir", logger.Database(db.Name()), zap.String("reason", "failed database filter"))
+			s.Logger.Info("Not loading. Not a database directory.", zap.String("name", db.Name()))
 			continue
 		}
 
@@ -263,15 +225,14 @@ func (s *Store) loadShards() error {
 		}
 
 		// Load each retention policy within the database directory.
-		rpDirs, err := ioutil.ReadDir(dbPath)
+		rpDirs, err := ioutil.ReadDir(filepath.Join(s.path, db.Name()))
 		if err != nil {
 			return err
 		}
 
 		for _, rp := range rpDirs {
-			rpPath := filepath.Join(s.path, db.Name(), rp.Name())
 			if !rp.IsDir() {
-				log.Info("Skipping retention policy dir", zap.String("name", rp.Name()), zap.String("reason", "not a directory"))
+				s.Logger.Info(fmt.Sprintf("Skipping retention policy dir: %s. Not a directory", rp.Name()))
 				continue
 			}
 
@@ -280,12 +241,7 @@ func (s *Store) loadShards() error {
 				continue
 			}
 
-			if s.EngineOptions.RetentionPolicyFilter != nil && !s.EngineOptions.RetentionPolicyFilter(db.Name(), rp.Name()) {
-				log.Info("Skipping retention policy dir", logger.RetentionPolicy(rp.Name()), zap.String("reason", "failed retention policy filter"))
-				continue
-			}
-
-			shardDirs, err := ioutil.ReadDir(rpPath)
+			shardDirs, err := ioutil.ReadDir(filepath.Join(s.path, db.Name(), rp.Name()))
 			if err != nil {
 				return err
 			}
@@ -303,23 +259,13 @@ func (s *Store) loadShards() error {
 					// Shard file names are numeric shardIDs
 					shardID, err := strconv.ParseUint(sh, 10, 64)
 					if err != nil {
-						log.Info("invalid shard ID found at path", zap.String("path", path))
 						resC <- &res{err: fmt.Errorf("%s is not a valid ID. Skipping shard.", sh)}
-						return
-					}
-
-					if s.EngineOptions.ShardFilter != nil && !s.EngineOptions.ShardFilter(db, rp, shardID) {
-						log.Info("skipping shard", zap.String("path", path), logger.Shard(shardID))
-						resC <- &res{}
 						return
 					}
 
 					// Copy options and assign shared index.
 					opt := s.EngineOptions
 					opt.InmemIndex = idx
-
-					// Provide an implementation of the ShardIDSets
-					opt.SeriesIDSets = shardSet{store: s, db: db}
 
 					// Existing shards should continue to use inmem index.
 					if _, err := os.Stat(filepath.Join(path, "index")); os.IsNotExist(err) {
@@ -335,49 +281,29 @@ func (s *Store) loadShards() error {
 
 					err = shard.Open()
 					if err != nil {
-						log.Info("Failed to open shard", logger.Shard(shardID), zap.Error(err))
 						resC <- &res{err: fmt.Errorf("Failed to open shard: %d: %s", shardID, err)}
 						return
 					}
 
 					resC <- &res{s: shard}
-					log.Info("Opened shard", zap.String("index_version", shard.IndexType()), zap.String("path", path), zap.Duration("duration", time.Since(start)))
+					s.Logger.Info(fmt.Sprintf("%s opened in %s", path, time.Since(start)))
 				}(db.Name(), rp.Name(), sh.Name())
 			}
 		}
 	}
 
-	// indexVersions tracks counts of the number of different types of index
-	// being used within each database.
-	indexVersions := make(map[string]map[string]int)
-
 	// Gather results of opening shards concurrently, keeping track of how
 	// many databases we are managing.
 	for i := 0; i < n; i++ {
 		res := <-resC
-		if res.s == nil || res.err != nil {
+		if res.err != nil {
+			s.Logger.Info(res.err.Error())
 			continue
 		}
 		s.shards[res.s.id] = res.s
 		s.databases[res.s.database] = struct{}{}
-
-		if _, ok := indexVersions[res.s.database]; !ok {
-			indexVersions[res.s.database] = make(map[string]int, 2)
-		}
-		indexVersions[res.s.database][res.s.IndexType()]++
 	}
 	close(resC)
-
-	// Check if any databases are running multiple index types.
-	for db, idxVersions := range indexVersions {
-		if len(idxVersions) > 1 {
-			var fields []zapcore.Field
-			for idx, cnt := range idxVersions {
-				fields = append(fields, zap.Int(fmt.Sprintf("%s_count", idx), cnt))
-			}
-			s.Logger.Warn("Mixed shard index types", append(fields, logger.Database(db))...)
-		}
-	}
 
 	// Enable all shards
 	for _, sh := range s.shards {
@@ -406,7 +332,7 @@ func (s *Store) Close() error {
 
 	// Close all the shards in parallel.
 	if err := s.walkShards(s.shardsSlice(), func(sh *Shard) error {
-		return sh.Close()
+		return sh.CloseFast()
 	}); err != nil {
 		return err
 	}
@@ -415,16 +341,12 @@ func (s *Store) Close() error {
 	for _, sfile := range s.sfiles {
 		// Close out the series files.
 		if err := sfile.Close(); err != nil {
-			s.mu.Unlock()
 			return err
 		}
 	}
 
-	s.databases = make(map[string]struct{})
-	s.sfiles = map[string]*SeriesFile{}
-	s.indexes = make(map[string]interface{})
-	s.pendingShardDeletes = make(map[uint64]struct{})
 	s.shards = nil
+	s.sfiles = map[string]*SeriesFile{}
 	s.opened = false // Store may now be opened again.
 	s.mu.Unlock()
 	return nil
@@ -538,12 +460,6 @@ func (s *Store) CreateShard(database, retentionPolicy string, shardID uint64, en
 		return nil
 	}
 
-	// Shard may be undergoing a pending deletion. While the shard can be
-	// recreated, it must wait for the pending delete to finish.
-	if _, ok := s.pendingShardDeletes[shardID]; ok {
-		return ErrShardDeletion
-	}
-
 	// Create the db and retention policy directories if they don't exist.
 	if err := os.MkdirAll(filepath.Join(s.path, database, retentionPolicy), 0700); err != nil {
 		return err
@@ -570,7 +486,6 @@ func (s *Store) CreateShard(database, retentionPolicy string, shardID uint64, en
 	// Copy index options and pass in shared index.
 	opt := s.EngineOptions
 	opt.InmemIndex = idx
-	opt.SeriesIDSets = shardSet{store: s, db: database}
 
 	path := filepath.Join(s.path, database, retentionPolicy, strconv.FormatUint(shardID, 10))
 	shard := NewShard(shardID, path, walPath, sfile, opt)
@@ -615,85 +530,28 @@ func (s *Store) DeleteShard(shardID uint64) error {
 		return nil
 	}
 
-	// Remove the shard from Store so it's not returned to callers requesting
-	// shards. Also mark that this shard is currently being deleted in a separate
-	// map so that we do not have to retain the global store lock while deleting
-	// files.
-	s.mu.Lock()
-	if _, ok := s.pendingShardDeletes[shardID]; ok {
-		// We are already being deleted? This is possible if delete shard
-		// was called twice in sequence before the shard could be removed from
-		// the mapping.
-		// This is not an error because deleting a shard twice is not an error.
-		s.mu.Unlock()
-		return nil
-	}
-	delete(s.shards, shardID)
-	s.pendingShardDeletes[shardID] = struct{}{}
-	s.mu.Unlock()
+	// Remove the shard from the database indexes before closing the shard.
+	// Closing the shard will do this as well, but it will unload it while
+	// the shard is locked which can block stats collection and other calls.
+	sh.UnloadIndex()
 
-	// Ensure the pending deletion flag is cleared on exit.
-	defer func() {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-		delete(s.pendingShardDeletes, shardID)
-	}()
-
-	// Get the shard's local bitset of series IDs.
-	index, err := sh.Index()
-	if err != nil {
-		return err
-	}
-
-	var ss *SeriesIDSet
-	if i, ok := index.(interface {
-		SeriesIDSet() *SeriesIDSet
-	}); ok {
-		ss = i.SeriesIDSet()
-	}
-
-	db := sh.Database()
 	if err := sh.Close(); err != nil {
 		return err
 	}
 
-	// Determine if the shard contained any series that are not present in any
-	// other shards in the database.
-	shards := s.filterShards(byDatabase(db))
-
-	s.walkShards(shards, func(sh *Shard) error {
-		index, err := sh.Index()
-		if err != nil {
-			return err
-		}
-
-		if i, ok := index.(interface {
-			SeriesIDSet() *SeriesIDSet
-		}); ok {
-			ss.Diff(i.SeriesIDSet())
-		} else {
-			return fmt.Errorf("unable to get series id set for index in shard at %s", sh.Path())
-		}
-		return nil
-	})
-
-	// Remove any remaining series in the set from the series file, as they don't
-	// exist in any of the database's remaining shards.
-	if ss.Cardinality() > 0 {
-		sfile := s.seriesFile(db)
-		if sfile != nil {
-			ss.ForEach(func(id uint64) {
-				sfile.DeleteSeriesID(id)
-			})
-		}
-	}
-
-	// Remove the on-disk shard data.
 	if err := os.RemoveAll(sh.path); err != nil {
 		return err
 	}
 
-	return os.RemoveAll(sh.walPath)
+	if err := os.RemoveAll(sh.walPath); err != nil {
+		return err
+	}
+
+	s.mu.Lock()
+	delete(s.shards, shardID)
+	s.mu.Unlock()
+
+	return nil
 }
 
 // DeleteDatabase will close all shards associated with a database and remove the directory and files from disk.
@@ -714,7 +572,7 @@ func (s *Store) DeleteDatabase(name string) error {
 			return nil
 		}
 
-		return sh.Close()
+		return sh.CloseFast()
 	}); err != nil {
 		return err
 	}
@@ -826,7 +684,10 @@ func (s *Store) DeleteMeasurement(database, name string) error {
 		limit.Take()
 		defer limit.Release()
 
-		return sh.DeleteMeasurement([]byte(name))
+		if err := sh.DeleteMeasurement([]byte(name)); err != nil {
+			return err
+		}
+		return nil
 	})
 }
 
@@ -857,9 +718,8 @@ func byDatabase(name string) func(sh *Shard) bool {
 	}
 }
 
-// walkShards apply a function to each shard in parallel. fn must be safe for
-// concurrent use. If any of the functions return an error, the first error is
-// returned.
+// walkShards apply a function to each shard in parallel.  If any of the
+// functions return an error, the first error is returned.
 func (s *Store) walkShards(shards []*Shard, fn func(sh *Shard) error) error {
 	// struct to hold the result of opening each reader in a goroutine
 	type res struct {
@@ -949,9 +809,7 @@ func (s *Store) DiskSize() (int64, error) {
 	return size, nil
 }
 
-// sketchesForDatabase returns merged sketches for the provided database, by
-// walking each shard in the database and merging the sketches found there.
-func (s *Store) sketchesForDatabase(dbName string, getSketches func(*Shard) (estimator.Sketch, estimator.Sketch, error)) (estimator.Sketch, estimator.Sketch, error) {
+func (s *Store) estimateCardinality(dbName string, getSketches func(*Shard) (estimator.Sketch, estimator.Sketch, error)) (int64, error) {
 	var (
 		ss estimator.Sketch // Sketch estimating number of items.
 		ts estimator.Sketch // Sketch estimating number of tombstoned items.
@@ -961,108 +819,41 @@ func (s *Store) sketchesForDatabase(dbName string, getSketches func(*Shard) (est
 	shards := s.filterShards(byDatabase(dbName))
 	s.mu.RUnlock()
 
-	// Never return nil sketches. In the case that db exists but no data written
-	// return empty sketches.
-	if len(shards) == 0 {
-		ss, ts = hll.NewDefaultPlus(), hll.NewDefaultPlus()
-	}
-
 	// Iterate over all shards for the database and combine all of the sketches.
 	for _, shard := range shards {
 		s, t, err := getSketches(shard)
 		if err != nil {
-			return nil, nil, err
+			return 0, err
 		}
 
 		if ss == nil {
 			ss, ts = s, t
 		} else if err = ss.Merge(s); err != nil {
-			return nil, nil, err
+			return 0, err
 		} else if err = ts.Merge(t); err != nil {
-			return nil, nil, err
+			return 0, err
 		}
 	}
-	return ss, ts, nil
+
+	if ss != nil {
+		return int64(ss.Count() - ts.Count()), nil
+	}
+	return 0, nil
 }
 
-// SeriesCardinality returns the exact series cardinality for the provided
-// database.
-//
-// Cardinality is calculated exactly by unioning all shards' bitsets of series
-// IDs. The result of this method cannot be combined with any other results.
-//
+// SeriesCardinality returns the series cardinality for the provided database.
 func (s *Store) SeriesCardinality(database string) (int64, error) {
-	s.mu.RLock()
-	shards := s.filterShards(byDatabase(database))
-	s.mu.RUnlock()
-
-	var setMu sync.Mutex
-	others := make([]*SeriesIDSet, 0, len(shards))
-
-	s.walkShards(shards, func(sh *Shard) error {
-		index, err := sh.Index()
-		if err != nil {
-			return err
-		}
-
-		if i, ok := index.(interface {
-			SeriesIDSet() *SeriesIDSet
-		}); ok {
-			seriesIDs := i.SeriesIDSet()
-			setMu.Lock()
-			others = append(others, seriesIDs)
-			setMu.Unlock()
-		} else {
-			return fmt.Errorf("unable to get series id set for index in shard at %s", sh.Path())
-		}
-		return nil
-	})
-
-	ss := NewSeriesIDSet()
-	ss.Merge(others...)
-	return int64(ss.Cardinality()), nil
-}
-
-// SeriesSketches returns the sketches associated with the series data in all
-// the shards in the provided database.
-//
-// The returned sketches can be combined with other sketches to provide an
-// estimation across distributed databases.
-func (s *Store) SeriesSketches(database string) (estimator.Sketch, estimator.Sketch, error) {
-	return s.sketchesForDatabase(database, func(sh *Shard) (estimator.Sketch, estimator.Sketch, error) {
-		if sh == nil {
-			return nil, nil, errors.New("shard nil, can't get cardinality")
-		}
-		return sh.SeriesSketches()
-	})
-}
-
-// MeasurementsCardinality returns an estimation of the measurement cardinality
-// for the provided database.
-//
-// Cardinality is calculated using a sketch-based estimation. The result of this
-// method cannot be combined with any other results.
-func (s *Store) MeasurementsCardinality(database string) (int64, error) {
-	ss, ts, err := s.sketchesForDatabase(database, func(sh *Shard) (estimator.Sketch, estimator.Sketch, error) {
-		if sh == nil {
-			return nil, nil, errors.New("shard nil, can't get cardinality")
-		}
-		return sh.MeasurementsSketches()
-	})
-
-	if err != nil {
-		return 0, err
+	sfile := s.seriesFile(database)
+	if sfile == nil {
+		return 0, nil
 	}
-	return int64(ss.Count() - ts.Count()), nil
+	return int64(sfile.SeriesCount()), nil
 }
 
-// MeasurementsSketches returns the sketches associated with the measurement
-// data in all the shards in the provided database.
-//
-// The returned sketches can be combined with other sketches to provide an
-// estimation across distributed databases.
-func (s *Store) MeasurementsSketches(database string) (estimator.Sketch, estimator.Sketch, error) {
-	return s.sketchesForDatabase(database, func(sh *Shard) (estimator.Sketch, estimator.Sketch, error) {
+// MeasurementsCardinality returns the measurement cardinality for the provided
+// database.
+func (s *Store) MeasurementsCardinality(database string) (int64, error) {
+	return s.estimateCardinality(database, func(sh *Shard) (estimator.Sketch, estimator.Sketch, error) {
 		if sh == nil {
 			return nil, nil, errors.New("shard nil, can't get cardinality")
 		}
@@ -1146,12 +937,12 @@ func (s *Store) ShardRelativePath(id uint64) (string, error) {
 
 // DeleteSeries loops through the local shards and deletes the series data for
 // the passed in series keys.
-func (s *Store) DeleteSeries(database string, sources []influxql.Source, condition influxql.Expr) error {
+func (s *Store) DeleteSeries(database string, sources []influxql.Source, condition influxql.Expr, removeIndex bool) error {
 	// Expand regex expressions in the FROM clause.
 	a, err := s.ExpandSources(sources)
 	if err != nil {
 		return err
-	} else if len(sources) > 0 && len(a) == 0 {
+	} else if sources != nil && len(sources) != 0 && len(a) == 0 {
 		return nil
 	}
 	sources = a
@@ -1175,14 +966,13 @@ func (s *Store) DeleteSeries(database string, sources []influxql.Source, conditi
 	}
 
 	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	sfile := s.sfiles[database]
 	if sfile == nil {
-		s.mu.RUnlock()
-		// No series file means nothing has been written to this DB and thus nothing to delete.
-		return nil
+		return fmt.Errorf("unable to locate series file for database: %q", database)
 	}
 	shards := s.filterShards(byDatabase(database))
-	s.mu.RUnlock()
 
 	// Limit to 1 delete for each shard since expanding the measurement into the list
 	// of series keys can be very memory intensive if run concurrently.
@@ -1224,7 +1014,7 @@ func (s *Store) DeleteSeries(database string, sources []influxql.Source, conditi
 				continue
 			}
 			defer itr.Close()
-			if err := sh.DeleteSeriesRange(NewSeriesIteratorAdapter(sfile, itr), min, max); err != nil {
+			if err := sh.DeleteSeriesRange(NewSeriesIteratorAdapter(sfile, itr), min, max, removeIndex); err != nil {
 				return err
 			}
 
@@ -1314,6 +1104,17 @@ type TagKeysSlice []TagKeys
 func (a TagKeysSlice) Len() int           { return len(a) }
 func (a TagKeysSlice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a TagKeysSlice) Less(i, j int) bool { return a[i].Measurement < a[j].Measurement }
+
+type tagKeys struct {
+	name []byte
+	keys []string
+}
+
+type tagKeysSlice []tagKeys
+
+func (a tagKeysSlice) Len() int           { return len(a) }
+func (a tagKeysSlice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a tagKeysSlice) Less(i, j int) bool { return bytes.Compare(a[i].name, a[j].name) == -1 }
 
 // TagKeys returns the tag keys in the given database, matching the condition.
 func (s *Store) TagKeys(auth query.Authorizer, shardIDs []uint64, cond influxql.Expr) ([]TagKeys, error) {
@@ -1755,7 +1556,7 @@ func (s *Store) monitorShards() {
 			for _, sh := range s.shards {
 				if sh.IsIdle() {
 					if err := sh.Free(); err != nil {
-						s.Logger.Warn("Error while freeing cold shard resources", zap.Error(err))
+						s.Logger.Warn("error free cold shard resources:", zap.Error(err))
 					}
 				} else {
 					sh.SetCompactionsEnabled(true)
@@ -1813,7 +1614,7 @@ func (s *Store) monitorShards() {
 				indexSet := IndexSet{Indexes: []Index{firstShardIndex}, SeriesFile: sfile}
 				names, err := indexSet.MeasurementNamesByExpr(nil, nil)
 				if err != nil {
-					s.Logger.Warn("Cannot retrieve measurement names", zap.Error(err))
+					s.Logger.Warn("cannot retrieve measurement names", zap.Error(err))
 					return nil
 				}
 
@@ -1828,13 +1629,8 @@ func (s *Store) monitorShards() {
 
 						// Log at 80, 85, 90-100% levels
 						if perc == 80 || perc == 85 || perc >= 90 {
-							s.Logger.Warn("max-values-per-tag limit may be exceeded soon",
-								zap.String("perc", fmt.Sprintf("%d%%", perc)),
-								zap.Int("n", n),
-								zap.Int("max", s.EngineOptions.Config.MaxValuesPerTag),
-								logger.Database(db),
-								zap.ByteString("measurement", name),
-								zap.ByteString("tag", k))
+							s.Logger.Info(fmt.Sprintf("WARN: %d%% of max-values-per-tag limit exceeded: (%d/%d), db=%s measurement=%s tag=%s",
+								perc, n, s.EngineOptions.Config.MaxValuesPerTag, db, name, k))
 						}
 						return nil
 					})
@@ -1866,6 +1662,35 @@ func (a KeyValues) Less(i, j int) bool {
 		return a[i].Value < a[j].Value
 	}
 	return ki < kj
+}
+
+// filterShowSeriesResult will limit the number of series returned based on the limit and the offset.
+// Unlike limit and offset on SELECT statements, the limit and offset don't apply to the number of Rows, but
+// to the number of total Values returned, since each Value represents a unique series.
+func (e *Store) filterShowSeriesResult(limit, offset int, rows models.Rows) models.Rows {
+	var filteredSeries models.Rows
+	seriesCount := 0
+	for _, r := range rows {
+		var currentSeries [][]interface{}
+
+		// filter the values
+		for _, v := range r.Values {
+			if seriesCount >= offset && seriesCount-offset < limit {
+				currentSeries = append(currentSeries, v)
+			}
+			seriesCount++
+		}
+
+		// only add the row back in if there are some values in it
+		if len(currentSeries) > 0 {
+			r.Values = currentSeries
+			filteredSeries = append(filteredSeries, r)
+			if seriesCount > limit+offset {
+				return filteredSeries
+			}
+		}
+	}
+	return filteredSeries
 }
 
 // decodeStorePath extracts the database and retention policy names
@@ -1901,29 +1726,4 @@ func relativePath(storePath, shardPath string) (string, error) {
 	}
 
 	return name, nil
-}
-
-type shardSet struct {
-	store *Store
-	db    string
-}
-
-func (s shardSet) ForEach(f func(ids *SeriesIDSet)) error {
-	s.store.mu.RLock()
-	shards := s.store.filterShards(byDatabase(s.db))
-	s.store.mu.RUnlock()
-
-	for _, sh := range shards {
-		idx, err := sh.Index()
-		if err != nil {
-			return err
-		}
-
-		if t, ok := idx.(interface {
-			SeriesIDSet() *SeriesIDSet
-		}); ok {
-			f(t.SeriesIDSet())
-		}
-	}
-	return nil
 }

@@ -127,20 +127,11 @@ func (cmd *Command) run() error {
 		return err
 	}
 
-	if cmd.showSeries {
-		if err := cmd.printSeries(sfile); err != nil {
-			return err
-		}
-	}
-
 	// If this is an ad-hoc fileset then process it and close afterward.
 	if fs != nil {
 		defer fs.Release()
 		defer fs.Close()
-		if cmd.showSeries || cmd.showMeasurements {
-			return cmd.printMeasurements(sfile, fs)
-		}
-		return cmd.printFileSummaries(fs)
+		return cmd.printFileSet(sfile, fs)
 	}
 
 	// Otherwise iterate over each partition in the index.
@@ -152,15 +143,26 @@ func (cmd *Command) run() error {
 				return err
 			}
 			defer fs.Release()
-
-			if cmd.showSeries || cmd.showMeasurements {
-				return cmd.printMeasurements(sfile, fs)
-			}
-			return cmd.printFileSummaries(fs)
+			return cmd.printFileSet(sfile, fs)
 		}(); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (cmd *Command) printFileSet(sfile *tsdb.SeriesFile, fs *tsi1.FileSet) error {
+	// Show either raw data or summary stats.
+	if cmd.showSeries || cmd.showMeasurements {
+		if err := cmd.printMerged(sfile, fs); err != nil {
+			return err
+		}
+	} else {
+		if err := cmd.printFileSummaries(fs); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -171,15 +173,7 @@ func (cmd *Command) readFileSet(sfile *tsdb.SeriesFile) (*tsi1.Index, *tsi1.File
 		if err != nil {
 			return nil, nil, err
 		} else if fi.IsDir() {
-			// Verify directory is an index before opening it.
-			if ok, err := tsi1.IsIndexDir(cmd.paths[0]); err != nil {
-				return nil, nil, err
-			} else if !ok {
-				return nil, nil, fmt.Errorf("Not an index directory: %q", cmd.paths[0])
-			}
-
 			idx := tsi1.NewIndex(sfile,
-				"",
 				tsi1.WithPath(cmd.paths[0]),
 				tsi1.DisableCompactions(),
 			)
@@ -221,6 +215,15 @@ func (cmd *Command) readFileSet(sfile *tsdb.SeriesFile) (*tsi1.Index, *tsi1.File
 	fs.Retain()
 
 	return nil, fs, nil
+}
+
+func (cmd *Command) printMerged(sfile *tsdb.SeriesFile, fs *tsi1.FileSet) error {
+	if err := cmd.printSeries(sfile); err != nil {
+		return err
+	} else if err := cmd.printMeasurements(sfile, fs); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (cmd *Command) printSeries(sfile *tsdb.SeriesFile) error {
@@ -443,7 +446,11 @@ func (cmd *Command) printIndexFileSummary(f *tsi1.IndexFile) error {
 	fmt.Fprintf(tw, "  Series:\t%d\n", valueSeriesN)
 	fmt.Fprintf(tw, "  Series data size:\t%d (%s)\n", valueSeriesSize, formatSize(valueSeriesSize))
 	fmt.Fprintf(tw, "  Bytes per series:\t%.01fb\n", float64(valueSeriesSize)/float64(valueSeriesN))
-	return tw.Flush()
+	if err := tw.Flush(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // matchSeries returns true if the command filters matches the series.

@@ -2,10 +2,10 @@
 package retention // import "github.com/influxdata/influxdb/services/retention"
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/services/meta"
 	"go.uber.org/zap"
 )
@@ -43,8 +43,7 @@ func (s *Service) Open() error {
 		return nil
 	}
 
-	s.logger.Info("Starting retention policy enforcement service",
-		logger.DurationLiteral("check_interval", time.Duration(s.config.CheckInterval)))
+	s.logger.Info("Starting retention policy enforcement service", zap.String("check-interval", s.config.CheckInterval.String()))
 	s.done = make(chan struct{})
 
 	s.wg.Add(1)
@@ -58,7 +57,7 @@ func (s *Service) Close() error {
 		return nil
 	}
 
-	s.logger.Info("Closing retention policy enforcement service")
+	s.logger.Info("Retention policy enforcement service closing.")
 	close(s.done)
 
 	s.wg.Wait()
@@ -80,45 +79,24 @@ func (s *Service) run() {
 			return
 
 		case <-ticker.C:
-			log, logEnd := logger.NewOperation(s.logger, "Retention policy deletion check", "retention_delete_check")
+			s.logger.Info("Retention policy shard deletion check commencing.")
 
 			type deletionInfo struct {
 				db string
 				rp string
 			}
-			deletedShardIDs := make(map[uint64]deletionInfo)
+			deletedShardIDs := make(map[uint64]deletionInfo, 0)
 
-			// Mark down if an error occurred during this function so we can inform the
-			// user that we will try again on the next interval.
-			// Without the message, they may see the error message and assume they
-			// have to do it manually.
-			var retryNeeded bool
 			dbs := s.MetaClient.Databases()
 			for _, d := range dbs {
 				for _, r := range d.RetentionPolicies {
-					// Build list of already deleted shards.
-					for _, g := range r.DeletedShardGroups() {
-						for _, sh := range g.Shards {
-							deletedShardIDs[sh.ID] = deletionInfo{db: d.Name, rp: r.Name}
-						}
-					}
-
-					// Determine all shards that have expired and need to be deleted.
 					for _, g := range r.ExpiredShardGroups(time.Now().UTC()) {
 						if err := s.MetaClient.DeleteShardGroup(d.Name, r.Name, g.ID); err != nil {
-							log.Info("Failed to delete shard group",
-								logger.Database(d.Name),
-								logger.ShardGroup(g.ID),
-								logger.RetentionPolicy(r.Name),
-								zap.Error(err))
-							retryNeeded = true
+							s.logger.Info(fmt.Sprintf("Failed to delete shard group %d from database %s, retention policy %s: %v. Retry in %v.", g.ID, d.Name, r.Name, err, s.config.CheckInterval))
 							continue
 						}
 
-						log.Info("Deleted shard group",
-							logger.Database(d.Name),
-							logger.ShardGroup(g.ID),
-							logger.RetentionPolicy(r.Name))
+						s.logger.Info(fmt.Sprintf("Deleted shard group %d from database %s, retention policy %s.", g.ID, d.Name, r.Name))
 
 						// Store all the shard IDs that may possibly need to be removed locally.
 						for _, sh := range g.Shards {
@@ -132,31 +110,16 @@ func (s *Service) run() {
 			for _, id := range s.TSDBStore.ShardIDs() {
 				if info, ok := deletedShardIDs[id]; ok {
 					if err := s.TSDBStore.DeleteShard(id); err != nil {
-						log.Info("Failed to delete shard",
-							logger.Database(info.db),
-							logger.Shard(id),
-							logger.RetentionPolicy(info.rp),
-							zap.Error(err))
-						retryNeeded = true
+						s.logger.Error(fmt.Sprintf("Failed to delete shard ID %d from database %s, retention policy %s: %v. Will retry in %v", id, info.db, info.rp, err, s.config.CheckInterval))
 						continue
 					}
-					log.Info("Deleted shard",
-						logger.Database(info.db),
-						logger.Shard(id),
-						logger.RetentionPolicy(info.rp))
+					s.logger.Info(fmt.Sprintf("Shard ID %d from database %s, retention policy %s, deleted.", id, info.db, info.rp))
 				}
 			}
 
 			if err := s.MetaClient.PruneShardGroups(); err != nil {
-				log.Info("Problem pruning shard groups", zap.Error(err))
-				retryNeeded = true
+				s.logger.Info(fmt.Sprintf("Problem pruning shard groups: %s. Will retry in %v", err, s.config.CheckInterval))
 			}
-
-			if retryNeeded {
-				log.Info("One or more errors occurred during shard deletion and will be retried on the next check", logger.DurationLiteral("check_interval", time.Duration(s.config.CheckInterval)))
-			}
-
-			logEnd()
 		}
 	}
 }

@@ -25,8 +25,7 @@ var nilOffset = []byte{255, 255, 255, 255}
 // TSMReader is a reader for a TSM file.
 type TSMReader struct {
 	// refs is the count of active references to this reader.
-	refs   int64
-	refsWG sync.WaitGroup
+	refs int64
 
 	mu sync.RWMutex
 
@@ -399,10 +398,12 @@ func (t *TSMReader) Type(key []byte) (byte, error) {
 
 // Close closes the TSMReader.
 func (t *TSMReader) Close() error {
-	t.refsWG.Wait()
-
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	if t.InUse() {
+		return ErrFileInUse
+	}
 
 	if err := t.accessor.close(); err != nil {
 		return err
@@ -416,7 +417,6 @@ func (t *TSMReader) Close() error {
 // there are no more references.
 func (t *TSMReader) Ref() {
 	atomic.AddInt64(&t.refs, 1)
-	t.refsWG.Add(1)
 }
 
 // Unref removes a usage record of this TSMReader.  If the Reader was closed
@@ -424,7 +424,6 @@ func (t *TSMReader) Ref() {
 // be closed and remove
 func (t *TSMReader) Unref() {
 	atomic.AddInt64(&t.refs, -1)
-	t.refsWG.Done()
 }
 
 // InUse returns whether the TSMReader currently has any active references.
@@ -456,10 +455,7 @@ func (t *TSMReader) remove() error {
 	}
 
 	if path != "" {
-		err := os.RemoveAll(path)
-		if err != nil {
-			return err
-		}
+		os.RemoveAll(path)
 	}
 
 	if err := t.tombstoner.Delete(); err != nil {
@@ -1455,7 +1451,11 @@ func (m *mmapAccessor) rename(path string) error {
 	}
 
 	m.b, err = mmap(m.f, 0, int(stat.Size()))
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *mmapAccessor) read(key []byte, timestamp int64) ([]Value, error) {

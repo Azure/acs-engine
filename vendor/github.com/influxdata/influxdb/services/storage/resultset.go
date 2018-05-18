@@ -22,7 +22,7 @@ type ResultSet struct {
 }
 
 func (r *ResultSet) Close() {
-	r.row.query = nil
+	r.row.shards = nil
 	r.cur.Close()
 }
 
