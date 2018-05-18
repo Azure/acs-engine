@@ -55,10 +55,12 @@ wait_for_file() {
 }
 apt_get_update() {
     retries=10
+    apt_update_output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
         timeout 30 dpkg --configure -a
-        timeout 120 apt-get update 2>&1 | grep -x "[WE]:.*"
-        [ $? -ne 0  ] && break || \
+        timeout 120 apt-get update 2>&1 | tee $apt_update_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $apt_update_output && break || \
+        cat $apt_update_output
         if [ $i -eq $retries ]; then
             return 1
         else sleep 30
