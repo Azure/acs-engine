@@ -76,6 +76,10 @@ MASTER_IP_LIST
   owner: root
   path: /opt/azure/dcos/init_bootstrap.sh
   permissions: '0755'
+- content: 'PROVISION_SOURCE_STR'
+  path: /opt/azure/containers/provision_source.sh
+  permissions: "0744"
+  owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"

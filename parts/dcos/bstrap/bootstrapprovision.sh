@@ -1,11 +1,7 @@
 #!/bin/bash
 
+source /opt/azure/containers/provision_source.sh
 source /opt/azure/dcos/environment
-
-retrycmd_if_failure() { retries=$1; wait=$2; timeout=$3; shift && shift && shift; for i in $(seq 1 $retries); do timeout $timeout ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
-
-TMPDIR="/tmp/dcos"
-mkdir -p $TMPDIR
 
 # default dc/os component download address (Azure CDN)
 LIBLTDL_DOWNLOAD_URL=https://dcos-mirror.azureedge.net/pkg/libltdl7_2.4.6-0.1_amd64.deb
@@ -19,8 +15,9 @@ case $DCOS_ENVIRONMENT in
     ;;
 esac
 
-curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/1.deb $LIBLTDL_DOWNLOAD_URL &
-curl -fLsSv --retry 20 -Y 100000 -y 60 -o $TMPDIR/2.deb $DOCKER_CE_DOWNLOAD_URL &
-wait
-
-retrycmd_if_failure 10 10 120 dpkg -i $TMPDIR/{1,2}.deb
+for url in $LIBLTDL_DOWNLOAD_URL $DOCKER_CE_DOWNLOAD_URL; do
+  retry_get_install_deb 10 10 120 $url
+  if [ $? -ne 0  ]; then
+    exit 1
+  fi
+done
