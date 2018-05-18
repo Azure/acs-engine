@@ -171,6 +171,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	for _, agentProfile := range properties.AgentPoolProfiles {
 		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
 		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
+		addValue(parametersMap, fmt.Sprintf("%sAcceleratedNetworkingEnabled", agentProfile.Name), agentProfile.AcceleratedNetworkingEnabled)
+
 		if agentProfile.IsCustomVNET() {
 			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
 		} else {
