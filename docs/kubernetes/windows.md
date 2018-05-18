@@ -8,7 +8,8 @@ With the release of new Windows Server version 1709, acs-engine v0.9.2 and beyon
 2. Azure Files and Disks are now supported to mount on Kubernetes Windows cluster with the new SMB feature in Windows.
 3. Multiple containers in POD are now supported on Kubernetes Windows cluster.
 
-Note, with the rollout of new Windows Server versions in acs-engine, the workload deployed on Windows cluster should match as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility .
+Note, with the rollout of new Windows Server versions in acs-engine, the workload deployed on Windows cluster should match as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility . Both the containers being deployed,
+as well as the `kubletwin/pause` container must match the version of the Windows host. Otherwise, [pods may get stuck at ContainerCreating](https://docs.microsoft.com/en-us/virtualization/windowscontainers/kubernetes/common-problems#my-kubernetes-pods-are-stuck-at-containercreating) state.
 
 ## Deployment
 
