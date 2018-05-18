@@ -9,9 +9,9 @@ spec:
   tls:
   - secretName: prow-tls
     hosts:
-    - prow-acs-engine.westus2.cloudapp.azure.com
+    - ci-bot-aks-ingress.eastus.cloudapp.azure.com
   rules:
-  - host: prow-acs-engine.westus2.cloudapp.azure.com
+  - host: ci-bot-aks-ingress.eastus.cloudapp.azure.com
     http:
       paths:
       - path: /*
