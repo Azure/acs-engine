@@ -256,12 +256,10 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				kubeConfig, err := acsengine.GenerateKubeConfig(sc.containerService.Properties, sc.location)
 				if err != nil {
 					return fmt.Errorf("failed to generate kube config: %v", err)
-					return err
 				}
 				err = sc.drainNodes(kubeConfig, vmsToDelete)
 				if err != nil {
 					return fmt.Errorf("Got error %+v, while draining the nodes to be deleted", err)
-					return err
 				}
 			case api.OpenShift:
 				bundle := bytes.NewReader(sc.containerService.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"])
@@ -324,11 +322,10 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
 		return fmt.Errorf("error generating template %s: %s", sc.apiModelPath, err.Error())
-		os.Exit(1)
 	}
 
 	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
-		return fmt.Errorf("error pretty printing template: %s \n", err.Error())
+		return fmt.Errorf("error pretty printing template: %s", err.Error())
 	}
 
 	templateJSON := make(map[string]interface{})
@@ -366,7 +363,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
 		if err != nil {
 			return fmt.Errorf("error tranforming the template for scaling template %s: %s", sc.apiModelPath, err.Error())
-			os.Exit(1)
 		}
 		if sc.agentPool.IsAvailabilitySets() {
 			addValue(parametersJSON, fmt.Sprintf("%sOffset", sc.agentPool.Name), highestUsedIndex+1)
@@ -376,7 +372,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	case api.DCOS:
 		if sc.agentPool.IsAvailabilitySets() {
 			return fmt.Errorf("scaling isn't supported for orchestrator %s, with availability sets", orchestratorInfo.OrchestratorType)
-			os.Exit(1)
 		}
 		transformer.NormalizeForVMSSScaling(sc.logger, templateJSON)
 	}
