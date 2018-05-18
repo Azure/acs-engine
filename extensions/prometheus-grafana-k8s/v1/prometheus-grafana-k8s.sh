@@ -341,6 +341,9 @@ DS_NAME=prometheus1
 
 PROM_URL=http://monitoring-prometheus-server
 
+# When RBAC is enabled, need to grant permission to tiller
+kubectl create clusterrolebinding tiller-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+
 install_helm "$RAW_PROMETHEUS_CHART_VALS"
 wait_for_tiller
 if [[ $? -ne 0 ]]; then
