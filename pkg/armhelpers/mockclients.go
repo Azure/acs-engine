@@ -285,7 +285,7 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 		poolnameString:           &poolname,
 	}
 
-	var vmIdentity *compute.VirtualMachineIdentity = nil
+	var vmIdentity *compute.VirtualMachineIdentity
 	if mc.ShouldSupportVMIdentity {
 		vmIdentity = &compute.VirtualMachineIdentity{PrincipalID: &principalID}
 	}
@@ -487,9 +487,9 @@ func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, pri
 	roleAssignments := []authorization.RoleAssignment{}
 
 	if mc.ShouldSupportVMIdentity {
-		var assignmentId = "role-assignment-id"
+		var assignmentID = "role-assignment-id"
 		var assignment = authorization.RoleAssignment{
-			ID: &assignmentId}
+			ID: &assignmentID}
 		roleAssignments = append(roleAssignments, assignment)
 	}
 
