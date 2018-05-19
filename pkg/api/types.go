@@ -712,7 +712,7 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 
 // IsLowPriorityScaleSet returns true if the VMSS is Low Priority
 func (a *AgentPoolProfile) IsLowPriorityScaleSet() bool {
-	return a.ScaleSetPriority == ScaleSetPriorityLow
+	return a.AvailabilityProfile == VirtualMachineScaleSets && a.ScaleSetPriority == ScaleSetPriorityLow
 }
 
 // IsManagedDisks returns true if the customer specified disks

@@ -491,6 +491,28 @@ func TestStorageProfile(t *testing.T) {
 	}
 }
 
+func TestAgentPoolProfile(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	SetPropertiesDefaults(&mockCS, false)
+	if properties.AgentPoolProfiles[0].ScaleSetPriority != "" {
+		t.Fatalf("AgentPoolProfiles[0].ScaleSetPriority did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].ScaleSetPriority, "")
+	}
+	if properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy != "" {
+		t.Fatalf("AgentPoolProfiles[0].ScaleSetEvictionPolicy did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, "")
+	}
+	properties.AgentPoolProfiles[0].ScaleSetPriority = api.ScaleSetPriorityLow
+	SetPropertiesDefaults(&mockCS, false)
+	if properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy != api.ScaleSetEvictionPolicyDelete {
+		t.Fatalf("AgentPoolProfile[0].ScaleSetEvictionPolicy did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, api.ScaleSetEvictionPolicyDelete)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
@@ -521,6 +543,7 @@ func getMockBaseContainerService(orchestratorVersion string) api.ContainerServic
 		},
 	}
 }
+
 func getKubernetesConfigWithFeatureGates(featureGates string) *api.KubernetesConfig {
 	return &api.KubernetesConfig{
 		KubeletConfig: map[string]string{"--feature-gates": featureGates},
