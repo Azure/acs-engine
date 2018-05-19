@@ -32,6 +32,8 @@ type MockACSEngineClient struct {
 	FailDeleteNetworkInterface      bool
 	FailGetKubernetesClient         bool
 	FailListProviders               bool
+	ShouldSupportVMIdentity         bool
+	FailDeleteRoleAssignment        bool
 	MockKubernetesClient            *MockKubernetesClient
 }
 
@@ -283,11 +285,15 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 		poolnameString:           &poolname,
 	}
 
+	var vmIdentity *compute.VirtualMachineIdentity = nil
+	if mc.ShouldSupportVMIdentity {
+		vmIdentity = &compute.VirtualMachineIdentity{PrincipalID: &principalID}
+	}
+
 	return compute.VirtualMachine{
-		Name: &vm1Name,
-		Tags: &tags,
-		Identity: &compute.VirtualMachineIdentity{
-			PrincipalID: &principalID},
+		Name:     &vm1Name,
+		Tags:     &tags,
+		Identity: vmIdentity,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			StorageProfile: &compute.StorageProfile{
 				OsDisk: &compute.OSDisk{
@@ -469,12 +475,24 @@ func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults r
 
 // DeleteRoleAssignmentByID deletes a roleAssignment via its unique identifier
 func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
+	if mc.FailDeleteRoleAssignment {
+		return authorization.RoleAssignment{}, fmt.Errorf("DeleteRoleAssignmentByID failed")
+	}
+
 	return authorization.RoleAssignment{}, nil
 }
 
 // ListRoleAssignmentsForPrincipal (e.g. a VM) via the scope and the unique identifier of the principal
 func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
 	roleAssignments := []authorization.RoleAssignment{}
+
+	if mc.ShouldSupportVMIdentity {
+		var assignmentId = "role-assignment-id"
+		var assignment = authorization.RoleAssignment{
+			ID: &assignmentId}
+		roleAssignments = append(roleAssignments, assignment)
+	}
+
 	return authorization.RoleAssignmentListResult{
 		Value: &roleAssignments}, nil
 }

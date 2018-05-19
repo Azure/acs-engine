@@ -91,23 +91,25 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		}
 	}
 
-	// Role assignments are not deleted if the VM is destroyed, so we must cleanup ourselves!
-	// The role assignments should only be relevant if managed identities are used,
-	// but always cleaning them up is easier than adding rule based logic here and there.
-	scope := fmt.Sprintf(AADRoleResourceGroupScopeTemplate, subscriptionID, resourceGroup)
-	logger.Infof("fetching roleAssignments: %s with principal %s", scope, *vm.Identity.PrincipalID)
-	vmRoleAssignments, listRoleAssingmentsError := az.ListRoleAssignmentsForPrincipal(scope, *vm.Identity.PrincipalID)
-	if listRoleAssingmentsError != nil {
-		logger.Errorf("failed to list role assignments: %s/%s: %s", scope, *vm.Identity.PrincipalID, listRoleAssingmentsError.Error())
-		return listRoleAssingmentsError
-	}
+	if vm.Identity != nil {
+		// Role assignments are not deleted if the VM is destroyed, so we must cleanup ourselves!
+		// The role assignments should only be relevant if managed identities are used,
+		// but always cleaning them up is easier than adding rule based logic here and there.
+		scope := fmt.Sprintf(AADRoleResourceGroupScopeTemplate, subscriptionID, resourceGroup)
+		logger.Infof("fetching roleAssignments: %s with principal %s", scope, *vm.Identity.PrincipalID)
+		vmRoleAssignments, listRoleAssingmentsError := az.ListRoleAssignmentsForPrincipal(scope, *vm.Identity.PrincipalID)
+		if listRoleAssingmentsError != nil {
+			logger.Errorf("failed to list role assignments: %s/%s: %s", scope, *vm.Identity.PrincipalID, listRoleAssingmentsError.Error())
+			return listRoleAssingmentsError
+		}
 
-	for _, roleAssignment := range *vmRoleAssignments.Value {
-		logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
-		_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(*roleAssignment.ID)
-		if deleteRoleAssignmentErr != nil {
-			logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
-			return deleteRoleAssignmentErr
+		for _, roleAssignment := range *vmRoleAssignments.Value {
+			logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
+			_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(*roleAssignment.ID)
+			if deleteRoleAssignmentErr != nil {
+				logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
+				return deleteRoleAssignmentErr
+			}
 		}
 	}
 
