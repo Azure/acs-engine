@@ -3,6 +3,7 @@ package transform
 import (
 	"fmt"
 	"log"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -28,6 +29,7 @@ const (
 	createOptionFieldName          = "createOption"
 	tagsFieldName                  = "tags"
 	managedDiskFieldName           = "managedDisk"
+	outputsFieldName               = "outputs"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
@@ -36,10 +38,12 @@ const (
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 	nicResourceType  = "Microsoft.Network/networkInterfaces"
+	vnetResourceType = "Microsoft.Network/virtualNetworks"
 
 	// resource ids
-	nsgID = "nsgID"
-	rtID  = "routeTableID"
+	nsgID  = "nsgID"
+	rtID   = "routeTableID"
+	vnetID = "vnetID"
 )
 
 // Translator defines all required interfaces for i18n.Translator.
@@ -97,6 +101,55 @@ func (t *Transformer) NormalizeForVMSSScaling(logger *logrus.Entry, templateMap 
 	return nil
 }
 
+// NormalizeForOpenShiftVMASScalingUp takes a template and removes elements that
+// are unwanted in a OpenShift VMAS scale up/down case
+func (t *Transformer) NormalizeForOpenShiftVMASScalingUp(logger *logrus.Entry, agentPoolName string, templateMap map[string]interface{}) (err error) {
+	defer func() {
+		// catch a failed type assertion and return it as an error.  This saves
+		// needing to write `if foo, ok := bar.(*Baz); ok` everywhere below.
+		if r := recover(); r != nil {
+			e, ok := r.(*runtime.TypeAssertionError)
+			if ok {
+				err = e
+			} else {
+				panic(r)
+			}
+		}
+	}()
+
+	isNeeded := func(name interface{}) bool {
+		return strings.Contains(name.(string), agentPoolName+"VMNamePrefix")
+	}
+
+	// only include resources including <agentPoolName>VMNamePrefix in their
+	// name (VM, VM extension, NIC).
+	resources := []interface{}{}
+	for _, res := range templateMap[resourcesFieldName].([]interface{}) {
+		res := res.(map[string]interface{})
+
+		if !isNeeded(res[nameFieldName]) {
+			continue
+		}
+
+		// remove dependencies to removed resources
+		depends := []interface{}{}
+		for _, depend := range res[dependsOnFieldName].([]interface{}) {
+			if isNeeded(depend) {
+				depends = append(depends, depend)
+			}
+		}
+		res[dependsOnFieldName] = depends
+
+		resources = append(resources, res)
+	}
+	templateMap[resourcesFieldName] = resources
+
+	// remove all outputs: they may depend on deleted resources
+	templateMap[outputsFieldName] = map[string]interface{}{}
+
+	return
+}
+
 // NormalizeForK8sVMASScalingUp takes a template and removes elements that are unwanted in a K8s VMAS scale up/down case
 func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
@@ -104,6 +157,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	}
 	rtIndex := -1
 	nsgIndex := -1
+	vnetIndex := -1
 	resources := templateMap[resourcesFieldName].([]interface{})
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
@@ -132,6 +186,14 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 			}
 			rtIndex = index
 		}
+		if ok && resourceType == vnetResourceType {
+			if vnetIndex != -1 {
+				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", vnetResourceType)
+				logger.Warnf(err.Error())
+				return err
+			}
+			vnetIndex = index
+		}
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
@@ -141,7 +203,8 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
 			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) ||
-				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) {
+				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) ||
+				strings.Contains(dependency, vnetResourceType) || strings.Contains(dependency, vnetID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}
@@ -159,11 +222,17 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		logger.Errorf(err.Error())
 		return err
 	}
+
 	if rtIndex == -1 {
 		logger.Infof("Found no resources with type %s in the template.", rtResourceType)
 	} else {
 		indexesToRemove = append(indexesToRemove, rtIndex)
 	}
+
+	if vnetIndex != -1 {
+		indexesToRemove = append(indexesToRemove, vnetIndex)
+	}
+
 	indexesToRemove = append(indexesToRemove, nsgIndex)
 	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
 

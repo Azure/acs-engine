@@ -144,7 +144,7 @@ func TestGetOrchestratorVersionProfileListV20170930(t *testing.T) {
 		numDockerCEVersions +
 		len(common.GetAllSupportedKubernetesVersions()) +
 		len(common.AllDCOSSupportedVersions) +
-		len(common.GetAllSupportedOpenShiftVersions())
+		len(common.GetAllSupportedOpenShiftVersions()) - 1
 
 	Expect(len(list.Properties.Orchestrators)).To(Equal(totalNumVersions))
 

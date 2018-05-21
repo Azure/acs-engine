@@ -14,7 +14,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen"
-	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"github.com/Masterminds/semver"
 )
 
@@ -22,7 +21,7 @@ const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni/
-	AzureCniPluginVer = "v1.0.2"
+	AzureCniPluginVer = "v1.0.4"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.0"
@@ -66,7 +65,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201804050",
+		ImageVersion:   "16.04.201805090",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -244,6 +243,25 @@ var (
 		},
 	}
 
+	// DefaultClusterAutoscalerAddonsConfig is the default cluster autoscaler addon config
+	DefaultClusterAutoscalerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultClusterAutoscalerAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
+		Config: map[string]string{
+			"minNodes": "1",
+			"maxNodes": "5",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultClusterAutoscalerAddonName,
+				CPURequests:    "100m",
+				MemoryRequests: "300Mi",
+				CPULimits:      "100m",
+				MemoryLimits:   "300Mi",
+			},
+		},
+	}
+
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
@@ -342,13 +360,15 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		case NetworkPolicyCalico:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 		case NetworkPolicyCilium:
-			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
+
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
 				DefaultACIConnectorAddonsConfig,
+				DefaultClusterAutoscalerAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
@@ -365,6 +385,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if a < 0 {
 				// Provide default acs-engine config for ACI Connector
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
+			}
+			s := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+			if s < 0 {
+				// Provide default acs-engine config for cluster autoscaler
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonsConfig)
 			}
 			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
 			if d < 0 {
@@ -462,6 +487,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
 		}
+		s := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[s].IsEnabled(api.DefaultClusterAutoscalerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[s] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[s], DefaultClusterAutoscalerAddonsConfig)
+		}
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
@@ -511,7 +540,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == "" {
-			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.StorageAccount
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.ManagedDisks
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
@@ -545,13 +574,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
 		dcosSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
-		dcosBootstrapSemVer, _ := semver.NewVersion(api.DCOSVersion1Dot11Dot0)
+		dcosBootstrapSemVer, _ := semver.NewVersion(common.DCOSVersion1Dot11Dot0)
 		if !dcosSemVer.LessThan(dcosBootstrapSemVer) {
 			if o.DcosConfig.BootstrapProfile == nil {
 				o.DcosConfig.BootstrapProfile = &api.BootstrapProfile{}
-			}
-			if o.DcosConfig.BootstrapProfile.Count == 0 {
-				o.DcosConfig.BootstrapProfile.Count = 1
 			}
 			if len(o.DcosConfig.BootstrapProfile.VMSize) == 0 {
 				o.DcosConfig.BootstrapProfile.VMSize = "Standard_D2s_v3"
@@ -632,8 +658,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 				a.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
 			}
 			if a.OrchestratorProfile.DcosConfig != nil && a.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) == 0 {
-					a.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP = DefaultDCOSBootstrapFirstConsecutiveStaticIP
+				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP) == 0 {
+					a.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP = DefaultDCOSBootstrapStaticIP
 				}
 			}
 		} else if a.HasWindows() {
@@ -704,10 +730,8 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
 			if a.OrchestratorProfile.IsAzureCNI() {
-				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-					agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
-					profile.IPAddressCount += agentPoolMaxPods
-				}
+				agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
+				profile.IPAddressCount += agentPoolMaxPods
 			}
 		}
 	}
@@ -716,11 +740,19 @@ func setAgentNetworkDefaults(a *api.Properties) {
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
 	if a.MasterProfile != nil && len(a.MasterProfile.StorageProfile) == 0 {
-		a.MasterProfile.StorageProfile = api.StorageAccount
+		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+			a.MasterProfile.StorageProfile = api.ManagedDisks
+		} else {
+			a.MasterProfile.StorageProfile = api.StorageAccount
+		}
 	}
 	for _, profile := range a.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
-			profile.StorageProfile = api.StorageAccount
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+				profile.StorageProfile = api.ManagedDisks
+			} else {
+				profile.StorageProfile = api.StorageAccount
+			}
 		}
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets
@@ -728,95 +760,9 @@ func setStorageDefaults(a *api.Properties) {
 	}
 }
 
-func openShiftSetDefaultCerts(a *api.Properties) (bool, error) {
-	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
-	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
-	c := certgen.Config{
-		Master: &certgen.Master{
-			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
-			IPs: []net.IP{
-				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
-			},
-			Port: 8443,
-		},
-		ExternalMasterHostname: externalMasterHostname,
-		ClusterUsername:        a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
-		ClusterPassword:        a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
-		AzureConfig: certgen.AzureConfig{
-			TenantID:        a.AzProfile.TenantID,
-			SubscriptionID:  a.AzProfile.SubscriptionID,
-			AADClientID:     a.ServicePrincipalProfile.ClientID,
-			AADClientSecret: a.ServicePrincipalProfile.Secret,
-			ResourceGroup:   a.AzProfile.ResourceGroup,
-			Location:        a.AzProfile.Location,
-		},
-	}
-	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
-	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname
-
-	err := c.PrepareMasterCerts()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterKubeConfigs()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterFiles()
-	if err != nil {
-		return false, err
-	}
-
-	err = c.PrepareBootstrapKubeConfig()
-	if err != nil {
-		return false, err
-	}
-
-	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles == nil {
-		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
-	}
-
-	masterBundle, err := getConfigBundle(c.WriteMaster)
-	if err != nil {
-		return false, err
-	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
-
-	nodeBundle, err := getConfigBundle(c.WriteNode)
-	if err != nil {
-		return false, err
-	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
-
-	return true, nil
-}
-
-type writeFn func(filesystem.Filesystem) error
-
-func getConfigBundle(write writeFn) ([]byte, error) {
-	b := &bytes.Buffer{}
-
-	fs, err := filesystem.NewTGZFile(b)
-	if err != nil {
-		return nil, err
-	}
-
-	err = write(fs)
-	if err != nil {
-		return nil, err
-	}
-
-	err = fs.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
-}
-
 func setDefaultCerts(a *api.Properties) (bool, error) {
 	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return openShiftSetDefaultCerts(a)
+		return certgen.OpenShiftSetDefaultCerts(a, DefaultOpenshiftOrchestratorName, GenerateClusterID(a))
 	}
 
 	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {

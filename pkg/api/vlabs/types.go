@@ -307,12 +307,11 @@ type KubernetesConfig struct {
 
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
-	Count                    int    `json:"count,omitempty"`
-	VMSize                   string `json:"vmSize,omitempty"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	OAuthEnabled             bool   `json:"oauthEnabled,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet,omitempty"`
+	VMSize       string `json:"vmSize,omitempty"`
+	OSDiskSizeGB int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled bool   `json:"oauthEnabled,omitempty"`
+	StaticIP     string `json:"staticIP,omitempty"`
+	Subnet       string `json:"subnet,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
@@ -332,10 +331,14 @@ type DcosConfig struct {
 type OpenShiftConfig struct {
 	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
-	// ClusterUsername and ClusterPassword are temporary before AAD
-	// authentication is enabled, and will be removed subsequently.
+	// ClusterUsername and ClusterPassword are temporary, do not rely on them.
 	ClusterUsername string `json:"clusterUsername,omitempty"`
 	ClusterPassword string `json:"clusterPassword,omitempty"`
+
+	// EnableAADAuthentication is temporary, do not rely on it.
+	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
+
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

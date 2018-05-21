@@ -20,7 +20,10 @@ cp -a "${DIR}/.." "${T}/"
 (cd "${T}/" && go generate ./...)
 
 
-GENERATED_FILES=("pkg/openshift/certgen/templates/bindata.go")
+GENERATED_FILES=(
+	"pkg/openshift/certgen/unstable/templates/bindata.go"
+	"pkg/openshift/certgen/release39/templates/bindata.go"
+)
 
 for file in $GENERATED_FILES; do
 	if ! diff  -r "${DIR}/../${file}" "${T}/${file}" 2>&1 ; then

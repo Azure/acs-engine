@@ -394,7 +394,7 @@ func (mc *MockACSEngineClient) CreateGraphPrincipal(servicePrincipalCreateParame
 }
 
 // CreateApp is a simpler method for creating an application
-func (mc *MockACSEngineClient) CreateApp(applicationName, applicationURL string) (applicationID, servicePrincipalObjectID, secret string, err error) {
+func (mc *MockACSEngineClient) CreateApp(applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
 	return "app-id", "client-id", "client-secret", nil
 }
 

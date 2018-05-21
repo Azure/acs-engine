@@ -460,3 +460,62 @@ func TestValidateVNET(t *testing.T) {
 		t.Errorf("Failed to validate VNET: %s", ErrorVnetNotMatch)
 	}
 }
+
+func TestValidateAADProfile(t *testing.T) {
+	mc := ManagedCluster{}
+	mc.Properties = &Properties{}
+	mc.Properties.EnableRBAC = nil
+	mc.Properties.AADProfile = &AADProfile{
+		ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+	}
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorRBACNotEnabledForAAD {
+		t.Errorf("Expected to fail because RBAC is not enabled")
+	}
+
+	mc = ManagedCluster{}
+	mc.Properties = &Properties{}
+	enableRBAC := true
+	mc.Properties.EnableRBAC = &enableRBAC
+	mc.Properties.AADProfile = &AADProfile{
+		ServerAppSecret: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+	}
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADServerAppIDNotSet {
+		t.Errorf("Expected to fail because ServerAppID is not set")
+	}
+
+	mc = ManagedCluster{}
+	mc.Properties = &Properties{}
+	enableRBAC = true
+	mc.Properties.EnableRBAC = &enableRBAC
+	mc.Properties.AADProfile = &AADProfile{
+		ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+	}
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADServerAppSecretNotSet {
+		t.Errorf("Expected to fail because ServerAppSecret is not set")
+	}
+
+	mc = ManagedCluster{}
+	mc.Properties = &Properties{}
+	enableRBAC = true
+	mc.Properties.EnableRBAC = &enableRBAC
+	mc.Properties.AADProfile = &AADProfile{
+		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
+	}
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADClientAppIDNotSet {
+		t.Errorf("Expected to fail because ClientAppID is not set")
+	}
+
+	mc = ManagedCluster{}
+	mc.Properties = &Properties{}
+	enableRBAC = true
+	mc.Properties.EnableRBAC = &enableRBAC
+	mc.Properties.AADProfile = &AADProfile{
+		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
+	}
+	if err := mc.Properties.AADProfile.Validate(mc.Properties.EnableRBAC); err != ErrorAADTenantIDNotSet {
+		t.Errorf("Expected to fail because TenantID is not set")
+	}
+}

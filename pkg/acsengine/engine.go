@@ -40,8 +40,10 @@ const (
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 	// OpenShift custom scripts
-	openshiftNodeScript   = "openshift/openshiftnodescript.sh"
-	openshiftMasterScript = "openshift/openshiftmasterscript.sh"
+	openshiftNodeScript     = "openshift/unstable/openshiftnodescript.sh"
+	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
+	openshift39NodeScript   = "openshift/release-3.9/openshiftnodescript.sh"
+	openshift39MasterScript = "openshift/release-3.9/openshiftmasterscript.sh"
 )
 
 const (
@@ -51,10 +53,12 @@ const (
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
 	dcosProvision        = "dcos/dcosprovision.sh"
 	dcosWindowsProvision = "dcos/dcosWindowsProvision.ps1"
+	dcosProvisionSource  = "dcos/dcosprovisionsource.sh"
 
 	dcos2Provision          = "dcos/bstrap/dcosprovision.sh"
 	dcos2BootstrapProvision = "dcos/bstrap/bootstrapprovision.sh"
-	dcos2CustomData111      = "dcos/bstrap/dcoscustomdata111.t"
+	dcos2CustomData1110     = "dcos/bstrap/dcos1.11.0.customdata.t"
+	dcos2CustomData1112     = "dcos/bstrap/dcos1.11.2.customdata.t"
 )
 
 const (
@@ -123,7 +127,35 @@ var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAge
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
-var openshiftTemplateFiles = append(kubernetesTemplateFiles, openshiftNodeScript, openshiftMasterScript)
+var openshiftTemplateFiles = append(
+	kubernetesTemplateFiles,
+	openshiftNodeScript,
+	openshiftMasterScript,
+	openshift39NodeScript,
+	openshift39MasterScript,
+)
+
+func getOpenshiftMasterShAsset(version string) string {
+	switch version {
+	case common.OpenShiftVersion3Dot9Dot0:
+		return openshift39MasterScript
+	case common.OpenShiftVersionUnstable:
+		return openshiftMasterScript
+	default:
+		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+	}
+}
+
+func getOpenshiftNodeShAsset(version string) string {
+	switch version {
+	case common.OpenShiftVersion3Dot9Dot0:
+		return openshift39NodeScript
+	case common.OpenShiftVersionUnstable:
+		return openshiftMasterScript
+	default:
+		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+	}
+}
 
 /**
  The following parameters could be either a plain text, or referenced to a secret in a keyvault:
@@ -375,13 +407,12 @@ func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]
 	var baseFile string
 	switch properties.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
-		switch properties.OrchestratorProfile.OrchestratorVersion {
-		case api.DCOSVersion1Dot11Dot0:
-			files = append(commonTemplateFiles, dcos2TemplateFiles...)
-			baseFile = dcos2BaseFile
-		default:
+		if properties.OrchestratorProfile.DcosConfig == nil || properties.OrchestratorProfile.DcosConfig.BootstrapProfile == nil {
 			files = append(commonTemplateFiles, dcosTemplateFiles...)
 			baseFile = dcosBaseFile
+		} else {
+			files = append(commonTemplateFiles, dcos2TemplateFiles...)
+			baseFile = dcos2BaseFile
 		}
 	case api.Swarm:
 		files = append(commonTemplateFiles, swarmTemplateFiles...)
@@ -658,6 +689,23 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
 			}
 		}
+		clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+		c = getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
+			addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
+			addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", clusterAutoscalerAddon.Enabled)
+			addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
+			if clusterAutoscalerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+			}
+		}
 		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 		if c > -1 {
@@ -772,15 +820,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
 			switch properties.OrchestratorProfile.OrchestratorVersion {
-			case api.DCOSVersion1Dot8Dot8:
+			case common.DCOSVersion1Dot8Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
-			case api.DCOSVersion1Dot9Dot0:
+			case common.DCOSVersion1Dot9Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
-			case api.DCOSVersion1Dot9Dot8:
+			case common.DCOSVersion1Dot9Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS198BootstrapDownloadURL
-			case api.DCOSVersion1Dot10Dot0:
+			case common.DCOSVersion1Dot10Dot0:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
-			case api.DCOSVersion1Dot11Dot0:
+			default:
 				dcosBootstrapURL = getDCOSDefaultBootstrapInstallerURL(properties.OrchestratorProfile)
 			}
 		}
@@ -803,13 +851,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 					properties.OrchestratorProfile.OrchestratorType,
 					properties.OrchestratorProfile.OrchestratorVersion)
 			}
+
 			if properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID != "" {
 				dcosClusterPackageListID = properties.OrchestratorProfile.DcosConfig.DcosClusterPackageListID
-			} else {
-				dcosClusterPackageListID = getDCOSDefaultClusterPackageListGUID(
-					properties.OrchestratorProfile.OrchestratorType,
-					properties.OrchestratorProfile.OrchestratorVersion,
-					properties.MasterProfile.Count)
 			}
 
 			if properties.OrchestratorProfile.DcosConfig.DcosProviderPackageID != "" {
@@ -829,10 +873,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "dcosProviderPackageID", dcosProviderPackageID)
 
 		if properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-			addValue(parametersMap, "bootstrapEndpointDNSNamePrefix", "bstrap-"+properties.MasterProfile.DNSPrefix)
-			addValue(parametersMap, "bootstrapFirstConsecutiveStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+			addValue(parametersMap, "bootstrapStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP)
 			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.VMSize)
-			addValue(parametersMap, "bootstrapCount", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count)
 		}
 	}
 
@@ -974,21 +1016,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				(cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot0 ||
-					cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot9Dot8)
-		},
-		"IsDCOS110": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot10Dot0
-		},
-		"IsDCOS111": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOSVersion1Dot11Dot0
+				(cs.Properties.OrchestratorProfile.OrchestratorVersion == common.DCOSVersion1Dot9Dot0 ||
+					cs.Properties.OrchestratorProfile.OrchestratorVersion == common.DCOSVersion1Dot9Dot8)
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint(">=" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
+			return cs.Properties.OrchestratorProfile.IsKubernetes() && common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"IsKubernetesVersionLt": func(version string) bool {
 			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
@@ -1141,37 +1173,25 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
-		"GetBootstrapHTTPSourceAddressPrefix": func() string {
-			return fmt.Sprintf("%s", "*")
-		},
 		"GetDCOSBootstrapCustomData": func() string {
-			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
-			bootstrapPreprovisionExtension := ""
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			for i, v := range masterIPList {
 				masterIPList[i] = "    - " + v
 			}
-			bootstrapIP := generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				dcos2BootstrapCustomdata,
-				cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.Count,
+				dcos2BootstrapCustomdata, 0,
 				map[string]string{
-					"PROVISION_STR":
-					// transform the provision script content
-					strings.Replace(
-						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":    getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":           getDCOSProvisionScript(dcos2BootstrapProvision),
 					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
-					"PREPROVISION_EXTENSION":  bootstrapPreprovisionExtension,
-					"BOOTSTRAP_IP":            bootstrapIP,
+					"BOOTSTRAP_IP":            cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP,
 					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled)})
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
@@ -1180,7 +1200,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			var bootstrapIP string
 			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+				bootstrapIP = cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
 			}
 
 			str := getSingleLineDCOSCustomData(
@@ -1188,13 +1208,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
 				cs.Properties.MasterProfile.Count,
 				map[string]string{
-					"PROVISION_STR":
-					// transform the provision script content
-					strings.Replace(
-						strings.Replace(
-							strings.Replace(masterProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
-							"\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":   getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":          getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile, bootstrapIP),
 					"ATTRIBUTES_STR":         masterAttributeContents,
 					"PREPROVISION_EXTENSION": masterPreprovisionExtension,
 					"ROLENAME":               "master"})
@@ -1202,7 +1217,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
@@ -1216,7 +1230,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				agentRoleName = "slave"
 			}
 			if cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				bootstrapIP = generateIPList(1, cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)[0]
+				bootstrapIP = cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
 			}
 
 			str := getSingleLineDCOSCustomData(
@@ -1224,12 +1238,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
 				cs.Properties.MasterProfile.Count,
 				map[string]string{
-					"PROVISION_STR": // transform the provision script content
-					strings.Replace(
-						strings.Replace(
-							strings.Replace(agentProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
-							"\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":   getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":          getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile, bootstrapIP),
 					"ATTRIBUTES_STR":         attributeContents,
 					"PREPROVISION_EXTENSION": agentPreprovisionExtension,
 					"ROLENAME":               agentRoleName})
@@ -1565,6 +1575,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
 				aciConnectorAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 				aC := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
+				clusterAutoscalerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+				aS := getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
 				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
@@ -1709,6 +1721,46 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						val = aciConnectorAddon.Containers[aC].MemoryLimits
 					} else {
 						val = ""
+					}
+				case "kubernetesClusterAutoscalerSpec":
+					if aS > -1 {
+						if clusterAutoscalerAddon.Containers[aS].Image != "" {
+							val = clusterAutoscalerAddon.Containers[aS].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
+						}
+					}
+				case "kubernetesClusterAutoscalerCPURequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryRequests":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerCPULimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerMemoryLimit":
+					if aS > -1 {
+						val = clusterAutoscalerAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
+					}
+				case "kubernetesClusterAutoscalerUseManagedIdentity":
+					if aS > -1 {
+						if cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+							val = strings.ToLower(strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity))
+						} else {
+							val = "false"
+						}
 					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {
@@ -1879,7 +1931,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
 		"OpenShiftGetMasterSh": func() (string, error) {
-			tb := MustAsset(openshiftMasterScript)
+			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			tb := MustAsset(masterShAsset)
 			t, err := template.New("master").Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -1892,14 +1945,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				Location               string
 			}{
 				ConfigBundle:           base64.StdEncoding.EncodeToString(cs.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]),
-				ExternalMasterHostname: cs.Properties.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname,
-				RouterLBHostname:       cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterLBHostname,
+				ExternalMasterHostname: fmt.Sprintf("%s.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
+				RouterLBHostname:       fmt.Sprintf("%s-router.%s.cloudapp.azure.com", cs.Properties.MasterProfile.DNSPrefix, cs.Properties.AzProfile.Location),
 				Location:               cs.Properties.AzProfile.Location,
 			})
 			return b.String(), err
 		},
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
-			tb := MustAsset(openshiftNodeScript)
+			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			tb := MustAsset(nodeShAsset)
 			t, err := template.New("node").Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -1938,6 +1992,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"subtract": func(a, b int) int {
 			return a - b
+		},
+		"IsCustomVNET": func() bool {
+			return isCustomVNET(cs.Properties.AgentPoolProfiles)
 		},
 	}
 }
@@ -2022,8 +2079,10 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
 	if profile.OrchestratorType == api.DCOS {
 		switch profile.OrchestratorVersion {
-		case api.DCOSVersion1Dot11Dot0:
-			return "https://downloads.dcos.io/dcos/stable/1.11.0/dcos_generate_config.sh"
+		case common.DCOSVersion1Dot11Dot2:
+			return "https://dcos-mirror.azureedge.net/dcos-1-11-2/dcos_generate_config.sh"
+		case common.DCOSVersion1Dot11Dot0:
+			return "https://dcos-mirror.azureedge.net/dcos-1-11-0/dcos_generate_config.sh"
 		}
 	}
 	return ""
@@ -2032,16 +2091,7 @@ func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) strin
 func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {
-		case api.DCOSVersion1Dot11Dot0:
-			switch masterCount {
-			case 1:
-				return "5a6b7b92820dc4a7825c84f0a96e012e0fcc8a6b"
-			case 3:
-				return "327392a609d77d411886216d431e00581a8612f7"
-			case 5:
-				return "fd24e32755e7868841a3fafd21b2d2cce0aa4154"
-			}
-		case api.DCOSVersion1Dot10Dot0:
+		case common.DCOSVersion1Dot10Dot0:
 			switch masterCount {
 			case 1:
 				return "c4ec6210f396b8e435177b82e3280a2cef0ce721"
@@ -2050,7 +2100,7 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 			case 5:
 				return "f286ad9d3641da5abb622e4a8781f73ecd8492fa"
 			}
-		case api.DCOSVersion1Dot9Dot0:
+		case common.DCOSVersion1Dot9Dot0:
 			switch masterCount {
 			case 1:
 				return "bcc883b7a3191412cf41824bdee06c1142187a0b"
@@ -2059,7 +2109,7 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 			case 5:
 				return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 			}
-		case api.DCOSVersion1Dot9Dot8:
+		case common.DCOSVersion1Dot9Dot8:
 			switch masterCount {
 			case 1:
 				return "e8b0e3fc4a16394dc6dd5b19fc54bf1543bff429"
@@ -2068,7 +2118,7 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 			case 5:
 				return "c03c9587f88929f310b80af4f448b7b51654f1c8"
 			}
-		case api.DCOSVersion1Dot8Dot8:
+		case common.DCOSVersion1Dot8Dot8:
 			switch masterCount {
 			case 1:
 				return "441385ce2f5942df7e29075c12fb38fa5e92cbba"
@@ -2085,11 +2135,9 @@ func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVers
 func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion string) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {
-		case api.DCOSVersion1Dot11Dot0:
-			return "https://dcosio.azureedge.net/dcos/stable/1.11.0"
-		case api.DCOSVersion1Dot10Dot0:
+		case common.DCOSVersion1Dot10Dot0:
 			return "https://dcosio.azureedge.net/dcos/stable/1.10.0"
-		case api.DCOSVersion1Dot9Dot8:
+		case common.DCOSVersion1Dot9Dot8:
 			return "https://dcosio.azureedge.net/dcos/stable/1.9.8"
 		default:
 			return "https://dcosio.azureedge.net/dcos/stable"
@@ -2098,27 +2146,20 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 	return ""
 }
 
-func getDCOSDefaultClusterPackageListGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
-	if orchestratorType == api.DCOS {
-		switch orchestratorVersion {
-		case api.DCOSVersion1Dot11Dot0:
-			switch masterCount {
-			case 1:
-				return "eee6337ea89c74ba58986406d24e373bdeae8012"
-			case 3:
-				return "248a66388bba1adbcb14a52fd3b7b424ab06fa76"
-			case 5:
-				return "302987609a34f07c206da1791c5a553141416ad8"
-			}
-		default:
-			break
-		}
-	}
-	return ""
-}
-
 func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
 	return strings.Contains(profile.VMSize, "Standard_N")
+}
+
+func isCustomVNET(a []*api.AgentPoolProfile) bool {
+	if a != nil {
+		for _, agentPoolProfile := range a {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
@@ -2135,7 +2176,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - apt_get_update
-- retrycmd_if_failure 5 10 120 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
 - mkdir -p %s
 - cd %s`, dest, dest)
 
@@ -2145,7 +2186,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
 	installScript += fmt.Sprintf(`
-- retrycmd_if_failure 5 10 30 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
+- retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
 - mkdir -p lib64 overlay-workdir
 - mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
 
@@ -2159,8 +2200,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - ldconfig
 - umount /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
-- %s/bin/nvidia-smi
-- retrycmd_if_failure 5 10 30 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- %s/bin/nvidia-smi`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
@@ -2229,7 +2269,7 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	if len(profile.OSType) > 0 {
 		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
 	} else {
-		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:linux")
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", api.Linux)
 	}
 
 	if len(profile.Ports) > 0 {
@@ -2504,30 +2544,25 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSBootstrapProvisionScript() string {
+func getDCOSProvisionScript(script string) string {
 	// add the provision script
-	bp, err := Asset(dcos2BootstrapProvision)
+	bp, err := Asset(script)
 	if err != nil {
 		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
 	provisionScript := string(bp)
 	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcos2BootstrapProvision))
+		panic(fmt.Sprintf("BUG: %s may not contain character '", script))
 	}
 
-	return provisionScript
+	return strings.Replace(strings.Replace(provisionScript, "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile, bootstrapIP string) string {
 	// add the provision script
-
-	var scriptname string
-
-	switch orchProfile.OrchestratorVersion {
-	case api.DCOSVersion1Dot11Dot0:
-		scriptname = dcos2Provision
-	default:
+	scriptname := dcos2Provision
+	if orchProfile.DcosConfig == nil || orchProfile.DcosConfig.BootstrapProfile == nil {
 		if profile.OSType == api.Windows {
 			scriptname = dcosWindowsProvision
 		} else {
@@ -2535,9 +2570,9 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		}
 	}
 
-	bp, err1 := Asset(scriptname)
-	if err1 != nil {
-		panic(fmt.Sprintf("BUG: %s", err1.Error()))
+	bp, err := Asset(scriptname)
+	if err != nil {
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
 	provisionScript := string(bp)
@@ -2554,6 +2589,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
 
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
@@ -2563,17 +2599,15 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		b.WriteString("rm /etc/docker.tar.gz\n")
 	}
 
-	return b.String()
+	return strings.Replace(strings.Replace(b.String(), "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
-func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
-	var scriptname string
-	switch orchProfile.OrchestratorVersion {
-	case api.DCOSVersion1Dot11Dot0:
-		scriptname = dcos2Provision
-	default:
+func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile, bootstrapIP string) string {
+	scriptname := dcos2Provision
+	if orchProfile.DcosConfig == nil || orchProfile.DcosConfig.BootstrapProfile == nil {
 		scriptname = dcosProvision
 	}
+
 	// add the provision script
 	bp, err := Asset(scriptname)
 	if err != nil {
@@ -2589,28 +2623,31 @@ func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
 
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
 
-	return b.String()
+	return strings.Replace(strings.Replace(b.String(), "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
 func getDCOSCustomDataTemplate(orchestratorType, orchestratorVersion string) string {
 	switch orchestratorType {
 	case api.DCOS:
 		switch orchestratorVersion {
-		case api.DCOSVersion1Dot8Dot8:
+		case common.DCOSVersion1Dot8Dot8:
 			return dcosCustomData188
-		case api.DCOSVersion1Dot9Dot0:
+		case common.DCOSVersion1Dot9Dot0:
 			return dcosCustomData190
-		case api.DCOSVersion1Dot9Dot8:
+		case common.DCOSVersion1Dot9Dot8:
 			return dcosCustomData198
-		case api.DCOSVersion1Dot10Dot0:
+		case common.DCOSVersion1Dot10Dot0:
 			return dcosCustomData110
-		case api.DCOSVersion1Dot11Dot0:
-			return dcos2CustomData111
+		case common.DCOSVersion1Dot11Dot0:
+			return dcos2CustomData1110
+		case common.DCOSVersion1Dot11Dot2:
+			return dcos2CustomData1112
 		}
 	default:
 		// it is a bug to get here

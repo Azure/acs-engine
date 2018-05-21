@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -633,8 +634,12 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
-		sv, _ := semver.NewVersion(o.OrchestratorVersion)
-		o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		// Enable using "unstable" as a valid version in the openshift orchestrator.
+		// Required for progressing on an unreleased version.
+		if !api.IsOpenShift() || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
+			sv, _ := semver.NewVersion(o.OrchestratorVersion)
+			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		}
 	}
 
 	if api.KubernetesConfig != nil {
@@ -660,6 +665,8 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	}
 	vl.ClusterUsername = api.ClusterUsername
 	vl.ClusterPassword = api.ClusterPassword
+	vl.EnableAADAuthentication = api.EnableAADAuthentication
+	vl.ConfigBundles = api.ConfigBundles
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
@@ -683,12 +690,11 @@ func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {
 
 	if api.BootstrapProfile != nil {
 		vl.BootstrapProfile = &vlabs.BootstrapProfile{
-			Count:                    api.BootstrapProfile.Count,
-			VMSize:                   api.BootstrapProfile.VMSize,
-			OSDiskSizeGB:             api.BootstrapProfile.OSDiskSizeGB,
-			OAuthEnabled:             api.BootstrapProfile.OAuthEnabled,
-			FirstConsecutiveStaticIP: api.BootstrapProfile.FirstConsecutiveStaticIP,
-			Subnet: api.BootstrapProfile.Subnet,
+			VMSize:       api.BootstrapProfile.VMSize,
+			OSDiskSizeGB: api.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled: api.BootstrapProfile.OAuthEnabled,
+			StaticIP:     api.BootstrapProfile.StaticIP,
+			Subnet:       api.BootstrapProfile.Subnet,
 		}
 	}
 }
@@ -986,6 +992,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 		p.ImageRef.Name = api.ImageRef.Name
 		p.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
+	p.Role = vlabs.AgentPoolProfileRole(api.Role)
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, dp *v20160930.DiagnosticsProfile) {

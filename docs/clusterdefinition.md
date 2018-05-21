@@ -32,9 +32,9 @@ Here are the valid values for the orchestrator types:
 |---|---|---|
 |kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
-|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience, or <br>`"kubenet"` for k8s software networking implementation.|
+|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience <br>`"kubenet"` for k8s software networking implementation. <br> `"flannel"` for using CoreOS Flannel <br> `"cilium"` for using the default Cilium CNI IPAM |
 |networkPolicy|no|Specifies the network policy enforcement tool for the cluster (currently Linux-only). Valid values are:<br>`calico` for Calico network policy.<br>`cilium` for cilium network policy (Lin).<br>See [network policy examples](../examples/networkpolicy) for more information|
-|containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The only other option is `clear-containers`|
+|containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The other options are `clear-containers` and `containerd`|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0)|
@@ -414,7 +414,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |vmSize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/)|
 |publicKey|yes|The public SSH key used for authenticating access to the jumpbox.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB. Defaults to `30`|
-|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
+|storageProfile|no|Specifies the storage profile to use.  Valid values are [ManagedDisks](../examples/disks-managed) or [StorageAccount](../examples/disks-storageaccount). Defaults to `ManagedDisks`|
 |username|no|Describes the admin username to be used on the jumpbox. Defaults to `azureuser`|
 
 ### masterProfile
@@ -446,7 +446,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |dnsPrefix|Required if agents are to be exposed publically with a load balancer|The dns prefix that forms the FQDN to access the loadbalancer for this agent pool. This must be a unique name among all agent pools. Not supported for Kubernetes clusters|
 |name|yes|This is the unique name for the agent pool profile. The resources of the agent pool profile are derived from this name|
 |ports|only required if needed for exposing services publically|Describes an array of ports need for exposing publically.  A tcp probe is configured for each port and only opens to an agent node if the agent node is listening on that port.  A maximum of 150 ports may be specified. Not supported for Kubernetes clusters|
-|storageProfile|no|Specifies the storage profile to use.  Valid values are [StorageAccount](../examples/disks-storageaccount) or [ManagedDisks](../examples/disks-managed). Defaults to `StorageAccount`|
+|storageProfile|no|Specifies the storage profile to use.  Valid values are [ManagedDisks](../examples/disks-managed) or [StorageAccount](../examples/disks-storageaccount). Defaults to `ManagedDisks`|
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted to machines with at least 2 cores|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|Specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|

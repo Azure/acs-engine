@@ -546,3 +546,53 @@ func TestIsNSeriesSKU(t *testing.T) {
 		}
 	}
 }
+
+func TestIsCustomVNET(t *testing.T) {
+
+	a := []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "subnetlink2",
+		},
+	}
+
+	if !isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
+	}
+
+	a = []*api.AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "",
+		},
+	}
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
+	}
+
+	a = nil
+
+	if isCustomVNET(a) {
+		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
+	}
+}
+
+func TestGenerateIpList(t *testing.T) {
+	count := 3
+	forth := 240
+	ipList := generateIPList(count, fmt.Sprintf("10.0.0.%d", forth))
+	if len(ipList) != 3 {
+		t.Fatalf("IP list size should be %d", count)
+	}
+	for i, ip := range ipList {
+		expected := fmt.Sprintf("10.0.0.%d", forth+i)
+		if ip != expected {
+			t.Fatalf("wrong IP %s. Expected %s", ip, expected)
+		}
+	}
+}

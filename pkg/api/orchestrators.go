@@ -237,6 +237,9 @@ func openShiftInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, 
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
 		for _, ver := range common.GetAllSupportedOpenShiftVersions() {
+			if ver == common.OpenShiftVersionUnstable {
+				continue
+			}
 			// TODO: populate OrchestratorVersionProfile.Upgrades
 			orchs = append(orchs,
 				&OrchestratorVersionProfile{

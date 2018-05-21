@@ -9,8 +9,7 @@
           "jumpboxProfile": {
             "name": "my-jb",
             "vmSize": "Standard_D2_v2",
-            "diskSizeGB": 30,
-            "storageProfile": "ManagedDisks",
+            "osDiskSizeGB": 30,
             "username": "azureuser",
             "publicKey": ""
           }

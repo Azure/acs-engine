@@ -55,11 +55,7 @@ func (ku *Upgrader) RunUpgrade() error {
 		return err
 	}
 
-	if err := ku.upgradeAgentPools(); err != nil {
-		return err
-	}
-
-	return nil
+	return ku.upgradeAgentPools()
 }
 
 // Validate will run validation post upgrade

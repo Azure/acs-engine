@@ -313,12 +313,11 @@ type KubernetesConfig struct {
 
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
-	Count                    int    `json:"count,omitempty"`
-	VMSize                   string `json:"vmSize,omitempty"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	OAuthEnabled             bool   `json:"oauthEnabled,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet,omitempty"`
+	VMSize       string `json:"vmSize,omitempty"`
+	OSDiskSizeGB int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled bool   `json:"oauthEnabled,omitempty"`
+	StaticIP     string `json:"staticIP,omitempty"`
+	Subnet       string `json:"subnet,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
@@ -338,14 +337,14 @@ type DcosConfig struct {
 type OpenShiftConfig struct {
 	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
-	// ClusterUsername and ClusterPassword are temporary before AAD
-	// authentication is enabled, and will be removed subsequently.
+	// ClusterUsername and ClusterPassword are temporary, do not rely on them.
 	ClusterUsername string `json:"clusterUsername,omitempty"`
 	ClusterPassword string `json:"clusterPassword,omitempty"`
 
-	ConfigBundles          map[string][]byte `json:"-"`
-	ExternalMasterHostname string            `json:"-"`
-	RouterLBHostname       string            `json:"-"`
+	// EnableAADAuthentication is temporary, do not rely on it.
+	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
+
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -503,12 +502,25 @@ type HostedMasterProfile struct {
 	Subnet string `json:"subnet"`
 }
 
+// AuthenticatorType represents the authenticator type the cluster was
+// set up with.
+type AuthenticatorType string
+
+const (
+	// OIDC represent cluster setup in OIDC auth mode
+	OIDC AuthenticatorType = "oidc"
+	// Webhook represent cluster setup in wehhook auth mode
+	Webhook AuthenticatorType = "webhook"
+)
+
 // AADProfile specifies attributes for AAD integration
 type AADProfile struct {
 	// The client AAD application ID.
 	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.
 	ServerAppID string `json:"serverAppID,omitempty"`
+	// The server AAD application secret
+	ServerAppSecret string `json:"serverAppSecret,omitempty"`
 	// The AAD tenant ID to use for authentication.
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
@@ -517,6 +529,8 @@ type AADProfile struct {
 	// cluster-admin RBAC role.
 	// Optional
 	AdminGroupID string `json:"adminGroupID,omitempty"`
+	// The authenticator to use, either "OIDC" or "Webhook".
+	Authenticator AuthenticatorType `json:"authenticator"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -760,12 +774,10 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 
 // IsAzureCNI returns true if Azure CNI network plugin is enabled
 func (o *OrchestratorProfile) IsAzureCNI() bool {
-	switch o.OrchestratorType {
-	case Kubernetes:
+	if o.KubernetesConfig != nil {
 		return o.KubernetesConfig.NetworkPlugin == "azure"
-	default:
-		return false
 	}
+	return false
 }
 
 // RequireRouteTable returns true if this deployment requires routing table
@@ -831,6 +843,17 @@ func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 		}
 	}
 	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
+}
+
+// IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
+func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
+	var clusterAutoscalerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
+			clusterAutoscalerAddon = k.Addons[i]
+		}
+	}
+	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled

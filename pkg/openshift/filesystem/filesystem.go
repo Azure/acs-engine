@@ -18,12 +18,35 @@ type Fileinfo struct {
 	Mode  os.FileMode
 }
 
-// Filesystem provides methods which are runnable on a bare filesystem or a
-// tar.gz file
-type Filesystem interface {
+// Closer implements Close()
+type Closer interface {
+	Close() error
+}
+
+// Reader provides read-related methods which are runnable on a bare filesystem
+// or a tar.gz file
+type Reader interface {
+	ReadFile(filename string) ([]byte, error)
+}
+
+// Writer provides write-related methods which are runnable on a bare filesystem
+// or a tar.gz file
+type Writer interface {
 	Mkdir(filename string, fileInfo Fileinfo) error
 	WriteFile(filename string, data []byte, fileInfo Fileinfo) error
-	Close() error
+}
+
+// WriteCloser implements Writer and Closer
+type WriteCloser interface {
+	Writer
+	Closer
+}
+
+// Filesystem implements Reader, Writer and Closer
+type Filesystem interface {
+	Reader
+	Writer
+	Closer
 }
 
 type filesystem struct {
@@ -47,12 +70,12 @@ func NewFilesystem(name string) (Filesystem, error) {
 	return &filesystem{name}, nil
 }
 
-// Mkdir called directly and takes permissions/ownership
+// Mkdir makes a directory.  Note that it does not chown/chgrp as that would
+// require elevated privileges
 func (f *filesystem) Mkdir(name string, fileInfo Fileinfo) error {
 	return os.Mkdir(name, fileInfo.Mode)
 }
 
-// mkdirAll this does not chown/chgrp as that would require elevated privileges
 func (f *filesystem) mkdirAll(name string) error {
 	return os.MkdirAll(name, 0755)
 }
@@ -67,23 +90,27 @@ func (f *filesystem) WriteFile(filename string, data []byte, fileInfo Fileinfo) 
 	return ioutil.WriteFile(filePath, data, fileInfo.Mode)
 }
 
+func (f *filesystem) ReadFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filepath.Join(f.name, filename))
+}
+
 func (filesystem) Close() error {
 	return nil
 }
 
-type tgzfile struct {
+type tgzwriter struct {
 	gz   *gzip.Writer
 	tw   *tar.Writer
 	now  time.Time
 	dirs map[string]struct{}
 }
 
-var _ Filesystem = &tgzfile{}
+var _ WriteCloser = &tgzwriter{}
 
-// NewTGZFile returns a Filesystem interface backed by a tar.gz file
-func NewTGZFile(w io.Writer) (Filesystem, error) {
+// NewTGZWriter returns a WriteCloser interface backed by a tar.gz file
+func NewTGZWriter(w io.Writer) (WriteCloser, error) {
 	gz := gzip.NewWriter(w)
-	tw := &tgzfile{
+	tw := &tgzwriter{
 		gz:   gz,
 		tw:   tar.NewWriter(gz),
 		now:  time.Now(),
@@ -92,8 +119,7 @@ func NewTGZFile(w io.Writer) (Filesystem, error) {
 	return tw, nil
 }
 
-// Mkdir called directly and takes permissions/ownership
-func (t *tgzfile) Mkdir(name string, fileInfo Fileinfo) error {
+func (t *tgzwriter) Mkdir(name string, fileInfo Fileinfo) error {
 	if _, exists := t.dirs[name]; exists {
 		return &os.PathError{Op: "mkdir", Path: name}
 	}
@@ -114,9 +140,7 @@ func (t *tgzfile) Mkdir(name string, fileInfo Fileinfo) error {
 	return nil
 }
 
-// mkdirAll creates all directories in a string delimited by '/'
-// this function does not chown/chgrp as that would require elevated privileges
-func (t *tgzfile) mkdirAll(name string) error {
+func (t *tgzwriter) mkdirAll(name string) error {
 	parts := strings.Split(name, "/")
 	for i := 1; i < len(parts); i++ {
 		name = filepath.Join(parts[:i]...)
@@ -132,7 +156,7 @@ func (t *tgzfile) mkdirAll(name string) error {
 	return nil
 }
 
-func (t *tgzfile) WriteFile(filename string, data []byte, fileInfo Fileinfo) error {
+func (t *tgzwriter) WriteFile(filename string, data []byte, fileInfo Fileinfo) error {
 	err := t.mkdirAll(filepath.Dir(filename))
 	if err != nil {
 		return err
@@ -155,10 +179,43 @@ func (t *tgzfile) WriteFile(filename string, data []byte, fileInfo Fileinfo) err
 	return err
 }
 
-func (t *tgzfile) Close() error {
+func (t *tgzwriter) Close() error {
 	err := t.tw.Close()
 	if err != nil {
 		return err
 	}
 	return t.gz.Close()
+}
+
+type tgzreader struct {
+	r io.ReadSeeker
+}
+
+var _ Reader = &tgzreader{}
+
+// NewTGZReader returns a Reader interface backed by a tar.gz file
+func NewTGZReader(r io.ReadSeeker) (Reader, error) {
+	return &tgzreader{r: r}, nil
+}
+
+func (t *tgzreader) ReadFile(filename string) ([]byte, error) {
+	_, err := t.r.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	gz, err := gzip.NewReader(t.r)
+	if err != nil {
+		return nil, err
+	}
+	tr := tar.NewReader(gz)
+	for {
+		h, err := tr.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		if h.Name == filename {
+			return ioutil.ReadAll(tr)
+		}
+	}
 }

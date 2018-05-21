@@ -58,6 +58,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled(),
 		},
 		{
+			"kubernetesmasteraddons-cluster-autoscaler-deployment.yaml",
+			"cluster-autoscaler-deployment.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
 			"kube-rescheduler-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled(),
@@ -71,6 +76,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"kubernetesmasteraddons-cilium-daemonset.yaml",
 			"cilium-daemonset.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCilium,
+		},
+		{
+			"kubernetesmasteraddons-flannel-daemonset.yaml",
+			"flannel-daemonset.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginFlannel,
 		},
 		{
 			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",

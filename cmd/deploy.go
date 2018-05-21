@@ -21,12 +21,22 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 const (
 	deployName             = "deploy"
-	deployShortDescription = "deploy an Azure Resource Manager template"
-	deployLongDescription  = "deploys an Azure Resource Manager template, parameters file and other assets for a cluster"
+	deployShortDescription = "Deploy an Azure Resource Manager template"
+	deployLongDescription  = "Deploy an Azure Resource Manager template, parameters file and other assets for a cluster"
+
+	// aadServicePrincipal is a hard-coded service principal which represents
+	// Azure Active Dirctory (see az ad sp list)
+	aadServicePrincipal = "00000002-0000-0000-c000-000000000000"
+
+	// aadPermissionUserRead is the User.Read hard-coded permission on
+	// aadServicePrincipal (see az ad sp list)
+	aadPermissionUserRead = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
 )
 
 type deployCmd struct {
@@ -130,9 +140,13 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(fmt.Sprintf("--location does not match api model location"))
 	}
 
+	if err = dc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err)
+	}
+
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("failed to get client")) // TODO: cleanup
+		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
@@ -221,7 +235,25 @@ func autofillApimodel(dc *deployCmd) {
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
 			appName := dc.containerService.Properties.MasterProfile.DNSPrefix
 			appURL := fmt.Sprintf("https://%s/", appName)
-			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL)
+			var replyURLs *[]string
+			var requiredResourceAccess *[]graphrbac.RequiredResourceAccess
+			if dc.containerService.Properties.OrchestratorProfile.OrchestratorType == api.OpenShift {
+				appName = fmt.Sprintf("%s.%s.cloudapp.azure.com", appName, dc.containerService.Properties.AzProfile.Location)
+				appURL = fmt.Sprintf("https://%s:8443/", appName)
+				replyURLs = to.StringSlicePtr([]string{fmt.Sprintf("https://%s:8443/oauth2callback/Azure%%20AD", appName)})
+				requiredResourceAccess = &[]graphrbac.RequiredResourceAccess{
+					{
+						ResourceAppID: to.StringPtr(aadServicePrincipal),
+						ResourceAccess: &[]graphrbac.ResourceAccess{
+							{
+								ID:   to.StringPtr(aadPermissionUserRead),
+								Type: to.StringPtr("Scope"),
+							},
+						},
+					},
+				}
+			}
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
 				log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
 			}

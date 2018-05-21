@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
-	"github.com/satori/uuid"
+	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -42,12 +42,20 @@ var (
 			networkPolicy: "",
 		},
 		{
-			networkPlugin: "kubenet",
-			networkPolicy: "calico",
+			networkPlugin: "flannel",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "",
+		},
+		{
+			networkPlugin: "cilium",
+			networkPolicy: "cilium",
 		},
 		{
 			networkPlugin: "kubenet",
-			networkPolicy: "cilium",
+			networkPolicy: "calico",
 		},
 		{
 			networkPlugin: "",
@@ -116,11 +124,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 			}
 			if o.DcosConfig != nil && o.DcosConfig.BootstrapProfile != nil {
-				if len(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP) > 0 {
-					bootstrapFirstIP := net.ParseIP(o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
-					if bootstrapFirstIP == nil {
-						return fmt.Errorf("DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address",
-							o.DcosConfig.BootstrapProfile.FirstConsecutiveStaticIP)
+				if len(o.DcosConfig.BootstrapProfile.StaticIP) > 0 {
+					if net.ParseIP(o.DcosConfig.BootstrapProfile.StaticIP) == nil {
+						return fmt.Errorf("DcosConfig.BootstrapProfile.StaticIP '%s' is an invalid IP address",
+							o.DcosConfig.BootstrapProfile.StaticIP)
 					}
 				}
 			}
@@ -216,13 +223,15 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
-			version := common.RationalizeReleaseAndVersion(
-				o.OrchestratorType,
-				o.OrchestratorRelease,
-				o.OrchestratorVersion,
-				false)
-			if version == "" {
-				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+			if o.OrchestratorVersion != common.OpenShiftVersionUnstable {
+				version := common.RationalizeReleaseAndVersion(
+					o.OrchestratorType,
+					o.OrchestratorRelease,
+					o.OrchestratorVersion,
+					false)
+				if version == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
 			}
 			if o.OpenShiftConfig == nil || o.OpenShiftConfig.ClusterUsername == "" || o.OpenShiftConfig.ClusterPassword == "" {
 				return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
@@ -276,7 +285,10 @@ func validateImageNameAndGroup(name, resourceGroup string) error {
 }
 
 // Validate implements APIObject
-func (m *MasterProfile) Validate() error {
+func (m *MasterProfile) Validate(o *OrchestratorProfile) error {
+	if o.OrchestratorType == OpenShift && m.Count != 1 {
+		return errors.New("openshift can only deployed with one master")
+	}
 	if m.ImageRef != nil {
 		if err := validateImageNameAndGroup(m.ImageRef.Name, m.ImageRef.ResourceGroup); err != nil {
 			return err
@@ -290,6 +302,10 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
+		return e
+	}
+
+	if e := validatePoolOSType(a.OSType); e != nil {
 		return e
 	}
 
@@ -379,10 +395,7 @@ func (l *LinuxProfile) Validate() error {
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
-	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(l.Secrets, false)
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
@@ -400,10 +413,7 @@ func (w *WindowsProfile) Validate() error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
-	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(w.Secrets, true)
 }
 
 // Validate implements APIObject
@@ -447,7 +457,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateContainerRuntime(); e != nil {
 		return e
 	}
-	if e := a.MasterProfile.Validate(); e != nil {
+	if e := a.validateAddons(); e != nil {
+		return e
+	}
+	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
 		return e
 	}
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
@@ -630,9 +643,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		if agentPoolProfile.OSType == Windows {
-			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Swarm:
@@ -661,8 +671,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := a.WindowsProfile.Validate(); e != nil {
-				return e
+			if a.WindowsProfile != nil {
+				if e := a.WindowsProfile.Validate(); e != nil {
+					return e
+				}
+			} else {
+				return fmt.Errorf("WindowsProfile is required when the cluster definition contains Windows agent pool(s)")
 			}
 		}
 	}
@@ -925,7 +939,7 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico" || networkPolicy == "cilium") && a.HasWindows() {
+	if (networkPolicy == "calico" || networkPolicy == "cilium" || networkPolicy == "flannel") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
@@ -975,10 +989,29 @@ func (a *Properties) validateContainerRuntime() error {
 	}
 
 	// Make sure we don't use clear containers on windows.
-	if containerRuntime == "clear-containers" && a.HasWindows() {
+	if (containerRuntime == "clear-containers" || containerRuntime == "containerd") && a.HasWindows() {
 		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
+	return nil
+}
+
+func (a *Properties) validateAddons() error {
+	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
+		var isAvailabilitySets bool
+
+		for _, agentPool := range a.AgentPoolProfiles {
+			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+				isAvailabilitySets = true
+			}
+		}
+
+		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
+				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
+			}
+		}
+	}
 	return nil
 }
 
@@ -999,6 +1032,13 @@ func validatePoolName(poolName string) error {
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
 		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+	}
+	return nil
+}
+
+func validatePoolOSType(os OSType) error {
+	if os != Linux && os != Windows && os != "" {
+		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
 	}
 	return nil
 }

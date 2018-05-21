@@ -228,7 +228,8 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 			EnableRbac:          helpers.PointerToBool(false),
 			EnableSecureKubelet: helpers.PointerToBool(false),
 			// set network default for un-versioned model
-			NetworkPolicy:      "none",
+			NetworkPlugin:      string(v20180331.Kubenet),
+			ClusterSubnet:      DefaultKubernetesClusterSubnet,
 			ServiceCIDR:        DefaultKubernetesServiceCIDR,
 			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
@@ -350,8 +351,13 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 	if obj.ServicePrincipalProfile != nil {
 		properties.ServicePrincipalProfile = convertV20180331AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
+
 	if obj.AddonProfiles != nil {
 		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
+	}
+
+	if obj.AADProfile != nil {
+		properties.AADProfile = convertV20180331AgentPoolOnlyAADProfile(obj.AADProfile)
 	}
 
 	return properties
@@ -503,4 +509,14 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 		}
 	}
 	return api
+}
+
+func convertV20180331AgentPoolOnlyAADProfile(obj *v20180331.AADProfile) *AADProfile {
+	return &AADProfile{
+		ClientAppID:     obj.ClientAppID,
+		ServerAppID:     obj.ServerAppID,
+		ServerAppSecret: obj.ServerAppSecret,
+		TenantID:        obj.TenantID,
+		Authenticator:   Webhook,
+	}
 }

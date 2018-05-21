@@ -1,10 +1,10 @@
-hash: d3817832375df23ed63ab732dabbb73bd3b59896118b8965a1cfbf09815d4c27
-updated: 2018-04-25T16:03:39.306816-07:00
+hash: faf99d950b5c402d6f5124bdb07d262bcc15ed5ef2c2e01fce1631f9fb4d9255
+updated: 2018-04-27T12:02:51.48800531-05:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
-  version: 5b6066bbd213e47c49a5fa2be2b29529bbcb6704
+  version: 2592daf71ab6b95dcfc7f7437ecc1afb9ddb7360
   subpackages:
   - arm/authorization
   - arm/compute
@@ -16,7 +16,7 @@ imports:
   - arm/storage
   - storage
 - name: github.com/Azure/go-autorest
-  version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
+  version: f6be1abbb5abd0517522f850dd785990d373da7e
   subpackages:
   - autorest
   - autorest/adal

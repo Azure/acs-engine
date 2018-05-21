@@ -17,8 +17,8 @@ const (
 	DefaultDCOSMasterSubnet = "192.168.255.0/24"
 	// DefaultDCOSFirstConsecutiveStaticIP  specifies the static IP address on master 0 for a DCOS cluster
 	DefaultDCOSFirstConsecutiveStaticIP = "192.168.255.5"
-	// DefaultDCOSBootstrapFirstConsecutiveStaticIP specifies the static IP address on bootstrap 0 for a DCOS cluster
-	DefaultDCOSBootstrapFirstConsecutiveStaticIP = "192.168.255.240"
+	// DefaultDCOSBootstrapStaticIP specifies the static IP address on bootstrap for a DCOS cluster
+	DefaultDCOSBootstrapStaticIP = "192.168.255.240"
 	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
@@ -54,6 +54,8 @@ const (
 	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
+	// NetworkPluginFlannel is the string expression for flannel network policy config option
+	NetworkPluginFlannel = "flannel"
 	// DefaultNetworkPlugin defines the network plugin to use by default
 	DefaultNetworkPlugin = NetworkPluginKubenet
 	// DefaultNetworkPolicy defines the network policy implementation to use by default
@@ -102,8 +104,8 @@ const (
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
 	DefaultDashboardAddonName = "kubernetes-dashboard"
-	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
-	DefaultACIConnectorImage = "virtual-kubelet:latest"
+	// DefaultClusterAutoscalerAddonName is the name of the autoscaler addon deployment
+	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"

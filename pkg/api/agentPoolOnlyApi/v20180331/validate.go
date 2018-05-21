@@ -25,10 +25,7 @@ func init() {
 func (a *AgentPoolProfile) Validate() error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
-	if e := validatePoolName(a.Name); e != nil {
-		return e
-	}
-	return nil
+	return validatePoolName(a.Name)
 }
 
 // Validate implements APIObject
@@ -38,6 +35,33 @@ func (l *LinuxProfile) Validate() error {
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
+	return nil
+}
+
+// Validate implements APIObject
+func (a *AADProfile) Validate(rbacEnabled *bool) error {
+	if rbacEnabled == nil || *rbacEnabled == false {
+		return ErrorRBACNotEnabledForAAD
+	}
+
+	if e := validate.Var(a.ServerAppID, "required"); e != nil {
+		return ErrorAADServerAppIDNotSet
+	}
+
+	// Don't need to call validate.Struct(l)
+	// It is handled by Properties.Validate()
+	if e := validate.Var(a.ServerAppSecret, "required"); e != nil {
+		return ErrorAADServerAppSecretNotSet
+	}
+
+	if e := validate.Var(a.ClientAppID, "required"); e != nil {
+		return ErrorAADClientAppIDNotSet
+	}
+
+	if e := validate.Var(a.TenantID, "required"); e != nil {
+		return ErrorAADTenantIDNotSet
+	}
+
 	return nil
 }
 
@@ -99,6 +123,12 @@ func (a *Properties) Validate() error {
 
 	if e := validateVNET(a); e != nil {
 		return e
+	}
+
+	if a.AADProfile != nil {
+		if e := a.AADProfile.Validate(a.EnableRBAC); e != nil {
+			return e
+		}
 	}
 
 	return nil
