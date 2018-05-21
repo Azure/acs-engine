@@ -2866,10 +2866,10 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, 
 	if e != nil {
 		return "", e
 	}
-	if strings.Contains(extTargetVMNamePrefix, "master") {
-		dta = strings.Replace(dta, "EXTENSION_TARGET_VM_TYPE", "master", -1)
-	} else {
+	if strings.Contains(extTargetVMNamePrefix, "agent") {
 		dta = strings.Replace(dta, "EXTENSION_TARGET_VM_TYPE", "agent", -1)
+	} else {
+		dta = strings.Replace(dta, "EXTENSION_TARGET_VM_TYPE", "master", -1)
 	}
 	extensionsParameterReference := fmt.Sprintf("[parameters('%sParameters')]", extensionProfile.Name)
 	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionsParameterReference, -1)
