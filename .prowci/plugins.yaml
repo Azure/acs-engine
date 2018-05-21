@@ -17,6 +17,10 @@ label:
   - orchestrator/swarm
   - DO-NOT-MERGE
 
+owners:
+  skip_collaborators:
+  - Azure/acs-engine
+
 plugins:
   Azure/acs-engine:
   - approve
