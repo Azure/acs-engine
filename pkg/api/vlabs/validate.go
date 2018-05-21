@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
-	"github.com/satori/uuid"
+	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -305,6 +305,10 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return e
 	}
 
+	if e := validatePoolOSType(a.OSType); e != nil {
+		return e
+	}
+
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
 	if orchestratorType == Kubernetes {
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
@@ -391,10 +395,7 @@ func (l *LinuxProfile) Validate() error {
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
-	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(l.Secrets, false)
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
@@ -412,10 +413,7 @@ func (w *WindowsProfile) Validate() error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
-	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
-		return e
-	}
-	return nil
+	return validateKeyVaultSecrets(w.Secrets, true)
 }
 
 // Validate implements APIObject
@@ -645,9 +643,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		if agentPoolProfile.OSType == Windows {
-			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Swarm:
@@ -676,8 +671,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := a.WindowsProfile.Validate(); e != nil {
-				return e
+			if a.WindowsProfile != nil {
+				if e := a.WindowsProfile.Validate(); e != nil {
+					return e
+				}
+			} else {
+				return fmt.Errorf("WindowsProfile is required when the cluster definition contains Windows agent pool(s)")
 			}
 		}
 	}
@@ -1033,6 +1032,13 @@ func validatePoolName(poolName string) error {
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
 		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+	}
+	return nil
+}
+
+func validatePoolOSType(os OSType) error {
+	if os != Linux && os != Windows && os != "" {
+		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
 	}
 	return nil
 }

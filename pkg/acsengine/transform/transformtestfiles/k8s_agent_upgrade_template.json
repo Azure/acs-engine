@@ -1660,9 +1660,6 @@
         "count": "[sub(variables('agentppol1Count'), variables('agentppol1Offset'))]",
         "name": "loop"
       },
-      "dependsOn": [
-        "[variables('vnetID')]"
-      ],
       "location": "[variables('location')]",
       "name": "[concat(variables('agentppol1VMNamePrefix'), 'nic-', copyIndex(variables('agentppol1Offset')))]",
       "properties": {
@@ -1711,9 +1708,6 @@
         "count": "[sub(variables('agentpool2Count'), variables('agentpool2Offset'))]",
         "name": "loop"
       },
-      "dependsOn": [
-        "[variables('vnetID')]"
-      ],
       "location": "[variables('location')]",
       "name": "[concat(variables('agentpool2VMNamePrefix'), 'nic-', copyIndex(variables('agentpool2Offset')))]",
       "properties": {
@@ -1766,33 +1760,6 @@
         "platformUpdateDomainCount": 3
       },
       "type": "Microsoft.Compute/availabilitySets"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[variables('location')]",
-      "name": "[variables('virtualNetworkName')]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('vnetCidr')]"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[variables('subnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('subnet')]",
-              "networkSecurityGroup": {
-                "id": "[variables('nsgID')]"
-              },
-              "routeTable": {
-                "id": "[variables('routeTableID')]"
-              }
-            }
-          }
-        ]
-      },
-      "type": "Microsoft.Network/virtualNetworks"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -1855,9 +1822,6 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "dependsOn": [
-        "[variables('vnetID')]"
-      ],
       "location": "[variables('location')]",
       "name": "[variables('masterInternalLbName')]",
       "properties": {
@@ -1951,7 +1915,6 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-        "[variables('vnetID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]",
         "[variables('masterInternalLbName')]"
       ],

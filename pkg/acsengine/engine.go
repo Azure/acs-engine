@@ -53,6 +53,7 @@ const (
 	dcosCustomData110    = "dcos/dcoscustomdata110.t"
 	dcosProvision        = "dcos/dcosprovision.sh"
 	dcosWindowsProvision = "dcos/dcosWindowsProvision.ps1"
+	dcosProvisionSource  = "dcos/dcosprovisionsource.sh"
 
 	dcos2Provision          = "dcos/bstrap/dcosprovision.sh"
 	dcos2BootstrapProvision = "dcos/bstrap/bootstrapprovision.sh"
@@ -1173,7 +1174,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"GetDCOSBootstrapCustomData": func() string {
-			bootstrapProvisionScript := getDCOSBootstrapProvisionScript()
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			for i, v := range masterIPList {
 				masterIPList[i] = "    - " + v
@@ -1183,11 +1183,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				dcos2BootstrapCustomdata, 0,
 				map[string]string{
-					"PROVISION_STR":
-					// transform the provision script content
-					strings.Replace(
-						strings.Replace(bootstrapProvisionScript, "\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":    getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":           getDCOSProvisionScript(dcos2BootstrapProvision),
 					"MASTER_IP_LIST":          strings.Join(masterIPList, "\n"),
 					"BOOTSTRAP_IP":            cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP,
 					"BOOTSTRAP_OAUTH_ENABLED": strconv.FormatBool(cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.OAuthEnabled)})
@@ -1195,7 +1192,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
@@ -1212,13 +1208,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
 				cs.Properties.MasterProfile.Count,
 				map[string]string{
-					"PROVISION_STR":
-					// transform the provision script content
-					strings.Replace(
-						strings.Replace(
-							strings.Replace(masterProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
-							"\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":   getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":          getDCOSMasterProvisionScript(cs.Properties.OrchestratorProfile, bootstrapIP),
 					"ATTRIBUTES_STR":         masterAttributeContents,
 					"PREPROVISION_EXTENSION": masterPreprovisionExtension,
 					"ROLENAME":               "master"})
@@ -1226,7 +1217,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
@@ -1248,12 +1238,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				getDCOSCustomDataTemplate(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion),
 				cs.Properties.MasterProfile.Count,
 				map[string]string{
-					"PROVISION_STR": // transform the provision script content
-					strings.Replace(
-						strings.Replace(
-							strings.Replace(agentProvisionScript, "BOOTSTRAP_IP", bootstrapIP, -1),
-							"\r\n", "\n", -1),
-						"\n", "\n\n    ", -1),
+					"PROVISION_SOURCE_STR":   getDCOSProvisionScript(dcosProvisionSource),
+					"PROVISION_STR":          getDCOSAgentProvisionScript(profile, cs.Properties.OrchestratorProfile, bootstrapIP),
 					"ATTRIBUTES_STR":         attributeContents,
 					"PREPROVISION_EXTENSION": agentPreprovisionExtension,
 					"ROLENAME":               agentRoleName})
@@ -2558,22 +2544,22 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSBootstrapProvisionScript() string {
+func getDCOSProvisionScript(script string) string {
 	// add the provision script
-	bp, err := Asset(dcos2BootstrapProvision)
+	bp, err := Asset(script)
 	if err != nil {
 		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
 	provisionScript := string(bp)
 	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcos2BootstrapProvision))
+		panic(fmt.Sprintf("BUG: %s may not contain character '", script))
 	}
 
-	return provisionScript
+	return strings.Replace(strings.Replace(provisionScript, "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile, bootstrapIP string) string {
 	// add the provision script
 	scriptname := dcos2Provision
 	if orchProfile.DcosConfig == nil || orchProfile.DcosConfig.BootstrapProfile == nil {
@@ -2603,6 +2589,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
 
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
@@ -2612,10 +2599,10 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api
 		b.WriteString("rm /etc/docker.tar.gz\n")
 	}
 
-	return b.String()
+	return strings.Replace(strings.Replace(b.String(), "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
-func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
+func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile, bootstrapIP string) string {
 	scriptname := dcos2Provision
 	if orchProfile.DcosConfig == nil || orchProfile.DcosConfig.BootstrapProfile == nil {
 		scriptname = dcosProvision
@@ -2636,12 +2623,13 @@ func getDCOSMasterProvisionScript(orchProfile *api.OrchestratorProfile) string {
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	provisionScript = strings.Replace(provisionScript, "BOOTSTRAP_IP", bootstrapIP, -1)
 
 	var b bytes.Buffer
 	b.WriteString(provisionScript)
 	b.WriteString("\n")
 
-	return b.String()
+	return strings.Replace(strings.Replace(b.String(), "\r\n", "\n", -1), "\n", "\n\n    ", -1)
 }
 
 func getDCOSCustomDataTemplate(orchestratorType, orchestratorVersion string) string {
