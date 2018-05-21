@@ -304,7 +304,7 @@ var (
 	}
 
 	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
-	DefaultMetricsServerAddonsConfig = api.KubernetesAddon{
+	DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultContainerMonitoringAddonName,
 		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
@@ -521,8 +521,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
 		cm := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultContainerMonitoringAddonsConfig)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[cm].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {

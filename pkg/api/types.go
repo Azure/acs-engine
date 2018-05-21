@@ -832,7 +832,7 @@ func (o *OrchestratorProfile) IsContainerMonitoringEnabled() bool {
 			containerMonitoringAddon = k.Addons[i]
 		}
 	}
-	return containerMonitoringAddon.IsEnabled(DefaultContainerMonitoringAddOnEnabled))
+	return containerMonitoringAddon.IsEnabled(DefaultContainerMonitoringAddOnEnabled)
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled
