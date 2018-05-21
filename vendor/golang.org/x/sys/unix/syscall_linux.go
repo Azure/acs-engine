@@ -16,13 +16,6 @@ import (
 	"unsafe"
 )
 
-// SyscallNoError may be used instead of Syscall for syscalls that don't fail.
-func SyscallNoError(trap, a1, a2, a3 uintptr) (r1, r2 uintptr)
-
-// RawSyscallNoError may be used instead of RawSyscall for syscalls that don't
-// fail.
-func RawSyscallNoError(trap, a1, a2, a3 uintptr) (r1, r2 uintptr)
-
 /*
  * Wrapped
  */
@@ -815,24 +808,6 @@ func GetsockoptTCPInfo(fd, level, opt int) (*TCPInfo, error) {
 	return &value, err
 }
 
-// GetsockoptString returns the string value of the socket option opt for the
-// socket associated with fd at the given socket level.
-func GetsockoptString(fd, level, opt int) (string, error) {
-	buf := make([]byte, 256)
-	vallen := _Socklen(len(buf))
-	err := getsockopt(fd, level, opt, unsafe.Pointer(&buf[0]), &vallen)
-	if err != nil {
-		if err == ERANGE {
-			buf = make([]byte, vallen)
-			err = getsockopt(fd, level, opt, unsafe.Pointer(&buf[0]), &vallen)
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-	return string(buf[:vallen-1]), nil
-}
-
 func SetsockoptIPMreqn(fd, level, opt int, mreq *IPMreqn) (err error) {
 	return setsockopt(fd, level, opt, unsafe.Pointer(mreq), unsafe.Sizeof(*mreq))
 }
@@ -1150,10 +1125,6 @@ func PtracePokeData(pid int, addr uintptr, data []byte) (count int, err error) {
 	return ptracePoke(PTRACE_POKEDATA, PTRACE_PEEKDATA, pid, addr, data)
 }
 
-func PtracePokeUser(pid int, addr uintptr, data []byte) (count int, err error) {
-	return ptracePoke(PTRACE_POKEUSR, PTRACE_PEEKUSR, pid, addr, data)
-}
-
 func PtraceGetRegs(pid int, regsout *PtraceRegs) (err error) {
 	return ptrace(PTRACE_GETREGS, pid, 0, uintptr(unsafe.Pointer(regsout)))
 }
@@ -1435,6 +1406,7 @@ func Vmsplice(fd int, iovs []Iovec, flags int) (int, error) {
 // Msgget
 // Msgrcv
 // Msgsnd
+// Newfstatat
 // Nfsservctl
 // Personality
 // Pselect6
@@ -1455,9 +1427,11 @@ func Vmsplice(fd int, iovs []Iovec, flags int) (int, error) {
 // RtSigtimedwait
 // SchedGetPriorityMax
 // SchedGetPriorityMin
+// SchedGetaffinity
 // SchedGetparam
 // SchedGetscheduler
 // SchedRrGetInterval
+// SchedSetaffinity
 // SchedSetparam
 // SchedYield
 // Security

@@ -24,26 +24,23 @@ import (
 )
 
 var (
-	cacheHitCounter = prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Name: "etcd_helper_cache_hit_count",
-			Help: "Counter of etcd helper cache hits.",
-		},
-	)
-	cacheMissCounter = prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Name: "etcd_helper_cache_miss_count",
-			Help: "Counter of etcd helper cache miss.",
-		},
-	)
-	cacheEntryCounter = prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Name: "etcd_helper_cache_entry_count",
-			Help: "Counter of etcd helper cache entries. This can be different from etcd_helper_cache_miss_count " +
-				"because two concurrent threads can miss the cache and generate the same entry twice.",
-		},
-	)
-	cacheGetLatency = prometheus.NewSummary(
+	cacheHitCounterOpts = prometheus.CounterOpts{
+		Name: "etcd_helper_cache_hit_count",
+		Help: "Counter of etcd helper cache hits.",
+	}
+	cacheHitCounter      = prometheus.NewCounter(cacheHitCounterOpts)
+	cacheMissCounterOpts = prometheus.CounterOpts{
+		Name: "etcd_helper_cache_miss_count",
+		Help: "Counter of etcd helper cache miss.",
+	}
+	cacheMissCounter      = prometheus.NewCounter(cacheMissCounterOpts)
+	cacheEntryCounterOpts = prometheus.CounterOpts{
+		Name: "etcd_helper_cache_entry_count",
+		Help: "Counter of etcd helper cache entries. This can be different from etcd_helper_cache_miss_count " +
+			"because two concurrent threads can miss the cache and generate the same entry twice.",
+	}
+	cacheEntryCounter = prometheus.NewCounter(cacheEntryCounterOpts)
+	cacheGetLatency   = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Name: "etcd_request_cache_get_latencies_summary",
 			Help: "Latency in microseconds of getting an object from etcd cache",
@@ -62,6 +59,13 @@ var (
 		},
 		[]string{"operation", "type"},
 	)
+	objectCounts = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "etcd_object_counts",
+			Help: "Number of stored objects at the time of last check split by kind.",
+		},
+		[]string{"resource"},
+	)
 )
 
 var registerMetrics sync.Once
@@ -76,7 +80,12 @@ func Register() {
 		prometheus.MustRegister(cacheAddLatency)
 		prometheus.MustRegister(cacheGetLatency)
 		prometheus.MustRegister(etcdRequestLatenciesSummary)
+		prometheus.MustRegister(objectCounts)
 	})
+}
+
+func UpdateObjectCount(resourcePrefix string, count int64) {
+	objectCounts.WithLabelValues(resourcePrefix).Set(float64(count))
 }
 
 func RecordEtcdRequestLatency(verb, resource string, startTime time.Time) {
@@ -104,9 +113,9 @@ func ObserveNewEntry() {
 }
 
 func Reset() {
-	cacheHitCounter.Set(0)
-	cacheMissCounter.Set(0)
-	cacheEntryCounter.Set(0)
+	cacheHitCounter = prometheus.NewCounter(cacheHitCounterOpts)
+	cacheMissCounter = prometheus.NewCounter(cacheMissCounterOpts)
+	cacheEntryCounter = prometheus.NewCounter(cacheEntryCounterOpts)
 	// TODO: Reset cacheAddLatency.
 	// TODO: Reset cacheGetLatency.
 	etcdRequestLatenciesSummary.Reset()
