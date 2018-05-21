@@ -1,5 +1,3 @@
-#cloud-config
-
 bootcmd:
 - bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel
   gpt;touch /var/lib/sdb-gpt;fi"
@@ -76,6 +74,10 @@ MASTER_IP_LIST
   owner: root
   path: /opt/azure/dcos/init_bootstrap.sh
   permissions: '0755'
+- content: 'PROVISION_SOURCE_STR'
+  path: /opt/azure/containers/provision_source.sh
+  permissions: "0744"
+  owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"

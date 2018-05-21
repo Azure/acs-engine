@@ -27,7 +27,9 @@ import:
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/satori/go.uuid
-  version: ~1.2.0
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- package: github.com/satori/uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - package: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
@@ -41,7 +43,7 @@ import:
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
-  version: 122d919ec1efcfb58483215da23f815853e24b81
+  version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd
@@ -53,9 +55,12 @@ import:
 - package: github.com/imdario/mergo
   version: ^0.2.2
 - package: k8s.io/apiserver
-  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+  version: 0841753fc26e934b715ca7a83dced5bcb721245a
 - package: k8s.io/client-go
-  version: ~4.0.0
+  version: ~7.0.0
+# This is the same version client-go is pinned to
+- package: k8s.io/api
+  version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/Jeffail/gabs
   version: 1.0
 testImport:
@@ -64,7 +69,9 @@ testImport:
 - package: github.com/onsi/ginkgo
 - package: github.com/kelseyhightower/envconfig
 - package: k8s.io/apiserver
-  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+  version: 0841753fc26e934b715ca7a83dced5bcb721245a
 - package: k8s.io/client-go
-  version: ~4.0.0
+  version: ~7.0.0
+- package: k8s.io/api
+  version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/influxdata/influxdb/client/v2

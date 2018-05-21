@@ -145,7 +145,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(5*time.Second, 2*time.Minute)
+				ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
 				delErr := j.Delete()
 				if delErr != nil {
 					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
@@ -157,6 +157,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be running the expected version", func() {
+			hasWindows := eng.HasWindowsAgents()
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -167,13 +168,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
-					false)
+					hasWindows)
 			} else {
 				expectedVersion = common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.Config.OrchestratorRelease,
 					eng.Config.OrchestratorVersion,
-					false)
+					hasWindows)
 			}
 			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
 			Expect(version).To(Equal("v" + expectedVersionRationalized))

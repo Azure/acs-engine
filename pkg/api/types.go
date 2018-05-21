@@ -313,12 +313,11 @@ type KubernetesConfig struct {
 
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
-	Count                    int    `json:"count,omitempty"`
-	VMSize                   string `json:"vmSize,omitempty"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	OAuthEnabled             bool   `json:"oauthEnabled,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet,omitempty"`
+	VMSize       string `json:"vmSize,omitempty"`
+	OSDiskSizeGB int    `json:"osDiskSizeGB,omitempty"`
+	OAuthEnabled bool   `json:"oauthEnabled,omitempty"`
+	StaticIP     string `json:"staticIP,omitempty"`
+	Subnet       string `json:"subnet,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

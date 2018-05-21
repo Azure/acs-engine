@@ -32,6 +32,7 @@ import (
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	openapicommon "k8s.io/kube-openapi/pkg/common"
 )
 
 type RequestHeaderAuthenticationOptions struct {
@@ -43,6 +44,10 @@ type RequestHeaderAuthenticationOptions struct {
 }
 
 func (s *RequestHeaderAuthenticationOptions) AddFlags(fs *pflag.FlagSet) {
+	if s == nil {
+		return
+	}
+
 	fs.StringSliceVar(&s.UsernameHeaders, "requestheader-username-headers", s.UsernameHeaders, ""+
 		"List of request headers to inspect for usernames. X-Remote-User is common.")
 
@@ -126,6 +131,10 @@ func (s *DelegatingAuthenticationOptions) Validate() []error {
 }
 
 func (s *DelegatingAuthenticationOptions) AddFlags(fs *pflag.FlagSet) {
+	if s == nil {
+		return
+	}
+
 	fs.StringVar(&s.RemoteKubeConfigFile, "authentication-kubeconfig", s.RemoteKubeConfigFile, ""+
 		"kubeconfig file pointing at the 'core' kubernetes server with enough rights to create "+
 		"tokenaccessreviews.authentication.k8s.io.")
@@ -142,13 +151,17 @@ func (s *DelegatingAuthenticationOptions) AddFlags(fs *pflag.FlagSet) {
 
 }
 
-func (s *DelegatingAuthenticationOptions) ApplyTo(c *server.Config) error {
+func (s *DelegatingAuthenticationOptions) ApplyTo(c *server.AuthenticationInfo, servingInfo *server.SecureServingInfo, openAPIConfig *openapicommon.Config) error {
+	if s == nil {
+		c.Authenticator = nil
+		return nil
+	}
+
 	clientCA, err := s.getClientCA()
 	if err != nil {
 		return err
 	}
-	c, err = c.ApplyClientCert(clientCA.ClientCA)
-	if err != nil {
+	if err = c.ApplyClientCert(clientCA.ClientCA, servingInfo); err != nil {
 		return fmt.Errorf("unable to load client CA file: %v", err)
 	}
 
@@ -156,8 +169,7 @@ func (s *DelegatingAuthenticationOptions) ApplyTo(c *server.Config) error {
 	if err != nil {
 		return err
 	}
-	c, err = c.ApplyClientCert(requestHeader.ClientCAFile)
-	if err != nil {
+	if err = c.ApplyClientCert(requestHeader.ClientCAFile, servingInfo); err != nil {
 		return fmt.Errorf("unable to load client CA file: %v", err)
 	}
 
@@ -171,8 +183,8 @@ func (s *DelegatingAuthenticationOptions) ApplyTo(c *server.Config) error {
 	}
 
 	c.Authenticator = authenticator
-	if c.OpenAPIConfig != nil {
-		c.OpenAPIConfig.SecurityDefinitions = securityDefinitions
+	if openAPIConfig != nil {
+		openAPIConfig.SecurityDefinitions = securityDefinitions
 	}
 	c.SupportsBasicAuth = false
 

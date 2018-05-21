@@ -632,12 +632,11 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 
 	if vlabs.BootstrapProfile != nil {
 		api.BootstrapProfile = &BootstrapProfile{
-			Count:                    vlabs.BootstrapProfile.Count,
-			VMSize:                   vlabs.BootstrapProfile.VMSize,
-			OSDiskSizeGB:             vlabs.BootstrapProfile.OSDiskSizeGB,
-			OAuthEnabled:             vlabs.BootstrapProfile.OAuthEnabled,
-			FirstConsecutiveStaticIP: vlabs.BootstrapProfile.FirstConsecutiveStaticIP,
-			Subnet: vlabs.BootstrapProfile.Subnet,
+			VMSize:       vlabs.BootstrapProfile.VMSize,
+			OSDiskSizeGB: vlabs.BootstrapProfile.OSDiskSizeGB,
+			OAuthEnabled: vlabs.BootstrapProfile.OAuthEnabled,
+			StaticIP:     vlabs.BootstrapProfile.StaticIP,
+			Subnet:       vlabs.BootstrapProfile.Subnet,
 		}
 	}
 }

@@ -4,13 +4,13 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
-	policy "k8s.io/client-go/pkg/apis/policy/v1beta1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -48,17 +48,17 @@ func (c *KubernetesClientSetClient) ListPods(node *v1.Node) (*v1.PodList, error)
 
 //GetNode returns details about node with passed in name
 func (c *KubernetesClientSetClient) GetNode(name string) (*v1.Node, error) {
-	return c.clientset.Nodes().Get(name, metav1.GetOptions{})
+	return c.clientset.Core().Nodes().Get(name, metav1.GetOptions{})
 }
 
 //UpdateNode updates the node in the api server with the passed in info
 func (c *KubernetesClientSetClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
-	return c.clientset.Nodes().Update(node)
+	return c.clientset.Core().Nodes().Update(node)
 }
 
 //DeleteNode deregisters the node in the api server
 func (c *KubernetesClientSetClient) DeleteNode(name string) error {
-	return c.clientset.Nodes().Delete(name, &metav1.DeleteOptions{})
+	return c.clientset.Core().Nodes().Delete(name, &metav1.DeleteOptions{})
 }
 
 //SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported

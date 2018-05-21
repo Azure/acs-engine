@@ -5,7 +5,7 @@
       "orchestratorType": "DCOS",
       "dcosConfig": {
         "bootstrapProfile": {
-          "firstConsecutiveStaticIP": "10.100.0.240"
+          "staticIP": "10.100.0.240"
         }
       }
     },

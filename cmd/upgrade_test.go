@@ -36,9 +36,6 @@ var _ = Describe("the upgrade command", func() {
 					upgradeVersion:      "1.8.9",
 					location:            "centralus",
 					timeoutInMinutes:    60,
-					authArgs: authArgs{
-						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
-					},
 				},
 				expectedErr: fmt.Errorf("--resource-group must be specified"),
 			},
@@ -49,9 +46,6 @@ var _ = Describe("the upgrade command", func() {
 					upgradeVersion:      "1.8.9",
 					location:            "",
 					timeoutInMinutes:    60,
-					authArgs: authArgs{
-						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
-					},
 				},
 				expectedErr: fmt.Errorf("--location must be specified"),
 			},
@@ -62,9 +56,6 @@ var _ = Describe("the upgrade command", func() {
 					upgradeVersion:      "",
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
-					authArgs: authArgs{
-						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
-					},
 				},
 				expectedErr: fmt.Errorf("--upgrade-version must be specified"),
 			},
@@ -75,9 +66,6 @@ var _ = Describe("the upgrade command", func() {
 					upgradeVersion:      "1.9.0",
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
-					authArgs: authArgs{
-						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
-					},
 				},
 				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
 			},
@@ -88,9 +76,6 @@ var _ = Describe("the upgrade command", func() {
 					upgradeVersion:      "1.9.0",
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
-					authArgs: authArgs{
-						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
-					},
 				},
 				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
 			},
@@ -100,21 +85,6 @@ var _ = Describe("the upgrade command", func() {
 					deploymentDirectory: "_output/mydir",
 					upgradeVersion:      "1.9.0",
 					location:            "southcentralus",
-					authArgs:            authArgs{},
-				},
-				expectedErr: fmt.Errorf("--subscription-id is required (and must be a valid UUID)"),
-			},
-			{
-				uc: &upgradeCmd{
-					resourceGroupName:   "test",
-					deploymentDirectory: "_output/mydir",
-					upgradeVersion:      "1.9.0",
-					location:            "southcentralus",
-					authArgs: authArgs{
-						rawSubscriptionID:   "99999999-0000-0000-0000-000000000000",
-						RawAzureEnvironment: "AzurePublicCloud",
-						AuthMethod:          "device",
-					},
 				},
 				expectedErr: nil,
 			},

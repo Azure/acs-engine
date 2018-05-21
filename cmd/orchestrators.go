@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	cmdName             = "orchestrators"
-	cmdShortDescription = "Display info about supported orchestrators"
-	cmdLongDescription  = "Display supported versions and upgrade versions for each orchestrator"
+	orchestratorsName             = "orchestrators"
+	orchestratorsShortDescription = "Display info about supported orchestrators"
+	orchestratorsLongDescription  = "Display supported versions and upgrade versions for each orchestrator"
 )
 
 type orchestratorsCmd struct {
@@ -24,9 +24,9 @@ func newOrchestratorsCmd() *cobra.Command {
 	oc := orchestratorsCmd{}
 
 	command := &cobra.Command{
-		Use:   cmdName,
-		Short: cmdShortDescription,
-		Long:  cmdLongDescription,
+		Use:   orchestratorsName,
+		Short: orchestratorsShortDescription,
+		Long:  orchestratorsLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return oc.run(cmd, args)
 		},
