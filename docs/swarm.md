@@ -4,11 +4,11 @@
 
 Here are the steps to deploy a simple Swarm cluster:
 
-1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
-2. [generate your ssh key](ssh.md#ssh-key-generation)
-3. edit the [Swarm example](../examples/swarm.json) and fill in the blank strings
-4. [generate the template](acsengine.md#generating-a-template)
-5. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
+1. [Install acs-engine](acsengine.md#downloading-and-building-acs-engine)
+2. [Generate your SSH key](ssh.md#ssh-key-generation)
+3. [Edit the Swarm example](../examples/swarm.json) and fill in the blank strings
+4. [Generate the template](acsengine.md#generate-templates)
+5. [Deploy the output azuredeploy.json and azuredeploy.parameters.json](../docs/acsengine.md#deploy-templates)
 
 ## Walkthrough
 

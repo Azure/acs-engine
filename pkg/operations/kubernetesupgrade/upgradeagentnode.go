@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/api/v1/node"
 )
 
 const (
@@ -128,7 +127,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v", *vmName, err)
 				retryTimer.Reset(retry)
-			} else if node.IsNodeReady(agentNode) {
+			} else if isNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
 				timeoutTimer.Stop()
 				return nil

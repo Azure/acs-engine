@@ -6,6 +6,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func TestNewGenerateCmd(t *testing.T) {
+	output := newGenerateCmd()
+	if output.Use != generateName || output.Short != generateShortDescription || output.Long != generateLongDescription {
+		t.Fatalf("generate command should have use %s equal %s, short %s equal %s and long %s equal to %s", output.Use, generateName, output.Short, generateShortDescription, output.Long, generateLongDescription)
+	}
+
+	expectedFlags := []string{"api-model", "output-directory", "ca-certificate-path", "ca-private-key-path", "set", "classic-mode", "no-pretty-print", "parameters-only"}
+	for _, f := range expectedFlags {
+		if output.Flags().Lookup(f) == nil {
+			t.Fatalf("generate command should have flag %s", f)
+		}
+	}
+}
+
 func TestGenerateCmdValidate(t *testing.T) {
 	g := &generateCmd{}
 	r := &cobra.Command{}
