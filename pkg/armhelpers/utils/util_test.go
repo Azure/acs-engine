@@ -108,7 +108,7 @@ func Test_WindowsVMSSNameParts(t *testing.T) {
 	expectedAcs := "k8s"
 	expectedPoolIndex := 3
 
-	poolPrefix, acs, poolIndex, err := WindowsVMNameParts("38988k8s903")
+	poolPrefix, acs, poolIndex, err := WindowsVMSSNameParts("38988k8s903")
 	if poolPrefix != expectedPoolPrefix {
 		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
 	}
