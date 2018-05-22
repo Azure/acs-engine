@@ -460,6 +460,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateAddons(); e != nil {
 		return e
 	}
+	if e := a.validateExtensions(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
 		return e
 	}
