@@ -462,6 +462,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateAddons(); e != nil {
 		return e
 	}
+	if e := a.validateExtensions(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
 		return e
 	}
@@ -1002,7 +1005,7 @@ func (a *Properties) validateAddons() error {
 		var isAvailabilitySets bool
 
 		for _, agentPool := range a.AgentPoolProfiles {
-			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+			if agentPool.IsAvailabilitySets() {
 				isAvailabilitySets = true
 			}
 		}
@@ -1011,6 +1014,15 @@ func (a *Properties) validateAddons() error {
 			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
 				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
 			}
+		}
+	}
+	return nil
+}
+
+func (a *Properties) validateExtensions() error {
+	for _, agentPool := range a.AgentPoolProfiles {
+		if len(agentPool.Extensions) != 0 && (len(agentPool.AvailabilityProfile) == 0 || agentPool.IsVirtualMachineScaleSets()) {
+			return fmt.Errorf("Extensions are currently not supported with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
 		}
 	}
 	return nil
