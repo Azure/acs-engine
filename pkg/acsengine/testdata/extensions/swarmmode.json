@@ -35,7 +35,7 @@
           443,
           8080
         ],
-        "availabilityProfile": "VirtualMachineScaleSets",
+        "availabilityProfile": "AvailabilitySet",
         "storageProfile": "StorageAccount",
       "extensions": [
           {
@@ -48,7 +48,7 @@
         "name": "agentpool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "VirtualMachineScaleSets",
+        "availabilityProfile": "AvailabilitySet",
         "storageProfile": "StorageAccount"
       }
     ],
