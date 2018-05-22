@@ -757,6 +757,9 @@ func setStorageDefaults(a *api.Properties) {
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets
 		}
+		if len(profile.ScaleSetEvictionPolicy) == 0 && profile.ScaleSetPriority == api.ScaleSetPriorityLow {
+			profile.ScaleSetEvictionPolicy = api.ScaleSetEvictionPolicyDelete
+		}
 	}
 }
 
