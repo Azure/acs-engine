@@ -196,6 +196,10 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 		if k.NetworkPlugin != "" {
 			networkProfile = &v20180331.NetworkProfile{}
 			networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPlugin)
+			networkProfile.NetworkPolicy = v20180331.NetworkPolicy(k.NetworkPolicy)
+			if k.NetworkPlugin == string(v20180331.Kubenet) {
+				networkProfile.PodCidr = k.ClusterSubnet
+			}
 			networkProfile.ServiceCidr = k.ServiceCIDR
 			networkProfile.DNSServiceIP = k.DNSServiceIP
 			networkProfile.DockerBridgeCidr = k.DockerBridgeSubnet
@@ -204,6 +208,7 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 			// ACS-E uses "none" in the old un-versioned model to represent kubenet.
 			if k.NetworkPolicy == "none" {
 				networkProfile.NetworkPlugin = v20180331.Kubenet
+				networkProfile.PodCidr = k.ClusterSubnet
 			} else {
 				networkProfile.NetworkPlugin = v20180331.NetworkPlugin(k.NetworkPolicy)
 			}

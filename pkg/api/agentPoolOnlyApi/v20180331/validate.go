@@ -187,6 +187,12 @@ func validateVNET(a *Properties) error {
 					return ErrorInvalidServiceCidr
 				}
 
+				// validate ServiceCidr not too large
+				var ones, bits = serviceCidr.Mask.Size()
+				if bits-ones > 20 {
+					return ErrorServiceCidrTooLarge
+				}
+
 				// validate DNSServiceIP
 				dnsServiceIP := net.ParseIP(n.DNSServiceIP)
 				if dnsServiceIP == nil {
