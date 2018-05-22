@@ -115,6 +115,22 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
   ![Image of web app](images/simpleweb.png)
 
+# DCOS upgrade
+
+Starting from DC/OS 1.11, acs-engine deploys a bootstrap node as part of DC/OS cluster. This enables upgrade operation on an existing cluster.
+
+To start the upgrade, run this following command:
+```
+acs-engine dcos-upgrade \
+    --subscription-id <Azure subscription ID> \
+    --resource-group <the resource group the cluster was deployed in> \
+    --location <the region the clusetr was deployed in> \
+    --upgrade-version <desired DC/OS version> \
+    --deployment-dir <deployment directory produced by "acs-engine generate"> \
+    --ssh-private-key-path <path to ssh private key used in deployment>
+```
+The upgrade is an idempotent operation. If failed, it could be re-run and will pick the execution from the last successful checkpoint.
+
 # Learning More
 
 Here are recommended links to learn more about DC/OS:
