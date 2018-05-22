@@ -106,23 +106,23 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command) error {
 		cmd.Usage()
 		return fmt.Errorf("--deployment-dir must be specified")
 	}
-
-	if err = uc.authArgs.validateAuthArgs(); err != nil {
-		return fmt.Errorf("%s", err)
-	}
 	return nil
 }
 
 func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	var err error
 
+	if err = uc.authArgs.validateAuthArgs(); err != nil {
+		return fmt.Errorf("%s", err.Error())
+	}
+
 	if uc.client, err = uc.authArgs.getClient(); err != nil {
-		return fmt.Errorf("Failed to get client: %s", err)
+		return fmt.Errorf("Failed to get client: %s", err.Error())
 	}
 
 	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
-		return fmt.Errorf("Error ensuring resource group: %s", err)
+		return fmt.Errorf("Error ensuring resource group: %s", err.Error())
 	}
 
 	// load apimodel from the deployment directory
