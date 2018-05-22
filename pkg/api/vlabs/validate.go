@@ -1015,6 +1015,15 @@ func (a *Properties) validateAddons() error {
 	return nil
 }
 
+func (a *Properties) validateExtensions() error {
+	for _, agentPool := range a.AgentPoolProfiles {
+		if len(agentPool.Extensions) != 0 && agentPool.IsVirtualMachineScaleSets() {
+			return fmt.Errorf("Extensions are currently not supported with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
+		}
+	}
+	return nil
+}
+
 func validateName(name string, label string) error {
 	if name == "" {
 		return fmt.Errorf("%s must be a non-empty value", label)
