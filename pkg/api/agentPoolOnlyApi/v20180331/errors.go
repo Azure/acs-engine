@@ -11,6 +11,9 @@ var ErrorInvalidNetworkPlugin = fmt.Errorf("Network plugin should be either Azur
 // ErrorInvalidServiceCidr error
 var ErrorInvalidServiceCidr = fmt.Errorf("ServiceCidr is not a valid CIDR")
 
+// ErrorServiceCidrTooLarge error
+var ErrorServiceCidrTooLarge = fmt.Errorf("ServiceCidr is too large")
+
 // ErrorInvalidDNSServiceIP error
 var ErrorInvalidDNSServiceIP = fmt.Errorf("DNSServiceIP is not a valid IP address")
 

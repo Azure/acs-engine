@@ -48,6 +48,8 @@ type Properties struct {
 // NetworkProfile represents network related definitions
 type NetworkProfile struct {
 	NetworkPlugin    NetworkPlugin `json:"networkPlugin,omitempty"`
+	NetworkPolicy    NetworkPolicy `json:"networkPolicy,omitempty"`
+	PodCidr          string        `json:"podCidr,omitempty"`
 	ServiceCidr      string        `json:"serviceCidr,omitempty"`
 	DNSServiceIP     string        `json:"dnsServiceIP,omitempty"`
 	DockerBridgeCidr string        `json:"dockerBridgeCidr,omitempty"`
@@ -61,6 +63,14 @@ const (
 	Azure NetworkPlugin = "azure"
 	// Kubenet represents Kubenet network plugin
 	Kubenet NetworkPlugin = "kubenet"
+)
+
+// NetworkPolicy represnets types of network policy
+type NetworkPolicy string
+
+const (
+	// NetworkPolicyCalico represents Calico network policy
+	NetworkPolicyCalico NetworkPolicy = "calico"
 )
 
 // AddonProfile represents an addon for managed cluster
