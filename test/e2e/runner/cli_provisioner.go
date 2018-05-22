@@ -295,7 +295,7 @@ type resource struct {
 }
 
 func (r resource) String() string {
-	return fmt.Sprintf("%s_%s", r.namespace, r.name)
+	return fmt.Sprintf("%s_%s_%s", r.namespace, r.kind, r.name)
 }
 
 // FetchOpenShiftInfraLogs returns logs for Openshift infra components.
@@ -319,8 +319,38 @@ func (cli *CLIProvisioner) FetchOpenShiftInfraLogs(logPath string) error {
 	var errs []error
 	for _, r := range infraResources {
 		log := outil.FetchLogs(r.kind, r.namespace, r.name)
-		path := filepath.Join(logPath, r.String())
+		path := filepath.Join(logPath, "infra-"+r.String())
 		err := ioutil.WriteFile(path, []byte(log), 0644)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+// FetchOpenShiftMachineLogs returns logs for Openshift machine components.
+func (cli *CLIProvisioner) FetchOpenShiftMachineLogs(cfg *config.Config, eng *engine.Engine, logPath string) error {
+	sshKeyPath := cfg.GetSSHKeyPath()
+
+	master := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com",
+		eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername,
+		cfg.Name,
+		cfg.Location)
+
+	services := []string{"etcd.service"}
+
+	var errs []error
+	for _, service := range services {
+		cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, "sudo journalctl -u etcd.service")
+		util.PrintCommand(cmd)
+		out, err := cmd.Output()
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		path := filepath.Join(logPath, "machine-"+service)
+		err = ioutil.WriteFile(path, out, 0644)
 		if err != nil {
 			errs = append(errs, err)
 		}
