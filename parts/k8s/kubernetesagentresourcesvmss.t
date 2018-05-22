@@ -126,7 +126,7 @@
         "extensionProfile": {
           "extensions": [
             {
-              "name": "vmssCSE",
+              "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'/cse', '-agent-', copyIndex(variables('{{.Name}}Offset')))]",
               "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
                 "type": "CustomScript",
