@@ -30,10 +30,10 @@ const (
 	vmssAgentPoolNameIndex = 1
 	vmssClusterIDIndex     = 2
 
-	windowsVmssNamingFormat       = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{3})$"
-	windowsVmssAgentPoolNameIndex = 1
+	windowsVmssNamingFormat                   = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{3})$"
+	windowsVmssAgentPoolNameIndex             = 1
 	windowsVmssAgentPoolOrchestratorNameIndex = 2
-	windowsVmssAgentPoolIndex     = 3
+	windowsVmssAgentPoolIndex                 = 3
 )
 
 var vmnameLinuxRegexp *regexp.Regexp
@@ -143,7 +143,7 @@ func WindowsVMSSNameParts(vmssName string) (poolPrefix string, acsStr string, po
 		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
 	}
 	poolIndex -= 900
-	
+
 	return poolPrefix, acsStr, poolIndex, nil
 }
 
