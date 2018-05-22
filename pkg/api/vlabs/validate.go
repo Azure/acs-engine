@@ -1001,7 +1001,7 @@ func (a *Properties) validateAddons() error {
 		var isAvailabilitySets bool
 
 		for _, agentPool := range a.AgentPoolProfiles {
-			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+			if agentPool.IsAvailabilitySets() {
 				isAvailabilitySets = true
 			}
 		}
@@ -1017,7 +1017,7 @@ func (a *Properties) validateAddons() error {
 
 func (a *Properties) validateExtensions() error {
 	for _, agentPool := range a.AgentPoolProfiles {
-		if len(agentPool.Extensions) != 0 && agentPool.IsVirtualMachineScaleSets() {
+		if len(agentPool.Extensions) != 0 && (len(agentPool.AvailabilityProfile) == 0 || agentPool.IsVirtualMachineScaleSets()) {
 			return fmt.Errorf("Extensions are currently not supported with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
 		}
 	}
