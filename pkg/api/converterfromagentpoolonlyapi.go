@@ -1,22 +1,14 @@
 package api
 
-
-
 import (
-
 	"strconv"
-
-
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
-
 )
-
-
 
 ///////////////////////////////////////////////////////////
 
@@ -31,8 +23,6 @@ import (
 // for converting.
 
 ///////////////////////////////////////////////////////////
-
-
 
 // ConvertContainerServiceToV20170831AgentPoolOnly converts an unversioned ContainerService to a v20170831 ContainerService
 
@@ -72,8 +62,6 @@ func ConvertContainerServiceToV20170831AgentPoolOnly(api *ContainerService) *v20
 
 }
 
-
-
 // ConvertContainerServiceToV20180331AgentPoolOnly converts an unversioned ContainerService to a v20180331 ContainerService
 
 func ConvertContainerServiceToV20180331AgentPoolOnly(api *ContainerService) *v20180331.ManagedCluster {
@@ -112,8 +100,6 @@ func ConvertContainerServiceToV20180331AgentPoolOnly(api *ContainerService) *v20
 
 }
 
-
-
 // convertResourcePurchasePlanToV20170831 converts a v20170831 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 
 func convertResourcePurchasePlanToV20170831AgentPoolOnly(api *ResourcePurchasePlan, v20170831 *v20170831.ResourcePurchasePlan) {
@@ -127,8 +113,6 @@ func convertResourcePurchasePlanToV20170831AgentPoolOnly(api *ResourcePurchasePl
 	v20170831.Publisher = api.Publisher
 
 }
-
-
 
 func convertPropertiesToV20170831AgentPoolOnly(api *Properties, p *v20170831.Properties) {
 
@@ -190,8 +174,6 @@ func convertPropertiesToV20170831AgentPoolOnly(api *Properties, p *v20170831.Pro
 
 }
 
-
-
 func convertLinuxProfileToV20170831AgentPoolOnly(api *LinuxProfile, obj *v20170831.LinuxProfile) {
 
 	obj.AdminUsername = api.AdminUsername
@@ -203,14 +185,11 @@ func convertLinuxProfileToV20170831AgentPoolOnly(api *LinuxProfile, obj *v201708
 		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170831.PublicKey{
 
 			KeyData: d.KeyData,
-
 		})
 
 	}
 
 }
-
-
 
 func convertWindowsProfileToV20170831AgentPoolOnly(api *WindowsProfile, v20170831Profile *v20170831.WindowsProfile) {
 
@@ -219,8 +198,6 @@ func convertWindowsProfileToV20170831AgentPoolOnly(api *WindowsProfile, v2017083
 	v20170831Profile.AdminPassword = api.AdminPassword
 
 }
-
-
 
 func convertAgentPoolProfileToV20170831AgentPoolOnly(api *AgentPoolProfile, p *v20170831.AgentPoolProfile) {
 
@@ -242,8 +219,6 @@ func convertAgentPoolProfileToV20170831AgentPoolOnly(api *AgentPoolProfile, p *v
 
 }
 
-
-
 func convertServicePrincipalProfileToV20170831AgentPoolOnly(api *ServicePrincipalProfile, v20170831 *v20170831.ServicePrincipalProfile) {
 
 	v20170831.ClientID = api.ClientID
@@ -253,8 +228,6 @@ func convertServicePrincipalProfileToV20170831AgentPoolOnly(api *ServicePrincipa
 	// v20170831.KeyvaultSecretRef = api.KeyvaultSecretRef
 
 }
-
-
 
 // convertResourcePurchasePlanToV20180331 converts a v20180331 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 
@@ -269,8 +242,6 @@ func convertResourcePurchasePlanToV20180331AgentPoolOnly(api *ResourcePurchasePl
 	v20180331.Publisher = api.Publisher
 
 }
-
-
 
 func convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc *KubernetesConfig) *bool {
 
@@ -294,13 +265,9 @@ func convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc *KubernetesCon
 
 }
 
-
-
 func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Properties) {
 
 	p.ProvisioningState = v20180331.ProvisioningState(api.ProvisioningState)
-
-
 
 	if api.OrchestratorProfile != nil {
 
@@ -372,8 +339,6 @@ func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Pro
 
 }
 
-
-
 func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *OrchestratorProfile) (kubernetesVersion string, networkProfile *v20180331.NetworkProfile) {
 
 	if orchestratorProfile.OrchestratorVersion != "" {
@@ -381,8 +346,6 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 		kubernetesVersion = orchestratorProfile.OrchestratorVersion
 
 	}
-
-
 
 	if orchestratorProfile.KubernetesConfig != nil {
 
@@ -426,13 +389,9 @@ func convertOrchestratorProfileToV20180331AgentPoolOnly(orchestratorProfile *Orc
 
 	}
 
-
-
 	return kubernetesVersion, networkProfile
 
 }
-
-
 
 func convertLinuxProfileToV20180331AgentPoolOnly(api *LinuxProfile, obj *v20180331.LinuxProfile) {
 
@@ -445,14 +404,11 @@ func convertLinuxProfileToV20180331AgentPoolOnly(api *LinuxProfile, obj *v201803
 		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20180331.PublicKey{
 
 			KeyData: d.KeyData,
-
 		})
 
 	}
 
 }
-
-
 
 func convertWindowsProfileToV20180331AgentPoolOnly(api *WindowsProfile, v20180331Profile *v20180331.WindowsProfile) {
 
@@ -461,8 +417,6 @@ func convertWindowsProfileToV20180331AgentPoolOnly(api *WindowsProfile, v2018033
 	v20180331Profile.AdminPassword = api.AdminPassword
 
 }
-
-
 
 func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v20180331.AgentPoolProfile) {
 
@@ -496,8 +450,6 @@ func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v
 
 }
 
-
-
 func convertServicePrincipalProfileToV20180331AgentPoolOnly(api *ServicePrincipalProfile, v20180331 *v20180331.ServicePrincipalProfile) {
 
 	v20180331.ClientID = api.ClientID
@@ -508,8 +460,6 @@ func convertServicePrincipalProfileToV20180331AgentPoolOnly(api *ServicePrincipa
 
 }
 
-
-
 func convertAddonsProfileToV20180331AgentPoolOnly(api map[string]AddonProfile, p map[string]v20180331.AddonProfile) {
 
 	if api == nil {
@@ -518,23 +468,18 @@ func convertAddonsProfileToV20180331AgentPoolOnly(api map[string]AddonProfile, p
 
 	}
 
-
-
 	for k, v := range api {
 
 		p[k] = v20180331.AddonProfile{
 
 			Enabled: v.Enabled,
 
-			Config:  v.Config,
-
+			Config: v.Config,
 		}
 
 	}
 
 }
-
-
 
 func convertAADProfileToV20180331AgentPoolOnly(api *AADProfile, v20180331 *v20180331.AADProfile) {
 

@@ -1,22 +1,14 @@
 package api
 
-
-
 import (
-
 	"strconv"
 
 	"testing"
 
-
-
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
-
 )
-
-
 
 func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
@@ -32,31 +24,25 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	dockerBridgeSubnet := "172.17.0.1/16"
 
-
-
 	// all networkProfile related fields are defined in kubernetesConfig
 
 	kubernetesConfig := &KubernetesConfig{
 
-		NetworkPlugin:      networkPlugin,
+		NetworkPlugin: networkPlugin,
 
-		ServiceCIDR:        serviceCIDR,
+		ServiceCIDR: serviceCIDR,
 
-		DNSServiceIP:       dnsServiceIP,
+		DNSServiceIP: dnsServiceIP,
 
 		DockerBridgeSubnet: dockerBridgeSubnet,
-
 	}
 
 	api := &OrchestratorProfile{
 
 		OrchestratorVersion: orchestratorVersion,
 
-		KubernetesConfig:    kubernetesConfig,
-
+		KubernetesConfig: kubernetesConfig,
 	}
-
-
 
 	var version string
 
@@ -64,15 +50,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
 
-
-
 	if version != orchestratorVersion {
 
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 
 	}
-
-
 
 	if string(p.NetworkPlugin) != networkPlugin {
 
@@ -80,15 +62,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if p.ServiceCidr != serviceCIDR {
 
 		t.Error("error in orchestrator profile serviceCidr conversion")
 
 	}
-
-
 
 	if p.DNSServiceIP != dnsServiceIP {
 
@@ -96,15 +74,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if p.DockerBridgeCidr != dockerBridgeSubnet {
 
 		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
 
 	}
-
-
 
 	// none networkProfile related fields are defined in kubernetesConfig
 
@@ -114,23 +88,16 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 		OrchestratorVersion: orchestratorVersion,
 
-		KubernetesConfig:    kubernetesConfig,
-
+		KubernetesConfig: kubernetesConfig,
 	}
 
-
-
 	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
-
-
 
 	if version != orchestratorVersion {
 
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 
 	}
-
-
 
 	if p != nil {
 
@@ -138,29 +105,21 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	// only networkProfile networkPlugin field is defined in kubernetesConfig
 
 	kubernetesConfig = &KubernetesConfig{
 
 		NetworkPlugin: networkPlugin,
-
 	}
 
 	api = &OrchestratorProfile{
 
 		OrchestratorVersion: orchestratorVersion,
 
-		KubernetesConfig:    kubernetesConfig,
-
+		KubernetesConfig: kubernetesConfig,
 	}
 
-
-
 	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
-
-
 
 	if version != orchestratorVersion {
 
@@ -168,15 +127,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if string(p.NetworkPlugin) != networkPlugin {
 
 		t.Error("error in orchestrator profile networkPlugin conversion")
 
 	}
-
-
 
 	if p.ServiceCidr != "" {
 
@@ -184,15 +139,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if p.DNSServiceIP != "" {
 
 		t.Error("error in orchestrator profile dnsServiceIP conversion")
 
 	}
-
-
 
 	if p.DockerBridgeCidr != "" {
 
@@ -200,35 +151,27 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin
 
 	kubernetesConfig = &KubernetesConfig{
 
-		NetworkPolicy:      networkPolicy,
+		NetworkPolicy: networkPolicy,
 
-		ServiceCIDR:        serviceCIDR,
+		ServiceCIDR: serviceCIDR,
 
-		DNSServiceIP:       dnsServiceIP,
+		DNSServiceIP: dnsServiceIP,
 
 		DockerBridgeSubnet: dockerBridgeSubnet,
-
 	}
 
 	api = &OrchestratorProfile{
 
 		OrchestratorVersion: orchestratorVersion,
 
-		KubernetesConfig:    kubernetesConfig,
-
+		KubernetesConfig: kubernetesConfig,
 	}
 
-
-
 	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
-
-
 
 	if version != orchestratorVersion {
 
@@ -236,15 +179,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if string(p.NetworkPlugin) != networkPlugin {
 
 		t.Error("error in orchestrator profile networkPlugin conversion")
 
 	}
-
-
 
 	if p.ServiceCidr != serviceCIDR {
 
@@ -252,15 +191,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	}
 
-
-
 	if p.DNSServiceIP != dnsServiceIP {
 
 		t.Error("error in orchestrator profile dnsServiceIP conversion")
 
 	}
-
-
 
 	if p.DockerBridgeCidr != dockerBridgeSubnet {
 
@@ -270,33 +205,23 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 }
 
-
-
 func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
 
 	maxPods := 25
 
-
-
 	kubernetesConfig := &KubernetesConfig{
 
 		KubeletConfig: map[string]string{"--max-pods": strconv.Itoa(maxPods)},
-
 	}
 
 	api := &AgentPoolProfile{
 
 		KubernetesConfig: kubernetesConfig,
-
 	}
-
-
 
 	p := &v20180331.AgentPoolProfile{}
 
 	convertAgentPoolProfileToV20180331AgentPoolOnly(api, p)
-
-
 
 	if *p.MaxPods != maxPods {
 
@@ -305,8 +230,6 @@ func TestConvertAgentPoolProfileToV20180331AgentPoolOnly(t *testing.T) {
 	}
 
 }
-
-
 
 func TestConvertToV20180331AddonProfile(t *testing.T) {
 
@@ -321,20 +244,13 @@ func TestConvertToV20180331AddonProfile(t *testing.T) {
 			Config: map[string]string{
 
 				"opt1": "value1",
-
 			},
-
 		},
-
 	}
-
-
 
 	p := make(map[string]v20180331.AddonProfile)
 
 	convertAddonsProfileToV20180331AgentPoolOnly(api, p)
-
-
 
 	if len(p) != 1 {
 
@@ -370,8 +286,6 @@ func TestConvertToV20180331AddonProfile(t *testing.T) {
 
 }
 
-
-
 func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T) {
 
 	var kc *KubernetesConfig
@@ -392,14 +306,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          nil,
+		EnableRbac: nil,
 
 		EnableSecureKubelet: helpers.PointerToBool(true),
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -416,14 +327,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(false),
+		EnableRbac: helpers.PointerToBool(false),
 
 		EnableSecureKubelet: helpers.PointerToBool(true),
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -440,14 +348,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(false),
+		EnableRbac: helpers.PointerToBool(false),
 
 		EnableSecureKubelet: helpers.PointerToBool(false),
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -464,14 +369,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(true),
+		EnableRbac: helpers.PointerToBool(true),
 
 		EnableSecureKubelet: helpers.PointerToBool(true),
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -488,14 +390,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(true),
+		EnableRbac: helpers.PointerToBool(true),
 
 		EnableSecureKubelet: helpers.PointerToBool(false),
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -512,14 +411,11 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 	}
 
-
-
 	kc = &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(true),
+		EnableRbac: helpers.PointerToBool(true),
 
 		EnableSecureKubelet: nil,
-
 	}
 
 	enableRBAC = convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
@@ -538,31 +434,24 @@ func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T)
 
 }
 
-
-
 func TestConvertToV20180331AADProfile(t *testing.T) {
 
 	api := AADProfile{
 
-		ServerAppID:     "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 
 		ServerAppSecret: "bcbfaea3-7312-497e-81d9-9ad9b8a99853",
 
-		ClientAppID:     "acbfaea3-7312-497e-81d9-9ad9b8a99853",
+		ClientAppID: "acbfaea3-7312-497e-81d9-9ad9b8a99853",
 
-		TenantID:        "dcbfaea3-7312-497e-81d9-9ad9b8a99852",
+		TenantID: "dcbfaea3-7312-497e-81d9-9ad9b8a99852",
 
-		Authenticator:   Webhook,
-
+		Authenticator: Webhook,
 	}
-
-
 
 	p := v20180331.AADProfile{}
 
 	convertAADProfileToV20180331AgentPoolOnly(&api, &p)
-
-
 
 	if p.ClientAppID != "acbfaea3-7312-497e-81d9-9ad9b8a99853" {
 
@@ -570,23 +459,17 @@ func TestConvertToV20180331AADProfile(t *testing.T) {
 
 	}
 
-
-
 	if p.ServerAppSecret != "bcbfaea3-7312-497e-81d9-9ad9b8a99853" {
 
 		t.Error("ServerAppSecret not set to expected value")
 
 	}
 
-
-
 	if p.ServerAppID != "ccbfaea3-7312-497e-81d9-9ad9b8a99853" {
 
 		t.Error("ServerAppID not set to expected value")
 
 	}
-
-
 
 	if p.TenantID != "dcbfaea3-7312-497e-81d9-9ad9b8a99852" {
 

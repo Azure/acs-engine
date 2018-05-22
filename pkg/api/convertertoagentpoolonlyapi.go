@@ -1,14 +1,9 @@
 package api
 
-
-
 import (
-
 	"encoding/json"
 
 	"strconv"
-
-
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 
@@ -19,10 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
-
 )
-
-
 
 ///////////////////////////////////////////////////////////
 
@@ -37,8 +29,6 @@ import (
 // for converting.
 
 ///////////////////////////////////////////////////////////
-
-
 
 const (
 
@@ -65,10 +55,7 @@ const (
 	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
 
 	DefaultKubernetesMaxPodsAzureCNI = "30"
-
 )
-
-
 
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 
@@ -104,8 +91,6 @@ func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *Contain
 
 }
 
-
-
 // ConvertV20180331AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 
 func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *ContainerService {
@@ -140,25 +125,20 @@ func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *Contain
 
 }
 
-
-
 func convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831 *v20170831.ResourcePurchasePlan) *ResourcePurchasePlan {
 
 	return &ResourcePurchasePlan{
 
-		Name:          v20170831.Name,
+		Name: v20170831.Name,
 
-		Product:       v20170831.Product,
+		Product: v20170831.Product,
 
 		PromotionCode: v20170831.PromotionCode,
 
-		Publisher:     v20170831.Publisher,
-
+		Publisher: v20170831.Publisher,
 	}
 
 }
-
-
 
 func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Properties {
 
@@ -166,11 +146,8 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 
 		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 
-		MasterProfile:     nil,
-
+		MasterProfile: nil,
 	}
-
-
 
 	properties.HostedMasterProfile = &HostedMasterProfile{}
 
@@ -178,11 +155,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-
-
 	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
-
-
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 
@@ -204,21 +177,15 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 
 	}
 
-
-
 	if obj.ServicePrincipalProfile != nil {
 
 		properties.ServicePrincipalProfile = convertV20170831AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
 
 	}
 
-
-
 	return properties
 
 }
-
-
 
 // ConvertVLabsAgentPoolOnly converts a vlabs ContainerService to an unversioned ContainerService
 
@@ -258,8 +225,6 @@ func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 
 }
 
-
-
 // convertVLabsResourcePurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 
 func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *ResourcePurchasePlan) {
@@ -274,8 +239,6 @@ func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchase
 
 }
 
-
-
 func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
@@ -284,15 +247,11 @@ func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Propertie
 
 	api.MasterProfile = nil
 
-
-
 	api.HostedMasterProfile = &HostedMasterProfile{}
 
 	api.HostedMasterProfile.DNSPrefix = vlabs.DNSPrefix
 
 	api.HostedMasterProfile.FQDN = vlabs.FQDN
-
-
 
 	api.AgentPoolProfiles = []*AgentPoolProfile{}
 
@@ -354,8 +313,6 @@ func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Propertie
 
 }
 
-
-
 func convertVLabsAgentPoolOnlyLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 
 	api.AdminUsername = vlabs.AdminUsername
@@ -384,14 +341,11 @@ func convertVLabsAgentPoolOnlyLinuxProfile(vlabs *vlabs.LinuxProfile, api *Linux
 
 }
 
-
-
 func convertV20170831AgentPoolOnlyLinuxProfile(obj *v20170831.LinuxProfile) *LinuxProfile {
 
 	api := &LinuxProfile{
 
 		AdminUsername: obj.AdminUsername,
-
 	}
 
 	api.SSH.PublicKeys = []PublicKey{}
@@ -406,8 +360,6 @@ func convertV20170831AgentPoolOnlyLinuxProfile(obj *v20170831.LinuxProfile) *Lin
 
 }
 
-
-
 func convertV20170831AgentPoolOnlyWindowsProfile(obj *v20170831.WindowsProfile) *WindowsProfile {
 
 	return &WindowsProfile{
@@ -415,12 +367,9 @@ func convertV20170831AgentPoolOnlyWindowsProfile(obj *v20170831.WindowsProfile) 
 		AdminUsername: obj.AdminUsername,
 
 		AdminPassword: obj.AdminPassword,
-
 	}
 
 }
-
-
 
 func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
 
@@ -444,55 +393,46 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 
 }
 
-
-
 func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 
 	return &OrchestratorProfile{
 
-		OrchestratorType:    Kubernetes,
+		OrchestratorType: Kubernetes,
 
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 
 		KubernetesConfig: &KubernetesConfig{
 
-			EnableRbac:          helpers.PointerToBool(false),
+			EnableRbac: helpers.PointerToBool(false),
 
 			EnableSecureKubelet: helpers.PointerToBool(false),
 
 			// set network default for un-versioned model
 
-			NetworkPlugin:      string(v20180331.Kubenet),
+			NetworkPlugin: string(v20180331.Kubenet),
 
-			ClusterSubnet:      DefaultKubernetesClusterSubnet,
+			ClusterSubnet: DefaultKubernetesClusterSubnet,
 
-			ServiceCIDR:        DefaultKubernetesServiceCIDR,
+			ServiceCIDR: DefaultKubernetesServiceCIDR,
 
-			DNSServiceIP:       DefaultKubernetesDNSServiceIP,
+			DNSServiceIP: DefaultKubernetesDNSServiceIP,
 
 			DockerBridgeSubnet: DefaultDockerBridgeSubnet,
-
 		},
-
 	}
 
 }
-
-
 
 func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 
 	return &OrchestratorProfile{
 
-		OrchestratorType:    Kubernetes,
+		OrchestratorType: Kubernetes,
 
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
-
 	}
 
 }
-
-
 
 func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
 
@@ -520,8 +460,6 @@ func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoo
 
 }
 
-
-
 func convertVLabsAgentPoolOnlyAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
 
 	api.Name = vlabs.Name
@@ -544,8 +482,6 @@ func convertVLabsAgentPoolOnlyAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, ap
 
 }
 
-
-
 func convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 
 	api.ClientID = vlabs.ClientID
@@ -556,21 +492,16 @@ func convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs *vlabs.ServicePrinci
 
 }
 
-
-
 func convertV20170831AgentPoolOnlyServicePrincipalProfile(obj *v20170831.ServicePrincipalProfile) *ServicePrincipalProfile {
 
 	return &ServicePrincipalProfile{
 
 		ClientID: obj.ClientID,
 
-		Secret:   obj.Secret,
-
+		Secret: obj.Secret,
 	}
 
 }
-
-
 
 func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
 
@@ -592,8 +523,6 @@ func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile
 
 }
 
-
-
 func isAgentPoolOnlyClusterJSON(contents []byte) bool {
 
 	properties, propertiesPresent := propertiesAsMap(contents)
@@ -609,8 +538,6 @@ func isAgentPoolOnlyClusterJSON(contents []byte) bool {
 	return !masterProfilePresent
 
 }
-
-
 
 func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
 
@@ -632,25 +559,20 @@ func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
 
 }
 
-
-
 func convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331 *v20180331.ResourcePurchasePlan) *ResourcePurchasePlan {
 
 	return &ResourcePurchasePlan{
 
-		Name:          v20180331.Name,
+		Name: v20180331.Name,
 
-		Product:       v20180331.Product,
+		Product: v20180331.Product,
 
 		PromotionCode: v20180331.PromotionCode,
 
-		Publisher:     v20180331.Publisher,
-
+		Publisher: v20180331.Publisher,
 	}
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Properties {
 
@@ -658,11 +580,8 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 
-		MasterProfile:     nil,
-
+		MasterProfile: nil,
 	}
-
-
 
 	properties.HostedMasterProfile = &HostedMasterProfile{}
 
@@ -670,13 +589,9 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-
-
 	kubernetesConfig := convertV20180331AgentPoolOnlyKubernetesConfig(obj.EnableRBAC)
 
 	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion, obj.NetworkProfile, kubernetesConfig)
-
-
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 
@@ -692,15 +607,11 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	}
 
-
-
 	if obj.WindowsProfile != nil {
 
 		properties.WindowsProfile = convertV20180331AgentPoolOnlyWindowsProfile(obj.WindowsProfile)
 
 	}
-
-
 
 	if obj.ServicePrincipalProfile != nil {
 
@@ -708,15 +619,11 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	}
 
-
-
 	if obj.AddonProfiles != nil {
 
 		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
 
 	}
-
-
 
 	if obj.AADProfile != nil {
 
@@ -724,20 +631,15 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	}
 
-
-
 	return properties
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyLinuxProfile(obj *v20180331.LinuxProfile) *LinuxProfile {
 
 	api := &LinuxProfile{
 
 		AdminUsername: obj.AdminUsername,
-
 	}
 
 	api.SSH.PublicKeys = []PublicKey{}
@@ -752,8 +654,6 @@ func convertV20180331AgentPoolOnlyLinuxProfile(obj *v20180331.LinuxProfile) *Lin
 
 }
 
-
-
 func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) *WindowsProfile {
 
 	return &WindowsProfile{
@@ -761,12 +661,9 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 		AdminUsername: obj.AdminUsername,
 
 		AdminPassword: obj.AdminPassword,
-
 	}
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
 
@@ -776,25 +673,21 @@ func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *Kubernetes
 
 		return &KubernetesConfig{
 
-			EnableRbac:          helpers.PointerToBool(true),
+			EnableRbac: helpers.PointerToBool(true),
 
 			EnableSecureKubelet: helpers.PointerToBool(true),
-
 		}
 
 	}
 
 	return &KubernetesConfig{
 
-		EnableRbac:          helpers.PointerToBool(false),
+		EnableRbac: helpers.PointerToBool(false),
 
 		EnableSecureKubelet: helpers.PointerToBool(false),
-
 	}
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, networkProfile *v20180331.NetworkProfile, kubernetesConfig *KubernetesConfig) *OrchestratorProfile {
 
@@ -804,8 +697,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 
 	}
 
-
-
 	if networkProfile != nil {
 
 		switch networkProfile.NetworkPlugin {
@@ -813,8 +704,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 		case v20180331.Azure:
 
 			kubernetesConfig.NetworkPlugin = "azure"
-
-
 
 			if networkProfile.ServiceCidr != "" {
 
@@ -826,8 +715,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 
 			}
 
-
-
 			if networkProfile.DNSServiceIP != "" {
 
 				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
@@ -837,8 +724,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 
 			}
-
-
 
 			if networkProfile.DockerBridgeCidr != "" {
 
@@ -854,11 +739,7 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 
 			kubernetesConfig.NetworkPlugin = "kubenet"
 
-
-
 			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
-
-
 
 			if networkProfile.ServiceCidr != "" {
 
@@ -870,8 +751,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 
 			}
 
-
-
 			if networkProfile.DNSServiceIP != "" {
 
 				kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
@@ -881,8 +760,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 				kubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 
 			}
-
-
 
 			if networkProfile.DockerBridgeCidr != "" {
 
@@ -922,21 +799,16 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 
 	}
 
-
-
 	return &OrchestratorProfile{
 
-		OrchestratorType:    Kubernetes,
+		OrchestratorType: Kubernetes,
 
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 
-		KubernetesConfig:    kubernetesConfig,
-
+		KubernetesConfig: kubernetesConfig,
 	}
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.AgentPoolProfile, availabilityProfile string, networkProfile *v20180331.NetworkProfile) *AgentPoolProfile {
 
@@ -983,7 +855,6 @@ func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.A
 	kubernetesConfig := &KubernetesConfig{
 
 		KubeletConfig: map[string]string{"--max-pods": maxPods},
-
 	}
 
 	api.KubernetesConfig = kubernetesConfig
@@ -996,21 +867,16 @@ func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.A
 
 }
 
-
-
 func convertV20180331AgentPoolOnlyServicePrincipalProfile(obj *v20180331.ServicePrincipalProfile) *ServicePrincipalProfile {
 
 	return &ServicePrincipalProfile{
 
 		ClientID: obj.ClientID,
 
-		Secret:   obj.Secret,
-
+		Secret: obj.Secret,
 	}
 
 }
-
-
 
 func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonProfile) map[string]AddonProfile {
 
@@ -1022,8 +888,7 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 
 			Enabled: v.Enabled,
 
-			Config:  v.Config,
-
+			Config: v.Config,
 		}
 
 	}
@@ -1032,22 +897,19 @@ func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonPr
 
 }
 
-
-
 func convertV20180331AgentPoolOnlyAADProfile(obj *v20180331.AADProfile) *AADProfile {
 
 	return &AADProfile{
 
-		ClientAppID:     obj.ClientAppID,
+		ClientAppID: obj.ClientAppID,
 
-		ServerAppID:     obj.ServerAppID,
+		ServerAppID: obj.ServerAppID,
 
 		ServerAppSecret: obj.ServerAppSecret,
 
-		TenantID:        obj.TenantID,
+		TenantID: obj.TenantID,
 
-		Authenticator:   Webhook,
-
+		Authenticator: Webhook,
 	}
 
 }
