@@ -407,6 +407,10 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 		case v20180331.Azure:
 			kubernetesConfig.NetworkPlugin = "azure"
 
+			if networkProfile.NetworkPolicy != "" {
+				kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPolicy)
+			}
+
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
 			} else {
@@ -427,7 +431,15 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 		case v20180331.Kubenet:
 			kubernetesConfig.NetworkPlugin = "kubenet"
 
-			kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+			if networkProfile.NetworkPolicy != "" {
+				kubernetesConfig.NetworkPolicy = string(networkProfile.NetworkPolicy)
+			}
+
+			if networkProfile.PodCidr != "" {
+				kubernetesConfig.ClusterSubnet = networkProfile.PodCidr
+			} else {
+				kubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+			}
 
 			if networkProfile.ServiceCidr != "" {
 				kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
@@ -446,11 +458,6 @@ func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string, 
 			} else {
 				kubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 			}
-		default:
-			kubernetesConfig.NetworkPlugin = string(networkProfile.NetworkPlugin)
-			kubernetesConfig.ServiceCIDR = networkProfile.ServiceCidr
-			kubernetesConfig.DNSServiceIP = networkProfile.DNSServiceIP
-			kubernetesConfig.DockerBridgeSubnet = networkProfile.DockerBridgeCidr
 		}
 	} else {
 		// set network default for un-versioned model

@@ -8,6 +8,7 @@ func TestValidateVNET(t *testing.T) {
 
 	serviceCidr := "10.0.0.0/16"
 	serviceCidrBad := "10.0.0.0"
+	serviceCidrTooLarge := "10.0.0.0/11"
 	dNSServiceIP := "10.0.0.10"
 	dNSServiceIPBad := "10.0.0.257"
 	dNSServiceIPOutOfRange := "10.1.0.1"
@@ -179,6 +180,34 @@ func TestValidateVNET(t *testing.T) {
 
 	if err := validateVNET(a); err != ErrorInvalidServiceCidr {
 		t.Errorf("Failed to throw error, %s", ErrorInvalidServiceCidr)
+	}
+
+	// NetworkPlugin = Azure, serviceCidr too large
+	n = &NetworkProfile{
+		NetworkPlugin:    NetworkPlugin("azure"),
+		ServiceCidr:      serviceCidrTooLarge,
+		DNSServiceIP:     dNSServiceIP,
+		DockerBridgeCidr: dockerBridgeCidr,
+	}
+
+	p = []*AgentPoolProfile{
+		{
+			VnetSubnetID: vnetSubnetID1,
+			MaxPods:      &maxPods1,
+		},
+		{
+			VnetSubnetID: vnetSubnetID2,
+			MaxPods:      &maxPods2,
+		},
+	}
+
+	a = &Properties{
+		NetworkProfile:    n,
+		AgentPoolProfiles: p,
+	}
+
+	if err := validateVNET(a); err != ErrorServiceCidrTooLarge {
+		t.Errorf("Failed to throw error, %s", ErrorServiceCidrTooLarge)
 	}
 
 	// NetworkPlugin = Azure, bad dNSServiceIP
