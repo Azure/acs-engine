@@ -19,6 +19,7 @@ The following is an example:
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
         "useManagedIdentity": true,
         "addons": [
