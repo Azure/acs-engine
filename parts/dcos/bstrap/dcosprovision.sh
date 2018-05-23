@@ -22,7 +22,7 @@ case $DCOS_ENVIRONMENT in
         UNZIP_DOWNLOAD_URL=http://acsengine.blob.core.chinacloudapi.cn/dcos/unzip_6.0-20ubuntu1_amd64.deb
         LIBLTDL_DOWNLOAD_URL=http://acsengine.blob.core.chinacloudapi.cn/dcos/libltdl7_2.4.6-0.1_amd64.deb
         DOCKER_CE_DOWNLOAD_URL=http://mirror.kaiyuanshe.cn/docker-ce/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb
-        SELINUX_DOWNLOAD_URL=http://mirror.kaiyuanshe.cn/docker-ce/linux/ubuntu/dists/xenial/pool/stable/amd64/selinux-utils_2.4-3build2_amd64.deb
+        SELINUX_DOWNLOAD_URL=http://acsengine.blob.core.chinacloudapi.cn/dcos/selinux-utils_2.4-3build2_amd64.deb
     ;;
 esac
 
