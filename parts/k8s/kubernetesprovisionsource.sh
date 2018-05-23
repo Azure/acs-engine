@@ -35,7 +35,7 @@ retrycmd_get_tarball() {
         if [ $i -eq $tar_retries ]; then
             return 1
         else
-            retrycmd_if_failure_no_stats 1 1 30 curl -fsSL $url -o $tarball
+            timeout 60 curl -fsSL $url -o $tarball
             sleep $wait_sleep
         fi
     done
