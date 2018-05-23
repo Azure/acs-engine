@@ -124,6 +124,14 @@ function installEtcd() {
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
+function setupCustomSearchDomain() {
+    sudo echo "  dns-search ${SEARCH_DOMAIN_NAME}" >> /etc/network/interfaces.d/50-cloud-init.cfg
+    systemctl_restart 20 5 10 restart networking
+    retrycmd_if_failure 10 5 120 apt-get -y install realmd sssd sssd-tools samba-common samba samba-common python2.7 samba-libs packagekit
+    echo "${SEARCH_DOMAIN_REALM_PASSWORD}" | realm join -U ${SEARCH_DOMAIN_REALM_USER}@`echo "${SEARCH_DOMAIN_NAME}" | tr /a-z/ /A-Z/` `echo "${SEARCH_DOMAIN_NAME}" | tr /a-z/ /A-Z/`
+    echo "ad_hostname = `hostname`.${SEARCH_DOMAIN_NAME}" >> /etc/sssd/sssd.conf
+}
+
 function installDocker() {
     apt_get_install 20 30 120 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
@@ -471,6 +479,10 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
 else
     echo "skipping master node provision operations, this is an agent node"
+fi
+
+if [[ ! -z "${SEARCH_DOMAIN_NAME}" ]]; then
+    setupCustomSearchDomain
 fi
 
 installDocker
