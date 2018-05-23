@@ -121,3 +121,46 @@ Finally, you'll need to make sure that the apimodel.json corresponding to the
 pre-deployed cluster is available at `_output/$NAME.json`.  If you previously
 used `acs-engine deploy` directly to deploy the cluster, you will need to run
 `cp _output/$NAME/apimodel.json _output/$NAME.json`.
+
+### Debugging
+
+For acs-engine code debugging you can use [Delve](https://github.com/derekparker/delve) debugger.
+
+#### CLI
+
+Run command:
+```
+dlv debug github.com/Azure/acs-engine -- generate ~/Documents/azure/openshift.json
+```
+
+Test individual package and individual test:
+```
+dlv test github.com/Azure/acs-engine/pkg/acsengine
+dlv test github.com/Azure/acs-engine/pkg/acsengine -- -test.run ^TestNetworkPolicyDefaults$
+```
+
+#### Visual Code Studio
+
+More on VSC integration with delve can be found [here](https://github.com/Microsoft/vscode-go/wiki/Debugging-Go-code-using-VS-Code)
+
+If delve is installed and configured, you can use native VS functionality to debug code or individual tests (`debug test`)
+
+Example launch.json file:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceRoot}",
+      "env": {},
+      "args": ["generate", "${workspaceRoot}/examples/openshift.json"],
+      "showLog": true
+    }
+  ]
+}
+```
