@@ -102,7 +102,7 @@
         "extensionProfile": {
           "extensions": [
             {
-              "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'/cse', '-agent-', copyIndex(variables('{{.Name}}Offset')))]",
+              "name": "vmssCSE",
               "properties": {
                 "publisher": "Microsoft.Compute",
                 "type": "CustomScriptExtension",
