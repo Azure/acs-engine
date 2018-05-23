@@ -85,7 +85,8 @@ apt_get_install() {
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4
     for i in $(seq 1 $retries); do
-        timeout $timeout systemctl daemon-reload && systemctl restart $svcname && systemctl daemon-reload
+        timeout $timeout systemctl daemon-reload
+        timeout $timeout systemctl restart $svcname
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
