@@ -670,11 +670,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 		c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 		if c > -1 {
-			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Config["clientId"])
-			addSecret(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Config["clientKey"], false)
-			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Config["tenantId"])
-			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Config["subscriptionId"])
-			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Config["resourceGroup"])
+			addValue(parametersMap, "kubernetesACIConnectorEnabled", aciConnectorAddon.Enabled)
 			addValue(parametersMap, "kubernetesACIConnectorNodeName", aciConnectorAddon.Config["nodeName"])
 			addValue(parametersMap, "kubernetesACIConnectorOS", aciConnectorAddon.Config["os"])
 			addValue(parametersMap, "kubernetesACIConnectorTaint", aciConnectorAddon.Config["taint"])
@@ -1643,36 +1639,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						} else {
 							val = cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase + KubeConfigs[k8sVersion][DefaultACIConnectorAddonName]
 						}
-					}
-				case "kubernetesACIConnectorClientId":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["clientId"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorClientKey":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["clientKey"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorTenantId":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["tenantId"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorSubscriptionId":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["subscriptionId"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorResourceGroup":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["resourceGroup"]
-					} else {
-						val = ""
 					}
 				case "kubernetesACIConnectorNodeName":
 					if aC > -1 {
