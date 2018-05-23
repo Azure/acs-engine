@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
+	outil "github.com/Azure/acs-engine/test/e2e/openshift/util"
 	"github.com/Azure/acs-engine/test/e2e/runner"
 )
 
@@ -201,14 +202,11 @@ func teardown() {
 		if err != nil {
 			log.Printf("cannot create directory for logs: %s", err)
 		}
-		err = cliProvisioner.FetchOpenShiftMachineLogs(cfg, eng, logsPath)
-		if err != nil {
-			log.Printf("cliProvisioner.FetchOpenShiftMachineLogs error: %s", err)
-		}
-		err = cliProvisioner.FetchOpenShiftInfraLogs(logsPath)
-		if err != nil {
-			log.Printf("cliProvisioner.FetchOpenShiftInfraLogs error: %s", err)
-		}
+		sshKeyPath := cfg.GetSSHKeyPath()
+		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
+		version := eng.Config.OrchestratorVersion
+		distro := eng.Config.Distro
+		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")
