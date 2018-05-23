@@ -756,7 +756,7 @@ func setStorageDefaults(a *api.Properties) {
 		}
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.0") {
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.0") {
 				profile.AvailabilityProfile = api.AvailabilitySet
 			}
 		}
