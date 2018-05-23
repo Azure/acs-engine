@@ -135,7 +135,7 @@ jobs:
       - checkout
       - run: |
           echo 'export TIMEOUT=10m' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/kubernetes-vmss/kubernetes.json' >> $BASH_ENV
           echo 'export CREATE_VNET=false' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
