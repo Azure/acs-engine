@@ -42,9 +42,9 @@ done
 
 iptables-save >/etc/sysconfig/iptables
 
-sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/${SERVICE_TYPE}-master-api
+rm -rf /etc/etcd/* /etc/origin/master/*
 
-rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
+mkdir -p /etc/origin/master
 
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
@@ -60,7 +60,7 @@ update-ca-trust
 rpm -i https://packages.microsoft.com/yumrepos/azure-cli/azure-cli-2.0.31-1.el7.x86_64.rpm
 
 set +x
-. <(sed -e 's/: */=/' /etc/azure/azure.conf)
+. <(sed -e 's/: */=/' /etc/origin/cloudprovider/azure.conf)
 az login --service-principal -u "$aadClientId" -p "$aadClientSecret" --tenant "$aadTenantId" &>/dev/null
 REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$(az storage account list -g "$resourceGroup" --query "[?ends_with(name, 'registry')].name" -o tsv)
 REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$(az storage account keys list -g "$resourceGroup" -n "$REGISTRY_STORAGE_AZURE_ACCOUNTNAME" --query "[?keyName == 'key1'].value" -o tsv)
@@ -95,14 +95,17 @@ for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansi
     sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
 done
 
-# note: ${SERVICE_TYPE}-node crash loops until master is up
-for unit in etcd.service ${SERVICE_TYPE}-master-api.service ${SERVICE_TYPE}-master-controllers.service; do
-	systemctl enable $unit
-	systemctl start $unit
+mkdir -p /root/.kube
+
+for loc in /root/.kube/config /etc/origin/node/bootstrap.kubeconfig /etc/origin/node/node.kubeconfig; do
+  cp /etc/origin/master/admin.kubeconfig "$loc"
 done
 
-mkdir -p /root/.kube
-cp /etc/origin/master/admin.kubeconfig /root/.kube/config
+# Move each static pod into place so the kubelet will run it.
+# Pods: [apiserver, controller, etcd]
+mv /etc/origin/node/disabled/* /etc/origin/node/pods
+
+systemctl start ${SERVICE_TYPE}-node
 
 export KUBECONFIG=/etc/origin/master/admin.kubeconfig
 
@@ -131,11 +134,6 @@ EOF
 oc create configmap node-config-master --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/master-config.yaml
 oc create configmap node-config-compute --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/compute-config.yaml
 oc create configmap node-config-infra --namespace openshift-node --from-file=node-config.yaml=/tmp/bootstrapconfigs/infra-config.yaml
-
-# must start ${SERVICE_TYPE}-node after master is fully up and running
-# otherwise the implicit dns change may cause master startup to fail
-systemctl enable ${SERVICE_TYPE}-node.service
-systemctl start ${SERVICE_TYPE}-node.service &
 
 chmod +x /tmp/ansible/ansible.sh
 
