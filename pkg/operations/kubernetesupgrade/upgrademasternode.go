@@ -22,6 +22,7 @@ type UpgradeMasterNode struct {
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
+	SubscriptionID          string
 	ResourceGroup           string
 	Client                  armhelpers.ACSEngineClient
 	kubeConfig              string
@@ -33,7 +34,7 @@ type UpgradeMasterNode struct {
 // the node.
 // The 'drain' flag is not used for deleting master nodes.
 func (kmn *UpgradeMasterNode) DeleteNode(vmName *string, drain bool) error {
-	return operations.CleanDeleteVirtualMachine(kmn.Client, kmn.logger, kmn.ResourceGroup, *vmName)
+	return operations.CleanDeleteVirtualMachine(kmn.Client, kmn.logger, kmn.SubscriptionID, kmn.ResourceGroup, *vmName)
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes

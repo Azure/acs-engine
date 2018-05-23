@@ -164,6 +164,47 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.6.8 cannot be upgraded to 1.8.6"))
 	})
+
+	It("Should return error message when failing to delete role assignment during upgrade operation", func() {
+		cs := createContainerService("testcluster", "1.6.9", 3, 2)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+		cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+		cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity = true
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{},
+			Logger:     log.NewEntry(log.New()),
+		}
+
+		mockClient := armhelpers.MockACSEngineClient{}
+		mockClient.FailDeleteRoleAssignment = true
+		mockClient.ShouldSupportVMIdentity = true
+		uc.Client = &mockClient
+
+		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
+
+		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(Equal("DeleteRoleAssignmentByID failed"))
+	})
+
+	It("Should not fail if no managed identity is returned by azure during upgrade operation", func() {
+		cs := createContainerService("testcluster", "1.6.9", 3, 2)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+		cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+		cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity = true
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{},
+			Logger:     log.NewEntry(log.New()),
+		}
+
+		mockClient := armhelpers.MockACSEngineClient{}
+		uc.Client = &mockClient
+
+		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
+
+		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		Expect(err).To(BeNil())
+	})
 })
 
 func createContainerService(containerServiceName string, orchestratorVersion string, masterCount int, agentCount int) *api.ContainerService {
