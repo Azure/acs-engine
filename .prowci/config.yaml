@@ -1,0 +1,18 @@
+prowjob_namespace: default
+log_level: debug
+
+tide:
+  # target_url: http://ci-bot-aks-ingress.eastus.cloudapp.azure.com/tide.html
+  merge_method:
+    Azure/acs-engine: squash
+  queries:
+  - repos:
+    - Azure/acs-engine
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - needs-ok-to-test
+    - DO-NOT-MERGE
+    - do-not-merge/work-in-progress
+    - do-not-merge/hold

@@ -1,0 +1,39 @@
+approve:
+- repos:
+  - Azure/acs-engine
+
+config_updater:
+  maps:
+    .prowci/config.yaml:
+      name: config
+    .prowci/plugins.yaml:
+      name: plugins
+
+label:
+  additional_labels:
+  - orchestrator/k8s
+  - orchestrator/openshift
+  - orchestrator/dcos
+  - orchestrator/swarm
+  - DO-NOT-MERGE
+
+owners:
+  skip_collaborators:
+  - Azure/acs-engine
+
+plugins:
+  Azure/acs-engine:
+  - approve
+  - assign
+  - cat
+  - config-updater
+  - dog
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - wip
+  - yuks
