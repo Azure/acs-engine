@@ -5,11 +5,16 @@ import (
 	"math/rand"
 	"time"
 
+	"os"
+
+	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -55,7 +60,20 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	deploymentSuffix := random.Int31()
 	deploymentName := fmt.Sprintf("master-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
 
-	_, err := kmn.Client.DeployTemplate(
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{},
+	}
+
+	transformer := &transform.Transformer{Translator: ctx.Translator}
+
+	err := transform.RemoveNSGs(transformer, kmn.logger, kmn.TemplateMap)
+
+	if err != nil {
+		log.Fatalf("error tranforming the template for scaling template : %s", err.Error())
+		os.Exit(1)
+	}
+
+	_, err = kmn.Client.DeployTemplate(
 		kmn.ResourceGroup,
 		deploymentName,
 		kmn.TemplateMap,
