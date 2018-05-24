@@ -338,9 +338,9 @@ Get the Azure CNI build by running `C:\k\azurecni\bin\azure-vnet.exe --help`. It
 ACS-Engine | Windows Server |	Kubernetes | Azure CNI | Notes
 -----------|----------------|------------|-----------|----------
 V0.16.2	| Windows Server version 1709 (10.0.16299.____)	| V1.9.7 | ? | DNS resolution is not configured
-V0.17.0 | Windows Server version 1709	| V1.10.2 | v1.0.4 | Acs-engine version 0.17 defaults to Windows Server version 1803. You can override it to use 1709 instead <link>. Manual workarounds needed on Windows for DNS Server list, DNS search suffix
+V0.17.0 | Windows Server version 1709	| V1.10.2 | v1.0.4 | Acs-engine version 0.17 defaults to Windows Server version 1803. You can override it to use 1709 instead [here](#choosing-the-windows-server-version). Manual workarounds needed on Windows for DNS Server list, DNS search suffix
 V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual workarounds needed on Windows for DNS Server list, DNS search suffix, and dropped packets
-
+v0.17.1 | Windows Server version 1709 | v1.10.3 | v1.0.4-1-gf0f090e | Manual workarounds needed on Windows for DNS Server list and DNS search suffix. This ACS-Engine version defaults to Windows Server version 1803, but you can override it to use 1709 instead [here](#choosing-the-windows-server-version)
 
 ### Known problems
 
