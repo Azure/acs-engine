@@ -605,9 +605,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 	case api.OpenShift:
-		if a.MasterProfile.Distro == "" {
-			a.MasterProfile.Distro = api.RHEL
-		}
 		kc := a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
 		if kc == nil {
 			kc = &api.KubernetesConfig{}
@@ -645,10 +642,18 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	if a.MasterProfile == nil {
 		return
 	}
-
-	// Set default Distro to Ubuntu
-	if a.MasterProfile.Distro == "" {
-		a.MasterProfile.Distro = api.Ubuntu
+	o := a.OrchestratorProfile
+	// set default Distro based on orchestrator
+	switch o.OrchestratorType {
+	case api.OpenShift:
+		if a.MasterProfile.Distro == "" {
+			a.MasterProfile.Distro = api.OpenShiftLatestRHEL
+		}
+	default:
+		// Set default Distro to Ubuntu
+		if a.MasterProfile.Distro == "" {
+			a.MasterProfile.Distro = api.Ubuntu
+		}
 	}
 
 	if !a.MasterProfile.IsCustomVNET() {
@@ -734,14 +739,24 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		}
 	}
 
+	o := a.OrchestratorProfile
 	for _, profile := range a.AgentPoolProfiles {
 		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
 		}
-		// set default Distro to Ubuntu
-		if profile.Distro == "" {
-			profile.Distro = api.Ubuntu
+
+		// set default Distro based on orchestrator
+		switch o.OrchestratorType {
+		case api.OpenShift:
+			if profile.Distro == "" {
+				profile.Distro = api.OpenShiftLatestRHEL
+			}
+		default:
+			// Set default Distro to Ubuntu
+			if profile.Distro == "" {
+				profile.Distro = api.Ubuntu
+			}
 		}
 
 		// Set the default number of IP addresses allocated for agents.
