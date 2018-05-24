@@ -588,7 +588,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		// validation for VMSS for Kubernetes
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			version := common.RationalizeReleaseAndVersion(
 				a.OrchestratorProfile.OrchestratorType,
 				a.OrchestratorProfile.OrchestratorRelease,
