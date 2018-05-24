@@ -311,7 +311,7 @@ Kubernetes
 -	“Server Version”
 `kubectl describe node <windows node>`
 -	“kernel version”
--	Also note the IP Address for the next step, but you don’t need to share it
+-	Also note the IP Address for the next step, but you don't need to share it
 
 Windows config
 Connect to the Windows node with remote desktop. This is easiest forwarding a port through SSH from your Kubernetes management endpoint.
@@ -344,19 +344,21 @@ V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual
 
 ### Known problems
 
-#### Packets to service IPs are dropped
+#### Packets from Windows pods are dropped
 Affects: Windows Server version 1803 (10.0.17134.1)
+Issues: https://github.com/Azure/acs-engine/issues/3037 
 
 There is a problem with the “L2Tunnel” networking mode not forwarding packets correctly specific to Windows Server version 1803. Windows Server version 1709 is not affected.
 
 Workarounds:
-- Preferred: Use ACS-Engine version (TODO) which will deploy a hotfix. This will be included in later Windows cumulative updates.
-- Alternate: Set `mode=”bridge”` instead of `mode=”tunnel”` in  L2Bridge in `C:\k\azurecni\netconf\10-azure.conflist`. This will break pod to pod network policy enforcement, so it should be used as a temporary workaround only.
+**Fixes are still in development.** A Windows hotfix is needed, and willbe deployed by ACS-Engine once it's ready. The hotfix will be removed later when it's in a future cumulative rollup.
+
 
 #### Pods cannot resolve public DNS names
 Affects: Some builds of Azure CNI
+Issues: https://github.com/Azure/azure-container-networking/issues/147
 
-Run `ipconfig /all` in a pod, and check that the first DNS server listed is within your cluster IP range (10.x.x.x). If it’s not listed, or not the first in the list, then an azure-cni update is needed.
+Run `ipconfig /all` in a pod, and check that the first DNS server listed is within your cluster IP range (10.x.x.x). If it's not listed, or not the first in the list, then an azure-cni update is needed.
 
 Workaround:
 
@@ -392,8 +394,9 @@ Example:
 
 #### Pods cannot resolve cluster DNS names
 Affects: Azure CNI plugin <= 0.3.0
+Issues: https://github.com/Azure/azure-container-networking/issues/146
 
-If you can’t resolve internal service names within the same namespace, run `ipconfig /all` in a pod, and check that the DNS Suffix Search List matches the form `<namespace>.svc.cluster.local`. An Azure CNI update is needed to set the right DNS suffix.
+If you can't resolve internal service names within the same namespace, run `ipconfig /all` in a pod, and check that the DNS Suffix Search List matches the form `<namespace>.svc.cluster.local`. An Azure CNI update is needed to set the right DNS suffix.
 
 Workaround:
 1.	Use the FQDN in DNS lookups such as `kubernetes.kube-system.svc.cluster.local`
