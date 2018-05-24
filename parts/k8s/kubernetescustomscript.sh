@@ -55,6 +55,21 @@ function waitForCloudInit() {
     wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
 }
 
+function systemctlEnableAndStart() {
+    systemctl_restart 100 5 30 $1
+    RESTART_STATUS=$?
+    systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
+    if [ $RESTART_STATUS -ne 0 ]; then
+        echo "$1 could not be started"
+        exit $ERR_SYSTEMCTL_START_FAIL
+    fi
+    retrycmd_if_failure 10 5 3 systemctl enable $1
+    if [ $? -ne 0 ]; then
+        echo "$1 could not be enabled by systemctl"
+        exit $ERR_SYSTEMCTL_ENABLE_FAIL
+    fi
+}
+
 function installEtcd() {
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
@@ -119,7 +134,7 @@ function installEtcd() {
     fi
 
     /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
-    systemctl_restart 100 5 30 etcd || exit $ERR_ETCD_START_TIMEOUT
+    systemctlEnableAndStart etcd
     for i in $(seq 1 600); do
         MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
         if [ "$MEMBER" != "" ]; then
@@ -241,21 +256,6 @@ function configNetworkPlugin() {
 		installCNI
 	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
-    fi
-}
-
-function systemctlEnableAndStart() {
-    systemctl_restart 20 1 10 $1
-    RESTART_STATUS=$?
-    systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
-    if [ $RESTART_STATUS -ne 0 ]; then
-        echo "$1 could not be started"
-        exit $ERR_SYSTEMCTL_START_FAIL
-    fi
-    retrycmd_if_failure 10 1 3 systemctl enable $1
-    if [ $? -ne 0 ]; then
-        echo "$1 could not be enabled by systemctl"
-        exit $ERR_SYSTEMCTL_ENABLE_FAIL
     fi
 }
 
