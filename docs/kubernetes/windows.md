@@ -355,7 +355,9 @@ Workarounds:
 
 
 #### Pods cannot resolve public DNS names
+
 Affects: Some builds of Azure CNI
+
 Issues: https://github.com/Azure/azure-container-networking/issues/147
 
 Run `ipconfig /all` in a pod, and check that the first DNS server listed is within your cluster IP range (10.x.x.x). If it's not listed, or not the first in the list, then an azure-cni update is needed.
@@ -393,7 +395,9 @@ Example:
 ```
 
 #### Pods cannot resolve cluster DNS names
+
 Affects: Azure CNI plugin <= 0.3.0
+
 Issues: https://github.com/Azure/azure-container-networking/issues/146
 
 If you can't resolve internal service names within the same namespace, run `ipconfig /all` in a pod, and check that the DNS Suffix Search List matches the form `<namespace>.svc.cluster.local`. An Azure CNI update is needed to set the right DNS suffix.
@@ -404,6 +408,7 @@ Workaround:
 
 
 #### Pods cannot ping default route or internet IPs
+
 Affects: All acs-engine deployed clusters
 
 ICMP traffic is not routed between private Azure vNETs or to the internet.
