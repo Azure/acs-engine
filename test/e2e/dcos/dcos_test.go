@@ -2,6 +2,7 @@ package dcos
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -65,15 +66,24 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 
 		It("should be able to install marathon", func() {
 			err = cluster.InstallMarathonLB()
+			if err != nil {
+				log.Printf("Error while installing Marathon LB: %s\n", err.Error())
+			}
 			Expect(err).NotTo(HaveOccurred())
 
 			marathonPath := filepath.Join(cfg.CurrentWorkingDir, "/test/e2e/dcos/marathon.json")
 			port, err := cluster.InstallMarathonApp(marathonPath, 5*time.Second, cfg.Timeout)
+			if err != nil {
+				log.Printf("Error while installing Marathon app: %s\n", err.Error())
+			}
 			Expect(err).NotTo(HaveOccurred())
 
 			// Need to have a wait for ready check here
 			cmd := fmt.Sprintf("curl -sI http://marathon-lb.marathon.mesos:%v/", port)
 			out, err := cluster.Connection.ExecuteWithRetries(cmd, 5*time.Second, cfg.Timeout)
+			if err != nil {
+				log.Printf("Was not able to run %s, err: %s\n", cmd, err.Error())
+			}
 			Expect(err).NotTo(HaveOccurred())
 			Expect(out).To(MatchRegexp("^HTTP/1.1 200 OK"))
 		})
