@@ -587,7 +587,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
-		// validation for VMSS for Kubernetes
+		// validation for VMSS with Kubernetes
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			version := common.RationalizeReleaseAndVersion(
 				a.OrchestratorProfile.OrchestratorType,
@@ -611,25 +611,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 					minVersion, version)
 			}
-		}
-
-		// validation for instanceMetadata using VMSS on Kubernetes
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
-			version := common.RationalizeReleaseAndVersion(
-				a.OrchestratorProfile.OrchestratorType,
-				a.OrchestratorProfile.OrchestratorRelease,
-				a.OrchestratorProfile.OrchestratorVersion,
-				false)
-			if version == "" {
-				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-			}
-
-			sv, err := semver.NewVersion(version)
-			if err != nil {
-				return fmt.Errorf("could not validate version %s", version)
-			}
-			minVersion := "1.10.2"
-			cons, err := semver.NewConstraint("<" + minVersion)
+			// validation for instanceMetadata using VMSS with Kubernetes
+			minVersion = "1.10.2"
+			cons, err = semver.NewConstraint("<" + minVersion)
 			if err != nil {
 				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 			}
