@@ -252,7 +252,7 @@ func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties
 	api.ProvisioningState = ProvisioningState(v20170131.ProvisioningState)
 	if v20170131.OrchestratorProfile != nil {
 		api.OrchestratorProfile = &OrchestratorProfile{}
-		convertV20170131OrchestratorProfile(v20170131.OrchestratorProfile, api.OrchestratorProfile, api.HasWindows())
+		convertV20170131OrchestratorProfile(v20170131.OrchestratorProfile, api.OrchestratorProfile, v20170131.HasWindows())
 	}
 	if v20170131.MasterProfile != nil {
 		api.MasterProfile = &MasterProfile{}
@@ -305,7 +305,7 @@ func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties
 
 	if v20170701.OrchestratorProfile != nil {
 		api.OrchestratorProfile = &OrchestratorProfile{}
-		convertV20170701OrchestratorProfile(v20170701.OrchestratorProfile, api.OrchestratorProfile, api.HasWindows())
+		convertV20170701OrchestratorProfile(v20170701.OrchestratorProfile, api.OrchestratorProfile, v20170701.HasWindows())
 	}
 	if v20170701.MasterProfile != nil {
 		api.MasterProfile = &MasterProfile{}
