@@ -68,11 +68,20 @@ func GetDefaultKubernetesVersionWindows() string {
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
-func GetSupportedKubernetesVersion(version string) string {
-	if k8sVersion := version; AllKubernetesSupportedVersions[k8sVersion] {
-		return k8sVersion
+func GetSupportedKubernetesVersion(version string, hasWindows bool) string {
+	var k8sVersion string
+	if hasWindows {
+		k8sVersion = GetDefaultKubernetesVersionWindows()
+		if AllKubernetesWindowsSupportedVersions[version] {
+			k8sVersion = version
+		}
+	} else {
+		k8sVersion = GetDefaultKubernetesVersion()
+		if AllKubernetesSupportedVersions[version] {
+			k8sVersion = version
+		}
 	}
-	return GetDefaultKubernetesVersion()
+	return k8sVersion
 }
 
 // GetAllSupportedKubernetesVersions returns a slice of all supported Kubernetes versions

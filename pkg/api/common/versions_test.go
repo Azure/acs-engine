@@ -21,15 +21,28 @@ func Test_GetAllSupportedKubernetesVersions(t *testing.T) {
 func Test_GetSupportedKubernetesVersion(t *testing.T) {
 	versions := GetAllSupportedKubernetesVersions()
 	for _, version := range versions {
-		supportedVersion := GetSupportedKubernetesVersion(version)
+		supportedVersion := GetSupportedKubernetesVersion(version, false)
 		if supportedVersion != version {
 			t.Errorf("GetSupportedKubernetesVersion(%s) should return the same passed-in string, instead returned %s", version, supportedVersion)
 		}
 	}
 
-	defaultVersion := GetSupportedKubernetesVersion("")
+	defaultVersion := GetSupportedKubernetesVersion("", false)
 	if defaultVersion != GetDefaultKubernetesVersion() {
 		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", GetDefaultKubernetesVersion(), defaultVersion)
+	}
+
+	winVersions := GetAllSupportedKubernetesVersionsWindows()
+	for _, version := range winVersions {
+		supportedVersion := GetSupportedKubernetesVersion(version, true)
+		if supportedVersion != version {
+			t.Errorf("GetSupportedKubernetesVersion(%s) should return the same passed-in string, instead returned %s", version, supportedVersion)
+		}
+	}
+
+	defaultWinVersion := GetSupportedKubernetesVersion("", true)
+	if defaultWinVersion != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version for windows %s, instead returned %s", GetDefaultKubernetesVersionWindows(), defaultWinVersion)
 	}
 }
 
