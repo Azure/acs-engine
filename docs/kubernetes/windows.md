@@ -345,7 +345,9 @@ V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual
 ### Known problems
 
 #### Packets from Windows pods are dropped
+
 Affects: Windows Server version 1803 (10.0.17134.1)
+
 Issues: https://github.com/Azure/acs-engine/issues/3037 
 
 There is a problem with the “L2Tunnel” networking mode not forwarding packets correctly specific to Windows Server version 1803. Windows Server version 1709 is not affected.
@@ -413,7 +415,7 @@ Affects: All acs-engine deployed clusters
 
 ICMP traffic is not routed between private Azure vNETs or to the internet.
 
-Workaround: test network connections with another protocol (TCP/UDP)
+Workaround: test network connections with another protocol (TCP/UDP). For example `Invoke-WebRequest -UseBasicParsing https://www.azure.com` or `curl https://www.azure.com`.
 
 
 
