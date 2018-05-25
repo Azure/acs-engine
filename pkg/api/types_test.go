@@ -204,32 +204,41 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 }
 
 func TestIsContainerMonitoringEnabled(t *testing.T) {
-	c := KubernetesConfig{
-		Addons: []KubernetesAddon{
+	v := "1.9.0"
+	o := OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
 			getMockAddon("addon"),
 		},
+		},
 	}
-	enabled := c.IsContainerMonitoringEnabled()
+	enabled := o.IsContainerMonitoringEnabled()
 	if enabled != DefaultContainerMonitoringAddOnEnabled {
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t when no cluster container monitoring addon has been specified, instead returned %t", DefaultContainerMonitoringAddOnEnabled, enabled)
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
 	}
-	c.Addons = append(c.Addons, getMockAddon(DefaultContainerMonitoringAddOnName))
-	enabled = c.IsContainerMonitoringEnabled()
-	if enabled {
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return true when cluster container monitoring has been specified, instead returned %t", enabled)
+
+	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon(DefaultContainerMonitoringAddOnName))
+	enabled = o.IsContainerMonitoringEnabled()
+	if enabled != DefaultContainerMonitoringAddOnEnabled {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
 	}
+
 	b := true
-	c = KubernetesConfig{
-		Addons: []KubernetesAddon{
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
 			{
 				Name:    DefaultContainerMonitoringAddOnName,
 				Enabled: &b,
 			},
 		},
+		},
 	}
-	enabled = c.IsContainerMonitoringEnabled()
+	enabled = o.IsContainerMonitoringEnabled()
 	if !enabled {
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return false when cluster container monitoring addon has been specified as disabled, instead returned %t", enabled)
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when the container-monitoring addon has been specified as enabled, instead returned %t", v, enabled)
 	}
 }
 
