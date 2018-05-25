@@ -16,7 +16,7 @@
       "[variables('vnetID')]",
 {{end}}
 {{if eq .Role "infra"}}
-      "[resourceId('Microsoft.Network/networkSecurityGroups', 'router-nsg')]"
+      "[variables('routerNSGID')]"
 {{else}}
       "[variables('nsgID')]"
 {{end}}
@@ -34,7 +34,7 @@
 {{else}}
         "networkSecurityGroup": {
           {{if eq .Role "infra"}}
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'router-nsg')]"
+          "id": "[variables('routerNSGID')]"
           {{else}}
           "id": "[variables('nsgID')]"
           {{end}}
@@ -56,7 +56,7 @@
               ,
               "loadBalancerBackendAddressPools": [
                 {
-                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('routerLBName')), '/backendAddressPools/backend')]"
                 }
               ]
 {{end}}

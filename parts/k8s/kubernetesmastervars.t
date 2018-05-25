@@ -5,6 +5,13 @@
 {{ if not IsOpenShift }}
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ end }}
+{{ if IsOpenShift }}
+    "routerNSGName": "[concat(variables('orchestratorName'), '-router-nsg-', variables('nameSuffix'))]",
+    "routerNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('routerNSGName'))]",
+    "routerIPName": "[concat(variables('orchestratorName'), '-router-ip-', variables('nameSuffix'))]",
+    "routerLBName": "[concat(variables('orchestratorName'), '-router-lb-', variables('nameSuffix'))]",
+    "routerLBID": "[resourceId('Microsoft.Network/loadBalancers', variables('routerLBName'))]",
+{{ end }}
 {{ if not IsHostedMaster }}
 {{ if not IsOpenShift }}
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
