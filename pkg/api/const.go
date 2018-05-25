@@ -96,7 +96,7 @@ const (
 	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon
 	DefaultMetricsServerAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
-	DefaultContainerMonitoringAddonEnabled = false
+	DefaultContainerMonitoringAddonEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment

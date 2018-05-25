@@ -82,7 +82,7 @@
         "metadata": {
           "description": "The base 64 server private keys used on the master."
         },
-        "type": "securestring"
+        "type": "securestring"	
       },
       {{if ge .MasterProfile.Count 5}}
         "etcdPeerCertificate3": {
@@ -304,10 +304,66 @@
       },
       "type": "string"
     },
-    "kubernetesContainerMonitoringSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesContainerMonitoringSpec"}}
+    "omsAgentVersion": {
+      {{PopulateClassicModeDefaultValue "omsAgentVersion"}}
       "metadata": {
-        "description": "The container spec for Container Monitoring."
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "dockerProviderVersion": {
+      {{PopulateClassicModeDefaultValue "dockerProviderVersion"}}
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsImage": {
+      {{PopulateClassicModeDefaultValue "omsImage"}}
+      "metadata": {
+        "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "aksClusterName": {
+      {{PopulateClassicModeDefaultValue "aksClusterName"}}
+      "metadata": {
+        "description": "AKS cluster name"
+      },
+      "type": "string"
+    },
+    "aksResourceId": {
+      {{PopulateClassicModeDefaultValue "aksResourceId"}}
+      "metadata": {
+        "description": "AKS resource id"
+      },
+      "type": "string"
+    },
+    "aksNodeResourceGroup": {
+      {{PopulateClassicModeDefaultValue "aksNodeResourceGroup"}}
+      "metadata": {
+        "description": "AKS node resource group"
+      },
+      "type": "string"
+    },
+    "aksRegion": {
+      {{PopulateClassicModeDefaultValue "aksRegion"}}
+      "metadata": {
+        "description": "AKS region"
+      },
+      "type": "string"
+    },
+    "workspaceGuid": {
+      {{PopulateClassicModeDefaultValue "workspaceGuid"}}
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "workspaceKey": {
+      {{PopulateClassicModeDefaultValue "workspaceKey"}}
+      "metadata": {
+        "description": "OMS workspace key"
       },
       "type": "string"
     },
