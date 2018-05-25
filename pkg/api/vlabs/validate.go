@@ -608,8 +608,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 			}
 			if cons.Check(sv) {
-				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-					minVersion, version)
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 			}
 			// validation for instanceMetadata using VMSS with Kubernetes
 			minVersion = "1.10.2"
@@ -619,11 +618,11 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
 				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && cons.Check(sv) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 				}
 			} else {
 				if cons.Check(sv) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 				}
 			}
 		}
