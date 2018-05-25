@@ -55,7 +55,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 5 10 curl www.bing.com || retrycmd_if_failure 20 5 20 curl www.ubuntu.com || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 5 20 curl www.bing.com || retrycmd_if_failure 20 5 20 curl www.ubuntu.com || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
