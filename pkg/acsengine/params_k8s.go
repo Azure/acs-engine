@@ -8,9 +8,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func assignKubernetesParameters(properties *api.Properties, p *paramsMap,
+func assignKubernetesParameters(properties *api.Properties, parametersMap paramsMap,
 	cloudSpecConfig AzureEnvironmentSpecConfig, generatorCode string) {
-	parametersMap := *p
 	if properties.OrchestratorProfile.IsKubernetes() ||
 		properties.OrchestratorProfile.IsOpenShift() {
 		k8sVersion := properties.OrchestratorProfile.OrchestratorVersion

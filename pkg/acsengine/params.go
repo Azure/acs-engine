@@ -96,7 +96,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.IsKubernetes() ||
 		properties.OrchestratorProfile.IsOpenShift() {
-		assignKubernetesParameters(properties, &parametersMap, cloudSpecConfig, generatorCode)
+		assignKubernetesParameters(properties, parametersMap, cloudSpecConfig, generatorCode)
 	}
 
 	if strings.HasPrefix(properties.OrchestratorProfile.OrchestratorType, api.DCOS) {
