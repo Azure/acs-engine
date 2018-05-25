@@ -107,10 +107,8 @@ func isValidEtcdVersion(etcdVersion string) error {
 	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, etcdValidVersions)
 }
 
-// Validate implements APIObject
-func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
-	// Don't need to call validate.Struct(o)
-	// It is handled by Properties.Validate()
+func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
+	o := a.OrchestratorProfile
 	// On updates we only need to make sure there is a supported patch version for the minor version
 	if !isUpdate {
 		switch o.OrchestratorType {
@@ -121,7 +119,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				o.OrchestratorVersion,
 				false)
 			if version == "" {
-				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+				return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 			}
 			if o.DcosConfig != nil && o.DcosConfig.BootstrapProfile != nil {
 				if len(o.DcosConfig.BootstrapProfile.StaticIP) > 0 {
@@ -138,9 +136,9 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				o.OrchestratorType,
 				o.OrchestratorRelease,
 				o.OrchestratorVersion,
-				false)
+				a.HasWindows())
 			if version == "" {
-				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+				return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please use one of the following versions: %v", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion, common.AllKubernetesSupportedVersions)
 			}
 
 			if o.KubernetesConfig != nil {
@@ -235,12 +233,15 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				o.OrchestratorType,
 				o.OrchestratorRelease,
 				o.OrchestratorVersion,
-				HasWindows)
+				a.HasWindows())
 			if version == "" {
-				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, HasWindows)
+				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, a.HasWindows())
 				// if there isn't a supported patch version for this version fail
 				if patchVersion == "" {
-					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+					if a.HasWindows() {
+						return fmt.Errorf("the following OrchestratorProfile configuration is not supported with Windows agentpools: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+					}
+					return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
 				}
 			}
 
@@ -280,9 +281,9 @@ func (o *OpenShiftConfig) Validate() error {
 	return nil
 }
 
-// Validate implements APIObject
-func (m *MasterProfile) Validate(o *OrchestratorProfile) error {
-	if o.OrchestratorType == OpenShift && m.Count != 1 {
+func (a *Properties) validateMasterProfile() error {
+	m := a.MasterProfile
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && m.Count != 1 {
 		return errors.New("openshift can only deployed with one master")
 	}
 	if m.ImageRef != nil {
@@ -353,15 +354,6 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		return validateImageNameAndGroup(a.ImageRef.Name, a.ImageRef.ResourceGroup)
 	}
 	return nil
-}
-
-// Validate implements APIObject
-func (o *OrchestratorVersionProfile) Validate() error {
-	// The only difference compared with OrchestratorProfile.Validate is
-	// Here we use strings.EqualFold, the other just string comparison.
-	// Rationalize orchestrator type should be done from versioned to unversioned
-	// I will go ahead to simplify this
-	return o.OrchestratorProfile.Validate(false, false)
 }
 
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
@@ -441,7 +433,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(isUpdate, a.HasWindows()); e != nil {
+	if e := a.validateOrchestratorProfile(isUpdate); e != nil {
 		return e
 	}
 	if e := a.validateNetworkPlugin(); e != nil {
@@ -462,7 +454,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateExtensions(); e != nil {
 		return e
 	}
-	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
+	if e := a.validateMasterProfile(); e != nil {
 		return e
 	}
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
@@ -1108,13 +1100,13 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	if isCustomVNET {
-		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
+		subscription, resourcegroup, vnetname, _, e := common.GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
 		}
 
 		for _, agentPool := range a.AgentPoolProfiles {
-			agentSubID, agentRG, agentVNET, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
+			agentSubID, agentRG, agentVNET, _, err := common.GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
 			if err != nil {
 				return err
 			}
@@ -1138,18 +1130,4 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	return nil
-}
-
-// GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
-func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, string, error) {
-	vnetSubnetIDRegex := `^\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Network\/virtualNetworks\/([^\/]*)\/subnets\/([^\/]*)$`
-	re, err := regexp.Compile(vnetSubnetIDRegex)
-	if err != nil {
-		return "", "", "", "", err
-	}
-	submatches := re.FindStringSubmatch(vnetSubnetID)
-	if len(submatches) != 4 {
-		return "", "", "", "", err
-	}
-	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }

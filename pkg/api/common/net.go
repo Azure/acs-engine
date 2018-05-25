@@ -1,6 +1,9 @@
 package common
 
-import "net"
+import (
+	"net"
+	"regexp"
+)
 
 // CidrFirstIP returns the first IP of the provided subnet.
 func CidrFirstIP(cidr net.IP) net.IP {
@@ -36,4 +39,18 @@ func IP4BroadcastAddress(n *net.IPNet) net.IP {
 		last[i] |= ^n.Mask[i]
 	}
 	return last
+}
+
+// GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
+func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, string, error) {
+	vnetSubnetIDRegex := `^\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Network\/virtualNetworks\/([^\/]*)\/subnets\/([^\/]*)$`
+	re, err := regexp.Compile(vnetSubnetIDRegex)
+	if err != nil {
+		return "", "", "", "", err
+	}
+	submatches := re.FindStringSubmatch(vnetSubnetID)
+	if len(submatches) != 4 {
+		return "", "", "", "", err
+	}
+	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }

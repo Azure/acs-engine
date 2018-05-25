@@ -257,7 +257,7 @@ func validateAgentPoolVNET(a []*AgentPoolProfile) error {
 			}
 
 			// validate subscription, resource group and vnet are the same among subnets
-			subnetSubscription, subnetResourceGroup, subnetVnet, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
+			subnetSubscription, subnetResourceGroup, subnetVnet, _, err := common.GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
 			if err != nil {
 				return ErrorParsingSubnetID
 			}
@@ -300,18 +300,4 @@ func isCustomVNET(a []*AgentPoolProfile) bool {
 	}
 
 	return false
-}
-
-// GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
-func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, string, error) {
-	vnetSubnetIDRegex := `^\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Network\/virtualNetworks\/([^\/]*)\/subnets\/([^\/]*)$`
-	re, err := regexp.Compile(vnetSubnetIDRegex)
-	if err != nil {
-		return "", "", "", "", err
-	}
-	submatches := re.FindStringSubmatch(vnetSubnetID)
-	if len(submatches) != 5 {
-		return "", "", "", "", fmt.Errorf("matching error")
-	}
-	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }
