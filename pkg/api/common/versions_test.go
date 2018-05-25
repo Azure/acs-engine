@@ -278,14 +278,28 @@ func TestGetVersionsBetween(t *testing.T) {
 }
 
 func Test_GetValidPatchVersion(t *testing.T) {
-	v := GetValidPatchVersion(Kubernetes, "")
+	v := GetValidPatchVersion(Kubernetes, "", false)
 	if v != GetDefaultKubernetesVersion() {
 		t.Errorf("It is not the default Kubernetes version")
 	}
 
 	for version, enabled := range AllKubernetesSupportedVersions {
 		if enabled {
-			v = GetValidPatchVersion(Kubernetes, version)
+			v = GetValidPatchVersion(Kubernetes, version, false)
+			if v != version {
+				t.Errorf("Expected version %s, instead got version %s", version, v)
+			}
+		}
+	}
+
+	v = GetValidPatchVersion(Kubernetes, "", true)
+	if v != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("It is not the default Kubernetes version")
+	}
+
+	for version, enabled := range AllKubernetesWindowsSupportedVersions {
+		if enabled {
+			v = GetValidPatchVersion(Kubernetes, version, true)
 			if v != version {
 				t.Errorf("Expected version %s, instead got version %s", version, v)
 			}
@@ -408,6 +422,48 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	}
 
 	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "1.6.6", false)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "", "", true)
+	if version != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("It is not the default Windows Kubernetes version")
+	}
+
+	latest1Dot6Version = GetLatestPatchVersion("1.6", GetAllSupportedKubernetesVersionsWindows())
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.6", "", true)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	expectedVersion = "1.8.12"
+	version = RationalizeReleaseAndVersion(Kubernetes, "", expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.8", expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "", "v"+expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "v1.8", "v"+expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "", true)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "1.6.6", true)
 	if version != "" {
 		t.Errorf("It is not empty string")
 	}

@@ -338,7 +338,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	o := a.OrchestratorProfile
 	o.OrchestratorVersion = common.GetValidPatchVersion(
 		o.OrchestratorType,
-		o.OrchestratorVersion)
+		o.OrchestratorVersion, a.HasWindows())
 
 	switch o.OrchestratorType {
 	case api.Kubernetes:

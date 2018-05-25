@@ -108,7 +108,7 @@ func isValidEtcdVersion(etcdVersion string) error {
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate(isUpdate bool) error {
+func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
 	// On updates we only need to make sure there is a supported patch version for the minor version
@@ -248,9 +248,9 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				o.OrchestratorType,
 				o.OrchestratorRelease,
 				o.OrchestratorVersion,
-				false)
+				HasWindows)
 			if version == "" {
-				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, HasWindows)
 				// if there isn't a supported patch version for this version fail
 				if patchVersion == "" {
 					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
@@ -374,7 +374,7 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	// Here we use strings.EqualFold, the other just string comparison.
 	// Rationalize orchestrator type should be done from versioned to unversioned
 	// I will go ahead to simplify this
-	return o.OrchestratorProfile.Validate(false)
+	return o.OrchestratorProfile.Validate(false, false)
 }
 
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
@@ -454,7 +454,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
+	if e := a.OrchestratorProfile.Validate(isUpdate, a.HasWindows()); e != nil {
 		return e
 	}
 	if e := a.validateNetworkPlugin(); e != nil {
