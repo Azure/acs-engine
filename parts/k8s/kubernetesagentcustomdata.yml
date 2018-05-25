@@ -34,7 +34,14 @@ write_files:
       "log-opts":  {
          "max-size": "50m",
          "max-file": "5"
-      }
+      }{{if IsNVIDIADevicePluginEnabled}}
+      ,"default-runtime": "nvidia",
+      "runtimes": {
+         "nvidia": {
+             "path": "/usr/bin/nvidia-container-runtime",
+             "runtimeArgs": []
+        }
+      }{{end}}
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"

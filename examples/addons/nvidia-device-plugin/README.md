@@ -1,14 +1,14 @@
 # NVIDIA Device Plugin
 
-This is the NVIDIA Device Plugin add-on for Kubernetes (v1.8+). This add-on will be automatically enabled if you are using a Kubernetes cluster (v1.8+) with an N-series agent pool (which contains an NVIDIA GPU). You can use this add-on to your json file as shown below to enable or disable NVIDIA Device Plugin explicitly.
+This is the [NVIDIA Device Plugin](https://github.com/NVIDIA/k8s-device-plugin) add-on for Kubernetes. This add-on will be automatically enabled if you are using a Kubernetes cluster (v1.10+) with an N-series agent pool (which contains an NVIDIA GPU). You can use this add-on to your json file as shown below to enable or disable NVIDIA Device Plugin explicitly.
 
-```
+```json
 {
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.9",
+      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
         "addons": [
           {
@@ -27,8 +27,7 @@ This is the NVIDIA Device Plugin add-on for Kubernetes (v1.8+). This add-on will
       {
         "name": "agentpool",
         "count": 3,
-        "vmSize": "Standard_NC6",
-        "availabilityProfile": "AvailabilitySet"
+        "vmSize": "Standard_NC6"
       }
     ],
     "linuxProfile": {
@@ -49,24 +48,16 @@ This is the NVIDIA Device Plugin add-on for Kubernetes (v1.8+). This add-on will
 }
 ```
 
-You can validate that the add-on is running as expected with the following commands:
+You can validate that the add-on is running as expected with the following command.
 
-Make sure to create resource group:
+You should see NVIDIA Device Plugin pods as running after executing:
 
-```
-az group create \
-    --name "[resource group name]" \
-    --location "[location]"
+```bash
+kubectl get pods -n kube-system
 ```
 
-You should see NVIDIA Device Plugin daemonset as running after running:
+Follow the README at [NVIDIA/k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for more information.
 
-```
-$ kubectl get pods -n kube-system
-```
+## Supported Orchestrators
 
-Follow the README at https://github.com/NVIDIA/k8s-device-plugin for examples.
-
-# Supported Orchestrators
-
-Kubernetes
+* Kubernetes

@@ -2155,6 +2155,9 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
 	dv := "390.30"
 	dest := "/usr/local/nvidia"
+	nvidiaDockerVersion := "2.0.3"
+	dockerVersion := "1.13.1-1"
+	nvidiaContainerRuntimeVersion := "2.0.0"
 	/*
 		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
 		We also installed needed dependencies.
@@ -2175,10 +2178,10 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 - apt_get_update
 - retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
-- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=2.0.3+docker1.13.1-1 nvidia-container-runtime=2.0.0+docker1.13.1-1
+- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
 - sudo pkill -SIGHUP dockerd
 - mkdir -p %s
-- cd %s`, dest, dest)
+- cd %s`, nvidiaDockerVersion, dockerVersion, nvidiaContainerRuntimeVersion, dockerVersion, dest, dest)
 
 	/*
 		Download the .run file from NVIDIA.

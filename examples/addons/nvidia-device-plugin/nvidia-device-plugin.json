@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.9",
+      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
         "addons": [
           {
@@ -22,8 +22,7 @@
       {
         "name": "agentpool",
         "count": 3,
-        "vmSize": "Standard_NC6",
-        "availabilityProfile": "AvailabilitySet"
+        "vmSize": "Standard_NC6"
       }
     ],
     "linuxProfile": {
