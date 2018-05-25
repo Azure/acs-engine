@@ -150,7 +150,7 @@ func getDefaultAdmissionControls(cs *api.ContainerService) (string, string) {
 		admissionControlKey = "--admission-control"
 	}
 
-	// Add new version case when applying admission controllers only availabe in that version or later
+	// Add new version case when applying admission controllers only available in that version or later
 	switch {
 	case common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"):
 		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages"
