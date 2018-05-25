@@ -10,15 +10,16 @@ import (
 
 func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 	orchestratorVersion := "1.7.9"
-	networkPlugin := "azure"
-	networkPolicy := "azure"
+	podCIDR := "171.0.0.0/16"
 	serviceCIDR := "10.0.0.0/8"
 	dnsServiceIP := "10.0.0.10"
 	dockerBridgeSubnet := "172.17.0.1/16"
 
-	// all networkProfile related fields are defined in kubernetesConfig
+	// all networkProfile related fields are defined in kubernetesConfig, azure case
 	kubernetesConfig := &KubernetesConfig{
-		NetworkPlugin:      networkPlugin,
+		NetworkPlugin:      "azure",
+		NetworkPolicy:      "calico",
+		ClusterSubnet:      podCIDR,
 		ServiceCIDR:        serviceCIDR,
 		DNSServiceIP:       dnsServiceIP,
 		DockerBridgeSubnet: dockerBridgeSubnet,
@@ -36,8 +37,16 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 	}
 
-	if string(p.NetworkPlugin) != networkPlugin {
+	if string(p.NetworkPlugin) != "azure" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if string(p.NetworkPolicy) != "calico" {
+		t.Error("error in orchestrator profile networkPolicy conversion")
+	}
+
+	if string(p.PodCidr) != "" {
+		t.Error("error in orchestrator profile podCidr conversion")
 	}
 
 	if p.ServiceCidr != serviceCIDR {
@@ -52,57 +61,11 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
 	}
 
-	// none networkProfile related fields are defined in kubernetesConfig
-	kubernetesConfig = &KubernetesConfig{}
-	api = &OrchestratorProfile{
-		OrchestratorVersion: orchestratorVersion,
-		KubernetesConfig:    kubernetesConfig,
-	}
-
-	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
-
-	if version != orchestratorVersion {
-		t.Error("error in orchestrator profile orchestratorVersion conversion")
-	}
-
-	if p != nil {
-		t.Error("error in orchestrator profile networkProfile conversion")
-	}
-
-	// only networkProfile networkPlugin field is defined in kubernetesConfig
+	// all networkProfile related fields are defined in kubernetesConfig, kubenet case
 	kubernetesConfig = &KubernetesConfig{
-		NetworkPlugin: networkPlugin,
-	}
-	api = &OrchestratorProfile{
-		OrchestratorVersion: orchestratorVersion,
-		KubernetesConfig:    kubernetesConfig,
-	}
-
-	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
-
-	if version != orchestratorVersion {
-		t.Error("error in orchestrator profile orchestratorVersion conversion")
-	}
-
-	if string(p.NetworkPlugin) != networkPlugin {
-		t.Error("error in orchestrator profile networkPlugin conversion")
-	}
-
-	if p.ServiceCidr != "" {
-		t.Error("error in orchestrator profile serviceCidr conversion")
-	}
-
-	if p.DNSServiceIP != "" {
-		t.Error("error in orchestrator profile dnsServiceIP conversion")
-	}
-
-	if p.DockerBridgeCidr != "" {
-		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
-	}
-
-	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin
-	kubernetesConfig = &KubernetesConfig{
-		NetworkPolicy:      networkPolicy,
+		NetworkPlugin:      "kubenet",
+		NetworkPolicy:      "calico",
+		ClusterSubnet:      podCIDR,
 		ServiceCIDR:        serviceCIDR,
 		DNSServiceIP:       dnsServiceIP,
 		DockerBridgeSubnet: dockerBridgeSubnet,
@@ -118,8 +81,102 @@ func TestConvertOrchestratorProfileToV20180331AgentPoolOnly(t *testing.T) {
 		t.Error("error in orchestrator profile orchestratorVersion conversion")
 	}
 
-	if string(p.NetworkPlugin) != networkPlugin {
+	if string(p.NetworkPlugin) != "kubenet" {
 		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if string(p.NetworkPolicy) != "calico" {
+		t.Error("error in orchestrator profile networkPolicy conversion")
+	}
+
+	if string(p.PodCidr) != podCIDR {
+		t.Error("error in orchestrator profile podCidr conversion")
+	}
+
+	if p.ServiceCidr != serviceCIDR {
+		t.Error("error in orchestrator profile serviceCidr conversion")
+	}
+
+	if p.DNSServiceIP != dnsServiceIP {
+		t.Error("error in orchestrator profile dnsServiceIP conversion")
+	}
+
+	if p.DockerBridgeCidr != dockerBridgeSubnet {
+		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
+	}
+
+	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin, azure case
+	kubernetesConfig = &KubernetesConfig{
+		NetworkPolicy:      "azure",
+		ClusterSubnet:      podCIDR,
+		ServiceCIDR:        serviceCIDR,
+		DNSServiceIP:       dnsServiceIP,
+		DockerBridgeSubnet: dockerBridgeSubnet,
+	}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if string(p.NetworkPlugin) != "azure" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if string(p.NetworkPolicy) != "" {
+		t.Error("error in orchestrator profile networkPolicy conversion")
+	}
+
+	if string(p.PodCidr) != "" {
+		t.Error("error in orchestrator profile podCidr conversion")
+	}
+
+	if p.ServiceCidr != serviceCIDR {
+		t.Error("error in orchestrator profile serviceCidr conversion")
+	}
+
+	if p.DNSServiceIP != dnsServiceIP {
+		t.Error("error in orchestrator profile dnsServiceIP conversion")
+	}
+
+	if p.DockerBridgeCidr != dockerBridgeSubnet {
+		t.Error("error in orchestrator profile dockerBridgeCidr conversion")
+	}
+
+	// legacy kubernetesConfig contains NetworkPolicy instead of NetworkPlugin, kubenet case
+	kubernetesConfig = &KubernetesConfig{
+		NetworkPolicy:      "none",
+		ClusterSubnet:      podCIDR,
+		ServiceCIDR:        serviceCIDR,
+		DNSServiceIP:       dnsServiceIP,
+		DockerBridgeSubnet: dockerBridgeSubnet,
+	}
+	api = &OrchestratorProfile{
+		OrchestratorVersion: orchestratorVersion,
+		KubernetesConfig:    kubernetesConfig,
+	}
+
+	version, p = convertOrchestratorProfileToV20180331AgentPoolOnly(api)
+
+	if version != orchestratorVersion {
+		t.Error("error in orchestrator profile orchestratorVersion conversion")
+	}
+
+	if string(p.NetworkPlugin) != "kubenet" {
+		t.Error("error in orchestrator profile networkPlugin conversion")
+	}
+
+	if string(p.NetworkPolicy) != "" {
+		t.Error("error in orchestrator profile networkPolicy conversion")
+	}
+
+	if string(p.PodCidr) != podCIDR {
+		t.Error("error in orchestrator profile podCidr conversion")
 	}
 
 	if p.ServiceCidr != serviceCIDR {

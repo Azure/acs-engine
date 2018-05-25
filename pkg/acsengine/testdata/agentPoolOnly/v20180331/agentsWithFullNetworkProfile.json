@@ -18,7 +18,7 @@
     },
     "networkProfile": {
       "networkPlugin": "azure",
-      "serviceCidr": "10.0.0.0/8",
+      "serviceCidr": "10.0.0.0/12",
       "dnsServiceIP": "10.0.0.10",
       "dockerBridgeCidr": "172.17.0.1/32"
     }

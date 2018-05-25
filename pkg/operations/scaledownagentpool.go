@@ -15,13 +15,13 @@ type VMScalingErrorDetails struct {
 
 // ScaleDownVMs removes the vms in the provided list. Returns a list with details on each failure.
 // all items in the list will always be of type *VMScalingErrorDetails
-func ScaleDownVMs(az armhelpers.ACSEngineClient, logger *log.Entry, resourceGroup string, vmNames ...string) *list.List {
+func ScaleDownVMs(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID string, resourceGroup string, vmNames ...string) *list.List {
 	numVmsToDelete := len(vmNames)
 	errChan := make(chan *VMScalingErrorDetails, numVmsToDelete)
 	defer close(errChan)
 	for _, vmName := range vmNames {
 		go func(vmName string) {
-			err := CleanDeleteVirtualMachine(az, logger, resourceGroup, vmName)
+			err := CleanDeleteVirtualMachine(az, logger, subscriptionID, resourceGroup, vmName)
 			if err != nil {
 				errChan <- &VMScalingErrorDetails{Name: vmName, Error: err}
 				return

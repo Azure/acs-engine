@@ -442,6 +442,8 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |---|---|---|
 |availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default) and `AvailabilitySet`.  For Kubernetes clusters before version 1.10, use `AvailabilitySet`. Otherwise, you should use `VirtualMachineScaleSets`|
 |count|yes|Describes the node count|
+|scaleSetPriority|no|Supported values are `Regular` (default) and `Low`. Only applies to clusters with availabilityProfile `VirtualMachineScaleSets`. Enables the usage of [Low-priority VMs on Scale Sets](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-use-low-priority).|
+|scaleSetEvictionPolicy|no|Supported values are `Delete` (default) and `Deallocate`. Only applies to clusters with availabilityProfile of `VirtualMachineScaleSets` and scaleSetPriority of `Low`.|
 |diskSizesGB|no|Describes an array of up to 4 attached disk sizes.  Valid disk size values are between 1 and 1024|
 |dnsPrefix|Required if agents are to be exposed publically with a load balancer|The dns prefix that forms the FQDN to access the loadbalancer for this agent pool. This must be a unique name among all agent pools. Not supported for Kubernetes clusters|
 |name|yes|This is the unique name for the agent pool profile. The resources of the agent pool profile are derived from this name|

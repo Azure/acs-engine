@@ -93,6 +93,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradeMasterNode.ParametersMap = parametersMap
 	upgradeMasterNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
+	upgradeMasterNode.SubscriptionID = ku.ClusterTopology.SubscriptionID
 	upgradeMasterNode.Client = ku.Client
 	upgradeMasterNode.kubeConfig = ku.kubeConfig
 	if ku.stepTimeout == nil {
@@ -239,6 +240,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
 		upgradeAgentNode.UpgradeContainerService = ku.ClusterTopology.DataModel
+		upgradeAgentNode.SubscriptionID = ku.ClusterTopology.SubscriptionID
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
 		upgradeAgentNode.kubeConfig = ku.kubeConfig

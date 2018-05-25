@@ -8,8 +8,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// AADRoleResourceGroupScopeTemplate is a template for a roleDefinition scope
+	AADRoleResourceGroupScopeTemplate = "/subscriptions/%s/resourceGroups/%s"
+)
+
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
-func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, resourceGroup, name string) error {
+func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID, resourceGroup, name string) error {
 	logger.Infof("fetching VM: %s/%s", resourceGroup, name)
 	vm, err := az.GetVirtualMachine(resourceGroup, name)
 	if err != nil {
@@ -82,6 +87,28 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 
 			if err := <-diskErrChan; err != nil {
 				return err
+			}
+		}
+	}
+
+	if vm.Identity != nil {
+		// Role assignments are not deleted if the VM is destroyed, so we must cleanup ourselves!
+		// The role assignments should only be relevant if managed identities are used,
+		// but always cleaning them up is easier than adding rule based logic here and there.
+		scope := fmt.Sprintf(AADRoleResourceGroupScopeTemplate, subscriptionID, resourceGroup)
+		logger.Infof("fetching roleAssignments: %s with principal %s", scope, *vm.Identity.PrincipalID)
+		vmRoleAssignments, listRoleAssingmentsError := az.ListRoleAssignmentsForPrincipal(scope, *vm.Identity.PrincipalID)
+		if listRoleAssingmentsError != nil {
+			logger.Errorf("failed to list role assignments: %s/%s: %s", scope, *vm.Identity.PrincipalID, listRoleAssingmentsError.Error())
+			return listRoleAssingmentsError
+		}
+
+		for _, roleAssignment := range *vmRoleAssignments.Value {
+			logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
+			_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(*roleAssignment.ID)
+			if deleteRoleAssignmentErr != nil {
+				logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
+				return deleteRoleAssignmentErr
 			}
 		}
 	}

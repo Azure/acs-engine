@@ -127,7 +127,7 @@ ifndef HAS_GOX
 	go get -u github.com/mitchellh/gox
 endif
 ifndef HAS_GOBINDATA
-	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/go-bindata/go-bindata/...
 endif
 ifndef HAS_GIT
 	$(error You must install Git)

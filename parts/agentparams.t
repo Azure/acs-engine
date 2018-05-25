@@ -16,6 +16,32 @@
       "type": "int"
     },
 {{end}}
+    {{if .IsLowPriorityScaleSet}}
+    "{{.Name}}ScaleSetPriority": {
+      "allowedValues":[
+        "Low",
+        "Regular",
+        ""
+      ],
+      "defaultValue": "{{.ScaleSetPriority}}",
+      "metadata": {
+        "description": "The priority for the VM Scale Set. This value can be Low or Regular."
+      },
+      "type": "string"
+    },
+    "{{.Name}}ScaleSetEvictionPolicy": {
+      "allowedValues":[
+        "Delete",
+        "Deallocate",
+        ""
+      ],
+      "defaultValue": "{{.ScaleSetEvictionPolicy}}",
+      "metadata": {
+        "description": "The Eviction Policy for a Low-priority VM Scale Set."
+      },
+      "type": "string"
+    },
+    {{end}}
     "{{.Name}}VMSize": {
       {{GetAgentAllowedSizes}}
       "defaultValue": "{{.VMSize}}",

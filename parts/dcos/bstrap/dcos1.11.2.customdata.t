@@ -36,6 +36,7 @@ runcmd: PREPROVISION_EXTENSION
 - systemctl stop --now unscd.service
 - /opt/azure/containers/provision.sh
 - bash /tmp/dcos/dcos_install.sh ROLENAME
+- /opt/azure/dcos/postinstall-cond.sh
 write_files:
 - content: |
     [Service]
@@ -76,5 +77,11 @@ write_files:
   owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
+  permissions: "0744"
+  owner: "root"
+- content: |
+    #!/bin/bash
+    if [ -f /opt/azure/dcos/postinstall.sh ]; then /opt/azure/dcos/postinstall.sh; fi
+  path: /opt/azure/dcos/postinstall-cond.sh
   permissions: "0744"
   owner: "root"

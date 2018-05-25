@@ -15,6 +15,10 @@
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]",
 {{else}}
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-vmss')]",
+    {{if .IsLowPriorityScaleSet}}
+    "{{.Name}}ScaleSetPriority": "[parameters('{{.Name}}ScaleSetPriority')]",
+    "{{.Name}}ScaleSetEvictionPolicy": "[parameters('{{.Name}}ScaleSetEvictionPolicy')]",
+    {{end}}
 {{end}}
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",

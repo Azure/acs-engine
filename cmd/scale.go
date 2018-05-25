@@ -277,7 +277,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			errList := operations.ScaleDownVMs(sc.client, sc.logger, sc.resourceGroupName, vmsToDelete...)
+			errList := operations.ScaleDownVMs(sc.client, sc.logger, sc.SubscriptionID.String(), sc.resourceGroupName, vmsToDelete...)
 			if errList != nil {
 				errorMessage := ""
 				for element := errList.Front(); element != nil; element = element.Next() {

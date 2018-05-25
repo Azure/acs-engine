@@ -233,9 +233,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 				}
 			}
-			if o.OpenShiftConfig == nil || o.OpenShiftConfig.ClusterUsername == "" || o.OpenShiftConfig.ClusterPassword == "" {
-				return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
+			if o.OpenShiftConfig == nil {
+				return fmt.Errorf("OpenShiftConfig must be specified for OpenShift orchestrator")
 			}
+			return o.OpenShiftConfig.Validate()
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 		}
@@ -284,6 +285,14 @@ func validateImageNameAndGroup(name, resourceGroup string) error {
 	return nil
 }
 
+// Validate OpenShiftConfig ensures that the OpenShiftConfig is valid.
+func (o *OpenShiftConfig) Validate() error {
+	if o.ClusterUsername == "" || o.ClusterPassword == "" {
+		return fmt.Errorf("ClusterUsername and ClusterPassword must both be specified")
+	}
+	return nil
+}
+
 // Validate implements APIObject
 func (m *MasterProfile) Validate(o *OrchestratorProfile) error {
 	if o.OrchestratorType == OpenShift && m.Count != 1 {
@@ -316,6 +325,9 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 		if e := validate.Var(a.Ports, "len=0"); e != nil {
 			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
+		}
+		if validate.Var(a.ScaleSetPriority, "eq=Regular") == nil && validate.Var(a.ScaleSetEvictionPolicy, "len=0") != nil {
+			return fmt.Errorf("property 'AgentPoolProfile.ScaleSetEvictionPolicy' must be empty for AgentPoolProfile.Priority of Regular")
 		}
 	}
 
@@ -458,6 +470,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 		return e
 	}
 	if e := a.validateAddons(); e != nil {
+		return e
+	}
+	if e := a.validateExtensions(); e != nil {
 		return e
 	}
 	if e := a.MasterProfile.Validate(a.OrchestratorProfile); e != nil {
@@ -1001,7 +1016,7 @@ func (a *Properties) validateAddons() error {
 		var isAvailabilitySets bool
 
 		for _, agentPool := range a.AgentPoolProfiles {
-			if len(agentPool.AvailabilityProfile) == 0 || agentPool.IsAvailabilitySets() {
+			if agentPool.IsAvailabilitySets() {
 				isAvailabilitySets = true
 			}
 		}
@@ -1010,6 +1025,15 @@ func (a *Properties) validateAddons() error {
 			if addon.Name == "cluster-autoscaler" && *addon.Enabled && isAvailabilitySets {
 				return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
 			}
+		}
+	}
+	return nil
+}
+
+func (a *Properties) validateExtensions() error {
+	for _, agentPool := range a.AgentPoolProfiles {
+		if len(agentPool.Extensions) != 0 && (len(agentPool.AvailabilityProfile) == 0 || agentPool.IsVirtualMachineScaleSets()) {
+			return fmt.Errorf("Extensions are currently not supported with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
 		}
 	}
 	return nil

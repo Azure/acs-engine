@@ -3,7 +3,7 @@
 
 This is the ACI Connector add-on.  Add this add-on to your json file as shown below to automatically enable ACI Connector in your new Kubernetes cluster.
 
-```
+```json
 {
     "apiVersion": "vlabs",
     "properties": {
@@ -15,25 +15,11 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
               "name": "aci-connector",
               "enabled" : true,
               "config": {
-                  "clientId": "",
-                  "clientKey": "",
-                  "tenantId": "",
-                  "subscriptionId": "",
-                  "resourceGroup": "",
                   "region": "",
                   "nodeName": "",
                   "os": "",
                   "taint": ""
-              },
-              "containers": [
-                {
-                  "name": "aci-connector",
-                  "cpuRequests": "50m",
-                  "memoryRequests": "150Mi",
-                  "cpuLimits": "50m",
-                  "memoryLimits": "150Mi"
-                }
-              ]
+              }
             }
           ]
         }
@@ -48,7 +34,7 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
           "name": "agentpool",
           "count": 3,
           "vmSize": "Standard_DS2_v2",
-          "availabilityProfile": "AvailabilitySet"
+          "availabilityProfile": "VirtualMachineScaleSets"
         }
       ],
       "linuxProfile": {
@@ -72,32 +58,24 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
 
 You can validate that the add-on is running as expected with the following commands:
 
-Make sure to create resource group:
-```
-az group create \
-    --name "[resource group name]" \
-    --location "[location]"
+You should see ACI Connector as `Running` after executing:
+
+```bash
+kubectl get pods -n kube-system
 ```
 
-You should see ACI Connector as running after running:
-```
-$ kubectl get pods -n kube-system
-```
+You should see ACI Connector node after executing:
 
-You should see ACI Connector node after running:
-```
-$ kubectl get nodes
+```bash
+kubectl get nodes
 ```
 
 Follow the README at https://github.com/virtual-kubelet/virtual-kubelet for examples.
 
-# Configuration
+## Configuration
+
 |Name|Required|Description|Default Value|
 |---|---|---|---|
-|clientId|yes|your client id||
-|clientKey|yes|your client key||
-|tenantId|yes|your tenant id||
-|resourceGroup|yes|your resource group||
 |region|no|Azure region|"westus"|
 |nodeName|no|node name|"aci-connector"|
 |os|no|operating system (Linux/Windows)|"Linux"|
@@ -109,6 +87,6 @@ Follow the README at https://github.com/virtual-kubelet/virtual-kubelet for exam
 |cpuLimits|no|cpu limits for the container|"50m"|
 |memoryLimits|no|memory limits for the container|"150Mi"|
 
+## Supported Orchestrators
 
-# Supported Orchestrators
 Kubernetes

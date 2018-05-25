@@ -58,6 +58,8 @@ metadata:
 type: Opaque
 data:
   credentials.json: <kubernetesACIConnectorCredentials>
+  cert.pem: <kubernetesACIConnectorCert>
+  key.pem: <kubernetesACIConnectorKey>
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -77,17 +79,29 @@ spec:
         app: aci-connector
     spec:
       serviceAccountName: aci-connector
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       containers:
       - name: aci-connector
         image: <kubernetesACIConnectorSpec>
         imagePullPolicy: Always
         env:
+        - name: KUBELET_PORT
+          value: "10250"
         - name: AZURE_AUTH_LOCATION
           value: /etc/virtual-kubelet/credentials.json
         - name: ACI_RESOURCE_GROUP
           value: <kubernetesACIConnectorResourceGroup>
         - name: ACI_REGION
           value: <kubernetesACIConnectorRegion>
+        - name: APISERVER_CERT_LOCATION
+          value: /etc/virtual-kubelet/cert.pem
+        - name: APISERVER_KEY_LOCATION
+          value: /etc/virtual-kubelet/key.pem
+        - name: VKUBELET_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         resources:
           requests:
             cpu: <kubernetesACIConnectorCPURequests>
