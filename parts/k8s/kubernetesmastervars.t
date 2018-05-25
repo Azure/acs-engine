@@ -6,9 +6,9 @@
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ end }}
 {{ if IsOpenShift }}
-    "routerNSGName": "[concat(variables('orchestratorName'), '-router-nsg-', variables('nameSuffix'))]",
+    "routerNSGName": "[concat(variables('orchestratorName'), '-router-', variables('nameSuffix'), '-nsg')]",
     "routerNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('routerNSGName'))]",
-    "routerIPName": "[concat(variables('orchestratorName'), '-router-ip-', variables('nameSuffix'))]",
+    "routerIPName": "[concat(variables('orchestratorName'), '-router-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
     "routerLBName": "[concat(variables('orchestratorName'), '-router-lb-', variables('nameSuffix'))]",
     "routerLBID": "[resourceId('Microsoft.Network/loadBalancers', variables('routerLBName'))]",
 {{ end }}
