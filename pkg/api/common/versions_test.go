@@ -431,7 +431,6 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 		t.Errorf("It is not the default Windows Kubernetes version")
 	}
 
-	latest1Dot6Version = GetLatestPatchVersion("1.6", GetAllSupportedKubernetesVersionsWindows())
 	version = RationalizeReleaseAndVersion(Kubernetes, "1.6", "", true)
 	if version != "" {
 		t.Errorf("It is not empty string")
