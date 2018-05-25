@@ -23,6 +23,7 @@ Here are the valid values for the orchestrator types:
 2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
+5. `OpenShift` - this represents the [OpenShift orchestrator](openshift.md).
 
 ### kubernetesConfig
 
@@ -433,7 +434,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |vnetCidr|no|Specifies the VNET cidr when using a custom VNET ([bring your own VNET examples](../examples/vnet))|
 |imageReference.name|no|The name of the Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
-|distro|no|Select Master(s) Operating System (Linux only). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
+|distro|no|Select Master(s) Operating System (Linux only). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `RHEL`: OpenShift; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, user-defined OS Images, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
@@ -455,7 +456,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |imageReference.name|no|The name of a a Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
 |osType|no|Specifies the agent pool's Operating System. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
-|distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `RHEL`: OpenShift; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
 
 ### linuxProfile
 
@@ -519,6 +520,7 @@ Here are the valid values for the orchestrator types:
 2. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 3. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
+5. `OpenShift` - this represents the [OpenShift orchestrator](openshift.md)
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

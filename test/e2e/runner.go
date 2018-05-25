@@ -201,6 +201,10 @@ func teardown() {
 		if err != nil {
 			log.Printf("cannot create directory for logs: %s", err)
 		}
+		err = cliProvisioner.FetchOpenShiftMachineLogs(cfg, eng, logsPath)
+		if err != nil {
+			log.Printf("cliProvisioner.FetchOpenShiftMachineLogs error: %s", err)
+		}
 		err = cliProvisioner.FetchOpenShiftInfraLogs(logsPath)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchOpenShiftInfraLogs error: %s", err)
