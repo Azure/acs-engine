@@ -649,9 +649,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-			if i == 0 {
-				continue
-			}
 			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
 				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
@@ -663,25 +660,13 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
-				var version string
-				if a.HasWindows() {
-					version = common.RationalizeReleaseAndVersion(
-						a.OrchestratorProfile.OrchestratorType,
-						a.OrchestratorProfile.OrchestratorRelease,
-						a.OrchestratorProfile.OrchestratorVersion,
-						true)
-				} else {
-					version = common.RationalizeReleaseAndVersion(
-						a.OrchestratorProfile.OrchestratorType,
-						a.OrchestratorProfile.OrchestratorRelease,
-						a.OrchestratorProfile.OrchestratorVersion,
-						false)
-				}
-				if version == "" {
-					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-				}
+				version := common.RationalizeReleaseAndVersion(
+					a.OrchestratorProfile.OrchestratorType,
+					a.OrchestratorProfile.OrchestratorRelease,
+					a.OrchestratorProfile.OrchestratorVersion,
+					true)
 				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
-					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
+					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorVersion)
 				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
