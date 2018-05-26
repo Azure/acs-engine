@@ -152,6 +152,12 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 		Expect(running).To(Equal(true))
 	})
 
+	It("should have registry-console running", func() {
+		running, err := pod.WaitOnReady("registry-console", "default", 3, 30*time.Second, cfg.Timeout)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(running).To(Equal(true))
+	})
+
 	It("should deploy a sample app and access it via a route", func() {
 		err := util.CreateFromTemplate("nginx-example", "openshift", "default")
 		if err != nil && strings.Contains(err.Error(), "AlreadyExists") {
