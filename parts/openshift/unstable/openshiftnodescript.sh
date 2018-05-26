@@ -20,7 +20,7 @@ rm -rf /etc/etcd/* /etc/origin/master/*
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
 
-# note: ${SERVICE_TYPE}-node crash loops until master is up
+# note: ${SERVICE_TYPE}-node crash loops until master is up.
 systemctl enable ${SERVICE_TYPE}-node.service
 systemctl start ${SERVICE_TYPE}-node.service &
 
