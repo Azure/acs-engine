@@ -11,7 +11,7 @@ import:
   - arm/disk
   - storage
 - package: github.com/Azure/go-autorest
-  version: ~8.4.0
+  version: ~9.7.0
   subpackages:
   - autorest
   - autorest/adal
