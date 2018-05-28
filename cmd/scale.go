@@ -37,7 +37,6 @@ type scaleCmd struct {
 	location             string
 	agentPoolToScale     string
 	classicMode          bool
-	windowsPool          bool
 	masterFQDN           string
 
 	// derived
@@ -79,7 +78,6 @@ func newScaleCmd() *cobra.Command {
 	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.StringVar(&sc.agentPoolToScale, "node-pool", "", "node pool to scale")
 	f.StringVar(&sc.masterFQDN, "master-FQDN", "", "FQDN for the master load balancer, Needed to scale down Kubernetes agent pools")
-	f.BoolVar(&sc.windowsPool, "windows", false, "true if windows pool")
 
 	addAuthFlags(&sc.authArgs, f)
 
@@ -209,7 +207,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
-	var currentNodeCount, highestUsedIndex, index, poolindex int
+	var currentNodeCount, highestUsedIndex, index, winPoolIndex int
+	winPoolIndex = -1
 	indexes := make([]int, 0)
 	indexToVM := make(map[int]string)
 	if sc.agentPool.IsAvailabilitySets() {
@@ -224,14 +223,15 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			vmTags := *vm.Tags
 			poolName := *vmTags["poolName"]
 			nameSuffix := *vmTags["resourceNameSuffix"]
-
+			
 			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
 			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
 				continue
 			}
 
-			if sc.windowsPool {
-				_, _, poolindex, index, err = utils.WindowsVMNameParts(*vm.Name)
+			osPublisher := *vm.StorageProfile.ImageReference.Publisher
+			if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
+				_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(*vm.Name)
 			} else {
 				_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
 			}
@@ -318,8 +318,9 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				continue
 			}
 
-			if sc.windowsPool {
-				_, _, poolindex, err = utils.WindowsVMSSNameParts(*vmss.Name)
+			osPublisher := *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
+			if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
+				_, _, winPoolIndex, err = utils.WindowsVMSSNameParts(*vmss.Name)
 			}
 
 			currentNodeCount = int(*vmss.Sku.Capacity)
@@ -370,8 +371,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 	addValue(parametersJSON, sc.agentPool.Name+"Count", countForTemplate)
 
-	if sc.windowsPool {
-		templateJSON["variables"].(map[string]interface{})[sc.agentPool.Name+"Index"] = poolindex
+	if winPoolIndex !=-1 {
+		templateJSON["variables"].(map[string]interface{})[sc.agentPool.Name+"Index"] = winPoolIndex
 	}
 	switch orchestratorInfo.OrchestratorType {
 	case api.OpenShift:
