@@ -815,6 +815,11 @@ func Test_Properties_ValidateAddons(t *testing.T) {
 		)
 	}
 
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			VMSize: "Standard_NC6",
+		},
+	}
 	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{

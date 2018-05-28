@@ -896,13 +896,11 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 		}
 	}
 
-	var addonEnabled bool
+	var addonEnabled = false
 	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
 		addonEnabled = false
 	} else if isNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
-	} else {
-		addonEnabled = false
 	}
 
 	return nvidiaDevicePluginAddon.IsEnabled(addonEnabled)
