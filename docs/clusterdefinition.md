@@ -31,6 +31,7 @@ Here are the valid values for the orchestrator types:
 
 |Name|Required|Description|
 |---|---|---|
+|useManagedIdentity|no| Includes and uses MSI identities for all interactions with the Azure Resource Manager (ARM) API. Instead of using a static service principal written to /etc/kubernetes/azure.json, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.9.1 or newer. (boolean - default == false) |
 |kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
 |networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience <br>`"kubenet"` for k8s software networking implementation. <br> `"flannel"` for using CoreOS Flannel <br> `"cilium"` for using the default Cilium CNI IPAM |
