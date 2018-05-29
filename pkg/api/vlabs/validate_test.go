@@ -125,7 +125,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.orchestratorProfile.Validate(test.isUpdate)
+		err := test.orchestratorProfile.Validate(test.isUpdate, false)
 
 		if test.expectedError == "" && err == nil {
 			continue
@@ -169,7 +169,7 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.orchestratorProfile.Validate(test.isUpdate)
+		err := test.orchestratorProfile.Validate(test.isUpdate, false)
 
 		if test.expectedError == "" && err == nil {
 			continue
