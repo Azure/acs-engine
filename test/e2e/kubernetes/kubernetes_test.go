@@ -552,13 +552,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
 			if eng.HasGPUNodes() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
-					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi-deviceplugin.yaml"), "nvidia-smi-deviceplugin", "default")
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.10") {
+					p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
-					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete()
+					ready, err := p.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := p.Delete()
 					if delErr != nil {
-						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+						fmt.Printf("could not delete pod %s\n", p.Metadata.Name)
 						fmt.Println(delErr)
 					}
 					Expect(err).NotTo(HaveOccurred())
