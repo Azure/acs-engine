@@ -21,19 +21,22 @@ To summarize, the way that acs-engine implements Kubernetes on Azure is a collec
 
 In order to troubleshoot a cluster that failed in the above way(s), we need to grab the CSE logs from the host VM itself.
 
-• from a vm node that did not provision successfully:
-    ○ grab the entire file at `/var/log/azure/cluster-provision.log`
-    ○ grab the entire file at `/var/log/cloud-init-output.log`
+From a vm node that did not provision successfully:
+
+- grab the entire file at `/var/log/azure/cluster-provision.log`
+
+- grab the entire file at `/var/log/cloud-init-output.log`
 
 How to determine the above?
 
-• from a working master: kubectl get nodes
-    ○ are there any missing master or agent nodes?
-        § if so, that node vm probably failed CSE: grab the log file above from that vm
-    ○ are there no working master nodes?
-        § if so, then all node vms probably failed CSE: grab the log file above from any node vm
+From a working master: `kubectl get nodes`
 
-CSE Exit Codes
+- Are there any missing master or agent nodes?
+  - if so, that node vm probably failed CSE: grab the log file above from that vm
+- Are there no working master nodes?
+  - if so, then all node vms probably failed CSE: grab the log file above from any node vm
+
+#### CSE Exit Codes
 
 ```
 "code": "VMExtensionProvisioningError"
@@ -43,7 +46,7 @@ execute command: command terminated with exit status=20\n[stdout]\n\n[stderr]\n"
 
 Look for the exit code. In the above example, the exit code is `20`. The list of exit codes and their meaning can be found [here](../../parts/k8s/kubernetescustomscript.sh).
 
-If after following the above you are still unable to troubleshoot your deployment error, please open a Github issue with title `CSE error: exit code <INSERT_YOUR_EXIT_CODE>` and include the following in the description:
+If after following the above you are still unable to troubleshoot your deployment error, please open a Github issue with title "CSE error: exit code <INSERT_YOUR_EXIT_CODE>" and include the following in the description:
 
 1. The apimodel json used to deploy the cluster (aka your cluster config). **Please make sure you remove all secrets and keys before posting it on GitHub.**
 
