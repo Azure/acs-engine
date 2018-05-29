@@ -5,7 +5,7 @@ The NVIDIA drivers are automatically installed on every GPU agent in your cluste
 
 To make sure everything is fine, run `kubectl describe node <name-of-a-gpu-node>`. You should see the correct number of GPU reported (in this example shows 2 GPU for a NC12 VM):
 
-For Kubernetes v1.8+ clusters (using NVIDIA Device Plugin):
+For Kubernetes v1.10+ clusters (using NVIDIA Device Plugin):
 
 ```
 [...]
@@ -15,7 +15,7 @@ Capacity:
 [...]
 ```
 
-For Kubernetes v1.6 and v1.7 clusters:
+For Kubernetes v1.6, v1.7, v1.8 and v1.9 clusters:
 
 ```
 [...]
@@ -36,9 +36,9 @@ On the host, the drivers are installed under `/usr/local/nvidia`.
 
 Here is an example template running TensorFlow:
 
-For Kubernetes v1.8+ clusters (using NVIDIA Device Plugin):
+For Kubernetes v1.10+ clusters (using NVIDIA Device Plugin):
 
-```
+```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -61,9 +61,9 @@ spec:
             nvidia.com/gpu: 1
 ```
 
-For Kubernetes v1.6 and v1.7 clusters:
+For Kubernetes v1.6, v1.7, v1.8 and v1.9 clusters:
 
-```
+```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -93,4 +93,4 @@ spec:
             path: /usr/local/nvidia
 ```
 
-We specify `nvidia.com/gpu: 1` or `alpha.kubernetes.io/nvidia-gpu: 1` in the resources limits. For v1.6 and v1.7 clusters, we need to mount the drivers from the host into the container.
+We specify `nvidia.com/gpu: 1` or `alpha.kubernetes.io/nvidia-gpu: 1` in the resources limits. For v1.6 to v1.9 clusters, we need to mount the drivers from the host into the container.
