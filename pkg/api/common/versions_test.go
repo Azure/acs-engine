@@ -21,15 +21,28 @@ func Test_GetAllSupportedKubernetesVersions(t *testing.T) {
 func Test_GetSupportedKubernetesVersion(t *testing.T) {
 	versions := GetAllSupportedKubernetesVersions()
 	for _, version := range versions {
-		supportedVersion := GetSupportedKubernetesVersion(version)
+		supportedVersion := GetSupportedKubernetesVersion(version, false)
 		if supportedVersion != version {
 			t.Errorf("GetSupportedKubernetesVersion(%s) should return the same passed-in string, instead returned %s", version, supportedVersion)
 		}
 	}
 
-	defaultVersion := GetSupportedKubernetesVersion("")
+	defaultVersion := GetSupportedKubernetesVersion("", false)
 	if defaultVersion != GetDefaultKubernetesVersion() {
 		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", GetDefaultKubernetesVersion(), defaultVersion)
+	}
+
+	winVersions := GetAllSupportedKubernetesVersionsWindows()
+	for _, version := range winVersions {
+		supportedVersion := GetSupportedKubernetesVersion(version, true)
+		if supportedVersion != version {
+			t.Errorf("GetSupportedKubernetesVersion(%s) should return the same passed-in string, instead returned %s", version, supportedVersion)
+		}
+	}
+
+	defaultWinVersion := GetSupportedKubernetesVersion("", true)
+	if defaultWinVersion != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version for windows %s, instead returned %s", GetDefaultKubernetesVersionWindows(), defaultWinVersion)
 	}
 }
 
@@ -265,14 +278,28 @@ func TestGetVersionsBetween(t *testing.T) {
 }
 
 func Test_GetValidPatchVersion(t *testing.T) {
-	v := GetValidPatchVersion(Kubernetes, "")
+	v := GetValidPatchVersion(Kubernetes, "", false)
 	if v != GetDefaultKubernetesVersion() {
 		t.Errorf("It is not the default Kubernetes version")
 	}
 
 	for version, enabled := range AllKubernetesSupportedVersions {
 		if enabled {
-			v = GetValidPatchVersion(Kubernetes, version)
+			v = GetValidPatchVersion(Kubernetes, version, false)
+			if v != version {
+				t.Errorf("Expected version %s, instead got version %s", version, v)
+			}
+		}
+	}
+
+	v = GetValidPatchVersion(Kubernetes, "", true)
+	if v != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("It is not the default Kubernetes version")
+	}
+
+	for version, enabled := range AllKubernetesWindowsSupportedVersions {
+		if enabled {
+			v = GetValidPatchVersion(Kubernetes, version, true)
 			if v != version {
 				t.Errorf("Expected version %s, instead got version %s", version, v)
 			}
@@ -395,6 +422,47 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	}
 
 	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "1.6.6", false)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "", "", true)
+	if version != GetDefaultKubernetesVersionWindows() {
+		t.Errorf("It is not the default Windows Kubernetes version")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.6", "", true)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	expectedVersion = "1.8.12"
+	version = RationalizeReleaseAndVersion(Kubernetes, "", expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.8", expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "", "v"+expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "v1.8", "v"+expectedVersion, true)
+	if version != expectedVersion {
+		t.Errorf("It is not Kubernetes version %s", expectedVersion)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "", true)
+	if version != "" {
+		t.Errorf("It is not empty string")
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.1", "1.6.6", true)
 	if version != "" {
 		t.Errorf("It is not empty string")
 	}
