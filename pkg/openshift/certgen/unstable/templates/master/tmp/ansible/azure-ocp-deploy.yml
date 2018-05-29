@@ -2,7 +2,11 @@
   hosts: localmaster
   gather_facts: false
 
-  tasks:
+  # we need variables from openshift_facts to be in scope
+  roles:
+    - openshift_facts
+
+  post_tasks:
     - name: bring up the sdn
       import_role:
         name: openshift_sdn
