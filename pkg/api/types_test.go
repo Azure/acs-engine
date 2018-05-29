@@ -224,7 +224,7 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
 	}
 
-	b := true
+	b := false
 	o = OrchestratorProfile{
 		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: v,
@@ -237,8 +237,8 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 		},
 	}
 	enabled = o.IsContainerMonitoringEnabled()
-	if !enabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when the container-monitoring addon has been specified as enabled, instead returned %t", v, enabled)
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return false when a custom container monitoring addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
