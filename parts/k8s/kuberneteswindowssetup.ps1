@@ -277,42 +277,6 @@ Set-AzureNetworkPlugin()
     # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
     Set-VnetPluginMode "tunnel"
 }
-
-function
-Install-AzureVnetPlugins()
-{
-# Create CNI directories.
-mkdir $global:AzureCNIBinDir
-mkdir $global:AzureCNIConfDir
-# Download Azure VNET CNI plugins.
-# Mirror from https://github.com/Azure/azure-container-networking/releases
-$zipfile = [Io.path]::Combine("$global:AzureCNIDir", "azure-vnet.zip")
-#For testing purpose only
-########Testing start###############
-$global:VNetCNIPluginsURL = "https://github.com/saiyan86/azure-container-networking/releases/download/v1.0.6/azure-vnet-cni-windows-amd64-v1.0.6.zip"
-$secureProtocols = @()
-$insecureProtocols = @([System.Net.SecurityProtocolType]::SystemDefault, [System.Net.SecurityProtocolType]::Ssl3)
-foreach ($protocol in [System.Enum]::GetValues([System.Net.SecurityProtocolType]))
-{
-if ($insecureProtocols -notcontains $protocol)
-{
-$secureProtocols += $protocol
-}
-}
-[System.Net.ServicePointManager]::SecurityProtocol = $secureProtocols
-curl $global:VNetCNIPluginsURL -UseBasicParsing -OutFile $zipfile -Verbose
-########Testing End###############
-#Invoke-WebRequest -Uri $global:VNetCNIPluginsURL -OutFile $zipfile
-Expand-Archive -path $zipfile -DestinationPath $global:AzureCNIBinDir
-del $zipfile
-# Windows does not need a separate CNI loopback plugin because the Windows
-# kernel automatically creates a loopback interface for each network namespace.
-# Copy CNI network config file and set bridge mode.
-move $global:AzureCNIBinDir/*.conflist $global:AzureCNIConfDir
-# Enable CNI in kubelet.
-$global:AzureCNIEnabled = $true
-}
-
 function
 Set-AzureCNIConfig()
 {
@@ -335,8 +299,7 @@ Set-NetworkConfig
 
     # Configure network policy.
     if ($global:NetworkPlugin -eq "azure") {
-        Install-AzureVnetPlugins
-        # Install-VnetPlugins
+        Install-VnetPlugins
         Set-AzureCNIConfig
     }
 }
