@@ -304,19 +304,19 @@ var (
 	}
 
 	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
-		DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
+	DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultContainerMonitoringAddonName,
 		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
 		Config: map[string]string{
-			"omsAgentVersion":   "1.6.0-42",
+			"omsAgentVersion":       "1.6.0-42",
 			"dockerProviderVersion": "2.0.0-2",
-			"omsImage": "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
-			"aksClusterName": "AKS-cluster-name",
-			"aksResourceId": "AKS-cluster-id",
-			"aksNodeResourceGroup": "AKS-Resource-Group",
-			"aksRegion": "AKS resource region",
-			"workspaceGuid": "c5905df1-b3b9-42b9-acf0-14a4c4ef028c",
-			"workspaceKey": "b4xMPEns/5Oo61hQbRLJQoPhbmAHdBn2eDjkCbRzgEISiKi9m1CR+093sczO9E8iA5w1EyGVCVkwsnuWt1MD9w==",
+			"omsImage":              "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
+			"aksClusterName":        "AKS-cluster-name",
+			"aksResourceId":         "AKS-cluster-id",
+			"aksNodeResourceGroup":  "AKS-Resource-Group",
+			"aksRegion":             "AKS resource region",
+			"workspaceGuid":         "c5905df1-b3b9-42b9-acf0-14a4c4ef028c",
+			"workspaceKey":          "b4xMPEns/5Oo61hQbRLJQoPhbmAHdBn2eDjkCbRzgEISiKi9m1CR+093sczO9E8iA5w1EyGVCVkwsnuWt1MD9w==",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{

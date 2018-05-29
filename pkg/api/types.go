@@ -835,11 +835,11 @@ func (o *OrchestratorProfile) IsContainerMonitoringEnabled() bool {
 	var containerMonitoringAddon KubernetesAddon
 	k := o.KubernetesConfig
 	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultContainerMonitoringAddOnName{
+		if k.Addons[i].Name == "container-monitoring" { // TODO DefaultContainerMonitoringAddOnName
 			containerMonitoringAddon = k.Addons[i]
 		}
 	}
-	return containerMonitoringAddon.IsEnabled(DefaultContainerMonitoringAddOnEnabled)
+	return containerMonitoringAddon.IsEnabled(true) // TODO DefaultContainerMonitoringAddOnEnabled
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled

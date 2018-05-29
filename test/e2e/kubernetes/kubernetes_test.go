@@ -352,7 +352,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-container monitoring running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				/*TBD
 				running, err := pod.WaitOnReady("container-monitoring", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -362,7 +361,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				for i, c := range containerMonitoringAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
-				}*/
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
