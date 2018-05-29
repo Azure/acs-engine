@@ -1014,10 +1014,15 @@ func (a *Properties) validateContainerRuntime() error {
 func (a *Properties) validateAddons() error {
 	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
 		var isAvailabilitySets bool
+		var isNSeriesSKU bool
 
 		for _, agentPool := range a.AgentPoolProfiles {
 			if agentPool.IsAvailabilitySets() {
 				isAvailabilitySets = true
+			}
+
+			if agentPool.IsNSeriesSKU() {
+				isNSeriesSKU = true
 			}
 		}
 
@@ -1036,7 +1041,6 @@ func (a *Properties) validateAddons() error {
 				if version == "" {
 					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
 				}
-
 				sv, err := semver.NewVersion(version)
 				if err != nil {
 					return fmt.Errorf("could not validate version %s", version)
@@ -1046,10 +1050,8 @@ func (a *Properties) validateAddons() error {
 				if err != nil {
 					return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 				}
-				if addon.Name == "nvidia-device-plugin" && cons.Check(sv) {
-					if *addon.Enabled {
-						return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
-					}
+				if isNSeriesSKU && cons.Check(sv) {
+					return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
 				}
 			}
 		}

@@ -306,8 +306,7 @@ var (
 
 	// DefaultNVIDIADevicePluginAddonsConfig is the default NVIDIA Device Plugin Kubernetes addon Config
 	DefaultNVIDIADevicePluginAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultNVIDIADevicePluginAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultNVIDIADevicePluginAddonEnabled),
+		Name: DefaultNVIDIADevicePluginAddonName,
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: DefaultNVIDIADevicePluginAddonName,

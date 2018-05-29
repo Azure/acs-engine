@@ -203,6 +203,51 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
+	p := Properties{
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:   "agentpool",
+				VMSize: "Standard_N",
+				Count:  1,
+			},
+		},
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: "1.9.0",
+			KubernetesConfig: &KubernetesConfig{
+				Addons: []KubernetesAddon{
+					getMockAddon("addon"),
+				},
+			},
+		},
+	}
+	enabled := p.IsNVIDIADevicePluginEnabled()
+	if enabled == isNSeriesSKU(&p) {
+		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false with N-series VMs with < k8s 1.10, instead returned %t", enabled)
+	}
+
+	o := p.OrchestratorProfile
+	o.OrchestratorVersion = "1.10.0"
+	enabled = p.IsNVIDIADevicePluginEnabled()
+	if enabled != isNSeriesSKU(&p) {
+		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return %t with N-series VMs with k8s >= 1.10, instead returned %t", isNSeriesSKU(&p), enabled)
+	}
+
+	b := false
+	c := p.OrchestratorProfile.KubernetesConfig
+	c.Addons = []KubernetesAddon{
+		{
+			Name:    DefaultNVIDIADevicePluginAddonName,
+			Enabled: &b,
+		},
+	}
+	enabled = p.IsNVIDIADevicePluginEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false when explicitly disabled")
+	}
+}
+
 func TestIsDashboardEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{

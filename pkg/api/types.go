@@ -885,7 +885,7 @@ func isNSeriesSKU(p *Properties) bool {
 }
 
 // IsNVIDIADevicePluginEnabled checks if the NVIDIA Device Plugin addon is enabled
-// It is enabled by default if agents contain a GPU and Kubernetes version is >= 1.8.0
+// It is enabled by default if agents contain a GPU and Kubernetes version is >= 1.10.0
 func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	var nvidiaDevicePluginAddon KubernetesAddon
 	k := p.OrchestratorProfile.KubernetesConfig
@@ -896,11 +896,13 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 		}
 	}
 
-	var addonEnabled = false
+	var addonEnabled bool
 	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
 		addonEnabled = false
 	} else if isNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
+	} else {
+		addonEnabled = false
 	}
 
 	return nvidiaDevicePluginAddon.IsEnabled(addonEnabled)

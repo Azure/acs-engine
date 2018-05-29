@@ -556,6 +556,11 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 	return a.AvailabilityProfile == VirtualMachineScaleSets
 }
 
+// IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
+func (a *AgentPoolProfile) IsNSeriesSKU() bool {
+	return strings.Contains(a.VMSize, "Standard_N")
+}
+
 // IsManagedDisks returns true if the customer specified managed disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
