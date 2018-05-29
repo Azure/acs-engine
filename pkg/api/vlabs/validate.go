@@ -665,7 +665,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 					a.OrchestratorProfile.OrchestratorRelease,
 					a.OrchestratorProfile.OrchestratorVersion,
 					true)
-				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
+				if version == "" {
 					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorVersion)
 				}
 			default:
