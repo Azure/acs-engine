@@ -297,7 +297,129 @@ spec:
 ## Real-world Workload
 TODO
 
-## Troubleshooting
+
+## Windows-specific Troubleshooting
+
+Windows support is still in active development with many changes each week. Read on for more info on known per-version issues and troubleshooting if you run into problems.
+
+### Checking versions
+
+Please be sure to include this info with any Windows bug reports.
+
+Kubernetes
+`kubectl version`
+-	“Server Version”
+`kubectl describe node <windows node>`
+-	“kernel version”
+-	Also note the IP Address for the next step, but you don't need to share it
+
+Windows config
+Connect to the Windows node with remote desktop. This is easiest forwarding a port through SSH from your Kubernetes management endpoint.
+
+1.	`ssh -L 5500:<internal ip>:3389 user@masterFQDN`
+2.	Once connected, run `mstsc.exe /v:localhost:5500` to connect. Log in with the username & password you set for the Windows agents.
+
+The Azure CNI plugin version and configuration is stored in `C:\k\azurecni\netconf\10-azure.conflist`. Get
+-	mode
+-	dns.Nameservers
+-	dns.Search
+
+Get the Azure CNI build by running `C:\k\azurecni\bin\azure-vnet.exe --help`. It will dump some errors, but the version such as ` v1.0.4-1-gf0f090e` will be listed.
+
+```
+...
+2018/05/23 01:28:57 "Start Flag false CniSucceeded false Name CNI Version v1.0.4-1-gf0f090e ErrorMessage required env variables missing vnet []
+...
+```
+
+### Known Issues per Version
+
+
+ACS-Engine | Windows Server |	Kubernetes | Azure CNI | Notes
+-----------|----------------|------------|-----------|----------
+V0.16.2	| Windows Server version 1709 (10.0.16299.____)	| V1.9.7 | ? | DNS resolution is not configured
+V0.17.0 | Windows Server version 1709	| V1.10.2 | v1.0.4 | Acs-engine version 0.17 defaults to Windows Server version 1803. You can override it to use 1709 instead [here](#choosing-the-windows-server-version). Manual workarounds needed on Windows for DNS Server list, DNS search suffix
+V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual workarounds needed on Windows for DNS Server list, DNS search suffix, and dropped packets
+v0.17.1 | Windows Server version 1709 | v1.10.3 | v1.0.4-1-gf0f090e | Manual workarounds needed on Windows for DNS Server list and DNS search suffix. This ACS-Engine version defaults to Windows Server version 1803, but you can override it to use 1709 instead [here](#choosing-the-windows-server-version)
+
+### Known problems
+
+#### Packets from Windows pods are dropped
+
+Affects: Windows Server version 1803 (10.0.17134.1)
+
+Issues: https://github.com/Azure/acs-engine/issues/3037 
+
+There is a problem with the “L2Tunnel” networking mode not forwarding packets correctly specific to Windows Server version 1803. Windows Server version 1709 is not affected.
+
+Workarounds:
+**Fixes are still in development.** A Windows hotfix is needed, and willbe deployed by ACS-Engine once it's ready. The hotfix will be removed later when it's in a future cumulative rollup.
+
+
+#### Pods cannot resolve public DNS names
+
+Affects: Some builds of Azure CNI
+
+Issues: https://github.com/Azure/azure-container-networking/issues/147
+
+Run `ipconfig /all` in a pod, and check that the first DNS server listed is within your cluster IP range (10.x.x.x). If it's not listed, or not the first in the list, then an azure-cni update is needed.
+
+Workaround:
+
+1.	Get the kube-dns service IP with `kubectl get svc -n kube-system kube-dns`
+2.  Cordon & drain the node
+3.	Modify `C:\k\azurecni\netconf\10-azure.conflist` and make it the first entry under Nameservers
+4.  Uncordon the node
+
+Example:
+```
+{
+    "cniVersion":  "0.3.0",
+    "name":  "azure",
+    "plugins":  [
+                    {
+                        "type":  "azure-vnet",
+                        "mode":  "tunnel",
+                        "bridge":  "azure0",
+                        "ipam":  {
+                                     "type":  "azure-vnet-ipam"
+                                 },
+                        "dns":  {
+                                    "Nameservers":  [
+                                                        "10.0.0.10",
+                                                        "168.63.129.16"
+                                                    ],
+                                    "Search":  [
+                                                   "default.svc.cluster.local"
+                                               ]
+                                },
+…
+```
+
+#### Pods cannot resolve cluster DNS names
+
+Affects: Azure CNI plugin <= 0.3.0
+
+Issues: https://github.com/Azure/azure-container-networking/issues/146
+
+If you can't resolve internal service names within the same namespace, run `ipconfig /all` in a pod, and check that the DNS Suffix Search List matches the form `<namespace>.svc.cluster.local`. An Azure CNI update is needed to set the right DNS suffix.
+
+Workaround:
+1.	Use the FQDN in DNS lookups such as `kubernetes.kube-system.svc.cluster.local`
+2.	Instead of DNS, use environment variables `* _SERVICE_HOST` and `*_SERVICE_PORT` to find service IPs and ports in the same namespace
+
+
+#### Pods cannot ping default route or internet IPs
+
+Affects: All acs-engine deployed clusters
+
+ICMP traffic is not routed between private Azure vNETs or to the internet.
+
+Workaround: test network connections with another protocol (TCP/UDP). For example `Invoke-WebRequest -UseBasicParsing https://www.azure.com` or `curl https://www.azure.com`.
+
+
+
+## Cluster Troubleshooting
 
 If your cluster is not reachable, you can run the following command to check for common failures.
 
