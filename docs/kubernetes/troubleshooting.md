@@ -29,12 +29,14 @@ From a vm node that did not provision successfully:
 
 How to determine the above?
 
-From a working master: `kubectl get nodes`
+1. Look at the deployment error message. The error should include which VM extension failed the deployment. For example, `cse-master-0` means that the CSE extension of VM master 0 failed.
+
+2. From a master node: `kubectl get nodes`
 
 - Are there any missing master or agent nodes?
-  - if so, that node vm probably failed CSE: grab the log file above from that vm
-- Are there no working master nodes?
-  - if so, then all node vms probably failed CSE: grab the log file above from any node vm
+  - if so, that node vm probably failed CSE: grab the log files above from that vm
+- Are there no working nodes?
+  - if so, grab the log files above from the master vm you are on
 
 #### CSE Exit Codes
 
