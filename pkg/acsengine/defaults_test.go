@@ -479,6 +479,20 @@ func TestStorageProfile(t *testing.T) {
 		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile, api.ManagedDisks)
 	}
+	if !properties.AgentPoolProfiles[0].IsAvailabilitySets() {
+		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].AvailabilityProfile, api.AvailabilitySet)
+	}
+
+	mockCS = getMockBaseContainerService("1.10.0")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	SetPropertiesDefaults(&mockCS, false)
+	if !properties.AgentPoolProfiles[0].IsVirtualMachineScaleSets() {
+		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].AvailabilityProfile, api.VirtualMachineScaleSets)
+	}
+
 }
 
 func TestAgentPoolProfile(t *testing.T) {
