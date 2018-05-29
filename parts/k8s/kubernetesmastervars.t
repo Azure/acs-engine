@@ -269,11 +269,9 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
-{{if HasCustomSearchDomain}}
     "searchDomainName": "[parameters('searchDomainName')]",
     "searchDomainRealmUser": "[parameters('searchDomainRealmUser')]",
     "searchDomainRealmPassword": "[parameters('searchDomainRealmPassword')]",
-{{end}}
 {{if not IsHostedMaster}}
   {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
