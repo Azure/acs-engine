@@ -50,7 +50,7 @@ function check_node_count() {
 check_node_count
 
 log "Downloading dcos"
-${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.10/dcos
+${remote_exec} curl -O https://dcos-mirror.azureedge.net/binaries/cli/linux/x86-64/dcos-1.10/dcos
 if [[ "$?" != "0" ]]; then log "Failed to download dcos"; exit 1; fi
 log "Setting dcos permissions"
 ${remote_exec} chmod a+x ./dcos
