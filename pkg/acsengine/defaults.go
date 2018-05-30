@@ -320,7 +320,7 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: DefaultContainerMonitoringAddonName,
-				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018"
+				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
 			},
 		},
 	}
