@@ -138,7 +138,8 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
+	// do not validate when initially loading the apimodel, validation is done later after autofilling values
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
