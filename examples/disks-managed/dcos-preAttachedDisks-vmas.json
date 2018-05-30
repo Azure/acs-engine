@@ -7,13 +7,13 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2s_v3"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpublic",
         "count": 6,
-        "vmSize": "Standard_D2_v2",
+        "vmSize": "Standard_D2s_v3",
         "availabilityProfile": "AvailabilitySet",
         "storageProfile": "ManagedDisks",
         "diskSizesGB": [128, 128, 128, 128],

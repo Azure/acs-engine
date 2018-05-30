@@ -179,6 +179,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
+|"--pod-max-pids"|"100" (need to activate the feature in --feature-gates=SupportPodPidsLimit=true)|
 |"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option for k8s versions before 1.11.0|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
@@ -312,7 +313,8 @@ Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages"|
+|"--admission-control"|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages" (Kubernetes versions prior to 1.9.0|
+|"--enable-admission-plugins"`*`|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages" (Kubernetes versions 1.9.0 and later|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
 |"--audit-log-maxage"|"30"|
 |"--audit-log-maxbackup"|"10"|
@@ -322,6 +324,8 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
 |"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
 |"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
+
+`*` In Kubernetes versions 1.10.0 and later the `--admission-control` flag is deprecated and `--enable-admission-plugins` is used in its stead.
 
 
 Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces apiserver configuration, or because a static configuration is required to build a functional cluster:

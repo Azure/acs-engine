@@ -46,6 +46,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
 		"--event-qps":                       DefaultKubeletEventQPS,
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
+		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -78,6 +79,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Get rid of values not supported in v1.5 clusters
 	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
 		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
+	// Get rid of values not supported in v1.10 clusters
+	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+		for _, key := range []string{"--pod-max-pids"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}
