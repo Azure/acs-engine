@@ -1,13 +1,13 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: cuda-vector-add
 spec:
-  containers:
-  - name: cuda-vector-add
-    image: "k8s-gcrio.azureedge.net/cuda-vector-add:v0.1"
-    resources:
-      limits:
-        nvidia.com/gpu: 1
-  nodeSelector:
-    beta.kubernetes.io/os: linux
+  template:
+    metadata:
+      name: cuda-vector-add
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: cuda-vector-add
+        image: k8s-gcrio.azureedge.net/cuda-vector-add:v0.1

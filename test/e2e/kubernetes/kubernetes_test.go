@@ -558,12 +558,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
 					eng.HasWindowsAgents())
 				if common.IsKubernetesVersionGe(version, "1.10.0") {
-					p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
+					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
-					ready, err := p.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := p.Delete()
+					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := j.Delete()
 					if delErr != nil {
-						fmt.Printf("could not delete pod %s\n", p.Metadata.Name)
+						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
 					}
 					Expect(err).NotTo(HaveOccurred())
