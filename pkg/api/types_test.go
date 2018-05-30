@@ -215,13 +215,13 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 	}
 	enabled := o.IsContainerMonitoringEnabled()
 	if enabled != true { // TODO DefaultContainerMonitoringAddOnEnabled
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", true, v, enabled)
 	}
 
 	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon("container-monitoring")) // TODO DefaultContainerMonitoringAddOnName
 	enabled = o.IsContainerMonitoringEnabled()
 	if enabled != true { // TODO DefaultContainerMonitoringAddOnEnabled
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", true, v, enabled)
 	}
 
 	b := false
@@ -238,7 +238,7 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 	}
 	enabled = o.IsContainerMonitoringEnabled()
 	if enabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return false when a custom container monitoring addon has been specified as disabled, instead returned %t", enabled)
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return false when a custom container monitoring addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
