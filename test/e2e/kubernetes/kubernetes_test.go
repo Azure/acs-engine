@@ -358,9 +358,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct resources have been applied")
 				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				for i, c := range containerMonitoringAddon.Containers {
+				for i, c := range clusterContainerMonitoringAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
+				}
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
