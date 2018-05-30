@@ -35,6 +35,8 @@ type Config struct {
 	Distro                string `envconfig:"DISTRO"`
 	SubscriptionID        string `envconfig:"SUBSCRIPTION_ID"`
 	TenantID              string `envconfig:"TENANT_ID"`
+	ImageName             string `envconfig:"IMAGE_NAME"`
+	ImageResourceGroup    string `envconfig:"IMAGE_RESOURCE_GROUP"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -110,9 +112,21 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		// master and agent config
 		cs.ContainerService.Properties.MasterProfile.Distro = vlabs.Distro(config.Distro)
 		cs.ContainerService.Properties.MasterProfile.ImageRef = nil
+		if config.ImageName != "" && config.ImageResourceGroup != "" {
+			cs.ContainerService.Properties.MasterProfile.ImageRef = &vlabs.ImageReference{
+				Name:          config.ImageName,
+				ResourceGroup: config.ImageResourceGroup,
+			}
+		}
 		for i := range cs.ContainerService.Properties.AgentPoolProfiles {
 			cs.ContainerService.Properties.AgentPoolProfiles[i].Distro = vlabs.Distro(config.Distro)
 			cs.ContainerService.Properties.AgentPoolProfiles[i].ImageRef = nil
+			if config.ImageName != "" && config.ImageResourceGroup != "" {
+				cs.ContainerService.Properties.AgentPoolProfiles[i].ImageRef = &vlabs.ImageReference{
+					Name:          config.ImageName,
+					ResourceGroup: config.ImageResourceGroup,
+				}
+			}
 		}
 	}
 
