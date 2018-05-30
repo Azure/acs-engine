@@ -24,6 +24,7 @@ ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
+ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
 
@@ -34,6 +35,7 @@ COREOS_OS_NAME="COREOS"
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 CNI_BIN_DIR=/opt/cni/bin
+CUSTOM_SEARCH_DOMAIN_SCRIPT=/opt/azure/containers/setup-custom-search-domains.sh
 
 set +x
 ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
@@ -125,11 +127,7 @@ function installEtcd() {
 }
 
 function setupCustomSearchDomain() {
-    sudo echo "  dns-search ${SEARCH_DOMAIN_NAME}" >> /etc/network/interfaces.d/50-cloud-init.cfg
-    systemctl_restart 20 5 10 restart networking
-    retrycmd_if_failure 10 5 120 apt-get -y install realmd sssd sssd-tools samba-common samba samba-common python2.7 samba-libs packagekit
-    echo "${SEARCH_DOMAIN_REALM_PASSWORD}" | realm join -U ${SEARCH_DOMAIN_REALM_USER}@`echo "${SEARCH_DOMAIN_NAME}" | tr /a-z/ /A-Z/` `echo "${SEARCH_DOMAIN_NAME}" | tr /a-z/ /A-Z/`
-    echo "ad_hostname = `hostname`.${SEARCH_DOMAIN_NAME}" >> /etc/sssd/sssd.conf
+    /opt/azure/containers/setup-custom-search-domains.sh || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 }
 
 function installDocker() {
@@ -481,8 +479,8 @@ else
     echo "skipping master node provision operations, this is an agent node"
 fi
 
-if [[ ! -z "${SEARCH_DOMAIN_NAME}" ]]; then
-    setupCustomSearchDomain
+if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
+    $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
 installDocker

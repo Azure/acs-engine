@@ -787,8 +787,10 @@
         "description": "Storage Profile for the private cluster jumpbox"
       },
       "type": "string"
-    },
-    "searchDomainName": {
+    }
+{{end}}
+{{if HasCustomSearchDomain}}
+    ,"searchDomainName": {
       "defaultValue": "",
       "metadata": {
         "description": "Custom Search Domain name."
