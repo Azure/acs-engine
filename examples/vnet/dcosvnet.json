@@ -7,7 +7,7 @@
     "masterProfile": {
       "count": 3,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2",
+      "vmSize": "Standard_D2s_v3",
       "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
       "firstConsecutiveStaticIP": "10.100.0.5" 
     },
@@ -15,14 +15,14 @@
       {
         "name": "agentprivate",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
+        "vmSize": "Standard_D2s_v3",
         "availabilityProfile": "AvailabilitySet",
         "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME"
       },
       {
         "name": "agentpublic",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
+        "vmSize": "Standard_D2s_v3",
         "dnsPrefix": "",
         "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
         "ports": [
