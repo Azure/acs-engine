@@ -304,11 +304,11 @@ var (
 	}
 
 	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
-		DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
+	DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultContainerMonitoringAddonName,
 		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
 		Config: map[string]string{
-			"omsAgentVersion":   "1.6.0-42",
+			"omsAgentVersion":       "1.6.0-42",
 			"dockerProviderVersion": "2.0.0-2",
 			"aksClusterName": "AKS-cluster-name",
 			"aksResourceId": "AKS-cluster-id",
