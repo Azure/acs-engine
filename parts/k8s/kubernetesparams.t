@@ -304,10 +304,66 @@
       },
       "type": "string"
     },
+    "omsAgentVersion": {
+      {{PopulateClassicModeDefaultValue "omsAgentVersion"}}
+      "metadata": {
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "dockerProviderVersion": {
+      {{PopulateClassicModeDefaultValue "dockerProviderVersion"}}
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
     "kubernetesContainerMonitoringSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesContainerMonitoringSpec"}}
       "metadata": {
         "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "aksClusterName": {
+      {{PopulateClassicModeDefaultValue "aksClusterName"}}
+      "metadata": {
+        "description": "AKS cluster name"
+      },
+      "type": "string"
+    },
+    "aksResourceId": {
+      {{PopulateClassicModeDefaultValue "aksResourceId"}}
+      "metadata": {
+        "description": "AKS resource id"
+      },
+      "type": "string"
+    },
+    "aksNodeResourceGroup": {
+      {{PopulateClassicModeDefaultValue "aksNodeResourceGroup"}}
+      "metadata": {
+        "description": "AKS node resource group"
+      },
+      "type": "string"
+    },
+    "aksRegion": {
+      {{PopulateClassicModeDefaultValue "aksRegion"}}
+      "metadata": {
+        "description": "AKS region"
+      },
+      "type": "string"
+    },
+    "workspaceGuid": {
+      {{PopulateClassicModeDefaultValue "workspaceGuid"}}
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "workspaceKey": {
+      {{PopulateClassicModeDefaultValue "workspaceKey"}}
+      "metadata": {
+        "description": "OMS workspace key"
       },
       "type": "string"
     },
