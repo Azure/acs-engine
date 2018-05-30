@@ -150,6 +150,8 @@ const (
 	DefaultJumpboxDiskSize = 30
 	// DefaultJumpboxUsername specifies the default admin username for the private cluster jumpbox
 	DefaultJumpboxUsername = "azureuser"
+	// DefaultKubeletPodMaxPIDs specifies the default max pid authorized by pods
+	DefaultKubeletPodMaxPIDs = 100
 )
 
 const (
