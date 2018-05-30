@@ -10,10 +10,10 @@ coverage:
   status:
     project:
       default:
-        threshold: 1
+        threshold: 0.5
     patch:
       default:
-        threshold: 1
+        threshold: 0.5
     changes: no
 
 parsers:
