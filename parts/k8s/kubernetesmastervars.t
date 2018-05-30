@@ -98,7 +98,7 @@
     "kubernetesMetricsServerSpec": "[parameters('kubernetesMetricsServerSpec')]",
     "omsAgentVersion": "[parameters('omsAgentVersion')]",
     "dockerProviderVersion": "[parameters('dockerProviderVersion')]",
-    "omsImage": "[parameters('omsImage')]",
+    "kubernetesContainerMonitoringSpec": "[parameters('kubernetesContainerMonitoringSpec')]",
     "aksClusterName": "[parameters('aksClusterName')]",
     "aksResourceId": "[parameters('aksResourceId')]",
     "aksNodeResourceGroup": "[parameters('aksNodeResourceGroup')]",

@@ -44,7 +44,7 @@ spec:
    serviceAccountName: omsagent
    containers:
      - name: omsagent 
-       image: <omsImage>
+       image: <kubernetesContainerMonitoringSpec>
        imagePullPolicy: IfNotPresent
        env:
        - name: AKS_CLUSTER_NAME

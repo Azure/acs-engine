@@ -274,7 +274,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if .OrchestratorProfile.IsContainerMonitoringAddOnEnabled}}
     sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<omsImage>|{{WrapAsVariable "omsImage"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<aksClusterName>|{{WrapAsVariable "aksClusterName"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<aksResourceId>|{{WrapAsVariable "aksResourceId"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<aksNodeResourceGroup>|{{WrapAsVariable "aksNodeResourceGroup"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"

@@ -310,7 +310,6 @@ var (
 		Config: map[string]string{
 			"omsAgentVersion":   "1.6.0-42",
 			"dockerProviderVersion": "2.0.0-2",
-			"omsImage": "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
 			"aksClusterName": "AKS-cluster-name",
 			"aksResourceId": "AKS-cluster-id",
 			"aksNodeResourceGroup": "AKS-Resource-Group",
@@ -321,6 +320,7 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: DefaultContainerMonitoringAddonName,
+				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018"
 			},
 		},
 	}
