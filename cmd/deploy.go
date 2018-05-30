@@ -159,8 +159,9 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get client: %s", err.Error())
 	}
 
-	// autofillApimodel calls log.Fatal() directly and does not return errors
-	autofillApimodel(dc)
+	if err = autofillApimodel(dc); err != nil {
+		return err
+	}
 
 	_, _, err = validateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
