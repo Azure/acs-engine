@@ -319,7 +319,7 @@ var (
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
-				Name:  DefaultContainerMonitoringAddonName,
+				Name:  "omsagent",
 				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
 			},
 		},
