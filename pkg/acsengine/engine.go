@@ -1597,7 +1597,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
 				containerMonitoringAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultContainerMonitoringAddonName)
-				cmC = getAddonContainersIndexByName(containerMonitoringAddon.Containers, DefaultContainerMonitoringAddonName)
+				cmC := getAddonContainersIndexByName(containerMonitoringAddon.Containers, DefaultContainerMonitoringAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
