@@ -3,7 +3,7 @@
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
-      "name": "router-nsg",
+      "name": "[variables('routerNSGName')]",
       "properties": {
         "securityRules": [
           {
@@ -38,7 +38,7 @@
       }
     },
     {
-        "name": "router-ip",
+        "name": "[variables('routerIPName')]",
         "type": "Microsoft.Network/publicIPAddresses",
         "apiVersion": "2017-08-01",
         "location": "[variables('location')]",
@@ -53,12 +53,12 @@
         }
     },
     {
-        "name": "router-lb",
+        "name": "[variables('routerLBName')]",
         "type": "Microsoft.Network/loadBalancers",
         "apiVersion": "2017-10-01",
         "location": "[variables('location')]",
         "dependsOn": [
-            "['Microsoft.Network/publicIPAddresses/router-ip']"
+            "[concat('Microsoft.Network/publicIPAddresses/', variables('routerIPName'))]"
         ],
         "properties": {
             "frontendIPConfigurations": [
@@ -67,7 +67,7 @@
                     "properties": {
                         "privateIPAllocationMethod": "Dynamic",
                         "publicIPAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'router-ip')]"
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('routerIPName'))]"
                         }
                     }
                 }
@@ -82,7 +82,7 @@
                     "name": "port-80",
                     "properties": {
                         "frontendIPConfiguration": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/frontendIPConfigurations/frontend')]"
+                            "id": "[concat(variables('routerLBID'), '/frontendIPConfigurations/frontend')]"
                         },
                         "frontendPort": 80,
                         "backendPort": 80,
@@ -91,10 +91,10 @@
                         "protocol": "Tcp",
                         "loadDistribution": "Default",
                         "backendAddressPool": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                            "id": "[concat(variables('routerLBID'), '/backendAddressPools/backend')]"
                         },
                         "probe": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/probes/port-80')]"
+                            "id": "[concat(variables('routerLBID'), '/probes/port-80')]"
                         }
                     }
                 },
@@ -102,7 +102,7 @@
                     "name": "port-443",
                     "properties": {
                         "frontendIPConfiguration": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/frontendIPConfigurations/frontend')]"
+                            "id": "[concat(variables('routerLBID'), '/frontendIPConfigurations/frontend')]"
                         },
                         "frontendPort": 443,
                         "backendPort": 443,
@@ -111,10 +111,10 @@
                         "protocol": "Tcp",
                         "loadDistribution": "Default",
                         "backendAddressPool": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                            "id": "[concat(variables('routerLBID'), '/backendAddressPools/backend')]"
                         },
                         "probe": {
-                            "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/probes/port-443')]"
+                            "id": "[concat(variables('routerLBID'), '/probes/port-443')]"
                         }
                     }
                 }

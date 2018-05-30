@@ -21,7 +21,7 @@ func init() {
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate(isUpdate bool) error {
+func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
 	// On updates we only need to make sure there is a supported patch version for the minor version
@@ -51,7 +51,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	} else {
 		switch o.OrchestratorType {
 		case DCOS, Kubernetes:
-			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, hasWindows)
 			// if there isn't a supported patch version for this version fail
 			if patchVersion == "" {
 				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
@@ -129,7 +129,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
+	if e := a.OrchestratorProfile.Validate(isUpdate, a.HasWindows()); e != nil {
 		return e
 	}
 	if e := a.MasterProfile.Validate(); e != nil {

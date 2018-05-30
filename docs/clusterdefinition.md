@@ -31,33 +31,34 @@ Here are the valid values for the orchestrator types:
 
 |Name|Required|Description|
 |---|---|---|
-|kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
-|dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
-|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience <br>`"kubenet"` for k8s software networking implementation. <br> `"flannel"` for using CoreOS Flannel <br> `"cilium"` for using the default Cilium CNI IPAM |
-|networkPolicy|no|Specifies the network policy enforcement tool for the cluster (currently Linux-only). Valid values are:<br>`calico` for Calico network policy.<br>`cilium` for cilium network policy (Lin).<br>See [network policy examples](../examples/networkpolicy) for more information|
-|containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The other options are `clear-containers` and `containerd`|
+|addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below|
+|apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config)|
+|cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config)|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16|
+|containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The other options are `clear-containers` and `containerd`|
+|controllerManagerConfig|no|Configure various runtime configuration for controller-manager. See `controllerManagerConfig` [below](#feat-controller-manager-config)|
+|customWindowsPackageURL|no|Configure custom windows Kubernetes release package URL for deployment on Windows|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0)|
-|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNET|
-|enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
+|dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g. "17.03.*"|
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |enableDataEncryptionAtRest|no|Enable [kubernetes data encryption at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
-|etcdEncryptionKey|no|Enryption key to be used if enableDataEncryptionAtRest is enabled. Defaults to a random, generated, key|
-|enablePodSecurityPolicy|no|Enable [kubernetes pod security policy](https://kubernetes.io/docs/concepts/policy/pod-security-policy/).This is currently a beta feature. (boolean - default == false)|
 |enableEncryptionWithExternalKms|no|Enable [kubernetes data encryption at rest with external KMS](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).This is currently an alpha feature. (boolean - default == false) |
+|enablePodSecurityPolicy|no|Enable [kubernetes pod security policy](https://kubernetes.io/docs/concepts/policy/pod-security-policy/).This is currently a beta feature. (boolean - default == false)|
+|enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == true) |
 |etcdDiskSizeGB|no|Size in GB to assign to etcd data volume. Defaults (if no user value provided) are: 256 GB for clusters up to 3 nodes; 512 GB for clusters with between 4 and 10 nodes; 1024 GB for clusters with between 11 and 20 nodes; and 2048 GB for clusters with more than 20 nodes|
-|privateCluster|no|Build a cluster without public addresses assigned. See `privateClusters` [below](#feat-private-cluster).|
+|etcdEncryptionKey|no|Enryption key to be used if enableDataEncryptionAtRest is enabled. Defaults to a random, generated, key|
 |gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
-|useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`|
-|addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below|
 |kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` [below](#feat-kubelet-config)|
-|controllerManagerConfig|no|Configure various runtime configuration for controller-manager. See `controllerManagerConfig` [below](#feat-controller-manager-config)|
-|cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config)|
-|apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config)|
+|kubernetesImageBase|no|Specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`|
+|networkPlugin|no|Specifies the network plugin implementation for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience <br>`"kubenet"` for k8s software networking implementation. <br> `"flannel"` for using CoreOS Flannel <br> `"cilium"` for using the default Cilium CNI IPAM |
+|networkPolicy|no|Specifies the network policy enforcement tool for the cluster (currently Linux-only). Valid values are:<br>`calico` for Calico network policy.<br>`cilium` for cilium network policy (Lin).<br>See [network policy examples](../examples/networkpolicy) for more information|
+|privateCluster|no|Build a cluster without public addresses assigned. See `privateClusters` [below](#feat-private-cluster).|
 |schedulerConfig|no|Configure various runtime configuration for scheduler. See `schedulerConfig` [below](#feat-scheduler-config)|
-|customWindowsPackageURL|no|Configure custom windows Kubernetes release package URL for deployment on Windows|
+|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNET|
+|useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`|
+|useManagedIdentity|no| Includes and uses MSI identities for all interactions with the Azure Resource Manager (ARM) API. Instead of using a static service principal written to /etc/kubernetes/azure.json, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.9.1 or newer. (boolean - default == false) |
 
 #### addons
 
@@ -441,7 +442,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 
 |Name|Required|Description|
 |---|---|---|
-|availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default) and `AvailabilitySet`.  For Kubernetes clusters before version 1.10, use `AvailabilitySet`. Otherwise, you should use `VirtualMachineScaleSets`|
+|availabilityProfile|no|Supported values are `VirtualMachineScaleSets` (default, except for Kubernetes clusters before version 1.10) and `AvailabilitySet`.|
 |count|yes|Describes the node count|
 |scaleSetPriority|no|Supported values are `Regular` (default) and `Low`. Only applies to clusters with availabilityProfile `VirtualMachineScaleSets`. Enables the usage of [Low-priority VMs on Scale Sets](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-use-low-priority).|
 |scaleSetEvictionPolicy|no|Supported values are `Delete` (default) and `Deallocate`. Only applies to clusters with availabilityProfile of `VirtualMachineScaleSets` and scaleSetPriority of `Low`.|

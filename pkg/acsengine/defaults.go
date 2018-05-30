@@ -338,7 +338,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	o := a.OrchestratorProfile
 	o.OrchestratorVersion = common.GetValidPatchVersion(
 		o.OrchestratorType,
-		o.OrchestratorVersion)
+		o.OrchestratorVersion, a.HasWindows())
 
 	switch o.OrchestratorType {
 	case api.Kubernetes:
@@ -756,6 +756,9 @@ func setStorageDefaults(a *api.Properties) {
 		}
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.0") {
+				profile.AvailabilityProfile = api.AvailabilitySet
+			}
 		}
 		if len(profile.ScaleSetEvictionPolicy) == 0 && profile.ScaleSetPriority == api.ScaleSetPriorityLow {
 			profile.ScaleSetEvictionPolicy = api.ScaleSetEvictionPolicyDelete
