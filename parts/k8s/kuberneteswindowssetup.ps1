@@ -277,14 +277,13 @@ Set-AzureNetworkPlugin()
     # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
     Set-VnetPluginMode "tunnel"
 }
-
 function
 Set-AzureCNIConfig()
 {
     # Fill in DNS information for kubernetes.
     $fileName  = [Io.path]::Combine("$global:AzureCNIConfDir", "10-azure.conflist")
     $configJson = Get-Content $fileName | ConvertFrom-Json
-    $configJson.plugins.dns.Nameservers[1] = $KubeDnsServiceIp
+    $configJson.plugins.dns.Nameservers[0] = $KubeDnsServiceIp
     $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath 
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[0] = $global:KubeClusterCIDR
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[1] = $global:MasterSubnet
@@ -301,7 +300,6 @@ Set-NetworkConfig
     # Configure network policy.
     if ($global:NetworkPlugin -eq "azure") {
         Install-VnetPlugins
-        Set-AzureNetworkPlugin
         Set-AzureCNIConfig
     }
 }
@@ -355,7 +353,6 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
 
     if ($global:NetworkPlugin -eq "azure") {
         $global:KubeNetwork = "azure"
-        $global:NetworkMode = "L2Tunnel"
         $kubeStartStr += @"
 Write-Host "NetworkPlugin azure, starting kubelet."
 
