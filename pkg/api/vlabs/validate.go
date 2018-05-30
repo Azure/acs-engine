@@ -108,7 +108,7 @@ func isValidEtcdVersion(etcdVersion string) error {
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate(isUpdate bool) error {
+func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
 	// On updates we only need to make sure there is a supported patch version for the minor version
@@ -248,9 +248,9 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 				o.OrchestratorType,
 				o.OrchestratorRelease,
 				o.OrchestratorVersion,
-				false)
+				HasWindows)
 			if version == "" {
-				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, HasWindows)
 				// if there isn't a supported patch version for this version fail
 				if patchVersion == "" {
 					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
@@ -374,7 +374,7 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	// Here we use strings.EqualFold, the other just string comparison.
 	// Rationalize orchestrator type should be done from versioned to unversioned
 	// I will go ahead to simplify this
-	return o.OrchestratorProfile.Validate(false)
+	return o.OrchestratorProfile.Validate(false, false)
 }
 
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
@@ -454,7 +454,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
+	if e := a.OrchestratorProfile.Validate(isUpdate, a.HasWindows()); e != nil {
 		return e
 	}
 	if e := a.validateNetworkPlugin(); e != nil {
@@ -587,8 +587,8 @@ func (a *Properties) Validate(isUpdate bool) error {
 			}
 		}
 
-		// validation for VMSS for Kubernetes
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+		// validation for VMSS with Kubernetes
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			version := common.RationalizeReleaseAndVersion(
 				a.OrchestratorProfile.OrchestratorType,
 				a.OrchestratorProfile.OrchestratorRelease,
@@ -608,38 +608,21 @@ func (a *Properties) Validate(isUpdate bool) error {
 				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 			}
 			if cons.Check(sv) {
-				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-					minVersion, version)
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 			}
-		}
-
-		// validation for instanceMetadata using VMSS on Kubernetes
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
-			version := common.RationalizeReleaseAndVersion(
-				a.OrchestratorProfile.OrchestratorType,
-				a.OrchestratorProfile.OrchestratorRelease,
-				a.OrchestratorProfile.OrchestratorVersion,
-				false)
-			if version == "" {
-				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-			}
-
-			sv, err := semver.NewVersion(version)
-			if err != nil {
-				return fmt.Errorf("could not validate version %s", version)
-			}
-			minVersion := "1.10.2"
-			cons, err := semver.NewConstraint("<" + minVersion)
+			// validation for instanceMetadata using VMSS with Kubernetes
+			minVersion = "1.10.2"
+			cons, err = semver.NewConstraint("<" + minVersion)
 			if err != nil {
 				return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
 			}
 			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
 				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && cons.Check(sv) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 				}
 			} else {
 				if cons.Check(sv) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\"", minVersion)
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
 				}
 			}
 		}
@@ -649,9 +632,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-			if i == 0 {
-				continue
-			}
 			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
 				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
@@ -663,25 +643,13 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
-				var version string
-				if a.HasWindows() {
-					version = common.RationalizeReleaseAndVersion(
-						a.OrchestratorProfile.OrchestratorType,
-						a.OrchestratorProfile.OrchestratorRelease,
-						a.OrchestratorProfile.OrchestratorVersion,
-						true)
-				} else {
-					version = common.RationalizeReleaseAndVersion(
-						a.OrchestratorProfile.OrchestratorType,
-						a.OrchestratorProfile.OrchestratorRelease,
-						a.OrchestratorProfile.OrchestratorVersion,
-						false)
-				}
+				version := common.RationalizeReleaseAndVersion(
+					a.OrchestratorProfile.OrchestratorType,
+					a.OrchestratorProfile.OrchestratorRelease,
+					a.OrchestratorProfile.OrchestratorVersion,
+					true)
 				if version == "" {
-					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-				}
-				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
-					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
+					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorVersion)
 				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)

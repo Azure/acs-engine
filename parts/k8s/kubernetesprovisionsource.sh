@@ -35,7 +35,7 @@ retrycmd_get_tarball() {
         if [ $i -eq $tar_retries ]; then
             return 1
         else
-            retrycmd_if_failure_no_stats 1 1 30 curl -fsSL $url -o $tarball
+            timeout 60 curl -fsSL $url -o $tarball
             sleep $wait_sleep
         fi
     done
@@ -55,10 +55,12 @@ wait_for_file() {
 }
 apt_get_update() {
     retries=10
+    apt_update_output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
         timeout 30 dpkg --configure -a
-        timeout 120 apt-get update 2>&1 | grep -x "[WE]:.*"
-        [ $? -ne 0  ] && break || \
+        timeout 120 apt-get update 2>&1 | tee $apt_update_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $apt_update_output && break || \
+        cat $apt_update_output
         if [ $i -eq $retries ]; then
             return 1
         else sleep 30
@@ -83,7 +85,8 @@ apt_get_install() {
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4
     for i in $(seq 1 $retries); do
-        timeout $timeout systemctl daemon-reload && systemctl restart $svcname && systemctl daemon-reload
+        timeout $timeout systemctl daemon-reload
+        timeout $timeout systemctl restart $svcname
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
