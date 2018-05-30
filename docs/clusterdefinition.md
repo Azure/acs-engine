@@ -313,7 +313,8 @@ Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages"|
+|"--admission-control"|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages" (Kubernetes versions prior to 1.9.0|
+|"--enable-admission-plugins"`*`|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages" (Kubernetes versions 1.9.0 and later|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
 |"--audit-log-maxage"|"30"|
 |"--audit-log-maxbackup"|"10"|
@@ -323,6 +324,8 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
 |"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
 |"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
+
+`*` In Kubernetes versions 1.10.0 and later the `--admission-control` flag is deprecated and `--enable-admission-plugins` is used in its stead.
 
 
 Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces apiserver configuration, or because a static configuration is required to build a functional cluster:

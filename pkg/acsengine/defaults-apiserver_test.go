@@ -291,6 +291,43 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	}
 }
 
+func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
+	// Test --enable-admission-plugins for v1.10 and above
+	version := "1.10.0"
+	cs := createContainerService("testcluster", version, 3, 2)
+	setAPIServerConfig(cs)
+	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+
+	enableAdmissionPluginsKey := "--enable-admission-plugins"
+	admissonControlKey := "--admission-control"
+
+	// --enable-admission-plugins should be set for v1.10 and above
+	if _, found := a[enableAdmissionPluginsKey]; !found {
+		t.Fatalf("Admission control key '%s' not set in API server config for version %s", enableAdmissionPluginsKey, version)
+	}
+
+	// --admission-control was deprecated in v1.10
+	if _, found := a[admissonControlKey]; found {
+		t.Fatalf("Deprecated admission control key '%s' set in API server config for version %s", admissonControlKey, version)
+	}
+
+	// Test --admission-control for v1.9 and below
+	version = "1.9.0"
+	cs = createContainerService("testcluster", version, 3, 2)
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+
+	// --enable-admission-plugins is available for v1.10 and above and should not be set here
+	if _, found := a[enableAdmissionPluginsKey]; found {
+		t.Fatalf("Unknown admission control key '%s' set in API server config for version %s", enableAdmissionPluginsKey, version)
+	}
+
+	// --admission-control is used for v1.9 and below
+	if _, found := a[admissonControlKey]; !found {
+		t.Fatalf("Admission control key '%s' not set in API server config for version %s", enableAdmissionPluginsKey, version)
+	}
+}
+
 func createContainerService(containerServiceName string, orchestratorVersion string, masterCount int, agentCount int) *api.ContainerService {
 	cs := api.ContainerService{}
 	cs.ID = uuid.NewV4().String()

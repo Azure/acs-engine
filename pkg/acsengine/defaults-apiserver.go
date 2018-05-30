@@ -45,7 +45,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
-		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
 		"--audit-log-maxage":    "30",
 		"--audit-log-maxbackup": "10",
 		"--audit-log-maxsize":   "100",
@@ -104,10 +103,9 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		}
 	}
 
-	// Pod Security Policy configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
-		defaultAPIServerConfig["--admission-control"] = defaultAPIServerConfig["--admission-control"] + ",PodSecurityPolicy"
-	}
+	// Set default admission controllers
+	admissionControlKey, admissionControlValues := getDefaultAdmissionControls(cs)
+	defaultAPIServerConfig[admissionControlKey] = admissionControlValues
 
 	// If no user-configurable apiserver config values exists, use the defaults
 	if o.KubernetesConfig.APIServerConfig == nil {
@@ -140,4 +138,30 @@ func setAPIServerConfig(cs *api.ContainerService) {
 			delete(o.KubernetesConfig.APIServerConfig, key)
 		}
 	}
+}
+
+func getDefaultAdmissionControls(cs *api.ContainerService) (string, string) {
+	o := cs.Properties.OrchestratorProfile
+	admissionControlKey := "--enable-admission-plugins"
+	var admissionControlValues string
+
+	// --admission-control was used in v1.9 and earlier and was deprecated in 1.10
+	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+		admissionControlKey = "--admission-control"
+	}
+
+	// Add new version case when applying admission controllers only available in that version or later
+	switch {
+	case common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"):
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages"
+	default:
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages"
+	}
+
+	// Pod Security Policy configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+		admissionControlValues += ",PodSecurityPolicy"
+	}
+
+	return admissionControlKey, admissionControlValues
 }
