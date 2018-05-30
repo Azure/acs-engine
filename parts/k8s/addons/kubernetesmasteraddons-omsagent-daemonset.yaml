@@ -47,14 +47,8 @@ spec:
        image: <kubernetesContainerMonitoringSpec>
        imagePullPolicy: IfNotPresent
        env:
-       - name: AKS_CLUSTER_NAME
-         value: <aksClusterName>
-       - name: AKS_RESOURCE_ID
-         value: <aksResourceId>
-        - name:AKS_NODE_RESOURCE_GROUP
-         value: <aksNodeResourceGroup>
-        - name: AKS_REGION
-         value: <aksRegion>
+        -name: ACS_RESOURCE_NAME
+         value: "my_acs_cluster_name"
        - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
          value: "true"
        - name: WSID

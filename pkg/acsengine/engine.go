@@ -742,12 +742,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if c > -1 {
 			addValue(parametersMap, "omsAgentVersion", containerMonitoringAddon.Config["omsAgentVersion"])
 			addValue(parametersMap, "dockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
-			addValue(parametersMap, "aksClusterName", containerMonitoringAddon.Config["aksClusterName"])
-			addValue(parametersMap, "aksResourceId", containerMonitoringAddon.Config["aksResourceId"])
-			addValue(parametersMap, "aksNodeResourceGroup", containerMonitoringAddon.Config["aksNodeResourceGroup"])
-			addValue(parametersMap, "aksRegion", containerMonitoringAddon.Config["aksRegion"])
-			addValue(parametersMap, "workspaceGuid", containerMonitoringAddon.Config["workspaceGuid"])
-			addValue(parametersMap, "workspaceKey", containerMonitoringAddon.Config["workspaceKey"])
+			addValue(parametersMap, "workspaceGuid", containerMonitoringAddon.Containers[c].WorkspaceGuid)
+			addValue(parametersMap, "workspaceKey", containerMonitoringAddon.Containers[c].WorkspaceKey)
 			if containerMonitoringAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesContainerMonitoringSpec", containerMonitoringAddon.Containers[c].Image)
 			} else {
