@@ -203,6 +203,45 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsContainerMonitoringEnabled(t *testing.T) {
+	v := "1.9.0"
+	o := OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+		},
+	}
+	enabled := o.IsContainerMonitoringEnabled()
+	if enabled != true { // TODO DefaultContainerMonitoringAddOnEnabled
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", true, v, enabled)
+	}
+
+	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon("container-monitoring")) // TODO DefaultContainerMonitoringAddOnName
+	enabled = o.IsContainerMonitoringEnabled()
+	if enabled != true { // TODO DefaultContainerMonitoringAddOnEnabled
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", true, v, enabled)
+	}
+
+	b := false
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			{
+				Name:    "container-monitoring", // TODO DefaultContainerMonitoringAddOnName
+				Enabled: &b,
+			},
+		},
+		},
+	}
+	enabled = o.IsContainerMonitoringEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return false when a custom container monitoring addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestIsDashboardEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{

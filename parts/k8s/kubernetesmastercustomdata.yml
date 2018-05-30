@@ -271,6 +271,14 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
+{{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
+    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<workspaceGuid>|{{WrapAsVariable "workspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<workspaceKey>|{{WrapAsVariable "workspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+{{end}}
+
 {{if EnableDataEncryptionAtRest }}
     sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml"
 {{end}}

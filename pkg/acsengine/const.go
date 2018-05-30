@@ -136,6 +136,8 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
+	// DefaultContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
+	DefaultContainerMonitoringAddonName = "container-monitoring"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

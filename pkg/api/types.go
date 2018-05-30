@@ -830,6 +830,18 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
+// IsContainerMonitoringEnabled checks if the container monitoring addon is enabled
+func (o *OrchestratorProfile) IsContainerMonitoringEnabled() bool {
+	var containerMonitoringAddon KubernetesAddon
+	k := o.KubernetesConfig
+	for i := range k.Addons {
+		if k.Addons[i].Name == "container-monitoring" { // TODO DefaultContainerMonitoringAddOnName
+			containerMonitoringAddon = k.Addons[i]
+		}
+	}
+	return containerMonitoringAddon.IsEnabled(true) // TODO DefaultContainerMonitoringAddOnEnabled
+}
+
 // IsTillerEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsTillerEnabled() bool {
 	var tillerAddon KubernetesAddon

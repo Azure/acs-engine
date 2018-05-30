@@ -82,7 +82,7 @@
         "metadata": {
           "description": "The base 64 server private keys used on the master."
         },
-        "type": "securestring"
+        "type": "securestring"	
       },
       {{if ge .MasterProfile.Count 5}}
         "etcdPeerCertificate3": {
@@ -301,6 +301,41 @@
       {{PopulateClassicModeDefaultValue "kubernetesMetricsServerSpec"}}
       "metadata": {
         "description": "The container spec for Metrics Server."
+      },
+      "type": "string"
+    },
+    "omsAgentVersion": {
+      {{PopulateClassicModeDefaultValue "omsAgentVersion"}}
+      "metadata": {
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "dockerProviderVersion": {
+      {{PopulateClassicModeDefaultValue "dockerProviderVersion"}}
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "kubernetesContainerMonitoringSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesContainerMonitoringSpec"}}
+      "metadata": {
+        "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "workspaceGuid": {
+      {{PopulateClassicModeDefaultValue "workspaceGuid"}}
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "workspaceKey": {
+      {{PopulateClassicModeDefaultValue "workspaceKey"}}
+      "metadata": {
+        "description": "OMS workspace key"
       },
       "type": "string"
     },
