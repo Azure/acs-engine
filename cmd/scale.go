@@ -223,7 +223,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			vmTags := *vm.Tags
 			poolName := *vmTags["poolName"]
 			nameSuffix := *vmTags["resourceNameSuffix"]
-			
+
 			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
 			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
 				continue
@@ -371,7 +371,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 	addValue(parametersJSON, sc.agentPool.Name+"Count", countForTemplate)
 
-	if winPoolIndex !=-1 {
+	if winPoolIndex != -1 {
 		templateJSON["variables"].(map[string]interface{})[sc.agentPool.Name+"Index"] = winPoolIndex
 	}
 	switch orchestratorInfo.OrchestratorType {
