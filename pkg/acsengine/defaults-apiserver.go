@@ -138,6 +138,14 @@ func setAPIServerConfig(cs *api.ContainerService) {
 			delete(o.KubernetesConfig.APIServerConfig, key)
 		}
 	}
+
+	// Enforce flags removal that don't work with specific versions, to accommodate upgrade
+	// Remove flags that are not compatible with 1.10
+	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+		for _, key := range []string{"--admission-control"} {
+			delete(o.KubernetesConfig.APIServerConfig, key)
+		}
+	}
 }
 
 func getDefaultAdmissionControls(cs *api.ContainerService) (string, string) {
