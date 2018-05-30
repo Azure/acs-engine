@@ -110,7 +110,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 		// For N Series (GPU) VMs
 		if strings.Contains(profile.VMSize, "Standard_N") {
-			if !cs.Properties.IsNVIDIADevicePluginEnabled() { // enabling accelerators for Kubernetes >= 1.6 to <= 1.9
+			if !cs.Properties.IsNVIDIADevicePluginEnabled() && !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
+				// enabling accelerators for Kubernetes >= 1.6 to <= 1.9
 				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
 			}
 		}
