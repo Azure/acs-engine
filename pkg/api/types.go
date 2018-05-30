@@ -769,7 +769,12 @@ func (l *LinuxProfile) HasSecrets() bool {
 
 // HasSearchDomain returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSearchDomain() bool {
-	return l.CustomSearchDomain != nil
+	if l.CustomSearchDomain != nil {
+		if l.CustomSearchDomain.Name != "" && l.CustomSearchDomain.RealmPassword != "" && l.CustomSearchDomain.RealmUser != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
