@@ -294,12 +294,13 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
 	// Test --enable-admission-plugins for v1.10 and above
 	version := "1.10.0"
-	cs := createContainerService("testcluster", version, 3, 2)
-	setAPIServerConfig(cs)
-	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
-
 	enableAdmissionPluginsKey := "--enable-admission-plugins"
 	admissonControlKey := "--admission-control"
+	cs := createContainerService("testcluster", version, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{}
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig[admissonControlKey] = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages"
+	setAPIServerConfig(cs)
+	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 
 	// --enable-admission-plugins should be set for v1.10 and above
 	if _, found := a[enableAdmissionPluginsKey]; !found {
