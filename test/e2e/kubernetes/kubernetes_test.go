@@ -552,7 +552,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
 			if eng.HasGPUNodes() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.10") {
+				version := common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+					eng.HasWindowsAgents())
+				if common.IsKubernetesVersionGe(version, "1.10.0") {
 					p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := p.WaitOnReady(30*time.Second, cfg.Timeout)
