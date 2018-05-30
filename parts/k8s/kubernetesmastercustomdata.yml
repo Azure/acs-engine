@@ -271,7 +271,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.IsContainerMonitoringAddOnEnabled}}
+{{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
     sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
