@@ -796,6 +796,29 @@
       "type": "string"
     }
 {{end}}
+{{if HasCustomSearchDomain}}
+    ,"searchDomainName": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Custom Search Domain name."
+      },
+      "type": "string"
+    },
+    "searchDomainRealmUser": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user name to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "string"
+    },
+    "searchDomainRealmPassword": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user password to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "securestring"
+    }
+{{end}}
 {{if EnableEncryptionWithExternalKms}}
    ,
    {{if not UseManagedIdentity}}

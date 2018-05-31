@@ -131,14 +131,22 @@ type LinuxProfile struct {
 	SSH           struct {
 		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
-	Distro        Distro            `json:"distro,omitempty"`
-	ScriptRootURL string            `json:"scriptroot,omitempty"`
+	Secrets            []KeyVaultSecrets   `json:"secrets,omitempty"`
+	Distro             Distro              `json:"distro,omitempty"`
+	ScriptRootURL      string              `json:"scriptroot,omitempty"`
+	CustomSearchDomain *CustomSearchDomain `json:"customSearchDomain,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
 type PublicKey struct {
 	KeyData string `json:"keyData"`
+}
+
+// CustomSearchDomain represents the Search Domain when the custom vnet has a windows server DNS as a nameserver.
+type CustomSearchDomain struct {
+	Name          string `json:"name,omitempty"`
+	RealmUser     string `json:"realmUser,omitempty"`
+	RealmPassword string `json:"realmPassword,omitempty"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -758,6 +766,16 @@ func (w *WindowsProfile) HasCustomImage() bool {
 // HasSecrets returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSecrets() bool {
 	return len(l.Secrets) > 0
+}
+
+// HasSearchDomain returns true if the customer specified secrets to install
+func (l *LinuxProfile) HasSearchDomain() bool {
+	if l.CustomSearchDomain != nil {
+		if l.CustomSearchDomain.Name != "" && l.CustomSearchDomain.RealmPassword != "" && l.CustomSearchDomain.RealmUser != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator

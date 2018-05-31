@@ -70,6 +70,15 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
+{{if HasCustomSearchDomain}}
+- path: "/opt/azure/containers/setup-custom-search-domains.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "customSearchDomainsScript"}}
+{{end}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -303,6 +312,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
     sed -i "s|# Required|Requires=kms.service|g" "/etc/systemd/system/kubelet.service"
+{{end}}
+{{if HasCustomSearchDomain}}
+    sed -i "s|<searchDomainName>|{{WrapAsVariable "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmUser>|{{WrapAsVariable "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"

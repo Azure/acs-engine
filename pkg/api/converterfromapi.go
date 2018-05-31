@@ -555,6 +555,12 @@ func convertLinuxProfileToVLabs(obj *LinuxProfile, vlabsProfile *vlabs.LinuxProf
 		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)
 	}
 	vlabsProfile.ScriptRootURL = obj.ScriptRootURL
+	if obj.CustomSearchDomain != nil {
+		vlabsProfile.CustomSearchDomain = &vlabs.CustomSearchDomain{}
+		vlabsProfile.CustomSearchDomain.Name = obj.CustomSearchDomain.Name
+		vlabsProfile.CustomSearchDomain.RealmUser = obj.CustomSearchDomain.RealmUser
+		vlabsProfile.CustomSearchDomain.RealmPassword = obj.CustomSearchDomain.RealmPassword
+	}
 }
 
 func convertWindowsProfileToV20160930(api *WindowsProfile, v20160930 *v20160930.WindowsProfile) {
