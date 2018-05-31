@@ -222,7 +222,11 @@ func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -260,8 +264,12 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 		client: &armhelpers.MockACSEngineClient{},
 	}
 	deployCmd.ClientID = TestClientIDInCmd
-	deployCmd.ClientSecret = TestClientSecretInCmd
-	autofillApimodel(deployCmd)
+	deployCmd.ClientSecret = TestCerr := autofillApimodel(deployCmd)
+
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -307,7 +315,10 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndClientIdAndSecretInCmd(t *te
 	}
 	deployCmd.ClientID = TestClientIDInCmd
 	deployCmd.ClientSecret = TestClientSecretInCmd
-	autofillApimodel(deployCmd)
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -345,7 +356,10 @@ func TestAPIModelWithoutServicePrincipalProfileAndWithoutClientIdAndSecretInCmd(
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -376,7 +390,10 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndWithoutClientIdAndSecretInCm
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -423,7 +440,10 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 		client: &armhelpers.MockACSEngineClient{},
 	}
 
-	autofillApimodel(deployCmd)
+	err := autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
