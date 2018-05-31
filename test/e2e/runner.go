@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -116,7 +119,7 @@ func main() {
 		eng = cliProvisioner.Engine
 		if err != nil {
 			if cfg.CleanUpIfFail {
-				teardown()
+				teardown(err)
 			}
 			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
@@ -134,12 +137,12 @@ func main() {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
 		cfg.SetKubeConfig()
 		if err != nil {
-			teardown()
+			teardown(err)
 			log.Fatalf("Error trying to parse Engine config:%s\n", err)
 		}
 		cs, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
 		if err != nil {
-			teardown()
+			teardown(err)
 			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)
 		}
 		eng = &engine.Engine{
@@ -152,17 +155,17 @@ func main() {
 	if !cfg.SkipTest {
 		g, err := runner.BuildGinkgoRunner(cfg, pt)
 		if err != nil {
-			teardown()
+			teardown(err)
 			log.Fatalf("Error: Unable to parse ginkgo configuration!")
 		}
 		err = g.Run()
 		if err != nil {
-			teardown()
+			teardown(err)
 			os.Exit(1)
 		}
 	}
 
-	teardown()
+	teardown(nil)
 	os.Exit(0)
 }
 
@@ -174,39 +177,40 @@ func trap() {
 	go func() {
 		for sig := range c {
 			log.Printf("Received Signal:%s ... Clean Up On Exit?:%v\n", sig.String(), cfg.CleanUpOnExit)
-			teardown()
+			teardown(nil)
 			os.Exit(1)
 		}
 	}()
 }
 
-func teardown() {
+func teardown(e error) {
 	pt.RecordTotalTime()
 	pt.Write()
+	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
+	logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
+	err := os.MkdirAll(logsPath, 0755)
+	if err != nil {
+		log.Printf("cannot create directory for logs: %s", err)
+	}
+
 	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
-		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
-		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-		err := os.MkdirAll(logsPath, 0755)
-		if err != nil {
-			log.Printf("cannot create directory for logs: %s", err)
-		}
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
 	}
 	if cliProvisioner.Config.IsOpenShift() {
-		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
-		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-		err := os.MkdirAll(logsPath, 0755)
-		if err != nil {
-			log.Printf("cannot create directory for logs: %s", err)
-		}
 		sshKeyPath := cfg.GetSSHKeyPath()
 		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
 		version := eng.Config.OrchestratorVersion
 		distro := eng.Config.Distro
 		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
+	}
+	if e != nil && strings.Contains(e.Error(), "The tracking id is") {
+		err = cliProvisioner.FetchActivityLog(acct, getTrackingID(e.Error()), logsPath)
+		if err != nil {
+			log.Printf("cannot fetch the activity log: %v", err)
+		}
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")
@@ -227,4 +231,18 @@ func teardown() {
 			acct.DeleteGroup(rg, false)
 		}
 	}
+}
+
+func getTrackingID(output string) string {
+	re := regexp.MustCompile("The tracking id is '.*'.")
+	reMatch := re.Find([]byte(output))
+	if reMatch == nil {
+		return ""
+	}
+	idRe := regexp.MustCompile("'.*-.*-.*-.*-.*'")
+	id := idRe.Find(reMatch)
+	if id == nil {
+		return ""
+	}
+	return string(bytes.Trim(id, "'"))
 }

@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -283,4 +284,17 @@ func (cli *CLIProvisioner) IsPrivate() bool {
 	return (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) &&
 		cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
+}
+
+// FetchActivityLog gets the activity log for the provided correlation id.
+func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, id, logPath string) error {
+	log, err := acct.FetchActivityLog(id)
+	if err != nil {
+		return fmt.Errorf("cannot fetch activity log for id %s: %v", id, err)
+	}
+	path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", id))
+	if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
+		return fmt.Errorf("cannot write activity log in file: %v", err)
+	}
+	return nil
 }
