@@ -61,7 +61,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Override default --network-plugin?
 	if o.KubernetesConfig.NetworkPlugin == NetworkPluginKubenet {
-		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		if o.KubernetesConfig.NetworkPolicy != NetworkPolicyCalico {
+			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		}
 		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
