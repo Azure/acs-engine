@@ -162,7 +162,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.6.8 cannot be upgraded to 1.8.6"))
+		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.6.9 cannot be upgraded to 1.8.6"))
 	})
 
 	It("Should return error message when failing to delete role assignment during upgrade operation", func() {

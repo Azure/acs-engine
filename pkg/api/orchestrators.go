@@ -13,6 +13,7 @@ import (
 type orchestratorsFunc func(*OrchestratorProfile) ([]*OrchestratorVersionProfile, error)
 
 var funcmap map[string]orchestratorsFunc
+var versionsMap map[string][]string
 
 func init() {
 	funcmap = map[string]orchestratorsFunc{
@@ -21,6 +22,13 @@ func init() {
 		Swarm:      swarmInfo,
 		SwarmMode:  dockerceInfo,
 		OpenShift:  openShiftInfo,
+	}
+	versionsMap = map[string][]string{
+		Kubernetes: common.GetAllSupportedKubernetesVersions(),
+		DCOS:       common.GetAllSupportedDCOSVersions(),
+		Swarm:      common.GetAllSupportedSwarmVersions(),
+		SwarmMode:  common.GetAllSupportedDockerCEVersions(),
+		OpenShift:  common.GetAllSupportedOpenShiftVersions(),
 	}
 }
 
@@ -44,6 +52,18 @@ func validate(orchestrator, version string) (string, error) {
 		return "", fmt.Errorf("Unsupported orchestrator '%s'", orchestrator)
 	}
 	return "", nil
+}
+
+func isVersionSupported(csOrch *OrchestratorProfile) bool {
+	supported := false
+	for _, version := range versionsMap[csOrch.OrchestratorType] {
+
+		if version == csOrch.OrchestratorVersion {
+			supported = true
+			break
+		}
+	}
+	return supported
 }
 
 // GetOrchestratorVersionProfileListVLabs returns vlabs OrchestratorVersionProfileList object per (optionally) specified orchestrator and version
@@ -89,7 +109,7 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 			orchs = append(orchs, arr...)
 		}
 	} else {
-		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorVersion: version}); err != nil {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}); err != nil {
 			return nil, err
 		}
 	}
@@ -137,15 +157,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 				})
 		}
 	} else {
-		ver, err := semver.NewVersion(csOrch.OrchestratorVersion)
-		if err != nil {
-			return nil, err
-		}
-		cons, err := semver.NewConstraint("<1.6.0")
-		if err != nil {
-			return nil, err
-		}
-		if cons.Check(ver) {
+		if !isVersionSupported(csOrch) {
 			return nil, fmt.Errorf("Kubernetes version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
@@ -204,6 +216,10 @@ func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error
 				})
 		}
 	} else {
+		if !isVersionSupported(csOrch) {
+			return nil, fmt.Errorf("DCOS version %s is not supported", csOrch.OrchestratorVersion)
+		}
+
 		// get info for the specified version
 		upgrades, err := dcosUpgrades(csOrch)
 		if err != nil {
@@ -236,22 +252,51 @@ func dcosUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
 }
 
 func swarmInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	if csOrch.OrchestratorVersion == "" {
+		return []*OrchestratorVersionProfile{
+			{
+				OrchestratorProfile: OrchestratorProfile{
+					OrchestratorType:    Swarm,
+					OrchestratorVersion: SwarmVersion,
+				},
+			},
+		}, nil
+	}
+
+	if !isVersionSupported(csOrch) {
+		return nil, fmt.Errorf("Swarm version %s is not supported", csOrch.OrchestratorVersion)
+	}
 	return []*OrchestratorVersionProfile{
 		{
 			OrchestratorProfile: OrchestratorProfile{
 				OrchestratorType:    Swarm,
-				OrchestratorVersion: SwarmVersion,
+				OrchestratorVersion: csOrch.OrchestratorVersion,
 			},
 		},
 	}, nil
 }
 
 func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+
+	if csOrch.OrchestratorVersion == "" {
+		return []*OrchestratorVersionProfile{
+			{
+				OrchestratorProfile: OrchestratorProfile{
+					OrchestratorType:    SwarmMode,
+					OrchestratorVersion: DockerCEVersion,
+				},
+			},
+		}, nil
+	}
+
+	if !isVersionSupported(csOrch) {
+		return nil, fmt.Errorf("Docker CE version %s is not supported", csOrch.OrchestratorVersion)
+	}
 	return []*OrchestratorVersionProfile{
 		{
 			OrchestratorProfile: OrchestratorProfile{
 				OrchestratorType:    SwarmMode,
-				OrchestratorVersion: DockerCEVersion,
+				OrchestratorVersion: csOrch.OrchestratorVersion,
 			},
 		},
 	}, nil
@@ -276,15 +321,7 @@ func openShiftInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, 
 				})
 		}
 	} else {
-		ver, err := semver.NewVersion(csOrch.OrchestratorVersion)
-		if err != nil {
-			return nil, err
-		}
-		cons, err := semver.NewConstraint("<3.9.0")
-		if err != nil {
-			return nil, err
-		}
-		if cons.Check(ver) {
+		if !isVersionSupported(csOrch) {
 			return nil, fmt.Errorf("OpenShift version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
