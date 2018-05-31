@@ -23,7 +23,7 @@ ExecStart=/usr/local/bin/kubelet \
         --v=2 \
         --volume-plugin-dir=/etc/kubernetes/volumeplugins \
         $KUBELET_CONFIG $KUBELET_OPTS \
-        ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
+        $KUBELET_REGISTER_NODE $KUBELET_REGISTER_WITH_TAINTS
 
 [Install]
 WantedBy=multi-user.target
