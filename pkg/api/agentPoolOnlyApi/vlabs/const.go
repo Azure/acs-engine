@@ -31,3 +31,18 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+// distro values
+const (
+	// Supported distros by OpenShift
+	OpenShift39RHEL Distro = "openshift39_rhel"
+	OpenShiftCentOS Distro = "openshift39_centos"
+)
+
+// agent pool profiles
+const (
+	// AgentPoolProfileRoleEmpty is the empty role
+	AgentPoolProfileRoleEmpty AgentPoolProfileRole = ""
+	// AgentPoolProfileRoleInfra is the infra role
+	AgentPoolProfileRoleInfra AgentPoolProfileRole = "infra"
+)

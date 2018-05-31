@@ -111,3 +111,8 @@ func (c *Config) WriteNode(fs filesystem.Writer) error {
 
 	return c.WriteNodeFiles(fs)
 }
+
+// IsAgentPoolOnly returns whether Config holds configuration for agents only.
+func (c *Config) IsAgentPoolOnly() bool {
+	return len(c.Master.IPs) == 0
+}

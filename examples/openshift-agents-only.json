@@ -1,0 +1,57 @@
+{
+  "apiVersion": "vlabs",
+  "name": "",
+  "properties": {
+    "dnsPrefix": "",
+    "orchestratorProfile": {
+      "orchestratorType": "OpenShift",
+      "orchestratorVersion": "unstable",
+      "openshiftConfig": {}
+    },
+    "azProfile": {
+      "tenantId": "",
+      "subscriptionId": "",
+      "resourceGroup": "",
+      "location": ""
+    },
+    "agentPoolProfiles": [
+      {
+        "availabilityProfile": "AvailabilitySet",
+        "count": 1,
+        "imageReference": {
+          "name": "",
+          "resourceGroup": ""
+        },
+        "name": "compute",
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D4s_v3"
+      },
+      {
+        "availabilityProfile": "AvailabilitySet",
+        "count": 1,
+        "imageReference": {
+          "name": "",
+          "resourceGroup": ""
+        },
+        "name": "infra",
+        "role": "infra",
+        "storageProfile": "ManagedDisks",
+        "vmSize": "Standard_D4s_v3"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "cloud-user",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}

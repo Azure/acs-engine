@@ -30,7 +30,8 @@ type ManagedCluster struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	KubernetesVersion       string                   `json:"kubernetesVersion"`
+	KubernetesVersion       string                   `json:"kubernetesVersion,omitempty"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
@@ -38,7 +39,28 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
-	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty" validate:"required"`
+	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+}
+
+// OrchestratorProfile contains Orchestrator properties
+type OrchestratorProfile struct {
+	OrchestratorType    string           `json:"orchestratorType"`
+	OrchestratorVersion string           `json:"orchestratorVersion,omitempty"`
+	OpenShiftConfig     *OpenShiftConfig `json:"openshiftConfig,omitempty"`
+}
+
+// OpenShiftConfig holds configuration for OpenShift
+type OpenShiftConfig struct {
+	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
+}
+
+// AzProfile holds the azure context for where the cluster resides
+type AzProfile struct {
+	TenantID       string `json:"tenantId,omitempty"`
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ResourceGroup  string `json:"resourceGroup,omitempty"`
+	Location       string `json:"location,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -130,6 +152,10 @@ type AgentPoolProfile struct {
 	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 
+	Distro   Distro               `json:"distro,omitempty"`
+	ImageRef *ImageReference      `json:"imageReference,omitempty"`
+	Role     AgentPoolProfileRole `json:"role,omitempty"`
+
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
 	// this property was added later.
@@ -139,6 +165,18 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 }
+
+// Distro represents Linux distro to use for Linux VMs
+type Distro string
+
+// ImageReference represents a reference to an Image resource in Azure.
+type ImageReference struct {
+	Name          string `json:"name,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+}
+
+// AgentPoolProfileRole represents an agent role
+type AgentPoolProfileRole string
 
 // AccessProfile represents role name and kubeconfig
 type AccessProfile struct {

@@ -17,15 +17,25 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		return true, nil
 	}
 
+	var ips []net.IP
+	var dnsPrefix string
+	if a.MasterProfile != nil {
+		ips = []net.IP{net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)}
+		dnsPrefix = a.MasterProfile.DNSPrefix
+	} else if a.HostedMasterProfile == nil {
+		return false, fmt.Errorf("no masterProfile or hostedMasterProfile found")
+	} else {
+		// agent pool api only
+		dnsPrefix = a.HostedMasterProfile.DNSPrefix
+	}
+
 	c := Config{
 		Master: &Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", orchestratorName, clusterID),
-			IPs: []net.IP{
-				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
-			},
-			Port: 8443,
+			IPs:      ips,
+			Port:     8443,
 		},
-		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location),
+		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", dnsPrefix, a.AzProfile.Location),
 		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
@@ -45,13 +55,15 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 	if err != nil {
 		return false, err
 	}
-	err = c.PrepareMasterKubeConfigs()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterFiles()
-	if err != nil {
-		return false, err
+	if !c.IsAgentPoolOnly() {
+		err = c.PrepareMasterKubeConfigs()
+		if err != nil {
+			return false, err
+		}
+		err = c.PrepareMasterFiles()
+		if err != nil {
+			return false, err
+		}
 	}
 
 	err = c.PrepareBootstrapKubeConfig()
