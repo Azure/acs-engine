@@ -283,7 +283,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 
 }
 
-func TestKubeletFeatureGatesEnsureAcceleratorsOnAgentsFor1_6_0(t *testing.T) {
+func TestKubeletFeatureGatesEnsureFeatureGatesOnAgentsFor1_6_0(t *testing.T) {
 	mockCS := getMockBaseContainerService("1.6.0")
 	properties := mockCS.Properties
 
@@ -294,11 +294,11 @@ func TestKubeletFeatureGatesEnsureAcceleratorsOnAgentsFor1_6_0(t *testing.T) {
 	setKubeletConfig(&mockCS)
 
 	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
-	if agentFeatureGates != "Accelerators=true,TopLevel=true" {
-		t.Fatalf("setKubeletConfig did not add 'Accelerators=true' for agent profile: expected 'Accelerators=true;TopLevel=true' got '%s'", agentFeatureGates)
+	if agentFeatureGates != "TopLevel=true" {
+		t.Fatalf("setKubeletConfig did not add 'TopLevel=true' for agent profile: expected 'TopLevel=true' got '%s'", agentFeatureGates)
 	}
 
-	// Verify that the Accelerators feature gate override has only been applied to the agents
+	// Verify that the TopLevel feature gate override has only been applied to the agents
 	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
 	if masterFeatureFates != "TopLevel=true" {
 		t.Fatalf("setKubeletConfig modified feature gates for master profile: expected 'TopLevel=true' got '%s'", agentFeatureGates)
@@ -318,11 +318,11 @@ func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_6_0(t *testing.T)
 	setKubeletConfig(&mockCS)
 
 	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
-	if agentFeatureGates != "Accelerators=true,AgentLevel=true" {
-		t.Fatalf("setKubeletConfig agent profile: expected 'Accelerators=true,AgentLevel=true' got '%s'", agentFeatureGates)
+	if agentFeatureGates != "AgentLevel=true" {
+		t.Fatalf("setKubeletConfig agent profile: expected 'AgentLevel=true' got '%s'", agentFeatureGates)
 	}
 
-	// Verify that the Accelerators feature gate override has only been applied to the agents
+	// Verify that the TopLevel feature gate override has only been applied to the agents
 	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
 	if masterFeatureFates != "MasterLevel=true" {
 		t.Fatalf("setKubeletConfig master profile: expected 'MasterLevel=true' got '%s'", agentFeatureGates)

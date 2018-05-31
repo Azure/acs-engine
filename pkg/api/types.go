@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
@@ -872,6 +873,39 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 		}
 	}
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
+}
+
+func isNSeriesSKU(p *Properties) bool {
+	for _, profile := range p.AgentPoolProfiles {
+		if strings.Contains(profile.VMSize, "Standard_N") {
+			return true
+		}
+	}
+	return false
+}
+
+// IsNVIDIADevicePluginEnabled checks if the NVIDIA Device Plugin addon is enabled
+// It is enabled by default if agents contain a GPU and Kubernetes version is >= 1.10.0
+func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
+	var nvidiaDevicePluginAddon KubernetesAddon
+	k := p.OrchestratorProfile.KubernetesConfig
+	o := p.OrchestratorProfile
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultNVIDIADevicePluginAddonName {
+			nvidiaDevicePluginAddon = k.Addons[i]
+		}
+	}
+
+	var addonEnabled bool
+	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
+		addonEnabled = false
+	} else if isNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+		addonEnabled = true
+	} else {
+		addonEnabled = false
+	}
+
+	return nvidiaDevicePluginAddon.IsEnabled(addonEnabled)
 }
 
 // IsReschedulerEnabled checks if the rescheduler addon is enabled

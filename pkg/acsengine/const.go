@@ -136,6 +136,8 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
+	// DefaultNVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
+	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

@@ -304,6 +304,13 @@
       },
       "type": "string"
     },
+    "kubernetesNVIDIADevicePluginSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginSpec"}}
+      "metadata": {
+        "description": "The container spec for NVIDIA Device Plugin."
+      },
+      "type": "string"
+    },
     "kubernetesTillerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {

@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -105,8 +106,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
-
 	}
+
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
@@ -114,8 +115,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
-			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+
+		// For N Series (GPU) VMs
+		if strings.Contains(profile.VMSize, "Standard_N") {
+			if !cs.Properties.IsNVIDIADevicePluginEnabled() && !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
+				// enabling accelerators for Kubernetes >= 1.6 to <= 1.9
+				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+			}
 		}
 	}
 }

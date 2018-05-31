@@ -271,6 +271,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
+{{if IsNVIDIADevicePluginEnabled}}
+    sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+{{end}}
+
 {{if EnableDataEncryptionAtRest }}
     sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml"
 {{end}}

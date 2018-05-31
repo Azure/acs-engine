@@ -737,6 +737,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
 			}
 		}
+		nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+		c = getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, DefaultNVIDIADevicePluginAddonName)
+		if c > -1 {
+			if nvidiaDevicePluginAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName])
+			}
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
@@ -1493,6 +1502,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"IsNVIDIADevicePluginEnabled": func() bool {
+			return cs.Properties.IsNVIDIADevicePluginEnabled()
+		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
@@ -1579,6 +1591,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
+				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, DefaultNVIDIADevicePluginAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1777,6 +1791,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						}
 					} else {
 						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultMetricsServerAddonName]
+					}
+				case "kubernetesNVIDIADevicePluginSpec":
+					if nC > -1 {
+						if nvidiaDevicePluginAddon.Containers[nC].Image != "" {
+							val = nvidiaDevicePluginAddon.Containers[nC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName]
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {
@@ -2133,7 +2155,9 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
 	dv := "390.30"
 	dest := "/usr/local/nvidia"
-
+	nvidiaDockerVersion := "2.0.3"
+	dockerVersion := "1.13.1-1"
+	nvidiaContainerRuntimeVersion := "2.0.0"
 	/*
 		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
 		We also installed needed dependencies.
@@ -2141,10 +2165,23 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	installScript := fmt.Sprintf(`- rmmod nouveau
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
-- apt_get_update
-- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
 - mkdir -p %s
 - cd %s`, dest, dest)
+
+	/*
+		Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
+	*/
+	installScript += fmt.Sprintf(`
+- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
+- cat /tmp/aptnvidia.gpg | apt-key add -
+- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
+- cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+- apt_get_update
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
+- sudo pkill -SIGHUP dockerd
+- mkdir -p %s
+- cd %s`, nvidiaDockerVersion, dockerVersion, nvidiaContainerRuntimeVersion, dockerVersion, dest, dest)
 
 	/*
 		Download the .run file from NVIDIA.
@@ -2163,10 +2200,12 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	installScript += fmt.Sprintf(`
 - sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
 - echo "%s" > /etc/ld.so.conf.d/nvidia.conf
-- ldconfig
+- sudo ldconfig
 - umount /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
-- %s/bin/nvidia-smi`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- %s/bin/nvidia-smi
+- sudo ldconfig
+- retrycmd_if_failure 5 10 60 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
