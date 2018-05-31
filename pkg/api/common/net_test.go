@@ -10,7 +10,7 @@ type cidrTest struct {
 	expected string
 }
 
-type venetSubnetIdTest struct {
+type vnetSubnetIDTest struct {
 	vnetSubnetID   string
 	expectedSubID  string
 	expectedRG     string
@@ -58,7 +58,7 @@ func Test_IP4BroadcastAddress(t *testing.T) {
 }
 
 func Test_GetVNETSubnetIDComponents(t *testing.T) {
-	scenarios := []venetSubnetIdTest{
+	scenarios := []vnetSubnetIDTest{
 		{
 			vnetSubnetID:   "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
 			expectedSubID:  "SUB_ID",
