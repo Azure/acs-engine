@@ -55,6 +55,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.10.2":         true,
 	"1.10.3":         true,
 	"1.11.0-alpha.1": true,
+	"1.11.0-alpha.2": true,
 }
 
 // GetDefaultKubernetesVersion returns the default Kubernetes version, that is the latest patch of the default release
@@ -220,7 +221,8 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.10.0-beta.2",
 		"1.10.0-beta.4",
 		"1.10.0-rc.1",
-		"1.11.0-alpha.1"} {
+		"1.11.0-alpha.1",
+		"1.11.0-alpha.2"} {
 		ret[version] = false
 	}
 	return ret
