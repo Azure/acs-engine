@@ -915,39 +915,36 @@ func TestLinuxVersions(t *testing.T) {
 
 func TestValidateImageNameAndGroup(t *testing.T) {
 	tests := []struct {
-		name string
-
-		imageName          string
-		imageResourceGroup string
-
+		name        string
+		image       ImageReference
 		expectedErr error
 	}{
 		{
 			name: "valid run",
-
-			imageName:          "rhel9000",
-			imageResourceGroup: "club",
-
+			image: ImageReference{
+				Name:          "rhel9000",
+				ResourceGroup: "club",
+			},
 			expectedErr: nil,
 		},
 		{
 			name: "invalid: image name is missing",
-
-			imageResourceGroup: "club",
-
+			image: ImageReference{
+				ResourceGroup: "club",
+			},
 			expectedErr: errors.New(`imageName needs to be specified when imageResourceGroup is provided`),
 		},
 		{
 			name: "invalid: image resource group is missing",
-
-			imageName: "rhel9000",
-
+			image: ImageReference{
+				Name: "rhel9000",
+			},
 			expectedErr: errors.New(`imageResourceGroup needs to be specified when imageName is provided`),
 		},
 	}
 
 	for _, test := range tests {
-		gotErr := validateImageNameAndGroup(test.imageName, test.imageResourceGroup)
+		gotErr := test.image.validateImageNameAndGroup()
 		if !reflect.DeepEqual(gotErr, test.expectedErr) {
 			t.Logf("scenario %q", test.name)
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)

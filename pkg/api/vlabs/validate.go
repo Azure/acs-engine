@@ -306,7 +306,7 @@ func (a *Properties) validateMasterProfile() error {
 		return errors.New("openshift can only deployed with one master")
 	}
 	if m.ImageRef != nil {
-		if err := validateImageNameAndGroup(m.ImageRef.Name, m.ImageRef.ResourceGroup); err != nil {
+		if err := m.ImageRef.validateImageNameAndGroup(); err != nil {
 			return err
 		}
 	}
