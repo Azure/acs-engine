@@ -173,3 +173,14 @@ func TestKubeletMaxPods(t *testing.T) {
 			NetworkPluginKubenet, k["--max-pods"])
 	}
 }
+
+func TestKubeletCalico(t *testing.T) {
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyCalico
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--network-plugin"] != "cni" {
+		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyCalico, k["--network-plugin"])
+	}
+}
