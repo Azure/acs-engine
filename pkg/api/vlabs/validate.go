@@ -294,17 +294,210 @@ func (a *Properties) validateMasterProfile() error {
 	return validateDNSName(m.DNSPrefix)
 }
 
-// Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType string) error {
-	// Don't need to call validate.Struct(a)
-	// It is handled by Properties.Validate()
-	if e := validatePoolName(a.Name); e != nil {
-		return e
+func (a *Properties) validateAgentPoolProfiles() error {
+
+	profileNames := make(map[string]bool)
+	for i, agentPoolProfile := range a.AgentPoolProfiles {
+
+		if e := validatePoolName(agentPoolProfile.Name); e != nil {
+			return e
+		}
+
+		// validate that each AgentPoolProfile Name is unique
+		if _, ok := profileNames[agentPoolProfile.Name]; ok {
+			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", agentPoolProfile.Name)
+		}
+		profileNames[agentPoolProfile.Name] = true
+
+		if e := validatePoolOSType(agentPoolProfile.OSType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateOrchestratorSpecificProperties(a.OrchestratorProfile.OrchestratorType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateAvailabilityProfile(a.OrchestratorProfile.OrchestratorType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateRoles(a.OrchestratorProfile.OrchestratorType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateStorageProfile(a.OrchestratorProfile.OrchestratorType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateCustomNodeLabels(a.OrchestratorProfile.OrchestratorType); e != nil {
+			return e
+		}
+
+		if e := agentPoolProfile.validateVMSS(a.OrchestratorProfile); agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets && e != nil {
+			return e
+		}
+
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
+				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
+			}
+		}
+
+		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile); agentPoolProfile.OSType == Windows && e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateAvailabilityProfile(orchestratorType string) error {
+	switch a.AvailabilityProfile {
+	case AvailabilitySet:
+	case VirtualMachineScaleSets:
+	case "":
+	default:
+		{
+			return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", a.AvailabilityProfile, a.Name, AvailabilitySet, VirtualMachineScaleSets)
+		}
 	}
 
-	if e := validatePoolOSType(a.OSType); e != nil {
-		return e
+	if orchestratorType == OpenShift && a.AvailabilityProfile != AvailabilitySet {
+		return fmt.Errorf("Only AvailabilityProfile: AvailabilitySet is supported for Orchestrator 'OpenShift'")
 	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateRoles(orchestratorType string) error {
+	validRoles := []AgentPoolProfileRole{AgentPoolProfileRoleEmpty}
+	if orchestratorType == OpenShift {
+		validRoles = append(validRoles, AgentPoolProfileRoleInfra)
+	}
+	var found bool
+	for _, validRole := range validRoles {
+		if a.Role == validRole {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("Role %q is not supported for Orchestrator %s", a.Role, orchestratorType)
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateStorageProfile(orchestratorType string) error {
+	/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
+	if a.StorageProfile == ManagedDisks {
+		switch orchestratorType {
+		case DCOS:
+		case Swarm:
+		case Kubernetes:
+		case OpenShift:
+		case SwarmMode:
+		default:
+			return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", orchestratorType)
+		}
+	}
+
+	if orchestratorType == OpenShift && a.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
+	return nil
+}
+
+func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) error {
+	if len(a.CustomNodeLabels) > 0 {
+		switch orchestratorType {
+		case DCOS:
+		case Kubernetes:
+			for k, v := range a.CustomNodeLabels {
+				if e := validateKubernetesLabelKey(k); e != nil {
+					return e
+				}
+				if e := validateKubernetesLabelValue(v); e != nil {
+					return e
+				}
+			}
+		default:
+			return fmt.Errorf("Agent CustomNodeLabels are only supported for DCOS and Kubernetes")
+		}
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
+	if o.OrchestratorType == Kubernetes {
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion,
+			false)
+		if version == "" {
+			return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
+		}
+
+		sv, err := semver.Make(version)
+		if err != nil {
+			return fmt.Errorf("could not validate version %s", version)
+		}
+		minVersion, err := semver.Make("1.10.0")
+		if err != nil {
+			return fmt.Errorf("could not validate version")
+		}
+		if sv.LT(minVersion) {
+			return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
+		}
+		// validation for instanceMetadata using VMSS with Kubernetes
+		minVersion, err = semver.Make("1.10.2")
+		if err != nil {
+			return fmt.Errorf("could not validate version")
+		}
+		if o.KubernetesConfig != nil && o.KubernetesConfig.UseInstanceMetadata != nil {
+			if *o.KubernetesConfig.UseInstanceMetadata && sv.LT(minVersion) {
+				return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(),  minVersion.String())
+			}
+		} else {
+			if sv.LT(minVersion) {
+				return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above",  minVersion.String(),  minVersion.String())
+			}
+		}
+
+		if (a.AvailabilityProfile == VirtualMachineScaleSets || len(a.AvailabilityProfile) == 0) && a.StorageProfile == StorageAccount {
+			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
+		}
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsProfile) error {
+	switch o.OrchestratorType {
+	case DCOS:
+	case Swarm:
+	case SwarmMode:
+	case Kubernetes:
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion,
+			true)
+		if version == "" {
+			return fmt.Errorf("Orchestrator %s version %s does not support Windows", o.OrchestratorType, o.OrchestratorVersion)
+		}
+	default:
+		return fmt.Errorf("Orchestrator %s does not support Windows", o.OrchestratorType)
+	}
+	if w != nil {
+		if e := w.Validate(); e != nil {
+			return e
+		}
+	} else {
+		return fmt.Errorf("WindowsProfile is required when the cluster definition contains Windows agent pool(s)")
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateOrchestratorSpecificProperties(orchestratorType string) error {
 
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
 	if orchestratorType == Kubernetes {
@@ -379,25 +572,26 @@ func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore 
 	return nil
 }
 
-// Validate implements APIObject
-func (l *LinuxProfile) Validate() error {
-	// Don't need to call validate.Struct(l)
-	// It is handled by Properties.Validate()
-	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
+func (a *Properties) validateLinuxProfile() error {
+	if e := validate.Var(a.LinuxProfile.SSH.PublicKeys[0].KeyData, "required"); e != nil {
 		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
-	return validateKeyVaultSecrets(l.Secrets, false)
+	return validateKeyVaultSecrets(a.LinuxProfile.Secrets, false)
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
 	// Override any version specific validation error message
-
 	// common.HandleValidationErrors if the validation error message is general
 	return common.HandleValidationErrors(e)
 }
 
 // Validate implements APIObject
 func (w *WindowsProfile) Validate() error {
+	if w.WindowsImageSourceURL != "" {
+		if a.OrchestratorProfile.OrchestratorType != DCOS && a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS or Kubernetes")
+		}
+	}
 	if e := validate.Var(w.AdminUsername, "required"); e != nil {
 		return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
 	}
@@ -407,22 +601,26 @@ func (w *WindowsProfile) Validate() error {
 	return validateKeyVaultSecrets(w.Secrets, true)
 }
 
-// Validate implements APIObject
-func (profile *AADProfile) Validate() error {
-	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
-		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
-	}
-	if _, err := uuid.FromString(profile.ServerAppID); err != nil {
-		return fmt.Errorf("serverAppID '%v' is invalid", profile.ServerAppID)
-	}
-	if len(profile.TenantID) > 0 {
-		if _, err := uuid.FromString(profile.TenantID); err != nil {
-			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+func (a *Properties) validateAADProfile() error {
+	if profile := a.AADProfile; profile != nil {
+		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
 		}
-	}
-	if len(profile.AdminGroupID) > 0 {
-		if _, err := uuid.FromString(profile.AdminGroupID); err != nil {
-			return fmt.Errorf("adminGroupID '%v' is invalid", profile.AdminGroupID)
+		if _, err := uuid.FromString(profile.ClientAppID); err != nil {
+			return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
+		}
+		if _, err := uuid.FromString(profile.ServerAppID); err != nil {
+			return fmt.Errorf("serverAppID '%v' is invalid", profile.ServerAppID)
+		}
+		if len(profile.TenantID) > 0 {
+			if _, err := uuid.FromString(profile.TenantID); err != nil {
+				return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+			}
+		}
+		if len(profile.AdminGroupID) > 0 {
+			if _, err := uuid.FromString(profile.AdminGroupID); err != nil {
+				return fmt.Errorf("adminGroupID '%v' is invalid", profile.AdminGroupID)
+			}
 		}
 	}
 	return nil
@@ -457,203 +655,22 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateMasterProfile(); e != nil {
 		return e
 	}
-	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
+	if e := a.validateAgentPoolProfiles(); e != nil {
 		return e
 	}
 
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
-			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
-
-		if !useManagedIdentity {
-			if a.ServicePrincipalProfile == nil {
-				return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-			}
-			if e := validate.Var(a.ServicePrincipalProfile.ClientID, "required"); e != nil {
-				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-			}
-			if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
-				(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
-				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-			}
-
-			if a.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && len(a.ServicePrincipalProfile.ObjectID) == 0 {
-				return fmt.Errorf("the service principal object ID must be specified with Orchestrator %s when enableEncryptionWithExternalKms is true", a.OrchestratorProfile.OrchestratorType)
-			}
-
-			if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {
-				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID, "required"); e != nil {
-					return fmt.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-				}
-				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
-					return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-				}
-				if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
-					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
-				}
-			}
-		}
-	}
-
-	if a.OrchestratorProfile.OrchestratorType == OpenShift && a.MasterProfile.StorageProfile != ManagedDisks {
-		return errors.New("OpenShift orchestrator supports only ManagedDisks")
-	}
-
-	for i, agentPoolProfile := range a.AgentPoolProfiles {
-		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
-			return e
-		}
-		switch agentPoolProfile.AvailabilityProfile {
-		case AvailabilitySet:
-		case VirtualMachineScaleSets:
-		case "":
-		default:
-			{
-				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
-			}
-		}
-
-		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.AvailabilityProfile != AvailabilitySet {
-			return fmt.Errorf("Only AvailabilityProfile: AvailabilitySet is supported for Orchestrator 'OpenShift'")
-		}
-
-		validRoles := []AgentPoolProfileRole{AgentPoolProfileRoleEmpty}
-		if a.OrchestratorProfile.OrchestratorType == OpenShift {
-			validRoles = append(validRoles, AgentPoolProfileRoleInfra)
-		}
-		var found bool
-		for _, validRole := range validRoles {
-			if agentPoolProfile.Role == validRole {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("Role %q is not supported for Orchestrator %s", agentPoolProfile.Role, a.OrchestratorProfile.OrchestratorType)
-		}
-
-		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
-		if agentPoolProfile.StorageProfile == ManagedDisks {
-			switch a.OrchestratorProfile.OrchestratorType {
-			case DCOS:
-			case Swarm:
-			case Kubernetes:
-			case OpenShift:
-			case SwarmMode:
-			default:
-				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-			}
-		}
-
-		if a.OrchestratorProfile.OrchestratorType == OpenShift && agentPoolProfile.StorageProfile != ManagedDisks {
-			return errors.New("OpenShift orchestrator supports only ManagedDisks")
-		}
-
-		if len(agentPoolProfile.CustomNodeLabels) > 0 {
-			switch a.OrchestratorProfile.OrchestratorType {
-			case DCOS:
-			case Kubernetes:
-				for k, v := range agentPoolProfile.CustomNodeLabels {
-					if e := validateKubernetesLabelKey(k); e != nil {
-						return e
-					}
-					if e := validateKubernetesLabelValue(v); e != nil {
-						return e
-					}
-				}
-			default:
-				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
-			}
-		}
-
-		// validation for VMSS with Kubernetes
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
-			version := common.RationalizeReleaseAndVersion(
-				a.OrchestratorProfile.OrchestratorType,
-				a.OrchestratorProfile.OrchestratorRelease,
-				a.OrchestratorProfile.OrchestratorVersion,
-				false)
-			if version == "" {
-				return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-			}
-
-			sv, err := semver.Make(version)
-			if err != nil {
-				return fmt.Errorf("could not validate version %s", version)
-			}
-			minVersion, err := semver.Make("1.10.0")
-			if err != nil {
-				return fmt.Errorf("could not validate version")
-			}
-			if sv.LT(minVersion) {
-				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
-			}
-			// validation for instanceMetadata using VMSS with Kubernetes
-			minVersion, err = semver.Make("1.10.2")
-			if err != nil {
-				return fmt.Errorf("could not validate version")
-			}
-			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
-				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && sv.LT(minVersion) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
-				}
-			} else {
-				if sv.LT(minVersion) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
-				}
-			}
-		}
-
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) && agentPoolProfile.StorageProfile == StorageAccount {
-			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
-		}
-
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
-				return fmt.Errorf("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
-			}
-		}
-
-		if agentPoolProfile.OSType == Windows {
-			switch a.OrchestratorProfile.OrchestratorType {
-			case DCOS:
-			case Swarm:
-			case SwarmMode:
-			case Kubernetes:
-				version := common.RationalizeReleaseAndVersion(
-					a.OrchestratorProfile.OrchestratorType,
-					a.OrchestratorProfile.OrchestratorRelease,
-					a.OrchestratorProfile.OrchestratorVersion,
-					true)
-				if version == "" {
-					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorVersion)
-				}
-			default:
-				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
-			}
-			if a.WindowsProfile != nil {
-				if e := a.WindowsProfile.Validate(); e != nil {
-					return e
-				}
-			} else {
-				return fmt.Errorf("WindowsProfile is required when the cluster definition contains Windows agent pool(s)")
-			}
-		}
-	}
-	if e := a.LinuxProfile.Validate(); e != nil {
+	if e := a.validateLinuxProfile(); e != nil {
 		return e
 	}
-	if e := validateVNET(a); e != nil {
+	if e := a.validateVNET(); e != nil {
+		return e
+	}
+	if e := a.validateServicePrincipalProfile(); e != nil {
 		return e
 	}
 
-	if a.AADProfile != nil {
-		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
-			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
-		}
-		if e := a.AADProfile.Validate(); e != nil {
-			return e
-		}
+	if e := a.validateAADProfile(); e != nil {
+		return e
 	}
 
 	switch a.OrchestratorProfile.OrchestratorType {
@@ -666,26 +683,6 @@ func (a *Properties) Validate(isUpdate bool) error {
 	default:
 		if a.AzProfile != nil {
 			return fmt.Errorf("'azProfile' is only supported by orchestrator '%v'", OpenShift)
-		}
-	}
-
-	for _, extension := range a.ExtensionProfiles {
-		if extension.ExtensionParametersKeyVaultRef != nil {
-			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.VaultID, "required"); e != nil {
-				return fmt.Errorf("the Keyvault ID must be specified for Extension %s", extension.Name)
-			}
-			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.SecretName, "required"); e != nil {
-				return fmt.Errorf("the Keyvault Secret must be specified for Extension %s", extension.Name)
-			}
-			if !keyvaultIDRegex.MatchString(extension.ExtensionParametersKeyVaultRef.VaultID) {
-				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
-			}
-		}
-	}
-
-	if a.WindowsProfile != nil && a.WindowsProfile.WindowsImageSourceURL != "" {
-		if a.OrchestratorProfile.OrchestratorType != DCOS && a.OrchestratorProfile.OrchestratorType != Kubernetes {
-			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS or Kubernetes")
 		}
 	}
 
@@ -837,9 +834,15 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	}
 
 	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
-		sv, _ := semver.Make(k8sVersion)
-		cons, _ := semver.Make("1.8.0")
-		if sv.LT(cons) {
+		sv, err := semver.Make(k8sVersion)
+		if err != nil {
+			return fmt.Errorf("could not validate version %s", k8sVersion)
+		}
+		minVersion, err := semver.Make("1.8.0")
+		if err != nil {
+			return fmt.Errorf("could not validate version")
+		}
+		if sv.LT(minVersion) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.UseCloudControllerManager and OrchestratorProfile.KubernetesConfig.CustomCcmImage not available in kubernetes version %s", k8sVersion)
 		}
 	}
@@ -1009,6 +1012,58 @@ func (a *Properties) validateExtensions() error {
 			return fmt.Errorf("Extensions are currently not supported with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
 		}
 	}
+
+	for _, extension := range a.ExtensionProfiles {
+		if extension.ExtensionParametersKeyVaultRef != nil {
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.VaultID, "required"); e != nil {
+				return fmt.Errorf("the Keyvault ID must be specified for Extension %s", extension.Name)
+			}
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.SecretName, "required"); e != nil {
+				return fmt.Errorf("the Keyvault Secret must be specified for Extension %s", extension.Name)
+			}
+			if !keyvaultIDRegex.MatchString(extension.ExtensionParametersKeyVaultRef.VaultID) {
+				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
+			}
+		}
+	}
+	return nil
+}
+
+func (a *Properties) validateServicePrincipalProfile() error {
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
+
+		if !useManagedIdentity {
+			if a.ServicePrincipalProfile == nil {
+				return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+			if e := validate.Var(a.ServicePrincipalProfile.ClientID, "required"); e != nil {
+				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+			if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
+				(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
+				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig != nil && helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms) && len(a.ServicePrincipalProfile.ObjectID) == 0 {
+				return fmt.Errorf("the service principal object ID must be specified with Orchestrator %s when enableEncryptionWithExternalKms is true", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {
+				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID, "required"); e != nil {
+					return fmt.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				}
+				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
+					return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				}
+				if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
+					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1052,17 +1107,6 @@ func validateDNSName(dnsName string) error {
 	return nil
 }
 
-func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
-	profileNames := make(map[string]bool)
-	for _, profile := range profiles {
-		if _, ok := profileNames[profile.Name]; ok {
-			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
-		}
-		profileNames[profile.Name] = true
-	}
-	return nil
-}
-
 func validateUniquePorts(ports []int, name string) error {
 	portMap := make(map[int]bool)
 	for _, port := range ports {
@@ -1092,7 +1136,7 @@ func validateKubernetesLabelKey(k string) error {
 	return nil
 }
 
-func validateVNET(a *Properties) error {
+func (a *Properties) validateVNET() error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
