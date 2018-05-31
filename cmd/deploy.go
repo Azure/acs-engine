@@ -165,7 +165,7 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 
 	_, _, err = validateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("Failed to validate the apimodel after populating values: %s", err))
+		return fmt.Errorf("Failed to validate the apimodel after populating values: %s", err)
 	}
 
 	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -173,7 +173,7 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func autofillApimodel(dc *deployCmd) {
+func autofillApimodel(dc *deployCmd) error {
 	var err error
 
 	if dc.containerService.Properties.LinuxProfile != nil {
@@ -184,11 +184,11 @@ func autofillApimodel(dc *deployCmd) {
 	}
 
 	if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
-		log.Fatalf("invalid configuration: the apimodel masterProfile.dnsPrefix and --dns-prefix were both specified")
+		return fmt.Errorf("invalid configuration: the apimodel masterProfile.dnsPrefix and --dns-prefix were both specified")
 	}
 	if dc.containerService.Properties.MasterProfile.DNSPrefix == "" {
 		if dc.dnsPrefix == "" {
-			log.Fatalf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
+			return fmt.Errorf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
 		}
 		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
 		dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
@@ -204,7 +204,7 @@ func autofillApimodel(dc *deployCmd) {
 	}
 
 	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
-		log.Fatalf(fmt.Sprintf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory))
+		return fmt.Errorf("Output directory already exists and forceOverwrite flag is not set: %s", dc.outputDirectory)
 	}
 
 	if dc.resourceGroup == "" {
@@ -212,7 +212,7 @@ func autofillApimodel(dc *deployCmd) {
 		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dnsPrefix)
 		dc.resourceGroup = dnsPrefix
 		if dc.location == "" {
-			log.Fatal("--resource-group was not specified. --location must be specified in case the resource group needs creation.")
+			return fmt.Errorf("--resource-group was not specified. --location must be specified in case the resource group needs creation.")
 		}
 	}
 
@@ -224,7 +224,7 @@ func autofillApimodel(dc *deployCmd) {
 		}
 		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
 		if err != nil {
-			log.Fatal("Failed to generate SSH Key")
+			return fmt.Errorf("Failed to generate SSH Key: %s", err.Error())
 		}
 
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
@@ -232,7 +232,7 @@ func autofillApimodel(dc *deployCmd) {
 
 	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	useManagedIdentity := dc.containerService.Properties.OrchestratorProfile.KubernetesConfig != nil &&
@@ -266,7 +266,7 @@ func autofillApimodel(dc *deployCmd) {
 			}
 			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
-				log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
+				return fmt.Errorf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
 			}
 			log.Warnf("created application with applicationID (%s) and servicePrincipalObjectID (%s).", applicationID, servicePrincipalObjectID)
 
@@ -274,7 +274,7 @@ func autofillApimodel(dc *deployCmd) {
 
 			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
 			if err != nil {
-				log.Fatalf("apimodel: could not create or assign ServicePrincipal: %q", err)
+				return fmt.Errorf("apimodel: could not create or assign ServicePrincipal: %q", err)
 
 			}
 
@@ -290,6 +290,7 @@ func autofillApimodel(dc *deployCmd) {
 			}
 		}
 	}
+	return nil
 }
 
 func validateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
