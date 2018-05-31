@@ -152,6 +152,11 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
+    "omsAgentVersion": "[parameters('omsAgentVersion')]",
+    "omsAgentDockerProviderVersion": "[parameters('omsAgentDockerProviderVersion')]",
+    "omsAgentImage": "[parameters('omsAgentImage')]",
+    "omsAgentWorkspaceGuid": "[parameters('omsAgentWorkspaceGuid')]",
+    "omsAgentWorkspaceKey": "[parameters('omsAgentWorkspaceKey')]",
 {{if EnableDataEncryptionAtRest}}
     "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
 {{end}}

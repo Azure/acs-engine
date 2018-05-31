@@ -701,6 +701,41 @@
       },
       "type": "int"
     },
+    "omsAgentVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentDockerProviderVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentImage": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceGuid": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceKey": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace key"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {

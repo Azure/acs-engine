@@ -313,6 +313,24 @@ var (
 			},
 		},
 	}
+
+	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
+	DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
+		Name:    ContainerMonitoringAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
+		Config: map[string]string{
+			"omsAgentVersion":       "1.6.0-42",
+			"dockerProviderVersion": "2.0.0-2",
+			"workspaceGuid":         "c5905df1-b3b9-42b9-acf0-14a4c4ef028c",
+			"workspaceKey":          "b4xMPEns/5Oo61hQbRLJQoPhbmAHdBn2eDjkCbRzgEISiKi9m1CR+093sczO9E8iA5w1EyGVCVkwsnuWt1MD9w==",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:  "omsagent",
+				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
+			},
+		},
+	}
 )
 
 // setPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -384,6 +402,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
 				DefaultNVIDIADevicePluginAddonsConfig,
+				DefaultContainerMonitoringAddonsConfig,
 			}
 			enforceK8sVersionAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
@@ -424,6 +443,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if n < 0 {
 				// Provide default acs-engine config for NVIDIA Device Plugin
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonsConfig)
+			}
+			cm := getAddonsIndexByName(o.KubernetesConfig.Addons, ContainerMonitoringAddonName)
+			if cm < 0 {
+				// Provide default acs-engine config for Container Monitoring
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultContainerMonitoringAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -523,6 +547,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[n].IsEnabled(api.DefaultNVIDIADevicePluginAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[n] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[n], DefaultNVIDIADevicePluginAddonsConfig)
+		}
+		cm := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[cm].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
