@@ -138,7 +138,8 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, true, false, nil)
+	// do not validate when initially loading the apimodel, validation is done later after autofilling values
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
@@ -161,7 +162,7 @@ func (dc *deployCmd) load(cmd *cobra.Command, args []string) error {
 	// autofillApimodel calls log.Fatal() directly and does not return errors
 	autofillApimodel(dc)
 
-	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
+	_, _, err = validateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("Failed to validate the apimodel after populating values: %s", err))
 	}
@@ -290,7 +291,7 @@ func autofillApimodel(dc *deployCmd) {
 	}
 }
 
-func revalidateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
+func validateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
 	rawVersionedAPIModel, err := apiloader.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
