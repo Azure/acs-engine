@@ -55,8 +55,7 @@ else
 fi
 
 function testOutboundConnection() {
-    // TODO change the second attempt
-    retrycmd_if_failure 20 5 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 5 20 nc -v 8.8.8.8 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 5 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 5 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
