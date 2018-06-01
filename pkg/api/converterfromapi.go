@@ -756,6 +756,18 @@ func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig)
 	}
 }
 
+func convertCustomFilesToVlabs(a *MasterProfile, v *vlabs.MasterProfile) {
+	if a.CustomFiles != nil {
+		v.CustomFiles = &[]vlabs.CustomFile{}
+		for i := range *a.CustomFiles {
+			*v.CustomFiles = append(*v.CustomFiles, vlabs.CustomFile{
+				Dest:   (*a.CustomFiles)[i].Dest,
+				Source: (*a.CustomFiles)[i].Source,
+			})
+		}
+	}
+}
+
 func convertControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 	v.ControllerManagerConfig = map[string]string{}
 	for key, val := range a.ControllerManagerConfig {
@@ -897,6 +909,8 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 		vlabsProfile.ImageRef.Name = api.ImageRef.Name
 		vlabsProfile.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
+
+	convertCustomFilesToVlabs(api, vlabsProfile)
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {

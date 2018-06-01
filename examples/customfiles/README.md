@@ -23,7 +23,7 @@ podNodeSelectorPluginConfig:
  clusterDefaultNodeSelector: "agentpool=defaultpool"
 ```
 
-These two need to be provisioned to your master nodes in order for the api server to be able to use them. As seen in the example, the `apiServerConfig` inside the `kubernetsConfig` has been defined as:
+These two need to be provisioned to your master nodes in order for the api server to be able to use them. As seen in the example, the `apiServerConfig` inside the `kubernetesConfig` has been defined as:
 
 ```
 "apiServerConfig": {
