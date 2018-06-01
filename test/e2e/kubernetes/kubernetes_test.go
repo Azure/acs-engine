@@ -584,6 +584,56 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
+	Describe("with calico network policy enabled", func() {
+		It("should apply a network policy and deny outbound internet access to nginx pod", func() {
+			if eng.HasNetworkPolicy("calico") {
+				By("Creating a nginx deployment")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
+				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensure there is a Running nginx pod")
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Ensuring we have outbound internet access from the nginx pods")
+				nginxPods, err := nginxDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(nginxPods)).ToNot(BeZero())
+				for _, nginxPod := range nginxPods {
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Applying a network policy to deny egress access")
+				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring we no longer have outbound internet access from the nginx pods")
+				for _, nginxPod := range nginxPods {
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).Should(HaveOccurred())
+					Expect(pass).To(BeFalse())
+				}
+
+				By("Cleaning up after ourselves")
+				err = nginxDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				delErr := j.Delete()
+				if delErr != nil {
+					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+					fmt.Println(delErr)
+				}
+				Expect(delErr).NotTo(HaveOccurred())
+			} else {
+				Skip("Calico network policy was not provisioned for this Cluster Definition")
+			}
+		})
+	})
+
 	Describe("with a windows agent pool", func() {
 		// TODO stabilize this test
 		/*It("should be able to deploy an iis webserver", func() {
