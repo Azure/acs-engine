@@ -37,5 +37,9 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 		// For update scenario, the default behavior is to use existing behavior
 		mc.Properties.NetworkProfile = emc.Properties.NetworkProfile
 	}
+	if mc.Properties.AADProfile == nil {
+		// For update scenario, the default behavior is to use existing behavior
+		mc.Properties.AADProfile = emc.Properties.AADProfile
+	}
 	return nil
 }
