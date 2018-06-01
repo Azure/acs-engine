@@ -51,11 +51,12 @@ func New() locales.Translator {
 		pluralsRange:           nil,
 		decimal:                "٫",
 		group:                  "٬",
+		minus:                  "‏-",
 		percent:                "٪",
 		perMille:               "؉",
 		timeSeparator:          ":",
 		inifinity:              "∞",
-		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
 		percentSuffix:          " ",
 		currencyPositiveSuffix: " ",
 		currencyNegativeSuffix: " ",
@@ -72,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"پێش زایین", "زایینی"},
 		erasNarrow:             []string{"پ.ن", "ز"},
 		erasWide:               []string{"پێش زایین", "زایینی"},
-		timezones:              map[string]string{"WESZ": "WESZ", "AWST": "AWST", "UYT": "UYT", "WIT": "WIT", "TMT": "TMT", "HNOG": "HNOG", "WAST": "WAST", "HEEG": "HEEG", "CHAST": "CHAST", "NZDT": "NZDT", "JST": "JST", "HNT": "HNT", "COT": "COT", "OEZ": "OEZ", "AEST": "AEST", "EST": "EST", "CLST": "CLST", "SGT": "SGT", "HNCU": "HNCU", "HNPM": "HNPM", "CST": "CST", "ACWST": "ACWST", "HNNOMX": "HNNOMX", "ADT": "ADT", "ChST": "ChST", "WIB": "WIB", "∅∅∅": "∅∅∅", "HAST": "HAST", "HADT": "HADT", "HEOG": "HEOG", "EAT": "EAT", "HKT": "HKT", "GMT": "GMT", "ACWDT": "ACWDT", "MYT": "MYT", "WARST": "WARST", "HKST": "HKST", "EDT": "EDT", "WEZ": "WEZ", "HECU": "HECU", "MDT": "MDT", "ARST": "ARST", "ECT": "ECT", "HEPMX": "HEPMX", "UYST": "UYST", "LHDT": "LHDT", "WART": "WART", "AEDT": "AEDT", "COST": "COST", "AKST": "AKST", "MST": "MST", "NZST": "NZST", "TMST": "TMST", "AST": "AST", "PDT": "PDT", "AWDT": "AWDT", "LHST": "LHST", "HENOMX": "HENOMX", "ART": "ART", "ACDT": "ACDT", "CDT": "CDT", "VET": "VET", "WITA": "WITA", "SAST": "SAST", "HAT": "HAT", "GFT": "GFT", "AKDT": "AKDT", "SRT": "SRT", "MEZ": "MEZ", "MESZ": "MESZ", "JDT": "JDT", "HNPMX": "HNPMX", "BT": "BT", "WAT": "WAT", "ACST": "ACST", "OESZ": "OESZ", "CLT": "CLT", "GYT": "GYT", "CAT": "CAT", "CHADT": "CHADT", "HEPM": "HEPM", "BOT": "BOT", "IST": "IST", "HNEG": "HNEG", "PST": "PST"},
+		timezones:              map[string]string{"ARST": "ARST", "COST": "COST", "CHAST": "CHAST", "GFT": "GFT", "HEEG": "HEEG", "IST": "IST", "UYST": "UYST", "WAST": "WAST", "BT": "BT", "NZST": "NZST", "∅∅∅": "∅∅∅", "WARST": "WARST", "HNNOMX": "HNNOMX", "CLST": "CLST", "PST": "PST", "WAT": "WAT", "LHST": "LHST", "HEPM": "HEPM", "ChST": "ChST", "HEPMX": "HEPMX", "JST": "JST", "ACWST": "ACWST", "HKST": "HKST", "TMT": "TMT", "COT": "COT", "ADT": "ADT", "BOT": "BOT", "HNEG": "HNEG", "HNOG": "HNOG", "MEZ": "MEZ", "WART": "WART", "HNPMX": "HNPMX", "AST": "AST", "WESZ": "WESZ", "HNPM": "HNPM", "TMST": "TMST", "CST": "CST", "WEZ": "WEZ", "NZDT": "NZDT", "PDT": "PDT", "EST": "EST", "LHDT": "LHDT", "HENOMX": "HENOMX", "MST": "MST", "GMT": "GMT", "CHADT": "CHADT", "CDT": "CDT", "SAST": "SAST", "JDT": "JDT", "VET": "VET", "WITA": "WITA", "OEZ": "OEZ", "WIB": "WIB", "MYT": "MYT", "EDT": "EDT", "SRT": "SRT", "EAT": "EAT", "WIT": "WIT", "UYT": "UYT", "HEOG": "HEOG", "MESZ": "MESZ", "HKT": "HKT", "HECU": "HECU", "AKST": "AKST", "SGT": "SGT", "HNT": "HNT", "CAT": "CAT", "HAST": "HAST", "ART": "ART", "ECT": "ECT", "ACWDT": "ACWDT", "MDT": "MDT", "OESZ": "OESZ", "AWST": "AWST", "AWDT": "AWDT", "AEDT": "AEDT", "AKDT": "AKDT", "ACST": "ACST", "ACDT": "ACDT", "HAT": "HAT", "HADT": "HADT", "AEST": "AEST", "CLT": "CLT", "GYT": "GYT", "HNCU": "HNCU"},
 	}
 }
 
@@ -207,7 +208,7 @@ func (ckb *ckb_IQ) Minus() string {
 func (ckb *ckb_IQ) FmtNumber(num float64, v uint64) string {
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 2 + 2*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + 6 + 2*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -237,7 +238,9 @@ func (ckb *ckb_IQ) FmtNumber(num float64, v uint64) string {
 	}
 
 	if num < 0 {
-		b = append(b, ckb.minus[0])
+		for j := len(ckb.minus) - 1; j >= 0; j-- {
+			b = append(b, ckb.minus[j])
+		}
 	}
 
 	// reverse
@@ -252,7 +255,7 @@ func (ckb *ckb_IQ) FmtNumber(num float64, v uint64) string {
 // NOTE: 'num' passed into FmtPercent is assumed to be in percent already
 func (ckb *ckb_IQ) FmtPercent(num float64, v uint64) string {
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 6
+	l := len(s) + 10
 	b := make([]byte, 0, l)
 
 	for i := len(s) - 1; i >= 0; i-- {
@@ -268,7 +271,9 @@ func (ckb *ckb_IQ) FmtPercent(num float64, v uint64) string {
 	}
 
 	if num < 0 {
-		b = append(b, ckb.minus[0])
+		for j := len(ckb.minus) - 1; j >= 0; j-- {
+			b = append(b, ckb.minus[j])
+		}
 	}
 
 	// reverse
@@ -288,7 +293,7 @@ func (ckb *ckb_IQ) FmtCurrency(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := ckb.currencies[currency]
-	l := len(s) + len(symbol) + 4 + 2*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 8 + 2*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -318,7 +323,9 @@ func (ckb *ckb_IQ) FmtCurrency(num float64, v uint64, currency currency.Type) st
 	}
 
 	if num < 0 {
-		b = append(b, ckb.minus[0])
+		for j := len(ckb.minus) - 1; j >= 0; j-- {
+			b = append(b, ckb.minus[j])
+		}
 	}
 
 	// reverse
@@ -350,7 +357,7 @@ func (ckb *ckb_IQ) FmtAccounting(num float64, v uint64, currency currency.Type) 
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := ckb.currencies[currency]
-	l := len(s) + len(symbol) + 4 + 2*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 8 + 2*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -381,7 +388,9 @@ func (ckb *ckb_IQ) FmtAccounting(num float64, v uint64, currency currency.Type) 
 
 	if num < 0 {
 
-		b = append(b, ckb.minus[0])
+		for j := len(ckb.minus) - 1; j >= 0; j-- {
+			b = append(b, ckb.minus[j])
+		}
 
 	}
 

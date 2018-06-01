@@ -1,0 +1,24 @@
+hash: ac4a8231e6e7a62314051d424722060aed80b1d8ed1f5187c46dcad47d1d15ad
+updated: 2018-05-30T13:31:53.816413-07:00
+imports:
+- name: github.com/etgryphon/stringUp
+  version: 31534ccd8cac1d3d205c906ea5722928b045ed8c
+testImports:
+- name: github.com/corpix/uarand
+  version: 2b8494104d86337cdd41d0a49cbed8e4583c0ab4
+- name: github.com/davecgh/go-spew
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  subpackages:
+  - spew
+- name: github.com/icrowley/fake
+  version: 4178557ae428460c3780a381c824a1f3aceb6325
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+  subpackages:
+  - assert
+  - require
+  - suite

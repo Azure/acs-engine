@@ -1,5 +1,5 @@
-hash: 82f48f1c8c96580a9ecb7fc6f81dfab3d28ed8cf27c6686d38466049099c004e
-updated: 2018-05-18T12:50:41.407106-07:00
+hash: 4659d2f8a6e894bfb9ca56f902ef17223b2ec7192261f42012b7a0f29f0e4034
+updated: 2018-06-01T11:12:57.015012-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -25,11 +25,11 @@ imports:
   - autorest/to
   - autorest/validation
 - name: github.com/dgrijalva/jwt-go
-  version: dbeaa9332f19a944acb5736b4456cfcc02140e29
+  version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-playground/locales
-  version: e4cbcb5d0652150d40ad0646651076b6bd2be4f6
+  version: f63010822830b6fe52288ee52d5a1151088ce039
   subpackages:
   - currency
 - name: github.com/go-playground/universal-translator
@@ -64,7 +64,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: d610a79487e2cee1d0fa8cdd3ec59d511c24f0dc
+  version: 1a16a4ec61aad7c2172624e8899424eccb54fb89
   subpackages:
   - client/v2
   - models
@@ -76,7 +76,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
 - name: github.com/kelseyhightower/envconfig
-  version: 462fda1f11d8cad3660e52737b8beefd27acfb3f
+  version: dd1402a4d99de9ac2f396cd6fcb957bc2c695ec1
 - name: github.com/leonelquinteros/gotext
   version: 1fc8dec04d161fc0b4007e808a48620c537b6a6e
 - name: github.com/Masterminds/semver
@@ -94,7 +94,7 @@ imports:
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/onsi/ginkgo
-  version: 11459a886d9cd66b319dac7ef1e917ee221372c9
+  version: c73579c58881b5ba90d3b08f6ac59cb1c909d6dd
   subpackages:
   - config
   - internal/codelocation
@@ -114,7 +114,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: dcabb60a477c2b6f456df65037cb6708210fbb02
+  version: 7ac6b01f7d376befdf752224be59eed5d21fab4b
   subpackages:
   - format
   - internal/assertion
@@ -149,7 +149,7 @@ imports:
   - ssh/agent
   - ssh/terminal
 - name: golang.org/x/net
-  version: ab555f366c4508dbe0802550b1b20c46c5c18aa0
+  version: 1e491301e022f8f977054da4c2d852decd59571f
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -158,17 +158,17 @@ imports:
   - html
   - html/atom
   - html/charset
+  - http/httpguts
   - http2
   - http2/hpack
   - idna
-  - lex/httplex
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:
   - unix
   - windows
 - name: golang.org/x/text
-  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
+  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
@@ -183,6 +183,8 @@ imports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/language
+  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
@@ -202,7 +204,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 - name: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:
@@ -334,6 +336,8 @@ imports:
   - util/integer
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
   - spew
+- name: github.com/rjtsdl/conform
+  version: 7b97338c67692998bc62b2572e96c8ff09803dc3
