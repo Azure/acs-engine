@@ -264,7 +264,7 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 		client: &armhelpers.MockACSEngineClient{},
 	}
 	deployCmd.ClientID = TestClientIDInCmd
-	deployCmd.ClientSecret = TestCerr := autofillApimodel(deployCmd)
+	deployCmd.ClientSecret = TestClientSecretInCmd
 
 	err := autofillApimodel(deployCmd)
 	if err != nil {
