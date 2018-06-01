@@ -73,6 +73,13 @@ func Test_GetVNETSubnetIDComponents(t *testing.T) {
 			expectedVnet:   "",
 			expectedSubnet: "",
 		},
+		{
+			vnetSubnetID:   "badVnetSubnetID",
+			expectedSubID:  "",
+			expectedRG:     "",
+			expectedVnet:   "",
+			expectedSubnet: "",
+		},
 	}
 
 	for _, scenario := range scenarios {

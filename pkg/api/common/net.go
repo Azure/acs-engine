@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 )
@@ -52,5 +53,6 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 	if len(submatches) != 4 {
 		return "", "", "", "", err
 	}
+	fmt.Printf("%s, %s, %s, %s", submatches[1], submatches[2], submatches[3], submatches[4])
 	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }
