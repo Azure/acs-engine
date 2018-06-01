@@ -24,6 +24,7 @@ ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
+ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
@@ -52,6 +53,10 @@ if [ -f /var/run/reboot-required ]; then
 else
     REBOOTREQUIRED=false
 fi
+
+function testOutboundConnection() {
+    retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+}
 
 function waitForCloudInit() {
     wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
@@ -463,6 +468,8 @@ configAddons() {
         configACIConnectorAddon
     fi
 }
+
+testOutboundConnection
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
