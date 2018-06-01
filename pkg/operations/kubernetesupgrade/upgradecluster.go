@@ -2,7 +2,6 @@ package kubernetesupgrade
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -230,13 +229,15 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 			return nil
 		}
 	} else if vm.StorageProfile.OsDisk.OsType == compute.Windows {
-		poolPrefix, acsStr, poolIndex, _, err := utils.WindowsVMNameParts(*vm.Name)
+		poolPrefix, _, _, _, err := utils.WindowsVMNameParts(*vm.Name)
 		if err != nil {
 			uc.Logger.Errorf(err.Error())
 			return err
 		}
 
-		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex)
+		//The k8s Windows VM Naming Format is "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{4,6})$" (i.e.: 50621k8s9000)
+		//The pool identifier is made of the first 11 characters
+		poolIdentifier = (*vm.Name)[:11]
 
 		if !strings.Contains(uc.NameSuffix, poolPrefix) {
 			uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",

@@ -82,7 +82,7 @@ func Test_VmssNameParts(t *testing.T) {
 func Test_WindowsVMNameParts(t *testing.T) {
 	expectedPoolPrefix := "38988"
 	expectedAcs := "k8s"
-	expectedPoolIndex := 903
+	expectedPoolIndex := 3
 	expectedAgentIndex := 12
 
 	poolPrefix, acs, poolIndex, agentIndex, err := WindowsVMNameParts("38988k8s90312")
@@ -97,6 +97,26 @@ func Test_WindowsVMNameParts(t *testing.T) {
 	}
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
+	}
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func Test_WindowsVMSSNameParts(t *testing.T) {
+	expectedPoolPrefix := "38988"
+	expectedAcs := "k8s"
+	expectedPoolIndex := 3
+
+	poolPrefix, acs, poolIndex, err := WindowsVMSSNameParts("38988k8s903")
+	if poolPrefix != expectedPoolPrefix {
+		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
+	}
+	if acs != expectedAcs {
+		t.Fatalf("incorrect acs string. expected=%s actual=%s", expectedAcs, acs)
+	}
+	if poolIndex != expectedPoolIndex {
+		t.Fatalf("incorrect poolIndex. expected=%d actual=%d", expectedPoolIndex, poolIndex)
 	}
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)

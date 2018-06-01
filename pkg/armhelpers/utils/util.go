@@ -29,16 +29,23 @@ const (
 	vmssNamingFormat       = "^[0-9a-zA-Z]+-(.+)-([0-9a-fA-F]{8})-vmss$"
 	vmssAgentPoolNameIndex = 1
 	vmssClusterIDIndex     = 2
+
+	windowsVmssNamingFormat                   = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{3})$"
+	windowsVmssAgentPoolNameIndex             = 1
+	windowsVmssAgentPoolOrchestratorNameIndex = 2
+	windowsVmssAgentPoolIndex                 = 3
 )
 
 var vmnameLinuxRegexp *regexp.Regexp
 var vmssnameRegexp *regexp.Regexp
 var vmnameWindowsRegexp *regexp.Regexp
+var vmssnameWindowsRegexp *regexp.Regexp
 
 func init() {
 	vmnameLinuxRegexp = regexp.MustCompile(k8sLinuxVMNamingFormat)
 	vmnameWindowsRegexp = regexp.MustCompile(k8sWindowsVMNamingFormat)
 	vmssnameRegexp = regexp.MustCompile(vmssNamingFormat)
+	vmssnameWindowsRegexp = regexp.MustCompile(windowsVmssNamingFormat)
 }
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
@@ -109,7 +116,7 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 	if err != nil {
 		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
 	}
-
+	poolIndex -= 900
 	agentIndex, _ = strconv.Atoi(poolInfo[3:])
 	fmt.Printf("%d\n", agentIndex)
 
@@ -118,6 +125,26 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 	}
 
 	return poolPrefix, acsStr, poolIndex, agentIndex, nil
+}
+
+// WindowsVMSSNameParts returns parts of Windows VM name e.g: 50621k8s900
+func WindowsVMSSNameParts(vmssName string) (poolPrefix string, acsStr string, poolIndex int, err error) {
+	vmssNameParts := vmssnameWindowsRegexp.FindStringSubmatch(vmssName)
+	if len(vmssNameParts) != 4 {
+		return "", "", -1, fmt.Errorf("resource name was missing from identifier")
+	}
+
+	poolPrefix = vmssNameParts[windowsVmssAgentPoolNameIndex]
+	acsStr = vmssNameParts[windowsVmssAgentPoolOrchestratorNameIndex]
+	poolInfo := vmssNameParts[windowsVmssAgentPoolIndex]
+
+	poolIndex, err = strconv.Atoi(poolInfo)
+	if err != nil {
+		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+	}
+	poolIndex -= 900
+
+	return poolPrefix, acsStr, poolIndex, nil
 }
 
 // GetVMNameIndex return VM index of a node in the Kubernetes cluster
