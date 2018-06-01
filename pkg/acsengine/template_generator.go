@@ -665,6 +665,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"HasCustomSearchDomain": func() bool {
 			return cs.Properties.LinuxProfile.HasSearchDomain()
 		},
+		"HasCustomNodesDNS": func() bool {
+			return cs.Properties.LinuxProfile.HasCustomNodesDNS()
+		},
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
 		},

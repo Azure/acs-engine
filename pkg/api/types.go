@@ -135,6 +135,7 @@ type LinuxProfile struct {
 	Distro             Distro              `json:"distro,omitempty"`
 	ScriptRootURL      string              `json:"scriptroot,omitempty"`
 	CustomSearchDomain *CustomSearchDomain `json:"customSearchDomain,omitempty"`
+	CustomNodesDNS     *CustomNodesDNS     `json:"CustomNodesDNS,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
@@ -147,6 +148,10 @@ type CustomSearchDomain struct {
 	Name          string `json:"name,omitempty"`
 	RealmUser     string `json:"realmUser,omitempty"`
 	RealmPassword string `json:"realmPassword,omitempty"`
+}
+
+type CustomNodesDNS struct {
+	DNSServer string `json:"dnsServer,omitempty"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -772,6 +777,16 @@ func (l *LinuxProfile) HasSecrets() bool {
 func (l *LinuxProfile) HasSearchDomain() bool {
 	if l.CustomSearchDomain != nil {
 		if l.CustomSearchDomain.Name != "" && l.CustomSearchDomain.RealmPassword != "" && l.CustomSearchDomain.RealmUser != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasCustomNodesDNS returns true if the customer specified a dns server
+func (l *LinuxProfile) HasCustomNodesDNS() bool {
+	if l.CustomNodesDNS != nil {
+		if l.CustomNodesDNS.DNSServer != "" {
 			return true
 		}
 	}
