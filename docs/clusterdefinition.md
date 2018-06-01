@@ -475,6 +475,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |customSearchDomain.name|no|describes the search domain to be used on all linux clusters|
 |customSearchDomain.realmUser|no|describes the realm user with permissions to update dns registries on Windows Server DNS|
 |customSearchDomain.realmPassword|no|describes the realm user password to update dns registries on Windows Server DNS|
+|customNodesDNS.dnsServer|no|describes the IP address of the DNS Server|
 
 #### secrets
 `secrets` details which certificates to install on the masters and nodes in the cluster.
