@@ -312,8 +312,10 @@ Write-KubernetesStartFiles($podCIDR)
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
-
-    if ([System.Version]$global:KubeBinariesVersion -lt [System.Version]"1.8.0")
+    # Regex to strip version to Major.Minor.Build format such that the following check does not crash for version like x.y.z-alpha
+    [regex]$regex = "^[0-9.]+"
+    $KubeBinariesVersionStripped = $regex.Matches($global:KubeBinariesVersion).Value
+    if ([System.Version]$KubeBinariesVersionStripped -lt [System.Version]"1.8.0")
     {
         # --api-server deprecates from 1.8.0
         $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
