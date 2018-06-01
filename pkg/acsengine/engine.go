@@ -176,7 +176,7 @@ func validateDistro(cs *api.ContainerService) bool {
 func getCloudTargetEnv(location string) string {
 	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
 	switch {
-	case loc == "chinaeast" || loc == "chinanorth":
+	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
 		return azureChinaCloud
 	case loc == "germanynortheast" || loc == "germanycentral":
 		return azureGermanCloud
