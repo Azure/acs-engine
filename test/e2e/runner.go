@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -119,7 +116,7 @@ func main() {
 		eng = cliProvisioner.Engine
 		if err != nil {
 			if cfg.CleanUpIfFail {
-				teardown(err)
+				teardown()
 			}
 			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
@@ -134,15 +131,16 @@ func main() {
 			}
 		}
 	} else {
+		cliProvisioner.ResourceGroups = append(rgs, cliProvisioner.Config.Name)
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
 		cfg.SetKubeConfig()
 		if err != nil {
-			teardown(err)
+			teardown()
 			log.Fatalf("Error trying to parse Engine config:%s\n", err)
 		}
 		cs, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
 		if err != nil {
-			teardown(err)
+			teardown()
 			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)
 		}
 		eng = &engine.Engine{
@@ -155,17 +153,17 @@ func main() {
 	if !cfg.SkipTest {
 		g, err := runner.BuildGinkgoRunner(cfg, pt)
 		if err != nil {
-			teardown(err)
+			teardown()
 			log.Fatalf("Error: Unable to parse ginkgo configuration!")
 		}
 		err = g.Run()
 		if err != nil {
-			teardown(err)
+			teardown()
 			os.Exit(1)
 		}
 	}
 
-	teardown(nil)
+	teardown()
 	os.Exit(0)
 }
 
@@ -177,13 +175,13 @@ func trap() {
 	go func() {
 		for sig := range c {
 			log.Printf("Received Signal:%s ... Clean Up On Exit?:%v\n", sig.String(), cfg.CleanUpOnExit)
-			teardown(nil)
+			teardown()
 			os.Exit(1)
 		}
 	}()
 }
 
-func teardown(e error) {
+func teardown() {
 	pt.RecordTotalTime()
 	pt.Write()
 	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
@@ -206,11 +204,8 @@ func teardown(e error) {
 		distro := eng.Config.Distro
 		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
 	}
-	if e != nil && strings.Contains(e.Error(), "The tracking id is") {
-		err = cliProvisioner.FetchActivityLog(acct, getTrackingID(e.Error()), logsPath)
-		if err != nil {
-			log.Printf("cannot fetch the activity log: %v", err)
-		}
+	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
+		log.Printf("cannot fetch the activity log: %v", err)
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")
@@ -231,18 +226,4 @@ func teardown(e error) {
 			acct.DeleteGroup(rg, false)
 		}
 	}
-}
-
-func getTrackingID(output string) string {
-	re := regexp.MustCompile("The tracking id is '.*'.")
-	reMatch := re.Find([]byte(output))
-	if reMatch == nil {
-		return ""
-	}
-	idRe := regexp.MustCompile("'.*-.*-.*-.*-.*'")
-	id := idRe.Find(reMatch)
-	if id == nil {
-		return ""
-	}
-	return string(bytes.Trim(id, "'"))
 }

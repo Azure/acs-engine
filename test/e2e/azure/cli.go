@@ -358,10 +358,10 @@ func (a *Account) IsClusterExpired(d time.Duration) bool {
 	return age > d
 }
 
-// FetchActivityLog gets the activity log for the provided correlation id.
-func (a *Account) FetchActivityLog(id string) (string, error) {
+// FetchActivityLog gets the activity log for the provided resource group.
+func (a *Account) FetchActivityLog(rg string) (string, error) {
 	var cmd *exec.Cmd
-	cmd = exec.Command("az", "monitor", "activity-log", "list", "--correlation-id", id)
+	cmd = exec.Command("az", "monitor", "activity-log", "list", "--resource-group", rg)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {

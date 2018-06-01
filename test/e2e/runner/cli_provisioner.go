@@ -286,15 +286,17 @@ func (cli *CLIProvisioner) IsPrivate() bool {
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
 }
 
-// FetchActivityLog gets the activity log for the provided correlation id.
-func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, id, logPath string) error {
-	log, err := acct.FetchActivityLog(id)
-	if err != nil {
-		return fmt.Errorf("cannot fetch activity log for id %s: %v", id, err)
-	}
-	path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", id))
-	if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
-		return fmt.Errorf("cannot write activity log in file: %v", err)
+// FetchActivityLog gets the activity log for the all resource groups used in the provisioner.
+func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, logPath string) error {
+	for _, rg := range cli.ResourceGroups {
+		log, err := acct.FetchActivityLog(rg)
+		if err != nil {
+			return fmt.Errorf("cannot fetch activity log for resource group %s: %v", rg, err)
+		}
+		path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", rg))
+		if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
+			return fmt.Errorf("cannot write activity log in file: %v", err)
+		}
 	}
 	return nil
 }
