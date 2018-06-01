@@ -75,3 +75,5 @@ testImport:
 - package: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/influxdata/influxdb/client/v2
+- package: github.com/rjtsdl/conform
+  version: 1.2.1

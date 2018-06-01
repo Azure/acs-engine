@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,7 +25,14 @@ var benchServer Server
 func TestMain(m *testing.M) {
 	flag.BoolVar(&verboseServerLogs, "vv", false, "Turn on very verbose server logging.")
 	flag.BoolVar(&cleanupData, "clean", true, "Clean up test data on disk.")
+	flag.Int64Var(&seed, "seed", 0, "Set specific seed controlling randomness.")
 	flag.Parse()
+
+	// Set random seed if not explicitly set.
+	if seed == 0 {
+		seed = time.Now().UnixNano()
+	}
+	rand.Seed(seed)
 
 	var r int
 	for _, indexType = range tsdb.RegisteredIndexes() {
@@ -5562,13 +5570,12 @@ func TestServer_Query_PercentileDerivative(t *testing.T) {
 		},
 	}...)
 
-	for i, query := range test.queries {
+	if err := test.init(s); err != nil {
+		t.Fatalf("test init failed: %s", err)
+	}
+
+	for _, query := range test.queries {
 		t.Run(query.name, func(t *testing.T) {
-			if i == 0 {
-				if err := test.init(s); err != nil {
-					t.Fatalf("test init failed: %s", err)
-				}
-			}
 			if query.skip {
 				t.Skipf("SKIP:: %s", query.name)
 			}
@@ -5607,13 +5614,12 @@ func TestServer_Query_UnderscoreMeasurement(t *testing.T) {
 		},
 	}...)
 
-	for i, query := range test.queries {
+	if err := test.init(s); err != nil {
+		t.Fatalf("test init failed: %s", err)
+	}
+
+	for _, query := range test.queries {
 		t.Run(query.name, func(t *testing.T) {
-			if i == 0 {
-				if err := test.init(s); err != nil {
-					t.Fatalf("test init failed: %s", err)
-				}
-			}
 			if query.skip {
 				t.Skipf("SKIP:: %s", query.name)
 			}
@@ -9152,7 +9158,10 @@ func TestServer_ConcurrentPointsWriter_Subscriber(t *testing.T) {
 	}
 	// goroutine to write points
 	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case <-done:
@@ -9170,6 +9179,7 @@ func TestServer_ConcurrentPointsWriter_Subscriber(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	close(done)
+	wg.Wait()
 }
 
 // Ensure time in where clause is inclusive
