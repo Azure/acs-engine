@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -222,7 +221,11 @@ func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -261,7 +264,11 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 	}
 	deployCmd.ClientID = TestClientIDInCmd
 	deployCmd.ClientSecret = TestClientSecretInCmd
-	autofillApimodel(deployCmd)
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -307,7 +314,10 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndClientIdAndSecretInCmd(t *te
 	}
 	deployCmd.ClientID = TestClientIDInCmd
 	deployCmd.ClientSecret = TestClientSecretInCmd
-	autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -345,7 +355,10 @@ func TestAPIModelWithoutServicePrincipalProfileAndWithoutClientIdAndSecretInCmd(
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -376,7 +389,10 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndWithoutClientIdAndSecretInCm
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
@@ -423,25 +439,28 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 		client: &armhelpers.MockACSEngineClient{},
 	}
 
-	autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
 
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
 	cs, _, err = validateApimodel(apiloader, cs, ver)
 	if err != nil {
-		log.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
+		t.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}
 
 	if useManagedIdentity {
 		if cs.Properties.ServicePrincipalProfile != nil &&
 			(cs.Properties.ServicePrincipalProfile.ClientID != "" || cs.Properties.ServicePrincipalProfile.Secret != "") {
-			log.Fatalf("Unexpected credentials were populated even though MSI was active.")
+			t.Fatalf("Unexpected credentials were populated even though MSI was active.")
 		}
 	} else {
 		if cs.Properties.ServicePrincipalProfile == nil ||
 			cs.Properties.ServicePrincipalProfile.ClientID == "" || cs.Properties.ServicePrincipalProfile.Secret == "" {
-			log.Fatalf("Credentials were missing even though MSI was not active.")
+			t.Fatalf("Credentials were missing even though MSI was not active.")
 		}
 	}
 }
