@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -450,18 +449,18 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 
 	cs, _, err = validateApimodel(apiloader, cs, ver)
 	if err != nil {
-		log.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
+		t.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}
 
 	if useManagedIdentity {
 		if cs.Properties.ServicePrincipalProfile != nil &&
 			(cs.Properties.ServicePrincipalProfile.ClientID != "" || cs.Properties.ServicePrincipalProfile.Secret != "") {
-			log.Fatalf("Unexpected credentials were populated even though MSI was active.")
+			t.Fatalf("Unexpected credentials were populated even though MSI was active.")
 		}
 	} else {
 		if cs.Properties.ServicePrincipalProfile == nil ||
 			cs.Properties.ServicePrincipalProfile.ClientID == "" || cs.Properties.ServicePrincipalProfile.Secret == "" {
-			log.Fatalf("Credentials were missing even though MSI was not active.")
+			t.Fatalf("Credentials were missing even though MSI was not active.")
 		}
 	}
 }
