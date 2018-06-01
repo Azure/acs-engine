@@ -276,6 +276,9 @@
     "searchDomainRealmUser": "[parameters('searchDomainRealmUser')]",
     "searchDomainRealmPassword": "[parameters('searchDomainRealmPassword')]",
 {{end}}
+{{if HasCustomNodesDNS}}
+    "dnsServer": "[parameters('dnsServer')]",
+{{end}}
 {{if not IsHostedMaster}}
   {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
