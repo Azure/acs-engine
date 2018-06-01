@@ -311,7 +311,6 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit          bool              `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS       float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	CustomFiles                     *[]CustomFile     `json:"customFiles,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -376,6 +375,7 @@ type MasterProfile struct {
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 
 	// subnet is internal
 	subnet string

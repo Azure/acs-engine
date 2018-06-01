@@ -238,17 +238,17 @@ func TestConvertCustomFilesToAPI(t *testing.T) {
 			Dest:   "/test/dest",
 		},
 	}
-	apiKubeConfig := KubernetesConfig{}
+	masterProfile := MasterProfile{}
 
-	vp := &vlabs.KubernetesConfig{}
+	vp := &vlabs.MasterProfile{}
 	vp.CustomFiles = &[]vlabs.CustomFile{
 		{
 			Source: "/test/source",
 			Dest:   "/test/dest",
 		},
 	}
-	convertCustomFilesToAPI(vp, &apiKubeConfig)
-	if !equality.Semantic.DeepEqual(&expectedAPICustomFiles, apiKubeConfig.CustomFiles) {
-		t.Fatalf("convertCustomFilesToApi conversion of vlabs.KubernetesConfig did not convert correctly")
+	convertCustomFilesToAPI(vp, &masterProfile)
+	if !equality.Semantic.DeepEqual(&expectedAPICustomFiles, masterProfile.CustomFiles) {
+		t.Fatalf("convertCustomFilesToApi conversion of vlabs.MasterProfile did not convert correctly")
 	}
 }

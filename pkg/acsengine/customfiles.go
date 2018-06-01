@@ -17,9 +17,9 @@ type CustomFileReader struct {
 	Dest   string
 }
 
-func kubernetesCustomFiles(profile *api.Properties) []api.CustomFile {
-	if profile.OrchestratorProfile.KubernetesConfig.CustomFiles != nil {
-		return *profile.OrchestratorProfile.KubernetesConfig.CustomFiles
+func masterCustomFiles(profile *api.Properties) []api.CustomFile {
+	if profile.MasterProfile.CustomFiles != nil {
+		return *profile.MasterProfile.CustomFiles
 	}
 	return []api.CustomFile{}
 }

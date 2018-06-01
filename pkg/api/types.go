@@ -318,7 +318,6 @@ type KubernetesConfig struct {
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
-	CustomFiles                      *[]CustomFile     `json:"customFiles,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -384,6 +383,7 @@ type MasterProfile struct {
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
