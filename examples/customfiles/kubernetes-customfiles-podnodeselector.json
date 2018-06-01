@@ -28,7 +28,7 @@
             },
             { 
                 "source":"/Users/user/files/podnodeselector.yaml",
-                "dest":"/etc/kubernetes/podnodeselector..yaml"
+                "dest":"/etc/kubernetes/podnodeselector.yaml"
             }
         ]
       },
