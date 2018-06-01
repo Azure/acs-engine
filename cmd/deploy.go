@@ -212,7 +212,7 @@ func autofillApimodel(dc *deployCmd) error {
 		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dnsPrefix)
 		dc.resourceGroup = dnsPrefix
 		if dc.location == "" {
-			return fmt.Errorf("--resource-group was not specified. --location must be specified in case the resource group needs creation.")
+			return fmt.Errorf("--resource-group was not specified. --location must be specified in case the resource group needs creation")
 		}
 	}
 

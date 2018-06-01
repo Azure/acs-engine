@@ -223,7 +223,7 @@ func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
 		client: &armhelpers.MockACSEngineClient{},
 	}
 
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
@@ -266,7 +266,7 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 	deployCmd.ClientID = TestClientIDInCmd
 	deployCmd.ClientSecret = TestClientSecretInCmd
 
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
@@ -315,7 +315,7 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndClientIdAndSecretInCmd(t *te
 	}
 	deployCmd.ClientID = TestClientIDInCmd
 	deployCmd.ClientSecret = TestClientSecretInCmd
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
@@ -356,7 +356,7 @@ func TestAPIModelWithoutServicePrincipalProfileAndWithoutClientIdAndSecretInCmd(
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
@@ -390,7 +390,7 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndWithoutClientIdAndSecretInCm
 
 		client: &armhelpers.MockACSEngineClient{},
 	}
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
@@ -440,7 +440,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 		client: &armhelpers.MockACSEngineClient{},
 	}
 
-	err := autofillApimodel(deployCmd)
+	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
 	}
