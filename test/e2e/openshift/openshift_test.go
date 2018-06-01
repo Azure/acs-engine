@@ -137,7 +137,11 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 				false)
 		}
 		expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
-		Expect(version).To(Equal("v" + expectedVersionRationalized))
+
+		// skip unstable test as the version will constantly be changing
+		if expectedVersionRationalized != "unstable" {
+			Expect(version).To(Equal("v" + expectedVersionRationalized))
+		}
 	})
 
 	It("should have router running", func() {
