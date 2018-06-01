@@ -315,8 +315,8 @@ var (
 	}
 )
 
-// SetPropertiesDefaults for the container Properties, returns true if certs are generated
-func SetPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, error) {
+// setPropertiesDefaults for the container Properties, returns true if certs are generated
+func setPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, error) {
 	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
@@ -342,7 +342,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	location := cs.Location
 	a := cs.Properties
 
-	cloudSpecConfig := GetCloudSpecConfig(location)
+	cloudSpecConfig := getCloudSpecConfig(location)
 	if a.OrchestratorProfile == nil {
 		return
 	}
@@ -802,7 +802,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, nil
 	}
 
-	masterExtraFQDNs := append(FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix), a.MasterProfile.SubjectAltNames...)
+	masterExtraFQDNs := append(formatAzureProdFQDNs(a.MasterProfile.DNSPrefix), a.MasterProfile.SubjectAltNames...)
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {

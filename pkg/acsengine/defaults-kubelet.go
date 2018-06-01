@@ -11,7 +11,7 @@ import (
 
 func setKubeletConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+	cloudSpecConfig := getCloudSpecConfig(cs.Location)
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                     "0.0.0.0",
 		"--allow-privileged":            "true",

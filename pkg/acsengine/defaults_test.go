@@ -460,7 +460,7 @@ func TestStorageProfile(t *testing.T) {
 		Enabled:        helpers.PointerToBool(true),
 		JumpboxProfile: &api.PrivateJumpboxProfile{},
 	}
-	SetPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false)
 	if properties.MasterProfile.StorageProfile != api.ManagedDisks {
 		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
 			properties.MasterProfile.StorageProfile, api.ManagedDisks)
@@ -489,7 +489,7 @@ func TestStorageProfile(t *testing.T) {
 	mockCS = getMockBaseContainerService("1.10.0")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
-	SetPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false)
 	if !properties.AgentPoolProfiles[0].IsVirtualMachineScaleSets() {
 		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].AvailabilityProfile, api.VirtualMachineScaleSets)
@@ -502,7 +502,7 @@ func TestAgentPoolProfile(t *testing.T) {
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
-	SetPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false)
 	if properties.AgentPoolProfiles[0].ScaleSetPriority != "" {
 		t.Fatalf("AgentPoolProfiles[0].ScaleSetPriority did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].ScaleSetPriority, "")
@@ -512,7 +512,7 @@ func TestAgentPoolProfile(t *testing.T) {
 			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, "")
 	}
 	properties.AgentPoolProfiles[0].ScaleSetPriority = api.ScaleSetPriorityLow
-	SetPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false)
 	if properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy != api.ScaleSetEvictionPolicyDelete {
 		t.Fatalf("AgentPoolProfile[0].ScaleSetEvictionPolicy did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, api.ScaleSetEvictionPolicyDelete)
