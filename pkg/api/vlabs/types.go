@@ -610,7 +610,7 @@ func (l *LinuxProfile) HasSearchDomain() bool {
 	return false
 }
 
-// HasSearchDomain returns true if the customer specified secrets to install
+// HasCustomNodesDNS returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasCustomNodesDNS() bool {
 	if l.CustomNodesDNS != nil {
 		if l.CustomNodesDNS.DNSServer != "" {

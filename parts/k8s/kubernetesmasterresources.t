@@ -467,11 +467,13 @@
         ,
         "enableIPForwarding": true
 {{end}}
+{{if HasCustomNodesDNS}}
  ,"dnsSettings": {
           "dnsServers": [
               "[variables('dnsServer')]"
           ]
       }
+{{end}}
 {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
@@ -548,11 +550,13 @@
           ,
           "enableIPForwarding": true
   {{end}}
+  {{if HasCustomNodesDNS}}
    ,"dnsSettings": {
           "dnsServers": [
               "[variables('dnsServer')]"
           ]
       }
+  {{end}}
   {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
           ,"networkSecurityGroup": {
             "id": "[variables('nsgID')]"

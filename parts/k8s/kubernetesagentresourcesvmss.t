@@ -73,12 +73,14 @@
                   }
                   {{if lt $seq $.IPAddressCount}},{{end}}
                   {{end}}
-                ],
-                 "dnsSettings": {
+                ]
+{{if HasCustomNodesDNS}}
+                 ,"dnsSettings": {
                     "dnsServers": [
                         "[variables('dnsServer')]"
                     ]
                 }
+{{end}}
                 {{if not IsAzureCNI}}
                 ,"enableIPForwarding": true
                 {{end}}
