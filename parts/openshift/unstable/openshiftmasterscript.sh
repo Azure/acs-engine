@@ -9,6 +9,7 @@ else
 	SERVICE_TYPE=origin
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
+IP_ADDRESS="{{ .MasterIP }}"
 
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
@@ -100,6 +101,10 @@ mkdir -p /root/.kube
 for loc in /root/.kube/config /etc/origin/node/bootstrap.kubeconfig /etc/origin/node/node.kubeconfig; do
   cp /etc/origin/master/admin.kubeconfig "$loc"
 done
+
+
+# Patch the etcd_ip address placed inside of the static pod definition from the node install
+sed -i "s/ETCD_IP_REPLACE/${IP_ADDRESS}/g" /etc/origin/node/disabled/etcd.yaml
 
 # Move each static pod into place so the kubelet will run it.
 # Pods: [apiserver, controller, etcd]
