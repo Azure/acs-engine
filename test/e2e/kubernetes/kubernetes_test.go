@@ -611,9 +611,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Applying a network policy to deny egress access")
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
 				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
 
 				By("Ensuring we no longer have outbound internet access from the nginx pods")
 				for _, nginxPod := range nginxPods {
