@@ -7,8 +7,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
+
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
+
+	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 func printCmd(cmd *exec.Cmd) {
@@ -145,4 +151,139 @@ func FetchLogs(kind, namespace, name string) string {
 		return fmt.Sprintf("Error trying to fetch logs from %s/%s in %s: %s", kind, name, namespace, string(out))
 	}
 	return string(out)
+}
+
+// FetchOpenShiftLogs returns logs for all OpenShift components
+// (control plane and infra).
+func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) {
+	if err := fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath); err != nil {
+		log.Printf("Cannot fetch logs for control plane components: %v", err)
+	}
+	if err := fetchInfraLogs(logPath); err != nil {
+		log.Printf("Cannot fetch logs for infra components: %v", err)
+	}
+}
+
+// fetchControlPlaneLogs returns logs for Openshift control plane components.
+func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) error {
+	sshAddress := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com", adminName, name, location)
+
+	switch version {
+	case common.OpenShiftVersion3Dot9Dot0:
+		return fetch39ControlPlaneLogs(distro, sshKeyPath, sshAddress, logPath)
+	case common.OpenShiftVersionUnstable:
+		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
+	default:
+		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+	}
+}
+
+func fetch39ControlPlaneLogs(distro, sshKeyPath, sshAddress, logPath string) error {
+	var errs []error
+	for _, service := range getSystemdServices(distro) {
+		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		path := filepath.Join(logPath, service)
+		if err := ioutil.WriteFile(path, out, 0644); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+func getSystemdServices(distro string) []string {
+	services := []string{"etcd"}
+	switch api.Distro(distro) {
+	case api.OpenShift39RHEL:
+		services = append(services, "atomic-openshift-master-api", "atomic-openshift-master-controllers", "atomic-openshift-node")
+	case api.OpenShiftCentOS:
+		services = append(services, "origin-master-api", "origin-master-controllers", "origin-node")
+	default:
+		log.Printf("Will not gather journal for the control plane because invalid OpenShift distro was specified: %q", distro)
+	}
+	return services
+}
+
+func fetchSystemdServiceLog(sshKeyPath, sshAddress, service string) []byte {
+	cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+	cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", sshAddress, cmdToExec)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Printf("Cannot fetch logs for systemd service %q: %v", service, err)
+	}
+	return out
+}
+
+type resource struct {
+	kind      string
+	namespace string
+	name      string
+}
+
+func (r resource) String() string {
+	return fmt.Sprintf("%s_%s_%s", r.namespace, r.kind, r.name)
+}
+
+// TODO: Promote to 3.10 when the time comes
+func fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath string) error {
+	controlPlane := []resource{
+		{kind: "pod", namespace: "kube-system", name: fmt.Sprintf("master-api-ocp-master-%s-0", name)},
+		{kind: "pod", namespace: "kube-system", name: fmt.Sprintf("master-controllers-ocp-master-%s-0", name)},
+		{kind: "pod", namespace: "kube-system", name: fmt.Sprintf("master-etcd-ocp-master-%s-0", name)},
+	}
+
+	var errs []error
+	for _, r := range controlPlane {
+		log := FetchLogs(r.kind, r.namespace, r.name)
+		path := filepath.Join(logPath, r.name)
+		if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for _, service := range getSystemdServices(distro) {
+		// 3.10+ deployments run only the node process as a systemd service
+		if service != "atomic-openshift-node" && service != "origin-node" {
+			continue
+		}
+		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		path := filepath.Join(logPath, service)
+		if err := ioutil.WriteFile(path, out, 0644); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+// fetchInfraLogs returns logs for Openshift infra components.
+// TODO: Eventually we may need to version this too.
+func fetchInfraLogs(logPath string) error {
+	infraResources := []resource{
+		// TODO: Maybe collapse this list and the actual readiness check tests
+		// in openshift e2e.
+		{kind: "deploymentconfig", namespace: "default", name: "router"},
+		{kind: "deploymentconfig", namespace: "default", name: "docker-registry"},
+		{kind: "deploymentconfig", namespace: "default", name: "registry-console"},
+		{kind: "statefulset", namespace: "openshift-infra", name: "bootstrap-autoapprover"},
+		{kind: "statefulset", namespace: "openshift-metrics", name: "prometheus"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "apiserver"},
+		{kind: "daemonset", namespace: "kube-service-catalog", name: "controller-manager"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb"},
+		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb-etcd"},
+		{kind: "daemonset", namespace: "openshift-template-service-broker", name: "apiserver"},
+		{kind: "deployment", namespace: "openshift-web-console", name: "webconsole"},
+	}
+
+	var errs []error
+	for _, r := range infraResources {
+		log := FetchLogs(r.kind, r.namespace, r.name)
+		path := filepath.Join(logPath, "infra-"+r.String())
+		err := ioutil.WriteFile(path, []byte(log), 0644)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
 }
