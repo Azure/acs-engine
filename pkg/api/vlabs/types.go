@@ -145,7 +145,6 @@ type CustomSearchDomain struct {
 type WindowsProfile struct {
 	AdminUsername         string            `json:"adminUsername,omitempty"`
 	AdminPassword         string            `json:"adminPassword,omitempty"`
-	ImageVersion          string            `json:"imageVersion,omitempty"`
 	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
 	WindowsPublisher      string            `json:"WindowsPublisher"`
 	WindowsOffer          string            `json:"WindowsOffer"`

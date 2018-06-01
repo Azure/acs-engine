@@ -213,7 +213,6 @@ func convertV20170831AgentPoolOnlyWindowsProfile(obj *v20170831.WindowsProfile) 
 func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.AdminPassword = vlabs.AdminPassword
-	api.ImageVersion = vlabs.ImageVersion
 	// api.Secrets = []KeyVaultSecrets{}
 	// for _, s := range vlabs.Secrets {
 	// 	secret := &KeyVaultSecrets{}

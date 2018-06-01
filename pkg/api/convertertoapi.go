@@ -510,7 +510,6 @@ func convertV20170701WindowsProfile(v20170701 *v20170701.WindowsProfile, api *Wi
 func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.AdminPassword = vlabs.AdminPassword
-	api.ImageVersion = vlabs.ImageVersion
 	api.WindowsImageSourceURL = vlabs.WindowsImageSourceURL
 	api.WindowsPublisher = vlabs.WindowsPublisher
 	api.WindowsOffer = vlabs.WindowsOffer
