@@ -588,14 +588,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with calico network policy enabled", func() {
 		It("should apply a network policy and deny outbound internet access to nginx pod", func() {
 			if eng.HasNetworkPolicy("calico") {
+				namespace := "default"
 				By("Creating a nginx deployment")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
-				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "")
+				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, namespace, "")
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensure there is a Running nginx pod")
-				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady(deploymentName, namespace, 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
@@ -610,17 +611,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Applying a network policy to deny egress access")
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
+				networkPolicyName := "calico-policy"
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), networkPolicyName, namespace)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have outbound internet access from the nginx pods")
 				for _, nginxPod := range nginxPods {
-					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
 					Expect(err).Should(HaveOccurred())
 					Expect(pass).To(BeFalse())
 				}
 
 				By("Cleaning up after ourselves")
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 				err = nginxDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			} else {

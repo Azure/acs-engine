@@ -18,3 +18,15 @@ func CreateNetworkPolicyFromFile(filename, name, namespace string) error {
 	}
 	return nil
 }
+
+// DeleteNetworkPolicy will create a NetworkPolicy from file with a name
+func DeleteNetworkPolicy(name, namespace string) error {
+	cmd := exec.Command("kubectl", "delete", "networkpolicy", "-n", namespace, name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to delete NetworkPolicy %s in namespace %s:%s\n", name, namespace, string(out))
+		return err
+	}
+	return nil
+}
