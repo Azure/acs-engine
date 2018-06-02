@@ -42,6 +42,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "searchDomainRealmUser", properties.LinuxProfile.CustomSearchDomain.RealmUser)
 		addValue(parametersMap, "searchDomainRealmPassword", properties.LinuxProfile.CustomSearchDomain.RealmPassword)
 	}
+	if properties.LinuxProfile.CustomNodesDNS != nil {
+		addValue(parametersMap, "dnsServer", properties.LinuxProfile.CustomNodesDNS.DNSServer)
+	}
 	// masterEndpointDNSNamePrefix is the basis for storage account creation across dcos, swarm, and k8s
 	if properties.MasterProfile != nil {
 		// MasterProfile exists, uses master DNS prefix

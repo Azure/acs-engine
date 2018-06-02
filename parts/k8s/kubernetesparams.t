@@ -819,6 +819,16 @@
       "type": "securestring"
     }
 {{end}}
+{{if HasCustomNodesDNS}}
+    ,"dnsServer": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "DNS Server IP"
+      },
+      "type": "string"
+    }
+{{end}}
+
 {{if EnableEncryptionWithExternalKms}}
    ,
    {{if not UseManagedIdentity}}

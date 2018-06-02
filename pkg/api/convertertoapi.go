@@ -485,6 +485,11 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		api.CustomSearchDomain.RealmUser = vlabs.CustomSearchDomain.RealmUser
 		api.CustomSearchDomain.RealmPassword = vlabs.CustomSearchDomain.RealmPassword
 	}
+
+	if vlabs.CustomNodesDNS != nil {
+		api.CustomNodesDNS = &CustomNodesDNS{}
+		api.CustomNodesDNS.DNSServer = vlabs.CustomNodesDNS.DNSServer
+	}
 }
 
 func convertV20160930WindowsProfile(v20160930 *v20160930.WindowsProfile, api *WindowsProfile) {
