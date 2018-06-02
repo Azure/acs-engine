@@ -50,8 +50,8 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 		return "", "", "", "", err
 	}
 	submatches := re.FindStringSubmatch(vnetSubnetID)
-	if len(submatches) != 4 {
-		return "", "", "", "", fmt.Errorf("unable to find 4 submatches")
+	if len(submatches) != 5 {
+		return "", "", "", "", fmt.Errorf("unable to match regexp")
 	}
 	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }
