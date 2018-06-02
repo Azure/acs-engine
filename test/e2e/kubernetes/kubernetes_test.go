@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/networkpolicy"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
@@ -609,7 +610,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Applying a network policy to deny egress access")
-				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), "calico-policy", "default")
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have outbound internet access from the nginx pods")
@@ -622,12 +623,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
-				}
-				Expect(delErr).NotTo(HaveOccurred())
 			} else {
 				Skip("Calico network policy was not provisioned for this Cluster Definition")
 			}
