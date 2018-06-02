@@ -434,9 +434,9 @@ func TestValidateVNET(t *testing.T) {
 	if err := validateVNET(a); err != ErrorParsingSubnetID {
 		if err == nil {
 			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorParsingSubnetID)
-		} else {
-			t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorParsingSubnetID, err.Error())
 		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorParsingSubnetID, err.Error())
+
 	}
 
 	// NetworkPlugin = Azure, Subscription not match
