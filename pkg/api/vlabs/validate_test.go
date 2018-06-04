@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 	"testing"
 
@@ -29,8 +28,6 @@ const (
 )
 
 func Test_OrchestratorProfile_Validate(t *testing.T) {
-	supported := common.GetAllSupportedKubernetesVersions()
-	sort.Strings(supported)
 	tests := map[string]struct {
 		properties    *Properties
 		expectedError string
@@ -85,7 +82,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 					OrchestratorVersion: "1.6.0",
 				},
 			},
-			expectedError: fmt.Sprint("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"Kubernetes\", OrchestratorRelease: \"\", OrchestratorVersion: \"1.6.0\". Please use one of the following versions: ", supported),
+			expectedError: fmt.Sprint("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"Kubernetes\", OrchestratorRelease: \"\", OrchestratorVersion: \"1.6.0\". Please use one of the following versions: ", common.GetAllSupportedKubernetesVersions()),
 		},
 		"kubernetes should not fail on old patch version if update": {
 			properties: &Properties{

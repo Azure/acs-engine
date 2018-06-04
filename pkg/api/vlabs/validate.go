@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/url"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -172,9 +171,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				o.OrchestratorVersion,
 				a.HasWindows())
 			if version == "" {
-				supported := common.GetAllSupportedKubernetesVersions()
-				sort.Strings(supported)
-				return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please use one of the following versions: %v", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion, supported)
+				return fmt.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please use one of the following versions: %v", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion, common.GetAllSupportedKubernetesVersions())
 			}
 
 			if o.KubernetesConfig != nil {
