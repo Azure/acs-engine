@@ -1,5 +1,5 @@
     {
-{{ if {{.Name}}AcceleratedNetworkingEnabled}}
+{{ if IsAcceleratedNetworking . }}
       "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
 {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",

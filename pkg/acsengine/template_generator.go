@@ -280,6 +280,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"IsAcceleratedNetworking": func(a *api.AgentPoolProfile) bool {
+			return a.AcceleratedNetworkingEnabled
+		},
 		"GetKubeConfig": func() string {
 			kubeConfig, err := GenerateKubeConfig(cs.Properties, cs.Location)
 			if err != nil {
