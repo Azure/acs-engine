@@ -21,9 +21,9 @@ func printCmd(cmd *exec.Cmd) {
 	fmt.Printf("\n$ %s\n", strings.Join(cmd.Args, " "))
 }
 
-// CreateFromTemplate processes and creates the provided templateName/templateNamespace template
+// ApplyFromTemplate processes and creates the provided templateName/templateNamespace template
 // in the provided namespace.
-func CreateFromTemplate(templateName, templateNamespace, namespace string) error {
+func ApplyFromTemplate(templateName, templateNamespace, namespace string) error {
 	processCmd := exec.Command("oc", "process", templateName, "-n", templateNamespace)
 	printCmd(processCmd)
 	out, err := processCmd.CombinedOutput()
@@ -34,11 +34,11 @@ func CreateFromTemplate(templateName, templateNamespace, namespace string) error
 		return fmt.Errorf("cannot create tempfile for processed template %s: %v", templateName, err)
 	}
 	defer os.Remove(templateName)
-	createCmd := exec.Command("oc", "create", "-n", namespace, "-f", templateName)
+	createCmd := exec.Command("oc", "apply", "-n", namespace, "-f", templateName)
 	printCmd(createCmd)
 	out, err = createCmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("cannot create processed template %s: %v\noutput: %s", templateName, err, string(out))
+		return fmt.Errorf("cannot apply processed template %s: %v\noutput: %s", templateName, err, string(out))
 	}
 	return nil
 }
