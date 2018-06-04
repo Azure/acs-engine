@@ -305,6 +305,11 @@ func (a *Properties) validateMasterProfile() error {
 	if a.OrchestratorProfile.OrchestratorType == OpenShift && m.Count != 1 {
 		return errors.New("openshift can only deployed with one master")
 	}
+
+	if a.OrchestratorProfile.OrchestratorType == OpenShift && m.StorageProfile != ManagedDisks {
+		return errors.New("OpenShift orchestrator supports only ManagedDisks")
+	}
+
 	if m.ImageRef != nil {
 		if err := m.ImageRef.validateImageNameAndGroup(); err != nil {
 			return err
