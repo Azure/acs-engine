@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -95,6 +96,9 @@ func GetAllSupportedKubernetesVersions() []string {
 			versions = append(versions, ver)
 		}
 	}
+	sort.Slice(versions, func(i, j int) bool {
+		return IsKubernetesVersionGe(versions[j], versions[i])
+	})
 	return versions
 }
 
@@ -238,6 +242,9 @@ func GetAllSupportedKubernetesVersionsWindows() []string {
 			versions = append(versions, ver)
 		}
 	}
+	sort.Slice(versions, func(i, j int) bool {
+		return IsKubernetesVersionGe(versions[j], versions[i])
+	})
 	return versions
 }
 
