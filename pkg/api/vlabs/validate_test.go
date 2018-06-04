@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -28,6 +29,8 @@ const (
 )
 
 func Test_OrchestratorProfile_Validate(t *testing.T) {
+	supported := common.GetAllSupportedKubernetesVersions()
+	sort.Strings(supported)
 	tests := map[string]struct {
 		properties    *Properties
 		expectedError string
@@ -79,16 +82,16 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.3",
+					OrchestratorVersion: "1.6.0",
 				},
 			},
-			expectedError: "the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: Kubernetes, OrchestratorRelease: , OrchestratorVersion: 1.7.3. Please check supported Release or Version for this build of acs-engine",
+			expectedError: fmt.Sprint("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"Kubernetes\", OrchestratorRelease: \"\", OrchestratorVersion: \"1.6.0\". Please use one of the following versions: ", supported),
 		},
 		"kubernetes should not fail on old patch version if update": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.3",
+					OrchestratorVersion: "1.6.0",
 				},
 			},
 			isUpdate: true,
@@ -163,7 +166,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			continue
 		}
 		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
+			t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
 		}
 	}
 }
@@ -446,48 +449,21 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
-	p.AgentPoolProfiles = []*AgentPoolProfile{
-		{
-			OSType: Windows,
-		},
-	}
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
-	p.AgentPoolProfiles = []*AgentPoolProfile{
-		{
-			OSType: Windows,
-		},
-	}
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
 		t.Errorf(
 			"should error on cilium for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
-	p.AgentPoolProfiles = []*AgentPoolProfile{
-		{
-			OSType: Windows,
-		},
-	}
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
-		t.Errorf(
-			"should error on flannel for windows clusters",
-		)
-	}
-
-	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
-	p.AgentPoolProfiles = []*AgentPoolProfile{
-		{
-			OSType: Windows,
-		},
-	}
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
 		t.Errorf(
 			"should error on flannel for windows clusters",
 		)
