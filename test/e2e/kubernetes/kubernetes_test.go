@@ -623,7 +623,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 				// TODO delete networkpolicy
 				// Expect(err).NotTo(HaveOccurred())
 				err = nginxDeploy.Delete()
