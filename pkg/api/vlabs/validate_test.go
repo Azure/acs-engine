@@ -677,9 +677,14 @@ func TestValidateKubernetesLabelKey(t *testing.T) {
 }
 
 func Test_AadProfile_Validate(t *testing.T) {
-	var properties *Properties
+	properties := &Properties{
+		AADProfile: &AADProfile{},
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+	}
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
-		for _, aadProfile := range []AADProfile{
+		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
 				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
@@ -690,7 +695,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 				TenantID:    "feb784f6-7174-46da-aeae-da66e80c7a11",
 			},
 		} {
-			properties.AADProfile = &aadProfile
+			properties.AADProfile = aadProfile
 			if err := properties.validateAADProfile(); err != nil {
 				t.Errorf("should not error %v", err)
 			}
@@ -698,7 +703,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 
 	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
-		for _, aadProfile := range []AADProfile{
+		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "1",
 				ServerAppID: "d",
@@ -713,7 +718,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 			},
 			{},
 		} {
-			properties.AADProfile = &aadProfile
+			properties.AADProfile = aadProfile
 			if err := properties.validateAADProfile(); err == nil {
 				t.Errorf("error should have occurred")
 			}
@@ -1025,7 +1030,7 @@ func TestMasterProfileValidate(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		var properties *Properties
+		properties := &Properties{}
 		properties.MasterProfile = &test.masterProfile
 		properties.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: test.orchestratorType,
