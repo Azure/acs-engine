@@ -107,39 +107,25 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 }
 
 // DumpNodes dumps information about nodes.
-func DumpNodes() (string, error) {
+func DumpNodes() string {
 	cmd := exec.Command("oc", "get", "nodes", "-o", "wide")
 	printCmd(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to list nodes: %s", string(out))
-		return "", err
+		log.Printf("Error trying to list nodes: %v", err)
 	}
-	return string(out), nil
+	return string(out)
 }
 
 // DumpPods dumps the pods from all namespaces.
-func DumpPods() (string, error) {
+func DumpPods() string {
 	cmd := exec.Command("oc", "get", "pods", "--all-namespaces", "-o", "wide")
 	printCmd(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to list pods from all namespaces: %s", string(out))
-		return "", err
+		log.Printf("Error trying to list pods from all namespaces: %v", err)
 	}
-	return string(out), nil
-}
-
-// RunDiagnostics runs the openshift diagnostics command.
-func RunDiagnostics() (string, error) {
-	cmd := exec.Command("oc", "adm", "diagnostics")
-	printCmd(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error trying to run diagnostics: %s", string(out))
-		return "", err
-	}
-	return string(out), nil
+	return string(out)
 }
 
 // FetchLogs returns logs for the provided kind/name in namespace.
@@ -151,6 +137,27 @@ func FetchLogs(kind, namespace, name string) string {
 		return fmt.Sprintf("Error trying to fetch logs from %s/%s in %s: %s", kind, name, namespace, string(out))
 	}
 	return string(out)
+}
+
+// FetchClusterInfo returns node and pod information about the cluster.
+func FetchClusterInfo(logPath string) {
+	needsLog := map[string]string{
+		"node-info": DumpNodes(),
+		"pod-info":  DumpPods(),
+	}
+
+	var errs []error
+	for base, log := range needsLog {
+		path := filepath.Join(logPath, base)
+		err := ioutil.WriteFile(path, []byte(log), 0644)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if err := kerrors.NewAggregate(errs); err != nil {
+		log.Printf("Cannot fetch node and pod info: %v", err)
+	}
 }
 
 // FetchOpenShiftLogs returns logs for all OpenShift components

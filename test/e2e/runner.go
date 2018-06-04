@@ -203,6 +203,7 @@ func teardown() {
 		version := eng.Config.OrchestratorVersion
 		distro := eng.Config.Distro
 		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
+		outil.FetchClusterInfo(logsPath)
 	}
 	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
 		log.Printf("cannot fetch the activity log: %v", err)
