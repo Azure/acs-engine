@@ -88,8 +88,8 @@ var AzureLocations = []string{
 
     text += r"""        "chinaeast",
 	"chinanorth",
-    "chinanorth2",
-    "chinaeast2",
+	"chinanorth2",
+	"chinaeast2",
 	"germanycentral",
 	"germanynortheast",
 	"usgovvirginia",
