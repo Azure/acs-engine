@@ -1,5 +1,9 @@
     {
+{{ if {{.Name}}AcceleratedNetworkingEnabled}}
+      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+{{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
