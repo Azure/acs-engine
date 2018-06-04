@@ -97,7 +97,29 @@ const (
 	OpenShiftDefaultVersion string = OpenShiftVersion3Dot9Dot0
 )
 
+const (
+	// SwarmVersion is the Swarm orchestrator version
+	SwarmVersion = "swarm:1.1.0"
+	// DockerCEVersion is the DockerCE orchestrator version
+	DockerCEVersion = "17.03.*"
+)
+
+// GetAllSupportedDCOSVersions returns a slice of all supported DCOS versions.
+func GetAllSupportedDCOSVersions() []string {
+	return AllDCOSSupportedVersions
+}
+
 // GetAllSupportedOpenShiftVersions returns a slice of all supported OpenShift versions.
 func GetAllSupportedOpenShiftVersions() []string {
 	return []string{OpenShiftVersion3Dot9Dot0, OpenShiftVersionUnstable}
+}
+
+// GetAllSupportedSwarmVersions returns a slice of all supported Swarm versions.
+func GetAllSupportedSwarmVersions() []string {
+	return []string{SwarmVersion}
+}
+
+// GetAllSupportedDockerCEVersions returns a slice of all supported Docker CE versions.
+func GetAllSupportedDockerCEVersions() []string {
+	return []string{DockerCEVersion}
 }
