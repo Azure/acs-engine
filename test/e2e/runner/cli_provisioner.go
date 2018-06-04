@@ -148,6 +148,12 @@ func (cli *CLIProvisioner) provision() error {
 	}
 	cli.Engine.ExpandedDefinition = csGenerated
 
+	// Both Openshift and Kubernetes deployments should have a kubeconfig available
+	// at this point.
+	if (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) && !cli.IsPrivate() {
+		cli.Config.SetKubeConfig()
+	}
+
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
 	if err != nil {
@@ -184,7 +190,6 @@ func (cli *CLIProvisioner) generateName() string {
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() || cli.Config.IsOpenShift() {
 		if !cli.IsPrivate() {
-			cli.Config.SetKubeConfig()
 			log.Println("Waiting on nodes to go into ready state...")
 			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 			if !ready {
