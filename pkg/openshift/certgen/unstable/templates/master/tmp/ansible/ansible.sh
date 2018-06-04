@@ -10,7 +10,7 @@ while ! oc version &>/dev/null; do
 done
 
 for project in default openshift-infra; do
-  oc patch project $project -p '{"metadata":{"annotations":{"openshift.io/node-selector": ""}}}'
+  oc annotate namespace $project openshift.io/node-selector="" --overwrite
 done
 
 # FIXME - This should be handled by the openshift-ansible playbooks to ensure
