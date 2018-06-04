@@ -627,4 +627,9 @@ func TestGenerateKubeConfig(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected an error result from nil Properties child properties")
 	}
+
+	_, err = GenerateKubeConfig(nil, "westus2")
+	if err == nil {
+		t.Fatalf("Expected an error result from nil Properties child properties")
+	}
 }

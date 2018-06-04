@@ -63,6 +63,9 @@ func GenerateClusterID(properties *api.Properties) string {
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
 func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
+	if properties == nil {
+		return "", fmt.Errorf("Properties nil in GenerateKubeConfig")
+	}
 	if properties.CertificateProfile == nil {
 		return "", fmt.Errorf("CertificateProfile property may not be nil in GenerateKubeConfig")
 	}
