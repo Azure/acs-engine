@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 )
 
 // TypeMeta describes an individual API model object
@@ -859,8 +859,8 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	ret := "etcd3"
 	if o.KubernetesConfig != nil {
 		// if we are here, version has already been validated..
-		etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
-		if etcdversion != nil && 2 == etcdversion.Major() {
+		etcdversion, _ := semver.Make(o.KubernetesConfig.EtcdVersion)
+		if etcdversion.Major == 2 {
 			return "etcd2"
 		}
 	}

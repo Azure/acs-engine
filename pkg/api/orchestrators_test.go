@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 	. "github.com/onsi/gomega"
 )
 
@@ -21,7 +21,7 @@ func TestInvalidVersion(t *testing.T) {
 		"1.2.a"}
 
 	for _, v := range invalid {
-		_, e := semver.NewVersion(v)
+		_, e := semver.Make(v)
 		Expect(e).NotTo(BeNil())
 	}
 }
@@ -40,11 +40,11 @@ func TestVersionCompare(t *testing.T) {
 		{"2.3.8", "2.3.24", false}}
 
 	for _, r := range records {
-		ver, e := semver.NewVersion(r.v1)
+		ver, e := semver.Make(r.v1)
 		Expect(e).To(BeNil())
-		constraint, e := semver.NewConstraint(">" + r.v2)
+		constraint, e := semver.Make(r.v2)
 		Expect(e).To(BeNil())
-		Expect(r.isGreater).To(Equal(constraint.Check(ver)))
+		Expect(r.isGreater).To(Equal(ver.GT(constraint)))
 	}
 }
 

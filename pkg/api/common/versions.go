@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
@@ -108,19 +108,13 @@ func GetAllSupportedKubernetesVersions() []string {
 func GetVersionsGt(versions []string, version string, inclusive, preReleases bool) []string {
 	// Try to get latest version matching the release
 	var ret []string
-	var cons *semver.Constraints
-	minVersion, _ := semver.NewVersion(version)
+	minVersion, _ := semver.Make(version)
 	for _, v := range versions {
-		sv, _ := semver.NewVersion(v)
-		if preReleases && minVersion.Prerelease() == "" {
-			sv, _ = semver.NewVersion(fmt.Sprintf("%d.%d.%d", sv.Major(), sv.Minor(), sv.Patch()))
+		sv, _ := semver.Make(v)
+		if !preReleases && len(sv.Pre) != 0 {
+			continue
 		}
-		if inclusive {
-			cons, _ = semver.NewConstraint(">=" + version)
-		} else {
-			cons, _ = semver.NewConstraint(">" + version)
-		}
-		if cons.Check(sv) {
+		if (inclusive && sv.GTE(minVersion)) || (!inclusive && sv.GT(minVersion)) {
 			ret = append(ret, v)
 		}
 	}
@@ -133,18 +127,13 @@ func GetVersionsGt(versions []string, version string, inclusive, preReleases boo
 func GetVersionsLt(versions []string, version string, inclusive, preReleases bool) []string {
 	// Try to get latest version matching the release
 	var ret []string
-	var cons *semver.Constraints
+	minVersion, _ := semver.Make(version)
 	for _, v := range versions {
-		sv, _ := semver.NewVersion(v)
-		if preReleases {
-			sv, _ = semver.NewVersion(fmt.Sprintf("%d.%d.%d", sv.Major(), sv.Minor(), sv.Patch()))
+		sv, _ := semver.Make(v)
+		if !preReleases && len(sv.Pre) != 0 {
+			continue
 		}
-		if inclusive {
-			cons, _ = semver.NewConstraint("<=" + version)
-		} else {
-			cons, _ = semver.NewConstraint("<" + version)
-		}
-		if cons.Check(sv) {
+		if (inclusive && sv.LTE(minVersion)) || (!inclusive && sv.LT(minVersion)) {
 			ret = append(ret, v)
 		}
 	}
@@ -156,7 +145,7 @@ func GetVersionsLt(versions []string, version string, inclusive, preReleases boo
 // preReleases=true means that we include pre-release versions in the list
 func GetVersionsBetween(versions []string, versionMin, versionMax string, inclusive, preReleases bool) []string {
 	var ret []string
-	if minV, _ := semver.NewVersion(versionMin); minV.Prerelease() != "" {
+	if minV, _ := semver.Make(versionMin); len(minV.Pre) != 0 {
 		preReleases = true
 	}
 	greaterThan := GetVersionsGt(versions, versionMin, inclusive, preReleases)
@@ -177,12 +166,12 @@ func GetMaxVersion(versions []string, preRelease bool) string {
 	if len(versions) < 1 {
 		return ""
 	}
-	highest, _ := semver.NewVersion("0.0.0")
-	highestPreRelease, _ := semver.NewVersion("0.0.0-alpha.0")
-	var preReleaseVersions []*semver.Version
+	highest, _ := semver.Make("0.0.0")
+	highestPreRelease, _ := semver.Make("0.0.0-alpha.0")
+	var preReleaseVersions []semver.Version
 	for _, v := range versions {
-		sv, _ := semver.NewVersion(v)
-		if sv.Prerelease() != "" {
+		sv, _ := semver.Make(v)
+		if len(sv.Pre) != 0 {
 			preReleaseVersions = append(preReleaseVersions, sv)
 		} else {
 			if sv.Compare(highest) == 1 {
@@ -285,11 +274,11 @@ func GetValidPatchVersion(orchType, orchVer string, hasWindows bool) string {
 		hasWindows)
 
 	if version == "" {
-		sv, err := semver.NewVersion(orchVer)
+		sv, err := semver.Make(orchVer)
 		if err != nil {
 			return ""
 		}
-		sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		sr := fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 
 		version = RationalizeReleaseAndVersion(
 			orchType,
@@ -332,8 +321,8 @@ func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string, hasWindows 
 	// Try to get latest version matching the release
 	version = ""
 	for _, ver := range supportedVersions {
-		sv, _ := semver.NewVersion(ver)
-		sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		sv, _ := semver.Make(ver)
+		sr := fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 		if sr == orchRel && ver == orchVer {
 			version = ver
 			break
@@ -342,11 +331,11 @@ func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string, hasWindows 
 	return version
 }
 
-// IsKubernetesVersionGe returns if a semver string is >= to a compare-against semver string (suppport "-" suffixes)
+// IsKubernetesVersionGe returns true if actualVersion is greater than or equal to version
 func IsKubernetesVersionGe(actualVersion, version string) bool {
-	orchestratorVersion, _ := semver.NewVersion(strings.Split(actualVersion, "-")[0]) // to account for -alpha and -beta suffixes
-	constraint, _ := semver.NewConstraint(">=" + version)
-	return constraint.Check(orchestratorVersion)
+	v1, _ := semver.Make(actualVersion)
+	v2, _ := semver.Make(version)
+	return v1.GE(v2)
 }
 
 // GetLatestPatchVersion gets the most recent patch version from a list of semver versions given a major.minor string
@@ -354,17 +343,17 @@ func GetLatestPatchVersion(majorMinor string, versionsList []string) (version st
 	// Try to get latest version matching the release
 	version = ""
 	for _, ver := range versionsList {
-		sv, err := semver.NewVersion(ver)
+		sv, err := semver.Make(ver)
 		if err != nil {
 			return
 		}
-		sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		sr := fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 		if sr == majorMinor {
 			if version == "" {
 				version = ver
 			} else {
-				cons, _ := semver.NewConstraint(">" + version)
-				if cons.Check(sv) {
+				current, _ := semver.Make(version)
+				if sv.GT(current) {
 					version = ver
 				}
 			}

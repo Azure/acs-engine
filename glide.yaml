@@ -50,8 +50,8 @@ import:
   version: v2.0.0
 - package: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
-- package: github.com/Masterminds/semver
-  version: v1.3.1
+- package: github.com/blang/semver
+  version: v3.5.1
 - package: github.com/imdario/mergo
   version: ^0.2.2
 - package: k8s.io/apiserver

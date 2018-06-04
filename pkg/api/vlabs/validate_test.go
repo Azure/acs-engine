@@ -9,7 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 )
 
 const (
@@ -852,9 +852,9 @@ func TestWindowsVersions(t *testing.T) {
 				"should not error on valid Windows version: %v", err,
 			)
 		}
-		sv, _ := semver.NewVersion(version)
+		sv, _ := semver.Make(version)
 		p = getK8sDefaultProperties(true)
-		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 		if err := p.Validate(false); err != nil {
 			t.Errorf(
 				"should not error on valid Windows version: %v", err,
@@ -887,9 +887,9 @@ func TestLinuxVersions(t *testing.T) {
 				"should not error on valid Linux version: %v", err,
 			)
 		}
-		sv, _ := semver.NewVersion(version)
+		sv, _ := semver.Make(version)
 		p = getK8sDefaultProperties(false)
-		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 		if err := p.Validate(false); err != nil {
 			t.Errorf(
 				"should not error on valid Linux version: %v", err,

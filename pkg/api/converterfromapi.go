@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -648,8 +648,8 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 		// Enable using "unstable" as a valid version in the openshift orchestrator.
 		// Required for progressing on an unreleased version.
 		if !api.IsOpenShift() || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
-			sv, _ := semver.NewVersion(o.OrchestratorVersion)
-			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+			sv, _ := semver.Make(o.OrchestratorVersion)
+			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 		}
 	}
 
