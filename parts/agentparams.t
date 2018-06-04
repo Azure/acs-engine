@@ -50,13 +50,6 @@
       },
       "type": "string"
     },
-    "{{.Name}}AcceleratedNetworkingEnabled": {
-      "defaultValue": false,
-      "metadata": {
-        "description": "Enable Accelerated Networking"
-      },
-      "type": "bool"
-    },
     "{{.Name}}osImageName": {
       "defaultValue": "",
       "metadata": {

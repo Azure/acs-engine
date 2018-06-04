@@ -29,7 +29,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-        "enableAcceleratedNetworking" : "[variables('{{.Name}}AcceleratedNetworkingEnabled')]",
+        "enableAcceleratedNetworking" : "{{.IsAcceleratedNetworkingEnabled}}",
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
