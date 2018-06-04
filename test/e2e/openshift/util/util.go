@@ -181,7 +181,8 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 	case common.OpenShiftVersionUnstable:
 		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
 	default:
-		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+		log.Printf("Invalid OpenShift version %q - won't gather logs from the control plane", version)
+		return nil
 	}
 }
 
