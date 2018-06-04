@@ -1032,6 +1032,7 @@ func TestMasterProfileValidate(t *testing.T) {
 	for i, test := range tests {
 		properties := &Properties{}
 		properties.MasterProfile = &test.masterProfile
+		properties.MasterProfile.StorageProfile = ManagedDisks
 		properties.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: test.orchestratorType,
 		}
