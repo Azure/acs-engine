@@ -754,6 +754,11 @@ func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
 }
 
+// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
+func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
+	return a.AcceleratedNetworkingEnabled
+}
+
 // HasSecrets returns true if the customer specified secrets to install
 func (w *WindowsProfile) HasSecrets() bool {
 	return len(w.Secrets) > 0
