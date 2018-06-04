@@ -29,103 +29,127 @@ const (
 
 func Test_OrchestratorProfile_Validate(t *testing.T) {
 	tests := map[string]struct {
-		orchestratorProfile *OrchestratorProfile
-		expectedError       string
-		isUpdate            bool
+		properties    *Properties
+		expectedError string
+		isUpdate      bool
 	}{
 		"should error when KubernetesConfig populated for non-Kubernetes OrchestratorType": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType: "DCOS",
-				KubernetesConfig: &KubernetesConfig{
-					ClusterSubnet: "10.0.0.0/16",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "DCOS",
+					KubernetesConfig: &KubernetesConfig{
+						ClusterSubnet: "10.0.0.0/16",
+					},
 				},
 			},
 			expectedError: "KubernetesConfig can be specified only when OrchestratorType is Kubernetes or OpenShift",
 		},
 		"should not error with empty object": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType: "Kubernetes",
-				DcosConfig:       &DcosConfig{},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "Kubernetes",
+					DcosConfig:       &DcosConfig{},
+				},
 			},
 		},
 		"should error when DcosConfig populated for non-Kubernetes OrchestratorType 1": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType: "Kubernetes",
-				DcosConfig: &DcosConfig{
-					DcosWindowsBootstrapURL: "http://www.microsoft.com",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "Kubernetes",
+					DcosConfig: &DcosConfig{
+						DcosWindowsBootstrapURL: "http://www.microsoft.com",
+					},
 				},
 			},
 			expectedError: "DcosConfig can be specified only when OrchestratorType is DCOS",
 		},
 		"should error when DcosConfig populated for non-Kubernetes OrchestratorType 2": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType: "Kubernetes",
-				DcosConfig: &DcosConfig{
-					DcosWindowsBootstrapURL: "http://www.microsoft.com",
-					DcosBootstrapURL:        "http://www.microsoft.com",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "Kubernetes",
+					DcosConfig: &DcosConfig{
+						DcosWindowsBootstrapURL: "http://www.microsoft.com",
+						DcosBootstrapURL:        "http://www.microsoft.com",
+					},
 				},
 			},
 			expectedError: "DcosConfig can be specified only when OrchestratorType is DCOS",
 		},
 		"kubernetes should have failed on old patch version": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    "Kubernetes",
-				OrchestratorVersion: "1.7.3",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.3",
+				},
 			},
 			expectedError: "the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: Kubernetes, OrchestratorRelease: , OrchestratorVersion: 1.7.3. Please check supported Release or Version for this build of acs-engine",
 		},
 		"kubernetes should not fail on old patch version if update": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    "Kubernetes",
-				OrchestratorVersion: "1.7.3",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.3",
+				},
 			},
 			isUpdate: true,
 		},
 		"kubernetes should not have failed on version with v prefix": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    "Kubernetes",
-				OrchestratorVersion: "v1.9.0",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "v1.9.0",
+				},
 			},
 		},
 		"openshift should have failed on old version": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v1.0",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v1.0",
+				},
 			},
 			expectedError: "OrchestratorProfile is not able to be rationalized, check supported Release or Version",
 		},
 		"openshift should not have failed on old version if update": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v1.0",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v1.0",
+				},
 			},
 			isUpdate: true,
 		},
 		"openshift should not have failed on good version": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "3.9.0",
-				OpenShiftConfig:     validOpenShiftConifg(),
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "3.9.0",
+					OpenShiftConfig:     validOpenShiftConifg(),
+				},
 			},
 		},
 		"openshift should not have failed on good version with v prefix": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v3.9.0",
-				OpenShiftConfig:     validOpenShiftConifg(),
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v3.9.0",
+					OpenShiftConfig:     validOpenShiftConifg(),
+				},
 			},
 		},
 		"openshift fails with unset config": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v3.9.0",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v3.9.0",
+				},
 			},
 			expectedError: "OpenShiftConfig must be specified for OpenShift orchestrator",
 		},
 	}
 
 	for testName, test := range tests {
-		err := test.orchestratorProfile.Validate(test.isUpdate, false)
+		err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
 		if test.expectedError == "" && err == nil {
 			continue
@@ -146,30 +170,34 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 
 func Test_OpenShiftConfig_Validate(t *testing.T) {
 	tests := map[string]struct {
-		orchestratorProfile *OrchestratorProfile
-		expectedError       string
-		isUpdate            bool
+		properties    *Properties
+		expectedError string
+		isUpdate      bool
 	}{
 		"openshift config requires username": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v3.9.0",
-				OpenShiftConfig:     &OpenShiftConfig{ClusterPassword: "foo"},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v3.9.0",
+					OpenShiftConfig:     &OpenShiftConfig{ClusterPassword: "foo"},
+				},
 			},
 			expectedError: "ClusterUsername and ClusterPassword must both be specified",
 		},
 		"openshift config requires password": {
-			orchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    OpenShift,
-				OrchestratorVersion: "v3.9.0",
-				OpenShiftConfig:     &OpenShiftConfig{ClusterUsername: "foo"},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    OpenShift,
+					OrchestratorVersion: "v3.9.0",
+					OpenShiftConfig:     &OpenShiftConfig{ClusterUsername: "foo"},
+				},
 			},
 			expectedError: "ClusterUsername and ClusterPassword must both be specified",
 		},
 	}
 
 	for testName, test := range tests {
-		err := test.orchestratorProfile.Validate(test.isUpdate, false)
+		err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
 		if test.expectedError == "" && err == nil {
 			continue
@@ -192,7 +220,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all versions
 	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
 		c := KubernetesConfig{}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
 		}
 
@@ -217,21 +245,21 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--route-reconciliation-period": ValidKubernetesCtrlMgrRouteReconciliationPeriod,
 			},
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Errorf("should not error on a KubernetesConfig with valid param values: %v", err)
 		}
 
 		c = KubernetesConfig{
 			ClusterSubnet: "10.16.x.0/invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid ClusterSubnet")
 		}
 
 		c = KubernetesConfig{
 			DockerBridgeSubnet: "10.120.1.0/invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid DockerBridgeSubnet")
 		}
 
@@ -240,7 +268,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--non-masquerade-cidr": "10.120.1.0/24",
 			},
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Error("should not error on valid --non-masquerade-cidr")
 		}
 
@@ -249,14 +277,14 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--non-masquerade-cidr": "10.120.1.0/invalid",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --non-masquerade-cidr")
 		}
 
 		c = KubernetesConfig{
 			MaxPods: KubernetesMinMaxPods - 1,
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid MaxPods")
 		}
 
@@ -265,7 +293,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--node-status-update-frequency": "invalid",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --node-status-update-frequency kubelet config")
 		}
 
@@ -274,7 +302,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--node-monitor-grace-period": "invalid",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --node-monitor-grace-period")
 		}
 
@@ -286,7 +314,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--node-status-update-frequency": "10s",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when --node-monitor-grace-period is not sufficiently larger than --node-status-update-frequency kubelet config")
 		}
 
@@ -295,7 +323,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--pod-eviction-timeout": "invalid",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --pod-eviction-timeout")
 		}
 
@@ -304,21 +332,21 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 				"--route-reconciliation-period": "invalid",
 			},
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --route-reconciliation-period")
 		}
 
 		c = KubernetesConfig{
 			DNSServiceIP: "192.168.0.10",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when DNSServiceIP but not ServiceCidr")
 		}
 
 		c = KubernetesConfig{
 			ServiceCidr: "192.168.0.10/24",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when ServiceCidr but not DNSServiceIP")
 		}
 
@@ -326,7 +354,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "invalid",
 			ServiceCidr:  "192.168.0.0/24",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when DNSServiceIP is invalid")
 		}
 
@@ -334,7 +362,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/not-a-len",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when ServiceCidr is invalid")
 		}
 
@@ -342,7 +370,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/24",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when DNSServiceIP is outside of ServiceCidr")
 		}
 
@@ -350,7 +378,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.255.255",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when DNSServiceIP is broadcast address of ServiceCidr")
 		}
 
@@ -358,7 +386,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.0.1",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error when DNSServiceIP is first IP of ServiceCidr")
 		}
 
@@ -366,7 +394,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.255.10",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Error("should not error when DNSServiceIP and ServiceCidr are valid")
 		}
 	}
@@ -377,7 +405,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
 		}
 	}
@@ -388,7 +416,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Error("should not error because UseCloudControllerManager is available since v1.8")
 		}
 	}
@@ -402,7 +430,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	for _, policy := range NetworkPolicyValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
-		if err := p.validateNetworkPolicy(); err != nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err != nil {
 			t.Errorf(
 				"should not error on networkPolicy=\"%s\"",
 				policy,
@@ -411,7 +439,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "not-existing"
-	if err := p.validateNetworkPolicy(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
 		t.Errorf(
 			"should error on invalid networkPolicy",
 		)
@@ -423,7 +451,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			OSType: Windows,
 		},
 	}
-	if err := p.validateNetworkPolicy(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)
@@ -435,7 +463,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			OSType: Windows,
 		},
 	}
-	if err := p.validateNetworkPolicy(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
 		t.Errorf(
 			"should error on cilium for windows clusters",
 		)
@@ -447,7 +475,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			OSType: Windows,
 		},
 	}
-	if err := p.validateNetworkPolicy(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
 		t.Errorf(
 			"should error on flannel for windows clusters",
 		)
@@ -459,7 +487,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			OSType: Windows,
 		},
 	}
-	if err := p.validateNetworkPolicy(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
 		t.Errorf(
 			"should error on flannel for windows clusters",
 		)
@@ -474,7 +502,7 @@ func Test_Properties_ValidateNetworkPlugin(t *testing.T) {
 	for _, policy := range NetworkPluginValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = policy
-		if err := p.validateNetworkPlugin(); err != nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPlugin(); err != nil {
 			t.Errorf(
 				"should not error on networkPolicy=\"%s\"",
 				policy,
@@ -483,7 +511,7 @@ func Test_Properties_ValidateNetworkPlugin(t *testing.T) {
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "not-existing"
-	if err := p.validateNetworkPlugin(); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPlugin(); err == nil {
 		t.Errorf(
 			"should error on invalid networkPlugin",
 		)
@@ -499,7 +527,7 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
-		if err := p.validateNetworkPluginPlusPolicy(); err != nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPluginPlusPolicy(); err != nil {
 			t.Errorf(
 				"should not error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
 				config.networkPolicy, config.networkPlugin,
@@ -540,7 +568,7 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = config.networkPlugin
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = config.networkPolicy
-		if err := p.validateNetworkPluginPlusPolicy(); err == nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPluginPlusPolicy(); err == nil {
 			t.Errorf(
 				"should error on networkPolicy=\"%s\" + networkPlugin=\"%s\"",
 				config.networkPolicy, config.networkPlugin,
@@ -649,6 +677,7 @@ func TestValidateKubernetesLabelKey(t *testing.T) {
 }
 
 func Test_AadProfile_Validate(t *testing.T) {
+	var properties *Properties
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
 		for _, aadProfile := range []AADProfile{
 			{
@@ -661,7 +690,8 @@ func Test_AadProfile_Validate(t *testing.T) {
 				TenantID:    "feb784f6-7174-46da-aeae-da66e80c7a11",
 			},
 		} {
-			if err := aadProfile.Validate(); err != nil {
+			properties.AADProfile = &aadProfile
+			if err := properties.validateAADProfile(); err != nil {
 				t.Errorf("should not error %v", err)
 			}
 		}
@@ -683,7 +713,8 @@ func Test_AadProfile_Validate(t *testing.T) {
 			},
 			{},
 		} {
-			if err := aadProfile.Validate(); err == nil {
+			properties.AADProfile = &aadProfile
+			if err := properties.validateAADProfile(); err == nil {
 				t.Errorf("error should have occurred")
 			}
 		}
@@ -994,7 +1025,12 @@ func TestMasterProfileValidate(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		err := test.masterProfile.Validate(&OrchestratorProfile{OrchestratorType: test.orchestratorType})
+		var properties *Properties
+		properties.MasterProfile = &test.masterProfile
+		properties.OrchestratorProfile = &OrchestratorProfile{
+			OrchestratorType: test.orchestratorType,
+		}
+		err := properties.validateMasterProfile()
 		if test.expectedErr == "" && err != nil ||
 			test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
 			t.Errorf("test %d: unexpected error %q\n", i, err)
