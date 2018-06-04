@@ -131,6 +131,7 @@ func main() {
 			}
 		}
 	} else {
+		cliProvisioner.ResourceGroups = append(rgs, cliProvisioner.Config.Name)
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
 		cfg.SetKubeConfig()
 		if err != nil {
@@ -183,30 +184,28 @@ func trap() {
 func teardown() {
 	pt.RecordTotalTime()
 	pt.Write()
+	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
+	logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
+	err := os.MkdirAll(logsPath, 0755)
+	if err != nil {
+		log.Printf("cannot create directory for logs: %s", err)
+	}
+
 	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
-		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
-		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-		err := os.MkdirAll(logsPath, 0755)
-		if err != nil {
-			log.Printf("cannot create directory for logs: %s", err)
-		}
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
 	}
 	if cliProvisioner.Config.IsOpenShift() {
-		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
-		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-		err := os.MkdirAll(logsPath, 0755)
-		if err != nil {
-			log.Printf("cannot create directory for logs: %s", err)
-		}
 		sshKeyPath := cfg.GetSSHKeyPath()
 		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
 		version := eng.Config.OrchestratorVersion
 		distro := eng.Config.Distro
 		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
+	}
+	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
+		log.Printf("cannot fetch the activity log: %v", err)
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")

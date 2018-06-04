@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -288,4 +289,19 @@ func (cli *CLIProvisioner) IsPrivate() bool {
 	return (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) &&
 		cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
+}
+
+// FetchActivityLog gets the activity log for the all resource groups used in the provisioner.
+func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, logPath string) error {
+	for _, rg := range cli.ResourceGroups {
+		log, err := acct.FetchActivityLog(rg)
+		if err != nil {
+			return fmt.Errorf("cannot fetch activity log for resource group %s: %v", rg, err)
+		}
+		path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", rg))
+		if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
+			return fmt.Errorf("cannot write activity log in file: %v", err)
+		}
+	}
+	return nil
 }
