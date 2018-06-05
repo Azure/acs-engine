@@ -301,6 +301,7 @@ func fetchInfraLogs(logPath string) error {
 	return kerrors.NewAggregate(errs)
 }
 
+// FetchOpenShiftMetrics gathers metrics from etcd and the control plane.
 func FetchOpenShiftMetrics(logPath string) {
 	// api server metrics
 	cmd := exec.Command("oc", "get", "--raw", "https://localhost:8443/metrics")
