@@ -106,13 +106,16 @@ done
 # Patch the etcd_ip address placed inside of the static pod definition from the node install
 sed -i "s/ETCD_IP_REPLACE/${IP_ADDRESS}/g" /etc/origin/node/disabled/etcd.yaml
 
+export KUBECONFIG=/etc/origin/master/admin.kubeconfig
+
 # Move each static pod into place so the kubelet will run it.
 # Pods: [apiserver, controller, etcd]
-mv /etc/origin/node/disabled/* /etc/origin/node/pods
+oc set env --local -f /etc/origin/node/disabled/apiserver.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/apiserver.yaml
+oc set env --local -f /etc/origin/node/disabled/controller.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/controller.yaml
+mv /etc/origin/node/disabled/etcd.yaml /etc/origin/node/pods/etcd.yaml
+rm -rf /etc/origin/node/disabled
 
 systemctl start ${SERVICE_TYPE}-node
-
-export KUBECONFIG=/etc/origin/master/admin.kubeconfig
 
 while ! curl -o /dev/null -m 2 -kfs https://localhost:8443/healthz; do
 	sleep 1

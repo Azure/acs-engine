@@ -43,6 +43,8 @@ done
 iptables-save >/etc/sysconfig/iptables
 
 sed -i -e "s#--master=.*#--master=https://$(hostname --fqdn):8443#" /etc/sysconfig/${SERVICE_TYPE}-master-api
+sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-master-api
+sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-master-controllers
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 

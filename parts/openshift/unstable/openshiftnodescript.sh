@@ -13,6 +13,8 @@ echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-
 echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{end}}
 
+sed -i -e "s#DEBUG_LOGLEVEL=2#DEBUG_LOGLEVEL=4#" /etc/sysconfig/${SERVICE_TYPE}-node
+
 rm -rf /etc/etcd/* /etc/origin/master/*
 
 ( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
