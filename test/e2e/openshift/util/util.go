@@ -166,13 +166,14 @@ func FetchClusterInfo(logPath string) error {
 
 // FetchOpenShiftLogs returns logs for all OpenShift components
 // (control plane and infra).
-func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) {
+func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) error {
 	if err := fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath); err != nil {
-		log.Printf("Cannot fetch logs for control plane components: %v", err)
+		return fmt.Errorf("cannot fetch logs for control plane components: %v", err)
 	}
 	if err := fetchInfraLogs(logPath); err != nil {
-		log.Printf("Cannot fetch logs for infra components: %v", err)
+		return fmt.Errorf("cannot fetch logs for infra components: %v", err)
 	}
+	return nil
 }
 
 // fetchControlPlaneLogs returns logs for Openshift control plane components.
@@ -185,8 +186,7 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 	case common.OpenShiftVersionUnstable:
 		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
 	default:
-		log.Printf("Invalid OpenShift version %q - won't gather logs from the control plane", version)
-		return nil
+		return fmt.Errorf("invalid OpenShift version %q - won't gather logs from the control plane", version)
 	}
 }
 

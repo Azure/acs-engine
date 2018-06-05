@@ -202,7 +202,9 @@ func teardown() {
 		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
 		version := eng.Config.OrchestratorVersion
 		distro := eng.Config.Distro
-		outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath)
+		if err := outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath); err != nil {
+			log.Printf("cannot get openshift logs: %v", err)
+		}
 		if err := outil.FetchClusterInfo(logsPath); err != nil {
 			log.Printf("cannot get pod and node info: %v", err)
 		}
