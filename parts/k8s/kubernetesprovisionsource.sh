@@ -73,7 +73,7 @@ apt_get_install() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
     for i in $(seq 1 $retries); do
         timeout 30 dpkg --configure -a
-        timeout $timeout apt-get install --no-install-recommends -y ${@}
+        timeout $timeout apt-get install --no-install-recommends -y Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-confdef" --force-yes ${@}
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
