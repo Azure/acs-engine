@@ -81,6 +81,13 @@ write_files:
     {{WrapAsVariable "customSearchDomainsScript"}}
 {{end}}
 
+- path: "/etc/default/ebtables"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "ebtablesSystemdConfig"}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
