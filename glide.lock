@@ -1,5 +1,5 @@
-hash: 4659d2f8a6e894bfb9ca56f902ef17223b2ec7192261f42012b7a0f29f0e4034
-updated: 2018-06-01T11:12:57.015012-07:00
+hash: 6939371253d190cea1f85a42ff9803fac4246a4a0548a219180c80808361de7f
+updated: 2018-06-05T20:55:54.8158831Z
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -24,6 +24,8 @@ imports:
   - autorest/date
   - autorest/to
   - autorest/validation
+- name: github.com/blang/semver
+  version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
 - name: github.com/dgrijalva/jwt-go
   version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
 - name: github.com/ghodss/yaml
@@ -64,7 +66,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: 1a16a4ec61aad7c2172624e8899424eccb54fb89
+  version: 28c7164e3e3f29579ee8a50624e6e07d16f1b860
   subpackages:
   - client/v2
   - models
@@ -79,8 +81,6 @@ imports:
   version: dd1402a4d99de9ac2f396cd6fcb957bc2c695ec1
 - name: github.com/leonelquinteros/gotext
   version: 1fc8dec04d161fc0b4007e808a48620c537b6a6e
-- name: github.com/Masterminds/semver
-  version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
 - name: github.com/mattn/go-colorable
   version: 167de6bfdfba052fa6b2d3664c8f5272e23c9072
 - name: github.com/mattn/go-isatty
@@ -114,7 +114,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7ac6b01f7d376befdf752224be59eed5d21fab4b
+  version: 41673fd8f03bf7bab82cf50741d447064926bb84
   subpackages:
   - format
   - internal/assertion
@@ -204,7 +204,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: 670d4cfef0544295bc27a114dbac37980d83185a
 - name: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:
