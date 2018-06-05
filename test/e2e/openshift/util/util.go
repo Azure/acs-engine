@@ -352,7 +352,7 @@ func FetchOpenShiftMetrics(logPath string) error {
 }
 
 // FetchWaagentLogs returns stdout and stderr from waagent.
-func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) {
+func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) error {
 	sshAddress := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com", adminName, name, location)
 
 	paths := []string{
@@ -360,12 +360,15 @@ func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) {
 		"/var/lib/waagent/custom-script/download/0/stdout",
 	}
 
+	var errs []error
 	for _, path := range paths {
 		cmdToExec := fmt.Sprintf("sudo cat %s", path)
 		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		logPath := filepath.Join(logPath, fmt.Sprintf("waagent-%s", filepath.Base(path)))
 		if err := ioutil.WriteFile(logPath, out, 0644); err != nil {
-			log.Printf("Cannot write to path %s: %v", logPath, err)
+			errs = append(errs, fmt.Errorf("Cannot write to path %s: %v", logPath, err))
 		}
 	}
+
+	return kerrors.NewAggregate(errs)
 }
