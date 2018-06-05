@@ -127,11 +127,6 @@ Get-BootstrapScript($download_uri, $download_dir)
     Write-Log " get script "+ ($download_uri+"/"+$scriptfile) + "and put it "+ ($download_dir+"\"+$scriptfile)
 
     Invoke-WebRequest -Uri ($download_uri+"/"+$scriptfile) -OutFile ($download_dir+"\"+$scriptfile)
-   
-    $scriptfile = "packages.ps1"
-    Write-Log " get package file "+ ($download_uri+"/"+$scriptfile) + "and put it "+ ($download_dir+"\"+$scriptfile)
-    Invoke-WebRequest -Uri ($download_uri+"/"+$scriptfile) -OutFile ($download_dir+"\"+$scriptfile)
-
 }
 
 
