@@ -208,7 +208,9 @@ func teardown() {
 		if err := outil.FetchClusterInfo(logsPath); err != nil {
 			log.Printf("cannot get pod and node info: %v", err)
 		}
-		outil.FetchOpenShiftMetrics(logsPath)
+		if err := outil.FetchOpenShiftMetrics(logsPath); err != nil {
+			log.Printf("cannot fetch openshift metrics: %v", err)
+		}
 	}
 	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
 		log.Printf("cannot fetch the activity log: %v", err)
