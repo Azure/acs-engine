@@ -113,7 +113,7 @@ export KUBECONFIG=/etc/origin/master/admin.kubeconfig
 oc set env --local -f /etc/origin/node/disabled/apiserver.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/apiserver.yaml
 oc set env --local -f /etc/origin/node/disabled/controller.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/controller.yaml
 mv /etc/origin/node/disabled/etcd.yaml /etc/origin/node/pods/etcd.yaml
-rm /etc/origin/node/disabled/*
+rm -rf /etc/origin/node/disabled
 
 systemctl start ${SERVICE_TYPE}-node
 
