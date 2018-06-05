@@ -1,5 +1,5 @@
 hash: 4659d2f8a6e894bfb9ca56f902ef17223b2ec7192261f42012b7a0f29f0e4034
-updated: 2018-06-01T11:12:57.015012-07:00
+updated: 2018-06-05T01:45:09.229845Z
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -64,7 +64,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: 1a16a4ec61aad7c2172624e8899424eccb54fb89
+  version: d54a580bbad31c0c0ed8ada95bcd0edc90e5e6d1
   subpackages:
   - client/v2
   - models
@@ -204,7 +204,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: 670d4cfef0544295bc27a114dbac37980d83185a
 - name: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:
