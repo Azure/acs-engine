@@ -319,6 +319,13 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
+// CustomFile has source as the full absolute source path to a file and dest
+// is the full absolute desired destination path to put the file on a master node
+type CustomFile struct {
+	Source string `json:"source,omitempty"`
+	Dest   string `json:"dest,omitempty"`
+}
+
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
 	VMSize       string `json:"vmSize,omitempty"`
@@ -374,6 +381,7 @@ type MasterProfile struct {
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 
 	// subnet is internal
 	subnet string
