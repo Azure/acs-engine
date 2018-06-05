@@ -16,6 +16,7 @@
       "[variables('vnetID')]",
 {{end}}
 {{if eq .Role "infra"}}
+      "[variables('routerLBName')]",
       "[variables('routerNSGID')]"
 {{else}}
       "[variables('nsgID')]"
