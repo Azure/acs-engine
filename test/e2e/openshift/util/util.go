@@ -107,25 +107,27 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 }
 
 // DumpNodes dumps information about nodes.
-func DumpNodes() string {
+func DumpNodes() (string, error) {
 	cmd := exec.Command("oc", "get", "nodes", "-o", "wide")
 	printCmd(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to list nodes: %v", err)
+		log.Printf("Error trying to list nodes: %s", string(out))
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }
 
 // DumpPods dumps the pods from all namespaces.
-func DumpPods() string {
+func DumpPods() (string, error) {
 	cmd := exec.Command("oc", "get", "pods", "--all-namespaces", "-o", "wide")
 	printCmd(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to list pods from all namespaces: %v", err)
+		log.Printf("Error trying to list pods from all namespaces: %s", string(out))
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }
 
 // FetchLogs returns logs for the provided kind/name in namespace.
@@ -140,24 +142,26 @@ func FetchLogs(kind, namespace, name string) string {
 }
 
 // FetchClusterInfo returns node and pod information about the cluster.
-func FetchClusterInfo(logPath string) {
-	needsLog := map[string]string{
-		"node-info": DumpNodes(),
-		"pod-info":  DumpPods(),
+func FetchClusterInfo(logPath string) error {
+	needsLog := map[string]func() (string, error){
+		"node-info": DumpNodes,
+		"pod-info":  DumpPods,
 	}
 
 	var errs []error
-	for base, log := range needsLog {
-		path := filepath.Join(logPath, base)
-		err := ioutil.WriteFile(path, []byte(log), 0644)
+	for base, logFn := range needsLog {
+		logs, err := logFn()
 		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		path := filepath.Join(logPath, base)
+		if err := ioutil.WriteFile(path, []byte(logs), 0644); err != nil {
 			errs = append(errs, err)
 		}
 	}
 
-	if err := kerrors.NewAggregate(errs); err != nil {
-		log.Printf("Cannot fetch node and pod info: %v", err)
-	}
+	return kerrors.NewAggregate(errs)
 }
 
 // FetchOpenShiftLogs returns logs for all OpenShift components
