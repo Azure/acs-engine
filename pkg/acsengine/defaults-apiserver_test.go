@@ -298,7 +298,7 @@ func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
 	admissonControlKey := "--admission-control"
 	cs := createContainerService("testcluster", version, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{}
-	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig[admissonControlKey] = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages"
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig[admissonControlKey] = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,ExtendedResourceToleration"
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 

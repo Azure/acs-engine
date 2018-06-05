@@ -41,6 +41,9 @@
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
         {{template "k8s/kubernetesagentvars.t" .}}
+        {{if IsNVIDIADevicePluginEnabled }}
+          "registerWithGpuTaints": "nvidia.com/gpu=true:NoSchedule",
+        {{end}}
         {{if .IsStorageAccount}}
           {{if .HasDisks}}
             "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",

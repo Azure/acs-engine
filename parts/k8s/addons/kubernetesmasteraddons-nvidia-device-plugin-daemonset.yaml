@@ -21,6 +21,10 @@ spec:
       # This, along with the annotation above marks this pod as a critical add-on.
       - key: CriticalAddonsOnly
         operator: Exists
+      - key: nvidia.com/gpu
+        effect: NoSchedule
+        operator: Equal
+        value: "true"
       containers:
       - image: <kubernetesNVIDIADevicePluginSpec>
         name: nvidia-device-plugin-ctr
