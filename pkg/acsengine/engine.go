@@ -63,6 +63,12 @@ func GenerateClusterID(properties *api.Properties) string {
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
 func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
+	if properties == nil {
+		return "", fmt.Errorf("Properties nil in GenerateKubeConfig")
+	}
+	if properties.CertificateProfile == nil {
+		return "", fmt.Errorf("CertificateProfile property may not be nil in GenerateKubeConfig")
+	}
 	b, err := Asset(kubeConfigJSON)
 	if err != nil {
 		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeConfigJSON, err.Error())
@@ -70,7 +76,10 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig := string(b)
 	// variable replacement
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	if properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
+	if properties.OrchestratorProfile != nil &&
+		properties.OrchestratorProfile.KubernetesConfig != nil &&
+		properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
+		helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
 		if properties.MasterProfile.Count > 1 {
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
