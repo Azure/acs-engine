@@ -300,3 +300,47 @@ func fetchInfraLogs(logPath string) error {
 
 	return kerrors.NewAggregate(errs)
 }
+
+func FetchOpenShiftMetrics(logPath string) {
+	// api server metrics
+	cmd := exec.Command("oc", "get", "--raw", "https://localhost:8443/metrics")
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Cannot get api server metrics: %v", err)
+	} else {
+		path := filepath.Join(logPath, "api-server-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			log.Printf("Cannot write api server metrics: %v", err)
+		}
+	}
+
+	// controller manager metrics
+	cmd = exec.Command("oc", "get", "--raw", "https://localhost:8444/metrics")
+	printCmd(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Cannot get controller manager metrics: %v", err)
+	} else {
+		path := filepath.Join(logPath, "controller-manager-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			log.Printf("Cannot write controller manager metrics: %v", err)
+		}
+	}
+
+	// etcd metrics
+	cmd = exec.Command("oc", "get", "--raw", "https://localhost:2380/metrics")
+	printCmd(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Cannot get etcd metrics: %v", err)
+	} else {
+		path := filepath.Join(logPath, "etcd-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			log.Printf("Cannot write etcd metrics: %v", err)
+		}
+	}
+}
