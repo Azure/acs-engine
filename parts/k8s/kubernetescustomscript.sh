@@ -154,7 +154,7 @@ function installEtcd() {
 }
 
 function installDeps() {
-    apt_get_install 20 30 120 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 180 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
 }
 
 function installDocker() {
