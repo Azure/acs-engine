@@ -23,7 +23,6 @@ spec:
       containers:
         - name: azure-cnms
           image: <azureCNINetworkMonitorImage>
-          image: containernetworking/networkmonitor:v0.0.4
           securityContext:
             privileged: true
           env:

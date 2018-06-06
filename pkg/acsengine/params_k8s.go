@@ -221,6 +221,15 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][ContainerMonitoringAddonName])
 			}
 		}
+		azureCNINetworkmonitorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+		c = getAddonContainersIndexByName(azureCNINetworkmonitorAddon.Containers, AzureCNINetworkMonitoringAddonName)
+		if c > -1 {
+			if azureCNINetworkmonitorAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "AzureCNINetworkMonitorImageURL", azureCNINetworkmonitorAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "AzureCNINetworkMonitorImageURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIImageBase+KubeConfigs[k8sVersion][AzureCNINetworkMonitoringAddonName])
+			}
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))

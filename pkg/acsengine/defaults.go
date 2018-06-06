@@ -34,6 +34,7 @@ var (
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		ACIConnectorImageBase:            "microsoft/",
 		NVIDIAImageBase:                  "nvidia/",
+		AzureCNIImageBase:                "containernetworking/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsPackageSASURLBase:         "https://acs-mirror.azureedge.net/wink8s/",
