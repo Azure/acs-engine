@@ -12,7 +12,9 @@
       "[variables('vnetID')]"
 {{end}}
 {{else}}
-{{if not .IsCustomVNET}}
+{{if .IsCustomVNET}}
+      "[concat(variables('masterVMNamePrefix'), 'nic-0')]",
+{{else}}
       "[variables('vnetID')]",
 {{end}}
 {{if eq .Role "infra"}}
