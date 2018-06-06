@@ -73,6 +73,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled(),
 		},
 		{
+			"kubernetesmasteraddons-azure-npm-daemonset.yaml",
+			"azure-npm-daemonset.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPluginAzure,
+		},
+		{
 			"kubernetesmasteraddons-calico-daemonset.yaml",
 			"calico-daemonset.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCalico,

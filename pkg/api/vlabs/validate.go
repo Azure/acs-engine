@@ -38,6 +38,10 @@ var (
 			networkPolicy: "",
 		},
 		{
+			networkPlugin: "azure",
+			networkPolicy: "azure",
+		},
+		{
 			networkPlugin: "kubenet",
 			networkPolicy: "",
 		},
