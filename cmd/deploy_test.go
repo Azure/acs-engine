@@ -173,7 +173,7 @@ func TestValidate(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		err = c.dc.validate(r, c.args)
+		err = c.dc.validateArgs(r, c.args)
 		if err != nil && c.expectedErr != nil {
 			if err.Error() != c.expectedErr.Error() {
 				t.Fatalf("expected validate deploy command to return error %s, but instead got %s", c.expectedErr.Error(), err.Error())
@@ -447,7 +447,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
-	cs, _, err = validateApimodel(apiloader, cs, ver)
+	cs, _, err = deployCmd.validateApimodel()
 	if err != nil {
 		t.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}
@@ -465,7 +465,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	}
 }
 
-func TestDeployCmdMergeAPIModel(t *testing.T) {
+func testDeployCmdMergeAPIModel(t *testing.T) {
 	d := &deployCmd{}
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
 	err := d.mergeAPIModel()
@@ -498,16 +498,27 @@ func TestDeployCmdMergeAPIModel(t *testing.T) {
 	}
 }
 
-func TestDeployCmdMLoadAPIModel(t *testing.T) {
+func testDeployCmdMLoadAPIModel(t *testing.T) {
 	d := &deployCmd{}
 	r := &cobra.Command{}
+	f := r.Flags()
+
+	addAuthFlags(&d.authArgs, f)
+
+	fakeRawSubscriptionID := "6dc93fae-9a76-421f-bbe5-cc6460ea81cb"
+	fakeSubscriptionID, err := uuid.FromString(fakeRawSubscriptionID)
+	if err != nil {
+		t.Fatalf("Invalid SubscriptionId in Test: %s", err)
+	}
 
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
 	d.set = []string{"agentPoolProfiles[0].count=1"}
+	d.SubscriptionID = fakeSubscriptionID
+	d.rawSubscriptionID = fakeRawSubscriptionID
 
-	d.validate(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	d.validateArgs(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
 	d.mergeAPIModel()
-	err := d.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	err = d.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
 	if err != nil {
 		t.Fatalf("unexpected error loading api model: %s", err.Error())
 	}

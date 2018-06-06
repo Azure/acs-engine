@@ -73,7 +73,7 @@ func newDeployCmd() *cobra.Command {
 		Short: deployShortDescription,
 		Long:  deployLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := dc.validate(cmd, args); err != nil {
+			if err := dc.validateArgs(cmd, args); err != nil {
 				log.Fatalf(fmt.Sprintf("error validating deployCmd: %s", err.Error()))
 			}
 			if err := dc.mergeAPIModel(); err != nil {
@@ -81,6 +81,9 @@ func newDeployCmd() *cobra.Command {
 			}
 			if err := dc.loadAPIModel(cmd, args); err != nil {
 				log.Fatalln("failed to load apimodel: %s", err.Error())
+			}
+			if _, _, err := dc.validateApimodel(); err != nil {
+				log.Fatalln("Failed to validate the apimodel after populating values: %s", err.Error())
 			}
 			return dc.run()
 		},
@@ -103,7 +106,7 @@ func newDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
-func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
+func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 	var err error
 
 	dc.locale, err = i18n.LoadTranslations()
@@ -218,11 +221,6 @@ func (dc *deployCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
 
 	if err = autofillApimodel(dc); err != nil {
 		return err
-	}
-
-	_, _, err = validateApimodel(apiloader, dc.containerService, dc.apiVersion)
-	if err != nil {
-		return fmt.Errorf("Failed to validate the apimodel after populating values: %s", err)
 	}
 
 	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -350,9 +348,15 @@ func autofillApimodel(dc *deployCmd) error {
 	return nil
 }
 
-func validateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
+func (dc *deployCmd) validateApimodel() (*api.ContainerService, string, error) {
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := apiloader.SerializeContainerService(containerService, apiVersion)
+	rawVersionedAPIModel, err := apiloader.SerializeContainerService(dc.containerService, dc.apiVersion)
 	if err != nil {
 		return nil, "", err
 	}
