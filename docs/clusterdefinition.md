@@ -463,6 +463,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
 |osType|no|Specifies the agent pool's Operating System. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
 |distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `RHEL`: OpenShift; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|acceleratedNetworkingEnabled|no|Use [Azure Accelerated Networking](https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/) feature for agents (You must select a VM SKU that support Accelerated Networking)|
 
 ### linuxProfile
 

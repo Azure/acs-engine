@@ -1,5 +1,9 @@
     {
+{{if .IsAcceleratedNetworkingEnabled}}
+      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+{{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -28,6 +32,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.IsAcceleratedNetworkingEnabled}}",
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {

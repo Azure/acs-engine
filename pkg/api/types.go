@@ -424,23 +424,24 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                   string               `json:"name"`
-	Count                  int                  `json:"count"`
-	VMSize                 string               `json:"vmSize"`
-	OSDiskSizeGB           int                  `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix              string               `json:"dnsPrefix,omitempty"`
-	OSType                 OSType               `json:"osType,omitempty"`
-	Ports                  []int                `json:"ports,omitempty"`
-	AvailabilityProfile    string               `json:"availabilityProfile"`
-	ScaleSetPriority       string               `json:"scaleSetPriority,omitempty"`
-	ScaleSetEvictionPolicy string               `json:"scaleSetEvictionPolicy,omitempty"`
-	StorageProfile         string               `json:"storageProfile,omitempty"`
-	DiskSizesGB            []int                `json:"diskSizesGB,omitempty"`
-	VnetSubnetID           string               `json:"vnetSubnetID,omitempty"`
-	Subnet                 string               `json:"subnet"`
-	IPAddressCount         int                  `json:"ipAddressCount,omitempty"`
-	Distro                 Distro               `json:"distro,omitempty"`
-	Role                   AgentPoolProfileRole `json:"role,omitempty"`
+	Name                         string               `json:"name"`
+	Count                        int                  `json:"count"`
+	VMSize                       string               `json:"vmSize"`
+	OSDiskSizeGB                 int                  `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix                    string               `json:"dnsPrefix,omitempty"`
+	OSType                       OSType               `json:"osType,omitempty"`
+	Ports                        []int                `json:"ports,omitempty"`
+	AvailabilityProfile          string               `json:"availabilityProfile"`
+	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty"`
+	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty"`
+	StorageProfile               string               `json:"storageProfile,omitempty"`
+	DiskSizesGB                  []int                `json:"diskSizesGB,omitempty"`
+	VnetSubnetID                 string               `json:"vnetSubnetID,omitempty"`
+	Subnet                       string               `json:"subnet"`
+	IPAddressCount               int                  `json:"ipAddressCount,omitempty"`
+	Distro                       Distro               `json:"distro,omitempty"`
+	Role                         AgentPoolProfileRole `json:"role,omitempty"`
+	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	FQDN                  string            `json:"fqdn,omitempty"`
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
@@ -765,6 +766,11 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
+func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
+	return a.AcceleratedNetworkingEnabled
 }
 
 // HasSecrets returns true if the customer specified secrets to install
