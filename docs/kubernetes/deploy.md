@@ -71,6 +71,22 @@ Administrative note: By default, the directory where acs-engine stores cluster c
 
 **Note**: If the cluster is using an existing VNET please see the [Custom VNET](features.md#feat-custom-vnet) feature documentation for additional steps that must be completed after cluster provisioning.
 
+The deploy command lets you override any values under the properties tag (even in arrays) from the cluster definition file without having to update the file. You can use the `--set` flag to do that. For example:
+
+```bash
+acs-engine deploy --resource-group "your-resource-group" \
+  --location "westeurope" \
+  --subscription-id "your-subscription-id" \
+  --api-model "./apimodel.json" \
+  --set masterProfile.dnsPrefix="your-dns-prefix-override" \
+  --set agentPoolProfiles[0].name="your-agentpool-0-name-override" \
+  --set agentPoolProfiles[0].count=1 \
+  --set linuxProfile.ssh.publicKeys[0].keyData="ssh-rsa PUBLICKEY azureuser@linuxvm" \
+  --set servicePrincipalProfile.clientId="spn-client-id" \
+  --set servicePrincipalProfile.secret="spn-client-secret"
+```
+
+
 <a href="#the-long-way"></a>
 
 ## ACS Engine the Long Way
