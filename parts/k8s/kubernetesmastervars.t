@@ -278,7 +278,7 @@
 
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
-    "AzureCNINetworkMonitorImageURL": "[parameters('AzureCNINetworkMonitorImageURL')]"
+    "AzureCNINetworkMonitorImageURL": "[parameters('AzureCNINetworkMonitorImageURL')]",
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
