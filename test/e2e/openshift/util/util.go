@@ -131,18 +131,6 @@ func DumpPods() (string, error) {
 	return string(out), nil
 }
 
-// RunDiagnostics runs the openshift diagnostics command.
-func RunDiagnostics() (string, error) {
-	cmd := exec.Command("oc", "adm", "diagnostics")
-	printCmd(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error trying to run diagnostics: %s", string(out))
-		return "", err
-	}
-	return string(out), nil
-}
-
 // FetchLogs returns logs for the provided kind/name in namespace.
 func FetchLogs(kind, namespace, name string) string {
 	cmd := exec.Command("oc", "logs", fmt.Sprintf("%s/%s", kind, name), "-n", namespace)
@@ -154,15 +142,39 @@ func FetchLogs(kind, namespace, name string) string {
 	return string(out)
 }
 
+// FetchClusterInfo returns node and pod information about the cluster.
+func FetchClusterInfo(logPath string) error {
+	needsLog := map[string]func() (string, error){
+		"node-info": DumpNodes,
+		"pod-info":  DumpPods,
+	}
+
+	var errs []error
+	for base, logFn := range needsLog {
+		logs, err := logFn()
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		path := filepath.Join(logPath, base)
+		if err := ioutil.WriteFile(path, []byte(logs), 0644); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
 // FetchOpenShiftLogs returns logs for all OpenShift components
 // (control plane and infra).
-func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) {
+func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) error {
 	if err := fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath); err != nil {
-		log.Printf("Cannot fetch logs for control plane components: %v", err)
+		return fmt.Errorf("cannot fetch logs for control plane components: %v", err)
 	}
 	if err := fetchInfraLogs(logPath); err != nil {
-		log.Printf("Cannot fetch logs for infra components: %v", err)
+		return fmt.Errorf("cannot fetch logs for infra components: %v", err)
 	}
+	return nil
 }
 
 // fetchControlPlaneLogs returns logs for Openshift control plane components.
@@ -175,7 +187,7 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 	case common.OpenShiftVersionUnstable:
 		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
 	default:
-		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+		return fmt.Errorf("invalid OpenShift version %q - won't gather logs from the control plane", version)
 	}
 }
 
