@@ -562,12 +562,13 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 ### aadProfile
 
-`linuxProfile` provides [AAD integration](kubernetes.aad.md) configuration for the cluster, currently only available for Kubernetes orchestrator.
+`aadProfile` provides [Azure Active Directory integration](kubernetes.aad.md) configuration for the cluster, currently only available for Kubernetes orchestrator.
 
 |Name|Required|Description|
 |---|---|---|
 |clientAppID|yes|Describes the client AAD application ID|
 |serverAppID|yes|Describes the server AAD application ID|
+|adminGroupID|no|Describes the AAD Group Object ID that will be assigned the cluster-admin RBAC role|
 |tenantID|no|Describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription|
 ### extensionProfiles
 A cluster can have 0 - N extensions in extension profiles.  Extension profiles allow a user to easily add pre-packaged functionality into a cluster.  An example would be configuring a monitoring solution on your cluster.  You can think of extensions like a marketplace for acs clusters.
