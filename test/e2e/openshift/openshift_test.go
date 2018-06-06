@@ -139,7 +139,7 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 		Expect(util.WaitForDeploymentConfig("nginx-example", "default")).NotTo(HaveOccurred())
 		host, err := util.GetHost("nginx-example", "default")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(util.TestHost(host, 10, 200*time.Microsecond)).NotTo(HaveOccurred())
+		Expect(util.TestHost(host, 10, 200*time.Millisecond)).NotTo(HaveOccurred())
 	})
 
 	It("should have the openshift webconsole running", func() {
