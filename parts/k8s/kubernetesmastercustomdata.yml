@@ -281,7 +281,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if IsNVIDIADevicePluginEnabled}}
-    sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-gpu-device-plugin.yaml"
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}

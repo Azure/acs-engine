@@ -21,6 +21,15 @@ spec:
         k8s-app: nvidia-gpu-device-plugin
     spec:
       priorityClassName: system-node-critical
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: accelerator
+                operator: In
+                values:
+                - nvidia
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -44,4 +53,3 @@ spec:
             path: /var/lib/kubelet/device-plugins
       nodeSelector:
         beta.kubernetes.io/os: linux
-        accelerator: nvidia
