@@ -464,3 +464,51 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 		}
 	}
 }
+
+func TestDeployCmdMergeAPIModel(t *testing.T) {
+	d := &deployCmd{}
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	err := d.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with no --set flag defined: %s", err.Error())
+	}
+
+	d = &deployCmd{}
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	d.set = []string{"masterProfile.count=3,linuxProfile.adminUsername=testuser"}
+	err = d.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag: %s", err.Error())
+	}
+
+	d = &deployCmd{}
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	d.set = []string{"masterProfile.count=3", "linuxProfile.adminUsername=testuser"}
+	err = d.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with multiple --set flags: %s", err.Error())
+	}
+
+	d = &deployCmd{}
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	d.set = []string{"agentPoolProfiles[0].count=1"}
+	err = d.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())
+	}
+}
+
+func TestDeployCmdMLoadAPIModel(t *testing.T) {
+	d := &deployCmd{}
+	r := &cobra.Command{}
+
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	d.set = []string{"agentPoolProfiles[0].count=1"}
+
+	d.validate(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	d.mergeAPIModel()
+	err := d.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	if err != nil {
+		t.Fatalf("unexpected error loading api model: %s", err.Error())
+	}
+}
