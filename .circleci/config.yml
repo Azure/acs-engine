@@ -559,19 +559,31 @@ workflows:
           filters:
             branches:
               only: master
+      - k8s-1.10-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-windows-1.10-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-1.11-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-windows-1.11-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
       - openshift-3.9-rhel-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - swarm-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - swarmmode-e2e:
           requires:
             - test
           filters:
