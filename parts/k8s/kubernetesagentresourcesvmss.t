@@ -125,6 +125,11 @@
           "osDisk": {
             "createOption": "FromImage",
             "caching": "ReadWrite"
+            {{if UseAgentCustomImage .}}
+            ,"managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+            {{end}}
           {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
           {{end}}

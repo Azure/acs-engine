@@ -232,8 +232,13 @@
             {{end}}
           },
           "osDisk": {
-            "createOption": "FromImage"
-            ,"caching": "ReadWrite"
+            "createOption": "FromImage",
+            "caching": "ReadWrite"
+            {{if UseAgentCustomImage .}}
+            ,"managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+            {{end}}
           {{if .IsStorageAccount}}
             ,"name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]"
             ,"vhd": {

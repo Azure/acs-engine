@@ -787,7 +787,7 @@
        "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
-       "dependsOn": 
+       "dependsOn":
        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -820,7 +820,7 @@
            }
          ],
  {{else}}
-         "accessPolicies": 
+         "accessPolicies":
          [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -968,8 +968,13 @@
             {{end}}
           },
           "osDisk": {
-            "caching": "ReadWrite"
-            ,"createOption": "FromImage"
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+            {{if UseMasterCustomImage}}
+            ,"managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+            {{end}}
 {{if .MasterProfile.IsStorageAccount}}
             ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
