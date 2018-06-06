@@ -377,7 +377,7 @@ function ensureK8sControlPlane() {
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 100 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    retrycmd_if_failure 600 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
