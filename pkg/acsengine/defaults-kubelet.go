@@ -48,6 +48,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--event-qps":                       DefaultKubeletEventQPS,
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
+		"--image-pull-progress-deadline":    "30m",
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
