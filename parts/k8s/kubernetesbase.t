@@ -42,7 +42,9 @@
         "{{.Name}}Index": {{$index}},
         {{template "k8s/kubernetesagentvars.t" .}}
         {{if IsNSeriesSKU .}}
+          {{if IsNVIDIADevicePluginEnabled}}
           "registerWithGpuTaints": "nvidia.com/gpu=true:NoSchedule",
+          {{end}}
         {{end}}
         {{if .IsStorageAccount}}
           {{if .HasDisks}}

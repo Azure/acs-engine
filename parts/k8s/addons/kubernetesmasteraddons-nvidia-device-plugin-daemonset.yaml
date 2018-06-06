@@ -41,3 +41,4 @@ spec:
             path: /var/lib/kubelet/device-plugins
       nodeSelector:
         beta.kubernetes.io/os: linux
+        accelerator: nvidia

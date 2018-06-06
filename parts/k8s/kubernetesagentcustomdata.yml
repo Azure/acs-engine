@@ -34,14 +34,14 @@ write_files:
       "log-opts":  {
          "max-size": "50m",
          "max-file": "5"
-      }{{if IsNVIDIADevicePluginEnabled}}
+      }{{if IsNSeriesSKU .}}{{if IsNVIDIADevicePluginEnabled}}
       ,"default-runtime": "nvidia",
       "runtimes": {
          "nvidia": {
              "path": "/usr/bin/nvidia-container-runtime",
              "runtimeArgs": []
         }
-      }{{end}}
+      }{{end}}{{end}}
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"
@@ -138,8 +138,10 @@ write_files:
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 {{if IsNSeriesSKU .}}
+  {{if IsNVIDIADevicePluginEnabled}}
     KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithGpuTaints"}}
   {{end}}
+{{end}}
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 

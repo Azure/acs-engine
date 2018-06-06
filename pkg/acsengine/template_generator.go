@@ -198,6 +198,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
+			if isNSeriesSKU(profile) {
+				accelerator := "nvidia"
+				buf.WriteString(fmt.Sprintf(",accelerator=%s", accelerator))
+			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
