@@ -37,16 +37,26 @@ Clusters deployed with calico networkPolicy enabled prior to `0.17.0` had calico
 
 acs-engine releases starting with 0.17.0 now produce an addon manifest for calico in `/etc/kubernetes/addons/calico-daemonset.yaml` contaning calico 3.1.x, and an `updateStrategy` of `RollingUpdate`.
 
-To get up and running with the new version of calico, follow these steps:
+To get up and running with the new version of calico after upgrading a cluster with acs-engine `0.17.0` and up, follow these steps:
 
 1) Edit `/etc/kubernetes/addons/calico-daemonset.yaml` on a master node, replacing `calico/node:v3.1.1` with `calico/node:v2.6.10` and `calico/cni:v3.1.1` with `calico/cni:v2.0.6`. Run `kubectl apply -f /etc/kubernetes/addons/calico-daemonset.yaml`.
 
-   We're performing this step because calico does not support migrating its datastore from v2 to v3 when coming from releases prior to `2.6.5`. `2.6.10` is chosen as a migration stepping stone because it is the most recent 2.6.x patch available.
+   We're performing this step because calico does not support migrating its datastore from v1 to v3 when coming from releases prior to `2.6.5`. `2.6.10` is chosen as a migration stepping stone because it is the most recent 2.6.x patch available.
 
-2) Confirm that all the pods in the daemonset get rotated and come up healthy, reporting ready status in logs.
+2) Wait until all the pods in the daemonset get rotated and come up up-to-date, healthy and ready:
+
+    `YYYY-MM-DD HH:MM:SS.FFF [INFO][n] health.go 150: Overall health summary=&health.HealthReport{Live:true, Ready:true}`
 
 3) Edit `/etc/kubernetes/addons/calico-daemonset.yaml` on the master node again, replacing `calico/node:v2.6.10` with `calico/node:v3.1.1` and `calico/cni:v2.0.6` with `calico/cni:v3.1.1`. Run `kubectl apply -f /etc/kubernetes/addons/calico-daemonset.yaml`.
 
-    Propagate this updated manifest to any other master nodes in the cluster.
+    Propagate this updated manifest to all master nodes in the cluster.
 
-4) Confirm that all the pods in the daemonset get rotated and come up healthy after finishing tasks logged by migrate.go
+4) Confirm that all the pods in the daemonset get rotated and come up healthy after finishing tasks logged by migrate.go:
+
+    ```
+    YYYY-MM-DD HH:MM:SS.FFF [INFO][n] startup.go 1044: Running migration
+    YYYY-MM-DD HH:MM:SS.FFF [INFO][n] migrate.go 842: Querying current v1 snapshot and converting to v3
+    [xxx]
+    YYYY-MM-DD HH:MM:SS.FFF [INFO][n] migrate.go 851: continue by upgrading your calico/node versions to Calico v3.x
+    YYYY-MM-DD HH:MM:SS.FFF [INFO][n] startup.go 1048: Migration successful
+    ```
