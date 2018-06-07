@@ -2,15 +2,15 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    k8s-app: nvidia-gpu-device-plugin
+    k8s-app: nvidia-device-plugin
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
-  name: nvidia-gpu-device-plugin
+  name: nvidia-device-plugin
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      k8s-app: nvidia-gpu-device-plugin
+      k8s-app: nvidia-device-plugin
   updateStrategy:
     type: RollingUpdate
   template:
@@ -18,7 +18,7 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        k8s-app: nvidia-gpu-device-plugin
+        k8s-app: nvidia-device-plugin
     spec:
       priorityClassName: system-node-critical
       affinity:
