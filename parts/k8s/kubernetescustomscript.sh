@@ -155,7 +155,7 @@ function installEtcd() {
 
 function installDeps() {
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 180 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
 }
 
 function installDocker() {
