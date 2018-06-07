@@ -38,6 +38,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
 		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
+		"--kube-reserved":                   DefaultKubernetesKubeReservedThreshold,
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
