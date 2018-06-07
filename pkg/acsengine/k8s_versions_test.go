@@ -27,6 +27,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		DefaultTillerAddonName:       k8sComponentVersions["1.11"]["tiller"],
 		DefaultReschedulerAddonName:  k8sComponentVersions["1.11"]["rescheduler"],
 		DefaultACIConnectorAddonName: k8sComponentVersions["1.11"]["aci-connector"],
+		NVIDIADevicePluginAddonName:  k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
 		"nodestatusfreq":             k8sComponentVersions["1.11"]["nodestatusfreq"],
 		"nodegraceperiod":            k8sComponentVersions["1.11"]["nodegraceperiod"],
 		"podeviction":                k8sComponentVersions["1.11"]["podeviction"],
@@ -44,6 +45,49 @@ func TestGetK8sVersionComponents(t *testing.T) {
 	for k, v := range oneDotElevenDotZero {
 		if expected[k] != v {
 			t.Fatalf("getK8sVersionComponents() returned an unexpected map[string]string value for k8s 1.11.0-alpha.1: %s = %s", k, oneDotElevenDotZero[k])
+		}
+	}
+
+	oneDotTenDotZero := getK8sVersionComponents("1.10.0", nil)
+	if oneDotTenDotZero == nil {
+		t.Fatalf("getK8sVersionComponents() should not return nil for valid version")
+	}
+	expected = map[string]string{
+		"hyperkube":                   "hyperkube-amd64:v1.10.0",
+		"ccm":                         "cloud-controller-manager-amd64:v1.10.0",
+		"windowszip":                  "v1.10.0-1int.zip",
+		"dockerEngineVersion":         k8sComponentVersions["1.10"]["dockerEngine"],
+		DefaultDashboardAddonName:     k8sComponentVersions["1.10"]["dashboard"],
+		"exechealthz":                 k8sComponentVersions["1.10"]["exechealthz"],
+		"addonresizer":                k8sComponentVersions["1.10"]["addon-resizer"],
+		"heapster":                    k8sComponentVersions["1.10"]["heapster"],
+		DefaultMetricsServerAddonName: k8sComponentVersions["1.10"]["metrics-server"],
+		"dns":                             k8sComponentVersions["1.10"]["kube-dns"],
+		"addonmanager":                    k8sComponentVersions["1.10"]["addon-manager"],
+		"dnsmasq":                         k8sComponentVersions["1.10"]["dnsmasq"],
+		"pause":                           k8sComponentVersions["1.10"]["pause"],
+		DefaultTillerAddonName:            k8sComponentVersions["1.10"]["tiller"],
+		DefaultReschedulerAddonName:       k8sComponentVersions["1.10"]["rescheduler"],
+		DefaultACIConnectorAddonName:      k8sComponentVersions["1.10"]["aci-connector"],
+		NVIDIADevicePluginAddonName:       k8sComponentVersions["1.10"][NVIDIADevicePluginAddonName],
+		DefaultClusterAutoscalerAddonName: k8sComponentVersions["1.10"][DefaultClusterAutoscalerAddonName],
+		"nodestatusfreq":                  k8sComponentVersions["1.10"]["nodestatusfreq"],
+		"nodegraceperiod":                 k8sComponentVersions["1.10"]["nodegraceperiod"],
+		"podeviction":                     k8sComponentVersions["1.10"]["podeviction"],
+		"routeperiod":                     k8sComponentVersions["1.10"]["routeperiod"],
+		"backoffretries":                  k8sComponentVersions["1.10"]["backoffretries"],
+		"backoffjitter":                   k8sComponentVersions["1.10"]["backoffjitter"],
+		"backoffduration":                 k8sComponentVersions["1.10"]["backoffduration"],
+		"backoffexponent":                 k8sComponentVersions["1.10"]["backoffexponent"],
+		"ratelimitqps":                    k8sComponentVersions["1.10"]["ratelimitqps"],
+		"ratelimitbucket":                 k8sComponentVersions["1.10"]["ratelimitbucket"],
+		"gchighthreshold":                 k8sComponentVersions["1.10"]["gchighthreshold"],
+		"gclowthreshold":                  k8sComponentVersions["1.10"]["gclowthreshold"],
+	}
+
+	for k, v := range oneDotTenDotZero {
+		if expected[k] != v {
+			t.Fatalf("getK8sVersionComponents() returned an unexpected map[string]string value for k8s 1.10.0: %s = %s", k, oneDotTenDotZero[k])
 		}
 	}
 

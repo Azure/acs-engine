@@ -238,7 +238,7 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 	c := p.OrchestratorProfile.KubernetesConfig
 	c.Addons = []KubernetesAddon{
 		{
-			Name:    DefaultNVIDIADevicePluginAddonName,
+			Name:    NVIDIADevicePluginAddonName,
 			Enabled: &b,
 		},
 	}

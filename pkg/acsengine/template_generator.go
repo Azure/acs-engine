@@ -749,8 +749,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
-				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
-				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, DefaultNVIDIADevicePluginAddonName)
+				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
+				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -956,7 +956,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = nvidiaDevicePluginAddon.Containers[nC].Image
 						}
 					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName]
+						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {
