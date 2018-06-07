@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/rjtsdl/conform"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -47,6 +48,19 @@ func JSONMarshal(content interface{}, escape bool) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// CloneAndConform doesn't change the content, it makes copy of content, and conform fields
+func CloneAndConform(src, dst interface{}) error {
+	jsonBytes, err := json.Marshal(src)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(jsonBytes, dst)
+	if err != nil {
+		return err
+	}
+	return conform.Strings(dst)
 }
 
 // IsTrueBoolPointer is a simple boolean helper function for boolean pointers
