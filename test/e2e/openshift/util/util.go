@@ -86,7 +86,7 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 		log.Printf("error while trying to access %s: %v", host, err)
 	}
 	for retries := 1; retries <= maxRetries; retries++ {
-		log.Printf("%v: Retry #%d to access %s", time.Now(), retries, host)
+		log.Printf("Retry #%d to access %s", retries, host)
 		resp, err = http.Get(url)
 		if err != nil {
 			log.Printf("error while trying to access %s: %v", host, err)
