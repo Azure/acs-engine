@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
@@ -856,15 +857,12 @@ func (p *Properties) HasAadProfile() bool {
 
 // GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
 func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
-	ret := "etcd3"
 	if o.KubernetesConfig != nil {
 		// if we are here, version has already been validated..
-		etcdversion, _ := semver.Make(o.KubernetesConfig.EtcdVersion)
-		if etcdversion.Major == 2 {
-			return "etcd2"
-		}
+		etcdVersion, _ := semver.Make(o.KubernetesConfig.EtcdVersion)
+		return "etcd" + strconv.FormatUint(etcdVersion.Major, 10)
 	}
-	return ret
+	return ""
 }
 
 // IsMetricsServerEnabled checks if the metrics server addon is enabled

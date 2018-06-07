@@ -148,18 +148,19 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				if err != nil {
 					return err
 				}
-				minVersion := "1.7.0"
-				cons, _ := semver.Make(minVersion)
+				minVersion, err := semver.Make("1.7.0")
+				if err != nil {
+					return fmt.Errorf("could not validate version")
+				}
+				sv, err := semver.Make(version)
+				if err != nil {
+					return fmt.Errorf("could not validate version %s", version)
+				}
 
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					sv, err := semver.Make(version)
-					if err != nil {
-						return fmt.Errorf("could not validate version %s", version)
-					}
-
-					if sv.LT(cons) {
+					if sv.LT(minVersion) {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							minVersion, version)
+							minVersion.String(), version)
 					}
 
 					if o.KubernetesConfig.EnableRbac != nil {
@@ -170,14 +171,9 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				}
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-					sv, err := semver.Make(version)
-					if err != nil {
-						return fmt.Errorf("could not validate version %s", version)
-					}
-
-					if sv.LT(cons) {
+					if sv.LT(minVersion) {
 						return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							minVersion, o.OrchestratorVersion)
+							minVersion.String(), o.OrchestratorVersion)
 					}
 					if o.KubernetesConfig.EtcdEncryptionKey != "" {
 						_, err = base64.URLEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
@@ -188,12 +184,13 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 				}
 
 				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
-					sv, _ := semver.Make(version)
-					minVersion := "1.10.0"
-					cons, _ := semver.Make(minVersion)
-					if sv.LT(cons) {
+					minVersion, err := semver.Make("1.10.0")
+					if err != nil {
+						return fmt.Errorf("could not validate version")
+					}
+					if sv.LT(minVersion) {
 						return fmt.Errorf("enableEncryptionWithExternalKms is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							minVersion, o.OrchestratorVersion)
+							minVersion.String(), o.OrchestratorVersion)
 					}
 				}
 
@@ -201,16 +198,13 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
 					}
-					sv, err := semver.Make(version)
+					minVersion, err := semver.Make("1.8.0")
 					if err != nil {
-						return fmt.Errorf("could not validate version %s", version)
+						return fmt.Errorf("could not validate version")
 					}
-					minVersion := "1.8.0"
-					cons, _ := semver.Make(minVersion)
-
-					if sv.LT(cons) {
+					if sv.LT(minVersion) {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-							minVersion, version)
+							minVersion.String(), version)
 					}
 				}
 			}
@@ -595,23 +589,25 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if err != nil {
 				return fmt.Errorf("could not validate version %s", version)
 			}
-			minVersion := "1.10.0"
-			cons, _ := semver.Make(minVersion)
-
-			if sv.LT(cons) {
-				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
+			minVersion, err := semver.Make("1.10.0")
+			if err != nil {
+				return fmt.Errorf("could not validate version")
+			}
+			if sv.LT(minVersion) {
+				return fmt.Errorf("VirtualMachineScaleSets are only available in Kubernetes version %s or greater. Please set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 			}
 			// validation for instanceMetadata using VMSS with Kubernetes
-			minVersion = "1.10.2"
-			cons, _ = semver.Make(minVersion)
-
+			minVersion, err = semver.Make("1.10.2")
+			if err != nil {
+				return fmt.Errorf("could not validate version")
+			}
 			if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata != nil {
-				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && sv.LT(cons) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
+				if *a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata && sv.LT(minVersion) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 				}
 			} else {
-				if sv.LT(cons) {
-					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion, minVersion)
+				if sv.LT(minVersion) {
+					return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 				}
 			}
 		}
@@ -1002,9 +998,11 @@ func (a *Properties) validateAddons() error {
 				if err != nil {
 					return fmt.Errorf("could not validate version %s", version)
 				}
-				minVersion := "1.10.0"
-				cons, _ := semver.Make(minVersion)
-				if isNSeriesSKU && sv.LT(cons) {
+				minVersion, err := semver.Make("1.10.0")
+				if err != nil {
+					return fmt.Errorf("could not validate version")
+				}
+				if isNSeriesSKU && sv.LT(minVersion) {
 					return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
 				}
 			}
