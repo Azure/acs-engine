@@ -205,7 +205,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 		}
 		containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
-		c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, ContainerMonitoringAddonName)
+		c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, "omsagent")
 		if c > -1 {
 			addValue(parametersMap, "omsAgentVersion", containerMonitoringAddon.Config["omsAgentVersion"])
 			addValue(parametersMap, "omsAgentDockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
