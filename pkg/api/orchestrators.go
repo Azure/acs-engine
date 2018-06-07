@@ -2,12 +2,13 @@ package api
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 )
 
 type orchestratorsFunc func(*OrchestratorProfile) ([]*OrchestratorVersionProfile, error)
@@ -181,12 +182,12 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
 
-	currentVer, err := semver.NewVersion(csOrch.OrchestratorVersion)
+	currentVer, err := semver.Make(csOrch.OrchestratorVersion)
 	if err != nil {
 		return nil, err
 	}
-	nextNextMinorVersion := currentVer.IncMinor().IncMinor()
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorVersion.String(), false, true)
+	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0"
+	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
 	for _, ver := range upgradeableVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
