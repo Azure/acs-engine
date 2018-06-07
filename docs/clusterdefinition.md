@@ -180,6 +180,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--pod-max-pids"|"100" (need to activate the feature in --feature-gates=SupportPodPidsLimit=true)|
+|"--image-pull-progress-deadline"|"30m"|
 |"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option for k8s versions before 1.11.0|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
