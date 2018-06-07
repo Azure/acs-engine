@@ -56,6 +56,10 @@ func (ku *Upgrader) RunUpgrade() error {
 		return err
 	}
 
+	if err := ku.upgradeAgentScaleSets(); err != nil {
+		return err
+	}
+
 	return ku.upgradeAgentPools()
 }
 
@@ -370,6 +374,81 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			upgradedCount++
 		}
 	}
+
+	return nil
+}
+
+func (ku *Upgrader) upgradeAgentScaleSets() error {
+	for _, vmssToUpgrade := range ku.ClusterTopology.ScaleSets {
+		ku.logger.Infof("Upgrading VMSS %s", vmssToUpgrade.Name)
+
+		if len(vmssToUpgrade.VMsToUpgrade) == 0 {
+			ku.logger.Infof("No VMs to upgrade for VMSS %s, skipping", vmssToUpgrade.Name)
+			continue
+		}
+
+		newCapacity := *vmssToUpgrade.Sku.Capacity + 1
+		ku.logger.Infof(
+			"VMSS %s current capacity is %d and new capacity will be %d while each node is swapped",
+			vmssToUpgrade.Name,
+			*vmssToUpgrade.Sku.Capacity,
+			newCapacity,
+		)
+
+		*vmssToUpgrade.Sku.Capacity = newCapacity
+
+		for _, vmToUpgrade := range vmssToUpgrade.VMsToUpgrade {
+			success, failure := ku.Client.SetVirtualMachineScaleSetCapacity(
+				ku.ClusterTopology.ResourceGroup,
+				vmssToUpgrade.Name,
+				vmssToUpgrade.Sku,
+				vmssToUpgrade.Location,
+				make(chan struct{}),
+			)
+
+			select {
+			case <-success:
+				ku.logger.Infof("Successfully set capacity for VMSS %s", vmssToUpgrade.Name)
+			case err := <-failure:
+				ku.logger.Errorf("Failure to set capacity for VMSS %s", vmssToUpgrade.Name)
+				return err
+			}
+
+			ku.logger.Infof(
+				"Deleting VM %s in VMSS %s",
+				vmToUpgrade,
+				vmssToUpgrade.Name,
+			)
+
+			// At this point we have our buffer node that will replace the node to delete
+			// so we can just remove this current node then
+			res, failure := ku.Client.DeleteVirtualMachineScaleSetVM(
+				ku.ClusterTopology.ResourceGroup,
+				vmssToUpgrade.Name,
+				vmToUpgrade,
+				make(chan struct{}),
+			)
+
+			select {
+			case <-res:
+				ku.logger.Infof(
+					"Successfully deleted VM %s in VMSS %s",
+					vmToUpgrade,
+					vmssToUpgrade.Name,
+				)
+			case err := <-failure:
+				ku.logger.Errorf(
+					"Failed to delete VM %s in VMSS %s",
+					vmToUpgrade,
+					vmssToUpgrade,
+				)
+				return err
+			}
+		}
+		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade)
+	}
+
+	ku.logger.Infoln("Completed upgrading all VMSS")
 
 	return nil
 }
