@@ -94,6 +94,11 @@ spec:
       labels:
         k8s-app: kubernetes-dashboard
     spec:
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       - args:
         - --auto-generate-certificates
