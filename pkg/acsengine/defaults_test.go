@@ -527,39 +527,20 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 		name                string                  // test case name
 		orchestratorProfile api.OrchestratorProfile // orchestrator to be tested
 		expectedDistro      api.Distro              // expected result default disto to be used
-		result              bool                    // test result expectation for false positives (false - fail, true - success)
 	}{
-		{
-			"rhel_openshift",
-			api.OrchestratorProfile{
-				OrchestratorType: api.OpenShift,
-			},
-			api.OpenShiftLatestRHEL,
-			true,
-		},
 		{
 			"ubuntu_kubernetes",
 			api.OrchestratorProfile{
 				OrchestratorType: api.Kubernetes,
 			},
 			api.Ubuntu,
-			true,
 		},
 		{
-			"ubuntu_kubernetes_fail",
+			"rhel_openshift",
 			api.OrchestratorProfile{
 				OrchestratorType: api.OpenShift,
 			},
-			api.Ubuntu,
-			false,
-		},
-		{
-			"ubuntu_openshift_fail",
-			api.OrchestratorProfile{
-				OrchestratorType: api.Kubernetes,
-			},
-			api.OpenShiftLatestRHEL,
-			false,
+			"",
 		},
 	}
 
@@ -568,12 +549,11 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 		mockAPI.OrchestratorProfile = &test.orchestratorProfile
 		setMasterNetworkDefaults(&mockAPI, false)
 		setAgentNetworkDefaults(&mockAPI)
-
-		if test.result == !reflect.DeepEqual(mockAPI.MasterProfile.Distro, test.expectedDistro) {
+		if mockAPI.MasterProfile.Distro != test.expectedDistro {
 			t.Fatalf("setMasterNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, mockAPI.MasterProfile.Distro, test.expectedDistro)
 		}
 		for _, agent := range mockAPI.AgentPoolProfiles {
-			if test.result == !reflect.DeepEqual(agent.Distro, test.expectedDistro) {
+			if agent.Distro != test.expectedDistro {
 				t.Fatalf("setAgentNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, agent.Distro, test.expectedDistro)
 			}
 		}
@@ -610,17 +590,8 @@ func getMockAPIProperties(orchestratorVersion string) api.Properties {
 		OrchestratorProfile: &api.OrchestratorProfile{
 			OrchestratorVersion: orchestratorVersion,
 			KubernetesConfig:    &api.KubernetesConfig{},
-			OpenShiftConfig:     &api.OpenShiftConfig{},
-			DcosConfig:          &api.DcosConfig{},
 		},
-		MasterProfile: &api.MasterProfile{
-			Count:        1,
-			DNSPrefix:    "apps.example.com",
-			VMSize:       "Standard_D4s_v3",
-			OSDiskSizeGB: 0,
-			Distro:       "",
-			ImageRef:     &api.ImageReference{},
-		},
+		MasterProfile: &api.MasterProfile{},
 		AgentPoolProfiles: []*api.AgentPoolProfile{
 			{},
 		}}

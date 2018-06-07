@@ -642,14 +642,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	if a.MasterProfile == nil {
 		return
 	}
-	o := a.OrchestratorProfile
-	// set default Distro based on orchestrator
-	switch o.OrchestratorType {
-	case api.OpenShift:
-		if a.MasterProfile.Distro == "" {
-			a.MasterProfile.Distro = api.OpenShiftLatestRHEL
-		}
-	default:
+	// don't default Distro for OpenShift
+	if !a.OrchestratorProfile.IsOpenShift() {
 		// Set default Distro to Ubuntu
 		if a.MasterProfile.Distro == "" {
 			a.MasterProfile.Distro = api.Ubuntu
@@ -739,20 +733,14 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	o := a.OrchestratorProfile
 	for _, profile := range a.AgentPoolProfiles {
 		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
 		}
 
-		// set default Distro based on orchestrator
-		switch o.OrchestratorType {
-		case api.OpenShift:
-			if profile.Distro == "" {
-				profile.Distro = api.OpenShiftLatestRHEL
-			}
-		default:
+		// don't default Distro for OpenShift
+		if !a.OrchestratorProfile.IsOpenShift() {
 			// Set default Distro to Ubuntu
 			if profile.Distro == "" {
 				profile.Distro = api.Ubuntu
