@@ -211,6 +211,10 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "omsAgentDockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
 			addValue(parametersMap, "omsAgentWorkspaceGuid", containerMonitoringAddon.Config["workspaceGuid"])
 			addValue(parametersMap, "omsAgentWorkspaceKey", containerMonitoringAddon.Config["workspaceKey"])
+			addValue(parametersMap, "kubernetesOMSAgentCPURequests", containerMonitoringAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesOMSAgentCPULimit", containerMonitoringAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesOMSAgentMemoryRequests", containerMonitoringAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesOMSAgentMemoryLimit", containerMonitoringAddon.Containers[c].MemoryLimits)
 			if containerMonitoringAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "omsAgentImage", containerMonitoringAddon.Containers[c].Image)
 			} else {

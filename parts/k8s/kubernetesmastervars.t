@@ -157,6 +157,10 @@
     "omsAgentImage": "[parameters('omsAgentImage')]",
     "omsAgentWorkspaceGuid": "[parameters('omsAgentWorkspaceGuid')]",
     "omsAgentWorkspaceKey": "[parameters('omsAgentWorkspaceKey')]",
+    "kubernetesOMSAgentCPURequests": "[parameters('kubernetesOMSAgentCPURequests')]",
+    "kubernetesOMSAgentMemoryRequests": "[parameters('kubernetesOMSAgentMemoryRequests')]",
+    "kubernetesOMSAgentCPULimit": "[parameters('kubernetesOMSAgentCPULimit')]",
+    "kubernetesOMSAgentMemoryLimit": "[parameters('kubernetesOMSAgentMemoryLimit')]",
 {{if EnableDataEncryptionAtRest}}
     "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
 {{end}}

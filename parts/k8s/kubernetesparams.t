@@ -736,6 +736,34 @@
       },
       "type": "string"
     },
+    "kubernetesOMSAgentCPURequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryRequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentCPULimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU limit resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryLimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory limit resource limit"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {

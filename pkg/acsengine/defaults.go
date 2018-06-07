@@ -326,8 +326,12 @@ var (
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
-				Name:  "omsagent",
-				Image: "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
+				Name:           "omsagent",
+				Image:          "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
 			},
 		},
 	}
