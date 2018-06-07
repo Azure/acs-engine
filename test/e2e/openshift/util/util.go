@@ -194,7 +194,8 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 func fetch39ControlPlaneLogs(distro, sshKeyPath, sshAddress, logPath string) error {
 	var errs []error
 	for _, service := range getSystemdServices(distro) {
-		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		path := filepath.Join(logPath, service)
 		if err := ioutil.WriteFile(path, out, 0644); err != nil {
 			errs = append(errs, err)
@@ -217,12 +218,11 @@ func getSystemdServices(distro string) []string {
 	return services
 }
 
-func fetchSystemdServiceLog(sshKeyPath, sshAddress, service string) []byte {
-	cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+func remoteExec(sshKeyPath, sshAddress, cmdToExec string) []byte {
 	cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", sshAddress, cmdToExec)
 	out, err := cmd.Output()
 	if err != nil {
-		log.Printf("Cannot fetch logs for systemd service %q: %v", service, err)
+		log.Printf("Cannot execute remote command %q: %v", cmdToExec, err)
 	}
 	return out
 }
@@ -259,7 +259,8 @@ func fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath
 		if service != "atomic-openshift-node" && service != "origin-node" {
 			continue
 		}
-		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		path := filepath.Join(logPath, service)
 		if err := ioutil.WriteFile(path, out, 0644); err != nil {
 			errs = append(errs, err)
@@ -344,6 +345,28 @@ func FetchOpenShiftMetrics(logPath string) error {
 		err := ioutil.WriteFile(path, []byte(out), 0644)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("cannot write etcd metrics: %v", err))
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+// FetchWaagentLogs returns stdout and stderr from waagent.
+func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) error {
+	sshAddress := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com", adminName, name, location)
+
+	paths := []string{
+		"/var/lib/waagent/custom-script/download/0/stderr",
+		"/var/lib/waagent/custom-script/download/0/stdout",
+	}
+
+	var errs []error
+	for _, path := range paths {
+		cmdToExec := fmt.Sprintf("sudo cat %s", path)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
+		logPath := filepath.Join(logPath, fmt.Sprintf("waagent-%s", filepath.Base(path)))
+		if err := ioutil.WriteFile(logPath, out, 0644); err != nil {
+			errs = append(errs, fmt.Errorf("Cannot write to path %s: %v", logPath, err))
 		}
 	}
 

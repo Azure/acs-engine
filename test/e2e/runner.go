@@ -202,6 +202,9 @@ func teardown() {
 		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
 		version := eng.Config.OrchestratorVersion
 		distro := eng.Config.Distro
+		if err := outil.FetchWaagentLogs(sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath); err != nil {
+			log.Printf("cannot fetch waagent logs: %v", err)
+		}
 		if err := outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath); err != nil {
 			log.Printf("cannot get openshift logs: %v", err)
 		}
