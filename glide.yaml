@@ -63,6 +63,8 @@ import:
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/Jeffail/gabs
   version: 1.0
+- package: github.com/rjtsdl/conform
+  version: 1.2.1
 testImport:
 # glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
@@ -75,5 +77,3 @@ testImport:
 - package: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/influxdata/influxdb/client/v2
-- package: github.com/rjtsdl/conform
-  version: 1.2.1
