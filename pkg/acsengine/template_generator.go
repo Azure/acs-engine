@@ -15,7 +15,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Masterminds/semver"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -174,17 +173,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.IsKubernetes() && common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"IsKubernetesVersionLt": func(version string) bool {
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint("<" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
-		},
-		"IsKubernetesVersionTilde": func(version string) bool {
-			// examples include
-			// ~2.3 is equivalent to >= 2.3, < 2.4
-			// ~1.2.x is equivalent to >= 1.2.0, < 1.3.0
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint("~" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
+			return cs.Properties.OrchestratorProfile.IsKubernetes() && !common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"GetMasterKubernetesLabels": func(rg string) string {
 			var buf bytes.Buffer

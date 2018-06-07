@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 )
 
 const (
@@ -482,11 +482,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sSemVer, _ := semver.NewVersion(k8sVersion)
-		constraint, _ := semver.NewConstraint(">= 1.6.6")
+		k8sSemVer, _ := semver.Make(k8sVersion)
+		minVersion, _ := semver.Make("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if o.KubernetesConfig.CloudProviderRateLimit && constraint.Check(k8sSemVer) {
+		if o.KubernetesConfig.CloudProviderRateLimit && k8sSemVer.GTE(minVersion) {
 			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
@@ -594,9 +594,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
-		dcosSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
-		dcosBootstrapSemVer, _ := semver.NewVersion(common.DCOSVersion1Dot11Dot0)
-		if !dcosSemVer.LessThan(dcosBootstrapSemVer) {
+		dcosSemVer, _ := semver.Make(o.OrchestratorVersion)
+		dcosBootstrapSemVer, _ := semver.Make(common.DCOSVersion1Dot11Dot0)
+		if !dcosSemVer.LT(dcosBootstrapSemVer) {
 			if o.DcosConfig.BootstrapProfile == nil {
 				o.DcosConfig.BootstrapProfile = &api.BootstrapProfile{}
 			}
