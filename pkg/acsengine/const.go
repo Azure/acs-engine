@@ -71,7 +71,7 @@ const (
 	// DefaultKubernetesHardEvictionThreshold is the default --eviction-hard kubelet configuration, see https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesHardEvictionThreshold = "memory.available<5%,nodefs.available<10%,nodefs.inodesFree<5%"
 	// DefaultKubernetesKubeReservedThreshold is the default --kube-reserved kubelet configuration, see https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#general-guidelines
-	DefaultKubernetesKubeReservedThreshold = "memory=[15% of node memory],cpu=1,ephemeral-storage=1Gi"
+	DefaultKubernetesKubeReservedThreshold = "cpu=1,ephemeral-storage=1Gi"
 	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
 	DefaultKubernetesCtrlMgrNodeMonitorGracePeriod = "40s"
 	// DefaultKubernetesCtrlMgrPodEvictionTimeout is 5m0s, see --pod-eviction-timeout at https://kubernetes.io/docs/admin/kube-controller-manager/

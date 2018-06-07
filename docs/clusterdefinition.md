@@ -174,7 +174,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--pod-infra-container-image"|"pause-amd64:*version*"|
 |"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPlugin": "kubenet"`)|
 |"--eviction-hard"|"memory.available<5%,nodefs.available<10%,nodefs.inodesFree<5%"|
-|"--kube-reserved"|"memory=[15% of node memory],cpu=1,ephemeral-storage=1Gi"|
+|"--kube-reserved"|"cpu=1,ephemeral-storage=1Gi"|
 |"--node-status-update-frequency"|"10s"|
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
