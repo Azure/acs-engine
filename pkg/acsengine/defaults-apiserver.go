@@ -43,13 +43,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--audit-log-maxsize":   "100",
 	}
 
-	// Data Encryption at REST configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-		staticAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
-	}
-
-	// Data Encryption at REST with external KMS configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+	// Data Encryption at REST configuration conditions
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) || helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
 		staticAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
