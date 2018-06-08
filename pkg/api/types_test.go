@@ -248,6 +248,48 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 	}
 }
 
+func TestIsContainerMonitoringEnabled(t *testing.T) {
+	v := "1.9.0"
+	o := OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+		},
+	}
+	enabled := o.IsContainerMonitoringEnabled()
+	if enabled != DefaultContainerMonitoringAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", DefaultContainerMonitoringAddonEnabled, v, enabled)
+	}
+
+	b := true
+	cm := getMockAddon(ContainerMonitoringAddonName)
+	cm.Enabled = &b
+	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, cm)
+	enabled = o.IsContainerMonitoringEnabled()
+	if enabled != true {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", true, v, enabled)
+	}
+
+	b = false
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			{
+				Name:    ContainerMonitoringAddonName,
+				Enabled: &b,
+			},
+		},
+		},
+	}
+	enabled = o.IsContainerMonitoringEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return false when a custom container monitoring addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestIsDashboardEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{

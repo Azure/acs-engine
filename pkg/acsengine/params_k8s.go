@@ -204,6 +204,23 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName])
 			}
 		}
+		containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
+		c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, "omsagent")
+		if c > -1 {
+			addValue(parametersMap, "omsAgentVersion", containerMonitoringAddon.Config["omsAgentVersion"])
+			addValue(parametersMap, "omsAgentDockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
+			addValue(parametersMap, "omsAgentWorkspaceGuid", containerMonitoringAddon.Config["workspaceGuid"])
+			addValue(parametersMap, "omsAgentWorkspaceKey", containerMonitoringAddon.Config["workspaceKey"])
+			addValue(parametersMap, "kubernetesOMSAgentCPURequests", containerMonitoringAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesOMSAgentCPULimit", containerMonitoringAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesOMSAgentMemoryRequests", containerMonitoringAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesOMSAgentMemoryLimit", containerMonitoringAddon.Containers[c].MemoryLimits)
+			if containerMonitoringAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "omsAgentImage", containerMonitoringAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][ContainerMonitoringAddonName])
+			}
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))

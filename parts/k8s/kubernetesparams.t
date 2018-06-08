@@ -701,6 +701,69 @@
       },
       "type": "int"
     },
+    "omsAgentVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentDockerProviderVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentImage": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceGuid": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceKey": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace key"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentCPURequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryRequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentCPULimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU limit resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryLimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory limit resource limit"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
