@@ -216,6 +216,26 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
+		"GetKubeletConfigKeyValsPsh": func(kc *api.KubernetesConfig) string {
+			if kc == nil {
+				return ""
+			}
+			kubeletConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+			if kc.KubeletConfig != nil {
+				kubeletConfig = kc.KubeletConfig
+			}
+			// Order by key for consistency
+			keys := []string{}
+			for key := range kubeletConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, kubeletConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
+		},
 		"GetK8sRuntimeConfigKeyVals": func(config map[string]string) string {
 			// Order by key for consistency
 			keys := []string{}
