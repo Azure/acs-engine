@@ -445,7 +445,7 @@ func isCustomVNET(a []*api.AgentPoolProfile) bool {
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "390.30"
+	dv := "396.26"
 	dest := "/usr/local/nvidia"
 	nvidiaDockerVersion := "2.0.3"
 	dockerVersion := "1.13.1-1"
