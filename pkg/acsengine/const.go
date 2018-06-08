@@ -69,7 +69,7 @@ const (
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
 	// DefaultKubernetesHardEvictionThreshold is the default --eviction-hard kubelet configuration, see https://kubernetes.io/docs/admin/kubelet/
-	DefaultKubernetesHardEvictionThreshold = "memory.available<5%,nodefs.available<10%,nodefs.inodesFree<5%"
+	DefaultKubernetesHardEvictionThreshold = "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"
 	// DefaultKubernetesKubeReservedThreshold is the default --kube-reserved kubelet configuration, see https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#general-guidelines
 	DefaultKubernetesKubeReservedThreshold = "cpu=1,ephemeral-storage=1Gi"
 	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
