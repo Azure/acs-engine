@@ -321,8 +321,6 @@ var (
 		Config: map[string]string{
 			"omsAgentVersion":       "1.6.0-42",
 			"dockerProviderVersion": "2.0.0-2",
-			"workspaceGuid":         "c5905df1-b3b9-42b9-acf0-14a4c4ef028c",
-			"workspaceKey":          "b4xMPEns/5Oo61hQbRLJQoPhbmAHdBn2eDjkCbRzgEISiKi9m1CR+093sczO9E8iA5w1EyGVCVkwsnuWt1MD9w==",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
