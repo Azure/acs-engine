@@ -18,8 +18,10 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/networkpolicy"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/persistentvolumeclaims"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/storageclass"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -635,8 +637,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("with a windows agent pool", func() {
-		// TODO stabilize this test
-		/*It("should be able to deploy an iis webserver", func() {
+		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
@@ -672,10 +673,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
-		})*/
+		})
 
-		// TODO stabilize this test
-		/*It("should be able to reach hostport in an iis webserver", func() {
+		It("should be able to reach hostport in an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				hostport := 8123
@@ -706,12 +706,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
-		})*/
+		})
 
-		// TODO stabilize this test
-		/*It("should be able to attach azure file", func() {
+		It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion ,"1.8") {
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())
@@ -745,6 +744,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
-		})*/
+		})
 	})
 })
