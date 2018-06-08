@@ -200,23 +200,23 @@ func TestMerge_AAD(t *testing.T) {
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret == "" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppID != "1a34-5" {
-		t.Error("ServerAppID should not be empty")
+		t.Error("ServerAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret != "ba34-5" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ClientAppID != "1234-5" {
-		t.Error("ClientAppID should not be empty")
+		t.Error("ClientAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.TenantID != "c234-5" {
-		t.Error("TenantID should not be empty")
+		t.Error("TenantID did not have the expected value after merge")
 	}
 
 	// Nil AAD profile was passed during update but DM had AAD Profile
@@ -250,23 +250,23 @@ func TestMerge_AAD(t *testing.T) {
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret == "" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppID != "1a34-5" {
-		t.Error("ServerAppID should not be empty")
+		t.Error("ServerAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret != "ba34-5" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ClientAppID != "1234-5" {
-		t.Error("ClientAppID should not be empty")
+		t.Error("ClientAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.TenantID != "c234-5" {
-		t.Error("TenantID should not be empty")
+		t.Error("TenantID did not have the expected value after merge")
 	}
 
 	// No AAD profile set
@@ -330,19 +330,19 @@ func TestMerge_AAD(t *testing.T) {
 	}
 
 	if newMC.Properties.AADProfile.ServerAppID != "1a34-5" {
-		t.Error("ServerAppID should not be empty")
+		t.Error("ServerAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret != "ba34-5" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ClientAppID != "1234-5" {
-		t.Error("ClientAppID should not be empty")
+		t.Error("ClientAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.TenantID != "c234-5" {
-		t.Error("TenantID should not be empty")
+		t.Error("TenantID did not have the expected value after merge")
 	}
 
 	// Full AAD profile was passed during update
@@ -381,22 +381,22 @@ func TestMerge_AAD(t *testing.T) {
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret == "" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppID != "1a34-5" {
-		t.Error("ServerAppID should not be empty")
+		t.Error("ServerAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ServerAppSecret != "ba34-5" {
-		t.Error("ServerAppSecret should not be empty")
+		t.Error("ServerAppSecret did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.ClientAppID != "1234-5" {
-		t.Error("ClientAppID should not be empty")
+		t.Error("ClientAppID did not have the expected value after merge")
 	}
 
 	if newMC.Properties.AADProfile.TenantID != "c234-5" {
-		t.Error("TenantID should not be empty")
+		t.Error("TenantID did not have the expected value after merge")
 	}
 }
