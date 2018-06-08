@@ -2,6 +2,8 @@ package v20180331
 
 import (
 	"fmt"
+
+	"github.com/imdario/mergo"
 )
 
 // Merge existing ManagedCluster attribute into mc
@@ -37,9 +39,15 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 		// For update scenario, the default behavior is to use existing behavior
 		mc.Properties.NetworkProfile = emc.Properties.NetworkProfile
 	}
-	if mc.Properties.AADProfile == nil {
-		// For update scenario, the default behavior is to use existing behavior
-		mc.Properties.AADProfile = emc.Properties.AADProfile
+
+	if emc.Properties.AADProfile != nil {
+		if mc.Properties.AADProfile == nil {
+			mc.Properties.AADProfile = &AADProfile{}
+		}
+		if err := mergo.Merge(mc.Properties.AADProfile,
+			*emc.Properties.AADProfile); err != nil {
+			return err
+		}
 	}
 	return nil
 }
