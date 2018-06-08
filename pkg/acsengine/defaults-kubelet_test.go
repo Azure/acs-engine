@@ -12,7 +12,10 @@ func TestKubeletConfigDefaults(t *testing.T) {
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	// TODO test all default config values
-	for key, val := range map[string]string{"--azure-container-registry-config": "/etc/kubernetes/azure.json"} {
+	for key, val := range map[string]string{
+		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
+		"--image-pull-progress-deadline":    "30m",
+	} {
 		if k[key] != val {
 			t.Fatalf("got unexpected kubelet config value for %s: %s, expected %s",
 				key, k[key], val)
