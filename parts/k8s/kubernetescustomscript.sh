@@ -475,6 +475,8 @@ configAddons() {
 
 testOutboundConnection
 
+waitForCloudInit
+
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
@@ -483,8 +485,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
 
 fi
-
-waitForCloudInit
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
