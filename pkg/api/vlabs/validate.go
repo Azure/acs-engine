@@ -1157,7 +1157,7 @@ func validateEtcdVersion(etcdVersion string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, etcdValidVersions)
+	return fmt.Errorf("Invalid etcd version \"%s\", please use one of the following versions: %s", etcdVersion, etcdValidVersions)
 }
 
 func (i *ImageReference) validateImageNameAndGroup() error {
