@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 )
@@ -379,7 +380,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 }
 
 func (ku *Upgrader) upgradeAgentScaleSets() error {
-	for _, vmssToUpgrade := range ku.ClusterTopology.ScaleSets {
+	for _, vmssToUpgrade := range ku.ClusterTopology.AgentPoolScaleSetsToUpgrade {
 		ku.logger.Infof("Upgrading VMSS %s", vmssToUpgrade.Name)
 
 		if len(vmssToUpgrade.VMsToUpgrade) == 0 {
@@ -416,16 +417,46 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 
 			ku.logger.Infof(
 				"Deleting VM %s in VMSS %s",
-				vmToUpgrade,
+				vmToUpgrade.Name,
 				vmssToUpgrade.Name,
 			)
+
+			// Before we can delete the node we should safely and responsibly drain it
+			var kubeAPIServerURL string
+			getClientTimeout := 10 * time.Second
+
+			if ku.DataModel.Properties.HostedMasterProfile != nil {
+				kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+			} else {
+				kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+			}
+			client, err := ku.Client.GetKubernetesClient(
+				kubeAPIServerURL,
+				ku.kubeConfig,
+				interval,
+				getClientTimeout,
+			)
+			if err != nil {
+				ku.logger.Errorf("Error getting Kubernetes client: %v", err)
+				return err
+			}
+			err = operations.SafelyDrainNodeWithClient(
+				client,
+				ku.logger,
+				vmToUpgrade.Name,
+				time.Minute,
+			)
+			if err != nil {
+				ku.logger.Errorf("Error draining VM in VMSS: %v", err)
+				return err
+			}
 
 			// At this point we have our buffer node that will replace the node to delete
 			// so we can just remove this current node then
 			res, failure := ku.Client.DeleteVirtualMachineScaleSetVM(
 				ku.ClusterTopology.ResourceGroup,
 				vmssToUpgrade.Name,
-				vmToUpgrade,
+				vmToUpgrade.InstanceID,
 				make(chan struct{}),
 			)
 

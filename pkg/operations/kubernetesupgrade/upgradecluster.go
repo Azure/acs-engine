@@ -27,18 +27,24 @@ type ClusterTopology struct {
 	AgentPoolsToUpgrade map[string]bool
 	AgentPools          map[string]*AgentPoolTopology
 
-	ScaleSets []ScaleSetToUpgrade
+	AgentPoolScaleSetsToUpgrade []AgentPoolScaleSet
 
 	MasterVMs         *[]compute.VirtualMachine
 	UpgradedMasterVMs *[]compute.VirtualMachine
 }
 
-// ScaleSetToUpgrade contains necessary data required to upgrade a VMSS
-type ScaleSetToUpgrade struct {
+// AgentPoolScaleSet contains necessary data required to upgrade a VMSS
+type AgentPoolScaleSet struct {
 	Name         string
 	Sku          compute.Sku
 	Location     string
-	VMsToUpgrade []string
+	VMsToUpgrade []AgentPoolScaleSetVM
+}
+
+// AgentPoolScaleSetVM represents a VM in a VMSS
+type AgentPoolScaleSetVM struct {
+	Name       string
+	InstanceID string
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -156,7 +162,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		if err != nil {
 			return err
 		}
-		scaleSetToUpgrade := ScaleSetToUpgrade{
+		scaleSetToUpgrade := AgentPoolScaleSet{
 			Name:     *vmScaleSet.Name,
 			Sku:      *vmScaleSet.Sku,
 			Location: *vmScaleSet.Location,
@@ -179,11 +185,14 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 				)
 				scaleSetToUpgrade.VMsToUpgrade = append(
 					scaleSetToUpgrade.VMsToUpgrade,
-					*vm.InstanceID,
+					AgentPoolScaleSetVM{
+						Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
+						InstanceID: *vm.InstanceID,
+					},
 				)
 			}
 		}
-		uc.ScaleSets = append(uc.ScaleSets, scaleSetToUpgrade)
+		uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
 	}
 
 	for _, vm := range *vmListResult.Value {
