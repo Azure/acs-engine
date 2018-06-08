@@ -8,7 +8,6 @@ import (
 	"encoding"
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -18,8 +17,6 @@ import (
 
 // ErrInvalidSpecification indicates that a specification is of the wrong type.
 var ErrInvalidSpecification = errors.New("specification must be a struct pointer")
-
-var gatherRegexp = regexp.MustCompile("([^A-Z]+|[A-Z][^A-Z]+|[A-Z]+)")
 
 // A ParseError occurs when an environment variable cannot be converted to
 // the type required by a struct field during assignment.
@@ -58,6 +55,7 @@ type varInfo struct {
 
 // GatherInfo gathers information about the specified struct
 func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
+	expr := regexp.MustCompile("([^A-Z]+|[A-Z][^A-Z]+|[A-Z]+)")
 	s := reflect.ValueOf(spec)
 
 	if s.Kind() != reflect.Ptr {
@@ -103,7 +101,7 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 
 		// Best effort to un-pick camel casing as separate words
 		if isTrue(ftype.Tag.Get("split_words")) {
-			words := gatherRegexp.FindAllStringSubmatch(ftype.Name, -1)
+			words := expr.FindAllStringSubmatch(ftype.Name, -1)
 			if len(words) > 0 {
 				var name []string
 				for _, words := range words {
@@ -124,7 +122,7 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 
 		if f.Kind() == reflect.Struct {
 			// honor Decode if present
-			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil && binaryUnmarshaler(f) == nil  {
+			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil {
 				innerPrefix := prefix
 				if !ftype.Anonymous {
 					innerPrefix = info.Key
@@ -142,37 +140,6 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 		}
 	}
 	return infos, nil
-}
-
-// CheckDisallowed checks that no environment variables with the prefix are set
-// that we don't know how or want to parse. This is likely only meaningful with
-// a non-empty prefix.
-func CheckDisallowed(prefix string, spec interface{}) error {
-	infos, err := gatherInfo(prefix, spec)
-	if err != nil {
-		return err
-	}
-
-	vars := make(map[string]struct{})
-	for _, info := range infos {
-		vars[info.Key] = struct{}{}
-	}
-
-	if prefix != "" {
-		prefix = strings.ToUpper(prefix) + "_"
-	}
-
-	for _, env := range os.Environ() {
-		if !strings.HasPrefix(env, prefix) {
-			continue
-		}
-		v := strings.SplitN(env, "=", 2)[0]
-		if _, found := vars[v]; !found {
-			return fmt.Errorf("unknown environment variable %s", v)
-		}
-	}
-
-	return nil
 }
 
 // Process populates the specified struct based on environment variables
@@ -203,7 +170,7 @@ func Process(prefix string, spec interface{}) error {
 			continue
 		}
 
-		err = processField(value, info.Field)
+		err := processField(value, info.Field)
 		if err != nil {
 			return &ParseError{
 				KeyName:   info.Key,
@@ -240,10 +207,6 @@ func processField(value string, field reflect.Value) error {
 
 	if t := textUnmarshaler(field); t != nil {
 		return t.UnmarshalText([]byte(value))
-	}
-
-	if b := binaryUnmarshaler(field); b != nil {
-		return b.UnmarshalBinary([]byte(value))
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -355,11 +318,6 @@ func setterFrom(field reflect.Value) (s Setter) {
 func textUnmarshaler(field reflect.Value) (t encoding.TextUnmarshaler) {
 	interfaceFrom(field, func(v interface{}, ok *bool) { t, *ok = v.(encoding.TextUnmarshaler) })
 	return t
-}
-
-func binaryUnmarshaler(field reflect.Value) (b encoding.BinaryUnmarshaler) {
-	interfaceFrom(field, func(v interface{}, ok *bool) { b, *ok = v.(encoding.BinaryUnmarshaler) })
-	return b
 }
 
 func isTrue(s string) bool {

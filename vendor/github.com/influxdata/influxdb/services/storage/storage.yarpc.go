@@ -164,7 +164,7 @@ func _Storage_Hints_Handler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 var _Storage_serviceDesc = yarpc.ServiceDesc{
-	ServiceName: "com.github.influxdata.influxdb.services.storage.Storage",
+	ServiceName: "storage.Storage",
 	Index:       0,
 	HandlerType: (*StorageServer)(nil),
 	Methods: []yarpc.MethodDesc{

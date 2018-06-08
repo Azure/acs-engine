@@ -49,7 +49,7 @@ VENDOR = "InfluxData"
 DESCRIPTION = "Distributed time-series database."
 
 prereqs = [ 'git', 'go' ]
-go_vet_command = "go vet ./..."
+go_vet_command = "go tool vet ./"
 optional_prereqs = [ 'fpm', 'rpmbuild', 'gpg' ]
 
 fpm_common_args = "-f -s dir --log error \
@@ -162,13 +162,13 @@ def go_get(branch, update=False, no_uncommitted=False):
     if local_changes() and no_uncommitted:
         logging.error("There are uncommitted changes in the current directory.")
         return False
-    if not check_path_for("dep"):
-        logging.info("Downloading `dep`...")
-        get_command = "go get github.com/golang/dep/cmd/dep"
+    if not check_path_for("gdm"):
+        logging.info("Downloading `gdm`...")
+        get_command = "go get github.com/sparrc/gdm"
         run(get_command)
-    logging.info("Retrieving dependencies with `dep`...")
+    logging.info("Retrieving dependencies with `gdm`...")
     sys.stdout.flush()
-    run("{}/bin/dep ensure -v -vendor-only".format(os.environ.get("GOPATH")))
+    run("{}/bin/gdm restore -v".format(os.environ.get("GOPATH")))
     return True
 
 def run_tests(race, parallel, timeout, no_vet, junit=False):

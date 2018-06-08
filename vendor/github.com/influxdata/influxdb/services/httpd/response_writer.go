@@ -28,15 +28,15 @@ func NewResponseWriter(w http.ResponseWriter, r *http.Request) ResponseWriter {
 	switch r.Header.Get("Accept") {
 	case "application/csv", "text/csv":
 		w.Header().Add("Content-Type", "text/csv")
-		rw.formatter = &csvFormatter{statementID: -1}
+		rw.formatter = &csvFormatter{statementID: -1, Writer: w}
 	case "application/x-msgpack":
 		w.Header().Add("Content-Type", "application/x-msgpack")
-		rw.formatter = &msgpackFormatter{}
+		rw.formatter = &msgpackFormatter{Writer: w}
 	case "application/json":
 		fallthrough
 	default:
 		w.Header().Add("Content-Type", "application/json")
-		rw.formatter = &jsonFormatter{Pretty: pretty}
+		rw.formatter = &jsonFormatter{Pretty: pretty, Writer: w}
 	}
 	return rw
 }
@@ -49,27 +49,14 @@ func WriteError(w ResponseWriter, err error) (int, error) {
 // responseWriter is an implementation of ResponseWriter.
 type responseWriter struct {
 	formatter interface {
-		WriteResponse(w io.Writer, resp Response) error
+		WriteResponse(resp Response) (int, error)
 	}
 	http.ResponseWriter
 }
 
-type bytesCountWriter struct {
-	w io.Writer
-	n int
-}
-
-func (w *bytesCountWriter) Write(data []byte) (int, error) {
-	n, err := w.w.Write(data)
-	w.n += n
-	return n, err
-}
-
 // WriteResponse writes the response using the formatter.
 func (w *responseWriter) WriteResponse(resp Response) (int, error) {
-	writer := bytesCountWriter{w: w.ResponseWriter}
-	err := w.formatter.WriteResponse(&writer, resp)
-	return writer.n, err
+	return w.formatter.WriteResponse(resp)
 }
 
 // Flush flushes the ResponseWriter if it has a Flush() method.
@@ -89,150 +76,140 @@ func (w *responseWriter) CloseNotify() <-chan bool {
 }
 
 type jsonFormatter struct {
+	io.Writer
 	Pretty bool
 }
 
-func (f *jsonFormatter) WriteResponse(w io.Writer, resp Response) (err error) {
+func (w *jsonFormatter) WriteResponse(resp Response) (n int, err error) {
 	var b []byte
-	if f.Pretty {
+	if w.Pretty {
 		b, err = json.MarshalIndent(resp, "", "    ")
 	} else {
 		b, err = json.Marshal(resp)
 	}
 
 	if err != nil {
-		_, err = io.WriteString(w, err.Error())
+		n, err = io.WriteString(w, err.Error())
 	} else {
-		_, err = w.Write(b)
+		n, err = w.Write(b)
 	}
 
 	w.Write([]byte("\n"))
-	return err
+	n++
+	return n, err
 }
 
 type csvFormatter struct {
+	io.Writer
 	statementID int
 	columns     []string
 }
 
-func (f *csvFormatter) WriteResponse(w io.Writer, resp Response) (err error) {
+func (w *csvFormatter) WriteResponse(resp Response) (n int, err error) {
 	csv := csv.NewWriter(w)
 	if resp.Err != nil {
 		csv.Write([]string{"error"})
 		csv.Write([]string{resp.Err.Error()})
 		csv.Flush()
-		return csv.Error()
+		return n, csv.Error()
 	}
 
 	for _, result := range resp.Results {
-		if result.StatementID != f.statementID {
+		if result.StatementID != w.statementID {
 			// If there are no series in the result, skip past this result.
 			if len(result.Series) == 0 {
 				continue
 			}
 
 			// Set the statement id and print out a newline if this is not the first statement.
-			if f.statementID >= 0 {
+			if w.statementID >= 0 {
 				// Flush the csv writer and write a newline.
 				csv.Flush()
 				if err := csv.Error(); err != nil {
-					return err
+					return n, err
 				}
 
-				if _, err := io.WriteString(w, "\n"); err != nil {
-					return err
+				out, err := io.WriteString(w, "\n")
+				if err != nil {
+					return n, err
 				}
+				n += out
 			}
-			f.statementID = result.StatementID
+			w.statementID = result.StatementID
 
 			// Print out the column headers from the first series.
-			f.columns = make([]string, 2+len(result.Series[0].Columns))
-			f.columns[0] = "name"
-			f.columns[1] = "tags"
-			copy(f.columns[2:], result.Series[0].Columns)
-			if err := csv.Write(f.columns); err != nil {
-				return err
+			w.columns = make([]string, 2+len(result.Series[0].Columns))
+			w.columns[0] = "name"
+			w.columns[1] = "tags"
+			copy(w.columns[2:], result.Series[0].Columns)
+			if err := csv.Write(w.columns); err != nil {
+				return n, err
 			}
 		}
 
-		for i, row := range result.Series {
-			if i > 0 && !stringsEqual(result.Series[i-1].Columns, row.Columns) {
-				// The columns have changed. Print a newline and reprint the header.
-				csv.Flush()
-				if err := csv.Error(); err != nil {
-					return err
-				}
-
-				if _, err := io.WriteString(w, "\n"); err != nil {
-					return err
-				}
-
-				f.columns = make([]string, 2+len(row.Columns))
-				f.columns[0] = "name"
-				f.columns[1] = "tags"
-				copy(f.columns[2:], row.Columns)
-				if err := csv.Write(f.columns); err != nil {
-					return err
-				}
-			}
-
-			f.columns[0] = row.Name
+		for _, row := range result.Series {
+			w.columns[0] = row.Name
 			if len(row.Tags) > 0 {
-				f.columns[1] = string(models.NewTags(row.Tags).HashKey()[1:])
+				w.columns[1] = string(models.NewTags(row.Tags).HashKey()[1:])
 			} else {
-				f.columns[1] = ""
+				w.columns[1] = ""
 			}
 			for _, values := range row.Values {
 				for i, value := range values {
 					if value == nil {
-						f.columns[i+2] = ""
+						w.columns[i+2] = ""
 						continue
 					}
 
 					switch v := value.(type) {
 					case float64:
-						f.columns[i+2] = strconv.FormatFloat(v, 'f', -1, 64)
+						w.columns[i+2] = strconv.FormatFloat(v, 'f', -1, 64)
 					case int64:
-						f.columns[i+2] = strconv.FormatInt(v, 10)
+						w.columns[i+2] = strconv.FormatInt(v, 10)
 					case uint64:
-						f.columns[i+2] = strconv.FormatUint(v, 10)
+						w.columns[i+2] = strconv.FormatUint(v, 10)
 					case string:
-						f.columns[i+2] = v
+						w.columns[i+2] = v
 					case bool:
 						if v {
-							f.columns[i+2] = "true"
+							w.columns[i+2] = "true"
 						} else {
-							f.columns[i+2] = "false"
+							w.columns[i+2] = "false"
 						}
 					case time.Time:
-						f.columns[i+2] = strconv.FormatInt(v.UnixNano(), 10)
+						w.columns[i+2] = strconv.FormatInt(v.UnixNano(), 10)
 					case *float64, *int64, *string, *bool:
-						f.columns[i+2] = ""
+						w.columns[i+2] = ""
 					}
 				}
-				csv.Write(f.columns)
+				csv.Write(w.columns)
 			}
 		}
 	}
 	csv.Flush()
-	return csv.Error()
+	if err := csv.Error(); err != nil {
+		return n, err
+	}
+	return n, nil
 }
 
-type msgpackFormatter struct{}
+type msgpackFormatter struct {
+	io.Writer
+}
 
 func (f *msgpackFormatter) ContentType() string {
 	return "application/x-msgpack"
 }
 
-func (f *msgpackFormatter) WriteResponse(w io.Writer, resp Response) (err error) {
-	enc := msgp.NewWriter(w)
+func (f *msgpackFormatter) WriteResponse(resp Response) (n int, err error) {
+	enc := msgp.NewWriter(f.Writer)
 	defer enc.Flush()
 
 	enc.WriteMapHeader(1)
 	if resp.Err != nil {
 		enc.WriteString("error")
-		enc.WriteString(resp.Err.Error())
-		return nil
+		enc.WriteString(err.Error())
+		return 0, nil
 	} else {
 		enc.WriteString("results")
 		enc.WriteArrayHeader(uint32(len(resp.Results)))
@@ -315,17 +292,5 @@ func (f *msgpackFormatter) WriteResponse(w io.Writer, resp Response) (err error)
 			}
 		}
 	}
-	return nil
-}
-
-func stringsEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
+	return 0, nil
 }

@@ -9,7 +9,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/services/meta"
@@ -82,7 +81,7 @@ func (nullMonitor) WritePoints(models.Points) error { return nil }
 // Service manages continuous query execution.
 type Service struct {
 	MetaClient    metaClient
-	QueryExecutor *query.Executor
+	QueryExecutor *query.QueryExecutor
 	Monitor       Monitor
 	Config        *Config
 	RunInterval   time.Duration
@@ -157,6 +156,11 @@ type Statistics struct {
 	QueryFail int64
 }
 
+type statistic struct {
+	ok   uint64
+	fail uint64
+}
+
 // Statistics returns statistics for periodic monitoring.
 func (s *Service) Statistics(tags map[string]string) []models.Statistic {
 	return []models.Statistic{{
@@ -214,14 +218,14 @@ func (s *Service) backgroundLoop() {
 	for {
 		select {
 		case <-s.stop:
-			s.Logger.Info("Terminating continuous query service")
+			s.Logger.Info("continuous query service terminating")
 			return
 		case req := <-s.RunCh:
 			if !s.hasContinuousQueries() {
 				continue
 			}
 			if _, err := s.MetaClient.AcquireLease(leaseName); err == nil {
-				s.Logger.Info("Running continuous queries by request", zap.Time("at", req.Now))
+				s.Logger.Info(fmt.Sprintf("running continuous queries by request for time: %v", req.Now))
 				s.runContinuousQueries(req)
 			}
 		case <-t.C:
@@ -262,7 +266,7 @@ func (s *Service) runContinuousQueries(req *RunRequest) {
 				continue
 			}
 			if ok, err := s.ExecuteContinuousQuery(&db, &cq, req.Now); err != nil {
-				s.Logger.Info("Error executing query", zap.String("query", cq.Query), zap.Error(err))
+				s.Logger.Info(fmt.Sprintf("error executing query: %s: err = %s", cq.Query, err))
 				atomic.AddInt64(&s.stats.QueryFail, 1)
 			} else if ok {
 				atomic.AddInt64(&s.stats.QueryOK, 1)
@@ -357,32 +361,23 @@ func (s *Service) ExecuteContinuousQuery(dbi *meta.DatabaseInfo, cqi *meta.Conti
 	}
 
 	if err := cq.q.SetTimeRange(startTime, endTime); err != nil {
-		return false, fmt.Errorf("unable to set time range: %s", err)
+		s.Logger.Info(fmt.Sprintf("error setting time range: %s", err))
+		return false, err
 	}
 
-	var (
-		start time.Time
-		log   = s.Logger
-	)
+	var start time.Time
 	if s.loggingEnabled || s.queryStatsEnabled {
 		start = time.Now()
 	}
 
 	if s.loggingEnabled {
-		var logEnd func()
-		log, logEnd = logger.NewOperation(s.Logger, "Continuous query execution", "continuous_querier_execute")
-		defer logEnd()
-
-		log.Info("Executing continuous query",
-			zap.String("name", cq.Info.Name),
-			logger.Database(cq.Database),
-			zap.Time("start", startTime),
-			zap.Time("end", endTime))
+		s.Logger.Info(fmt.Sprintf("executing continuous query %s (%v to %v)", cq.Info.Name, startTime, endTime))
 	}
 
 	// Do the actual processing of the query & writing of results.
 	res := s.runContinuousQueryAndWriteResult(cq)
 	if res.Err != nil {
+		s.Logger.Info(fmt.Sprintf("error: %s. running: %s", res.Err, cq.q.String()))
 		return false, res.Err
 	}
 
@@ -399,13 +394,7 @@ func (s *Service) ExecuteContinuousQuery(dbi *meta.DatabaseInfo, cqi *meta.Conti
 	}
 
 	if s.loggingEnabled {
-		log.Info("Finished continuous query",
-			zap.String("name", cq.Info.Name),
-			logger.Database(cq.Database),
-			zap.Int64("written", written),
-			zap.Time("start", startTime),
-			zap.Time("end", endTime),
-			logger.DurationLiteral("duration", execDuration))
+		s.Logger.Info(fmt.Sprintf("finished continuous query %s, %d points(s) written (%v to %v) in %s", cq.Info.Name, written, startTime, endTime, execDuration))
 	}
 
 	if s.queryStatsEnabled && s.Monitor.Enabled() {
@@ -420,7 +409,7 @@ func (s *Service) ExecuteContinuousQuery(dbi *meta.DatabaseInfo, cqi *meta.Conti
 
 // runContinuousQueryAndWriteResult will run the query against the cluster and write the results back in
 func (s *Service) runContinuousQueryAndWriteResult(cq *ContinuousQuery) *query.Result {
-	// Wrap the CQ's inner SELECT statement in a Query for the Executor.
+	// Wrap the CQ's inner SELECT statement in a Query for the QueryExecutor.
 	q := &influxql.Query{
 		Statements: influxql.Statements([]influxql.Statement{cq.q}),
 	}
