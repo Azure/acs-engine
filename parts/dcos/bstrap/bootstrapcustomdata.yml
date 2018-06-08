@@ -66,9 +66,10 @@ MASTER_IP_LIST
 - content: |
     #!/bin/bash
 
+    source /opt/azure/containers/provision_source.sh
     cd /opt/azure/dcos
-    curl -O {{{dcosBootstrapURL}}}
-
+    retrycmd_if_failure 10 10 120 curl -fsSL -o dcos_generate_config.sh.sha1sum {{{dcosBootstrapURL}}}.sha1sum
+    retry_download 1 1 120 {{{dcosBootstrapURL}}} dcos_generate_config.sh $(cat dcos_generate_config.sh.sha1sum)
     bash dcos_generate_config.sh
     docker run -d -p 8086:80 -v $PWD/genconf/serve:/usr/share/nginx/html:ro nginx
   owner: root
