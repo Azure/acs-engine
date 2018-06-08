@@ -52,7 +52,7 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != nil {
-		t.Errorf("Failed to validate VNET: %s", err)
+		t.Errorf("Failed to validate VNET: %s", err.Error())
 	}
 
 	// no network profile, this is prior v20180331 case, should pass
@@ -72,7 +72,7 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != nil {
-		t.Errorf("Failed to validate VNET: %s", err)
+		t.Errorf("Failed to validate VNET: %s", err.Error())
 	}
 
 	// network profile has only NetworkPlugin field, should pass
@@ -97,7 +97,7 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != nil {
-		t.Errorf("Failed to validate VNET: %s", err)
+		t.Errorf("Failed to validate VNET: %s", err.Error())
 	}
 
 	// network profile has NetworkPlugin and ServiceCidr field, should fail
@@ -123,7 +123,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidNetworkProfile {
-		t.Errorf("Failed to validate VNET: %s", ErrorInvalidNetworkProfile)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidNetworkProfile)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidNetworkProfile, err.Error())
 	}
 
 	// NetworkPlugin is not azure or kubenet
@@ -151,7 +154,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidNetworkPlugin {
-		t.Errorf("Failed to throw error, %s", ErrorInvalidNetworkPlugin)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidNetworkPlugin)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidNetworkPlugin, err.Error())
 	}
 
 	// NetworkPlugin = Azure, bad serviceCidr
@@ -179,7 +185,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidServiceCidr {
-		t.Errorf("Failed to throw error, %s", ErrorInvalidServiceCidr)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidServiceCidr)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidServiceCidr, err.Error())
 	}
 
 	// NetworkPlugin = Azure, serviceCidr too large
@@ -207,7 +216,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorServiceCidrTooLarge {
-		t.Errorf("Failed to throw error, %s", ErrorServiceCidrTooLarge)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorServiceCidrTooLarge)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorServiceCidrTooLarge, err.Error())
 	}
 
 	// NetworkPlugin = Azure, bad dNSServiceIP
@@ -235,7 +247,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidDNSServiceIP {
-		t.Errorf("Failed to throw error, %s", ErrorInvalidDNSServiceIP)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidDNSServiceIP)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidDNSServiceIP, err.Error())
 	}
 
 	// NetworkPlugin = Azure, bad dockerBridgeCidr
@@ -263,7 +278,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidDockerBridgeCidr {
-		t.Errorf("Failed to throw error, %s", ErrorInvalidDockerBridgeCidr)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidDockerBridgeCidr)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidDockerBridgeCidr, err.Error())
 	}
 
 	// NetworkPlugin = Azure, DNSServiceIP is not within ServiceCidr
@@ -291,7 +309,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorDNSServiceIPNotInServiceCidr {
-		t.Errorf("Failed to throw error, %s", ErrorDNSServiceIPNotInServiceCidr)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorDNSServiceIPNotInServiceCidr)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorDNSServiceIPNotInServiceCidr, err.Error())
 	}
 
 	// NetworkPlugin = Azure, DNSServiceIP is the first IP in ServiceCidr
@@ -319,7 +340,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorDNSServiceIPAlreadyUsed {
-		t.Errorf("Failed to throw error, %s", ErrorDNSServiceIPAlreadyUsed)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorDNSServiceIPAlreadyUsed)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorDNSServiceIPAlreadyUsed, err.Error())
 	}
 
 	// NetworkPlugin = Azure, at least one agent pool does not have subnet defined
@@ -346,7 +370,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorAtLeastAgentPoolNoSubnet {
-		t.Errorf("Failed to throw error, %s", ErrorAtLeastAgentPoolNoSubnet)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorAtLeastAgentPoolNoSubnet)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorAtLeastAgentPoolNoSubnet, err.Error())
 	}
 
 	// NetworkPlugin = Azure, max pods is less than 5
@@ -374,7 +401,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorInvalidMaxPods {
-		t.Errorf("Failed to throw error, %s", ErrorInvalidMaxPods)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorInvalidMaxPods)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidMaxPods, err.Error())
 	}
 
 	// NetworkPlugin = Azure, Failed to parse VnetSubnetID
@@ -402,7 +432,11 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorParsingSubnetID {
-		t.Errorf("Failed to validate VNET: %s", ErrorParsingSubnetID)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorParsingSubnetID)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorParsingSubnetID, err.Error())
+
 	}
 
 	// NetworkPlugin = Azure, Subscription not match
@@ -430,7 +464,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorSubscriptionNotMatch {
-		t.Errorf("Failed to validate VNET: %s", ErrorSubscriptionNotMatch)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorSubscriptionNotMatch)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorSubscriptionNotMatch, err.Error())
 	}
 
 	// NetworkPlugin = Azure, ResourceGroup not match
@@ -458,7 +495,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorResourceGroupNotMatch {
-		t.Errorf("Failed to validate VNET: %s", ErrorResourceGroupNotMatch)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorResourceGroupNotMatch)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorResourceGroupNotMatch, err.Error())
 	}
 
 	// NetworkPlugin = Azure, Vnet not match
@@ -486,7 +526,10 @@ func TestValidateVNET(t *testing.T) {
 	}
 
 	if err := validateVNET(a); err != ErrorVnetNotMatch {
-		t.Errorf("Failed to validate VNET: %s", ErrorVnetNotMatch)
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorVnetNotMatch)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorVnetNotMatch, err.Error())
 	}
 }
 
