@@ -35,7 +35,7 @@ Once the template has been successfully deployed, following the [simple policy t
 ### Update guidance for clusters deployed by acs-engine releases prior to 0.17.0
 Clusters deployed with calico networkPolicy enabled prior to `0.17.0` had calico `2.6.3` deployed, and a daemonset with an `updateStrategy` of `Ondelete`.
 
-acs-engine releases starting with 0.17.0 now produce an addon manifest for calico in `/etc/kubernetes/addons/calico-daemonset.yaml` contaning calico 3.1.x, and an `updateStrategy` of `RollingUpdate`.
+acs-engine releases starting with 0.17.0 now produce an addon manifest for calico in `/etc/kubernetes/addons/calico-daemonset.yaml` contaning calico 3.1.x, and an `updateStrategy` of `RollingUpdate`. Due to breaking changes introduced by calico 3, one must first migrate through calico `2.6.5` or a later 2.6.x release in order to migrate to calico 3.x. as described in the [calico kubernetes upgrade documentation](https://docs.projectcalico.org/v3.0/getting-started/kubernetes/upgrade/).
 
 To get up and running with the new version of calico after upgrading a cluster with acs-engine `0.17.0` and up, follow these steps:
 
@@ -60,3 +60,5 @@ To get up and running with the new version of calico after upgrading a cluster w
     YYYY-MM-DD HH:MM:SS.FFF [INFO][n] migrate.go 851: continue by upgrading your calico/node versions to Calico v3.x
     YYYY-MM-DD HH:MM:SS.FFF [INFO][n] startup.go 1048: Migration successful
     ```
+
+If you have any customized calico resource manifests, you must also follow the [conversion guide](https://docs.projectcalico.org/v3.0/getting-started/kubernetes/upgrade/convert) for these.
