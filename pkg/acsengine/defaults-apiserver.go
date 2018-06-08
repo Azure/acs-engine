@@ -36,13 +36,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--v":                          "4",
 	}
 
-	// Windows apiserver config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
-	staticWindowsAPIServerConfig := make(map[string]string)
-	for key, val := range staticLinuxAPIServerConfig {
-		staticWindowsAPIServerConfig[key] = val
-	}
-
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
 		"--audit-log-maxage":    "30",
@@ -50,13 +43,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--audit-log-maxsize":   "100",
 	}
 
-	// Data Encryption at REST configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
-	}
-
-	// Data Encryption at REST with external KMS configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+	// Data Encryption at REST or encryption with external KMS configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) || helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
@@ -118,6 +106,13 @@ func setAPIServerConfig(cs *api.ContainerService) {
 				o.KubernetesConfig.APIServerConfig[key] = val
 			}
 		}
+	}
+
+	// Windows apiserver config overrides
+	// TODO placeholder for specific config overrides for Windows clusters
+	staticWindowsAPIServerConfig := make(map[string]string)
+	for key, val := range staticLinuxAPIServerConfig {
+		staticWindowsAPIServerConfig[key] = val
 	}
 
 	// We don't support user-configurable values for the following,
