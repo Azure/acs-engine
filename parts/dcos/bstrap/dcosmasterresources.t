@@ -272,7 +272,10 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
+        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "orchestratorName": "dcos",
+        "orchestratorVersion": "[variables('orchestratorVersion')]",
+        "orchestratorNode": "master"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",

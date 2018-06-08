@@ -95,7 +95,10 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('bootstrapVMName'))]"
+        "creationSource": "[concat('acsengine-', variables('bootstrapVMName'))]",
+        "orchestratorName": "dcos",
+        "orchestratorVersion": "[variables('orchestratorVersion')]",
+        "orchestratorNode": "bootstrap"
       },
       "location": "[variables('location')]",
       "name": "[variables('bootstrapVMName')]",
