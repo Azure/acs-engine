@@ -15,20 +15,20 @@ If you have never written a bug report before, or if you want to brush up on you
 Test cases should be in the form of `curl` commands. For example:
 ```bash
 # create database
-curl -X POST http://localhost:8086/query --data-urlencode "q=CREATE DATABASE mydb"
+curl -G http://localhost:8086/query --data-urlencode "q=CREATE DATABASE mydb"
 
 # create retention policy
-curl -X POST http://localhost:8086/query --data-urlencode "q=CREATE RETENTION POLICY myrp ON mydb DURATION 365d REPLICATION 1 DEFAULT"
+curl -G http://localhost:8086/query --data-urlencode "q=CREATE RETENTION POLICY myrp ON mydb DURATION 365d REPLICATION 1 DEFAULT"
 
 # write data
-curl -X POST http://localhost:8086/write?db=mydb --data-binary "cpu,region=useast,host=server_1,service=redis value=61"
+curl -X POST http://localhost:8086/write --data-urlencode "db=mydb" --data-binary "cpu,region=useast,host=server_1,service=redis value=61"
 
 # Delete a Measurement
-curl -X POST http://localhost:8086/query  --data-urlencode 'db=mydb' --data-urlencode 'q=DROP MEASUREMENT cpu'
+curl -G http://localhost:8086/query  --data-urlencode 'db=mydb' --data-urlencode 'q=DROP MEASUREMENT cpu'
 
 # Query the Measurement
 # Bug: expected it to return no data, but data comes back.
-curl -X POST http://localhost:8086/query  --data-urlencode 'db=mydb' --data-urlencode 'q=SELECT * from cpu'
+curl -G http://localhost:8086/query  --data-urlencode 'db=mydb' --data-urlencode 'q=SELECT * from cpu'
 ```
 **If you don't include a clear test case like this, your issue may not be investigated, and may even be closed**. If writing the data is too difficult, please zip up your data directory and include a link to it in your bug report.
 
@@ -80,11 +80,11 @@ running the following:
     gvm install go1.9.2
     gvm use go1.9.2 --default
 
-Installing Dep
+Installing GDM
 -------------
-InfluxDB uses [dep](https://github.com/golang/dep) to manage dependencies.  Install it by running the following:
+InfluxDB uses [gdm](https://github.com/sparrc/gdm) to manage dependencies.  Install it by running the following:
 
-    go get github.com/golang/dep/cmd/dep
+    go get github.com/sparrc/gdm
 
 Revision Control Systems
 -------------
@@ -126,7 +126,7 @@ Make sure you have Go installed and the project structure as shown above. To the
 
 ```bash
 cd $GOPATH/src/github.com/influxdata/influxdb
-dep ensure
+gdm restore
 ```
 
 To then build and install the binaries, run the following command.
@@ -277,6 +277,4 @@ func BenchmarkSomething(b *testing.B) {
 
 Continuous Integration testing
 -----
-InfluxDB uses CircleCI for continuous integration testing. CircleCI executes [test.sh](https://github.com/influxdata/influxdb/blob/master/test.sh), so you may do the same on your local development environment before creating a pull request.
-
-The `test.sh` script executes a test suite with 5 variants (standard 64 bit, 64 bit with race detection, 32 bit, TSI, go version 1.9.2), each executes with a different arg, 0 through 4. Unless you know differently, `./test.sh 0` is probably all you need.
+InfluxDB uses CircleCI for continuous integration testing. To see how the code is built and tested, check out [this file](https://github.com/influxdata/influxdb/blob/master/circle-test.sh). It closely follows the build and test process outlined above. You can see the exact version of Go InfluxDB uses for testing by consulting that file.

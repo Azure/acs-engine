@@ -30,21 +30,21 @@ const (
 	// file. They follow the scheme <database>.<retention>.<shardID>.<increment>
 	BackupFilePattern = "%s.%s.%05d"
 
-	PortableFileNamePattern = "20060102T150405Z"
+	EnterpriseFileNamePattern = "20060102T150405Z"
 )
 
-type PortablePacker struct {
+type EnterprisePacker struct {
 	Data      []byte
 	MaxNodeID uint64
 }
 
-func (ep PortablePacker) MarshalBinary() ([]byte, error) {
-	ed := internal.PortableData{Data: ep.Data, MaxNodeID: &ep.MaxNodeID}
+func (ep EnterprisePacker) MarshalBinary() ([]byte, error) {
+	ed := internal.EnterpriseData{Data: ep.Data, MaxNodeID: &ep.MaxNodeID}
 	return proto.Marshal(&ed)
 }
 
-func (ep *PortablePacker) UnmarshalBinary(data []byte) error {
-	var pb internal.PortableData
+func (ep *EnterprisePacker) UnmarshalBinary(data []byte) error {
+	var pb internal.EnterpriseData
 	if err := proto.Unmarshal(data, &pb); err != nil {
 		return err
 	}

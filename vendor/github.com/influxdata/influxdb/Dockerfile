@@ -1,8 +1,8 @@
 FROM golang:1.9.2 as builder
-RUN go get -u github.com/golang/dep/...
+RUN go get -u github.com/sparrc/gdm
+COPY Godeps /go/src/github.com/influxdata/influxdb/Godeps
 WORKDIR /go/src/github.com/influxdata/influxdb
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -vendor-only
+RUN gdm restore
 COPY . /go/src/github.com/influxdata/influxdb
 RUN go install ./cmd/...
 

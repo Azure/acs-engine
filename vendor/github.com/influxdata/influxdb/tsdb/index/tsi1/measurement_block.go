@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"sort"
-	"unsafe"
 
 	"github.com/influxdata/influxdb/pkg/estimator"
 	"github.com/influxdata/influxdb/pkg/estimator/hll"
@@ -60,16 +59,6 @@ type MeasurementBlock struct {
 	sketch, tSketch estimator.Sketch
 
 	version int // block version
-}
-
-// bytes estimates the memory footprint of this MeasurementBlock, in bytes.
-func (blk *MeasurementBlock) bytes() int {
-	var b int
-	// Do not count contents of blk.data or blk.hashData because they reference into an external []byte
-	b += blk.sketch.Bytes()
-	b += blk.tSketch.Bytes()
-	b += int(unsafe.Sizeof(*blk))
-	return b
 }
 
 // Version returns the encoding version parsed from the data.
@@ -202,10 +191,7 @@ func (itr *rawSeriesIDIterator) Next() (tsdb.SeriesIDElem, error) {
 		return tsdb.SeriesIDElem{}, nil
 	}
 
-	delta, n, err := uvarint(itr.data)
-	if err != nil {
-		return tsdb.SeriesIDElem{}, err
-	}
+	delta, n := binary.Uvarint(itr.data)
 	itr.data = itr.data[n:]
 
 	seriesID := itr.prev + uint64(delta)
@@ -269,7 +255,7 @@ func ReadMeasurementBlockTrailer(data []byte) (MeasurementBlockTrailer, error) {
 
 	// Read tombstone measurement sketch info.
 	t.TSketch.Offset, buf = int64(binary.BigEndian.Uint64(buf[0:8])), buf[8:]
-	t.TSketch.Size = int64(binary.BigEndian.Uint64(buf[0:8]))
+	t.TSketch.Size, buf = int64(binary.BigEndian.Uint64(buf[0:8])), buf[8:]
 
 	return t, nil
 }
@@ -364,29 +350,16 @@ func (e *MeasurementBlockElem) HasSeries() bool { return e.series.n > 0 }
 // It requires loading the entire list of series in-memory.
 func (e *MeasurementBlockElem) SeriesIDs() []uint64 {
 	a := make([]uint64, 0, e.series.n)
-	e.ForEachSeriesID(func(id uint64) error {
-		a = append(a, id)
-		return nil
-	})
-	return a
-}
-
-func (e *MeasurementBlockElem) ForEachSeriesID(fn func(uint64) error) error {
 	var prev uint64
 	for data := e.series.data; len(data) > 0; {
-		delta, n, err := uvarint(data)
-		if err != nil {
-			return err
-		}
+		delta, n := binary.Uvarint(data)
 		data = data[n:]
 
 		seriesID := prev + uint64(delta)
-		if err = fn(seriesID); err != nil {
-			return err
-		}
+		a = append(a, seriesID)
 		prev = seriesID
 	}
-	return nil
+	return a
 }
 
 // Size returns the size of the element.
@@ -404,22 +377,13 @@ func (e *MeasurementBlockElem) UnmarshalBinary(data []byte) error {
 	e.tagBlock.size, data = int64(binary.BigEndian.Uint64(data)), data[8:]
 
 	// Parse name.
-	sz, n, err := uvarint(data)
-	if err != nil {
-		return err
-	}
+	sz, n := binary.Uvarint(data)
 	e.name, data = data[n:n+int(sz)], data[n+int(sz):]
 
 	// Parse series data.
-	v, n, err := uvarint(data)
-	if err != nil {
-		return err
-	}
+	v, n := binary.Uvarint(data)
 	e.series.n, data = uint64(v), data[n:]
-	sz, n, err = uvarint(data)
-	if err != nil {
-		return err
-	}
+	sz, n = binary.Uvarint(data)
 	data = data[n:]
 	e.series.data, data = data[:sz], data[sz:]
 
@@ -551,7 +515,11 @@ func (mw *MeasurementBlockWriter) WriteTo(w io.Writer) (n int64, err error) {
 	// Write trailer.
 	nn, err := t.WriteTo(w)
 	n += nn
-	return n, err
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
 }
 
 // writeMeasurementTo encodes a single measurement entry into w.
@@ -599,8 +567,11 @@ func (mw *MeasurementBlockWriter) writeMeasurementTo(w io.Writer, name []byte, m
 		return err
 	}
 	nn, err := mw.buf.WriteTo(w)
-	*n += nn
-	return err
+	if *n += nn; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // writeSketchTo writes an estimator.Sketch into w, updating the number of bytes

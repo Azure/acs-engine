@@ -929,6 +929,7 @@ func TestFmtNumber(t *testing.T) {
 		s := trans.FmtNumber(tt.num, tt.v)
 		if s != tt.expected {
 			t.Errorf("Expected '%s' Got '%s'", tt.expected, s)
+			t.Errorf("Expected and got bytes: ", []byte(s), []byte(tt.expected))
 		}
 	}
 }

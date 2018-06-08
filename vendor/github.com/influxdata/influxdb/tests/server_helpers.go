@@ -27,7 +27,6 @@ import (
 var verboseServerLogs bool
 var indexType string
 var cleanupData bool
-var seed int64
 
 // Server represents a test wrapper for run.Server.
 type Server interface {
@@ -107,7 +106,10 @@ func (s *RemoteServer) CreateDatabaseAndRetentionPolicy(db string, rp *meta.Rete
 	}
 
 	_, err := s.HTTPPost(s.URL()+"/query?q="+stmt, nil)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *RemoteServer) CreateSubscription(database, rp, name, mode string, destinations []string) error {
@@ -120,14 +122,20 @@ func (s *RemoteServer) CreateSubscription(database, rp, name, mode string, desti
 		name, database, rp, mode, strings.Join(dests, ","))
 
 	_, err := s.HTTPPost(s.URL()+"/query?q="+stmt, nil)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *RemoteServer) DropDatabase(db string) error {
 	stmt := fmt.Sprintf("DROP+DATABASE+%s", db)
 
 	_, err := s.HTTPPost(s.URL()+"/query?q="+stmt, nil)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Reset attempts to remove all database state by dropping everything
@@ -571,7 +579,11 @@ func RemoteEnabled() bool {
 }
 
 func expectPattern(exp, act string) bool {
-	return regexp.MustCompile(exp).MatchString(act)
+	re := regexp.MustCompile(exp)
+	if !re.MatchString(act) {
+		return false
+	}
+	return true
 }
 
 type Query struct {
