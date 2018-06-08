@@ -138,6 +138,8 @@ const (
 	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultNVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
 	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
+	ContainerMonitoringAddonName = "container-monitoring"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
