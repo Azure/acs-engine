@@ -154,7 +154,11 @@ function installEtcd() {
 }
 
 function installDeps() {
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
+    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    echo `date`,`hostname`, apt-get_update_end>>/opt/m
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
     apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
 }
@@ -475,16 +479,6 @@ configAddons() {
 }
 
 testOutboundConnection
-
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
-    echo `date`,`hostname`, apt-get_update_end>>/opt/m
-	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
-
-fi
-
 waitForCloudInit
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
