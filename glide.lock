@@ -1,5 +1,5 @@
-hash: 6939371253d190cea1f85a42ff9803fac4246a4a0548a219180c80808361de7f
-updated: 2018-06-05T20:55:54.8158831Z
+hash: f01ea3a7c4236485de95f94f24a72e132da8aa547346a1577d5506646ad28231
+updated: 2018-06-07T16:53:30.819141-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -66,7 +66,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: 28c7164e3e3f29579ee8a50624e6e07d16f1b860
+  version: 3eb5349c70e2acd3a93155a811ecd55d5eb331bd
   subpackages:
   - client/v2
   - models
@@ -127,6 +127,8 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/rjtsdl/conform
+  version: 7b97338c67692998bc62b2572e96c8ff09803dc3
 - name: github.com/satori/go.uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/satori/uuid
@@ -204,7 +206,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 670d4cfef0544295bc27a114dbac37980d83185a
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 - name: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:
@@ -339,5 +341,3 @@ testImports:
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
   - spew
-- name: github.com/rjtsdl/conform
-  version: 7b97338c67692998bc62b2572e96c8ff09803dc3
