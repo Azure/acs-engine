@@ -415,16 +415,15 @@ func (a *Properties) validateAddons() error {
 				if version == "" {
 					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
 				}
-				sv, err := semver.NewVersion(version)
+				sv, err := semver.Make(version)
 				if err != nil {
 					return fmt.Errorf("could not validate version %s", version)
 				}
-				minVersion := "1.10.0"
-				cons, err := semver.NewConstraint("<" + minVersion)
+				minVersion, err := semver.Make("1.10.0")
 				if err != nil {
-					return fmt.Errorf("could not apply semver constraint < %s against version %s", minVersion, version)
+					return fmt.Errorf("could not validate version")
 				}
-				if isNSeriesSKU && cons.Check(sv) {
+				if isNSeriesSKU && sv.LT(minVersion) {
 					return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
 				}
 			}
