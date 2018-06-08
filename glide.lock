@@ -1,5 +1,5 @@
-hash: f01ea3a7c4236485de95f94f24a72e132da8aa547346a1577d5506646ad28231
-updated: 2018-06-08T10:05:57.441795-07:00
+hash: 6fa6f282ecddc833638528e7142991e81fbe33987514e2da1ece181a6470c568
+updated: 2018-06-08T11:35:55.674334-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -28,6 +28,8 @@ imports:
   version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
 - name: github.com/dgrijalva/jwt-go
   version: dbeaa9332f19a944acb5736b4456cfcc02140e29
+- name: github.com/etgryphon/stringUp
+  version: 31534ccd8cac1d3d205c906ea5722928b045ed8c
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-playground/locales
