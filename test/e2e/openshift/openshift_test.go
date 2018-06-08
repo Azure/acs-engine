@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/namespace"
 	knode "github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/openshift/node"
@@ -134,10 +135,13 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 	})
 
 	It("should deploy a sample app and access it via a route", func() {
-		err := util.ApplyFromTemplate("nginx-example", "openshift", "default")
+		ns := "e2e-test"
+		_, err := namespace.Create(ns)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(util.WaitForDeploymentConfig("nginx-example", "default")).NotTo(HaveOccurred())
-		host, err := util.GetHost("nginx-example", "default")
+		err = util.ApplyFromTemplate("nginx-example", "openshift", ns)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(util.WaitForDeploymentConfig("nginx-example", ns)).NotTo(HaveOccurred())
+		host, err := util.GetHost("nginx-example", ns)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(util.TestHost(host, 10, 200*time.Millisecond)).NotTo(HaveOccurred())
 	})
@@ -170,5 +174,40 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 		running, err := pod.WaitOnReady("asb", "openshift-ansible-service-broker", 3, 30*time.Second, cfg.Timeout)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(running).To(Equal(true))
+	})
+
+	It("should not deploy infrastructure components on compute nodes", func() {
+		namespaces := []string{
+			"openshift-",
+			"kube-",
+			"default",
+		}
+
+		list, err := pod.GetAll("")
+		Expect(err).NotTo(HaveOccurred())
+
+	nextPod:
+		for _, pod := range list.Pods {
+			// skip if we find a pod that is a daemonset
+			for _, ref := range pod.Metadata.OwnerReferences {
+				if ref.Kind == "DaemonSet" {
+					continue nextPod
+				}
+			}
+			// registry-console was landing on compute nodes. It will now land on masters.
+			// Needs to be configurable.  Skip for now.
+			// https://github.com/Azure/acs-engine/issues/2895
+			if strings.HasPrefix(pod.Metadata.Name, "registry-console") {
+				continue
+			}
+
+			if strings.Contains(pod.Spec.Nodename, "compute") {
+				for _, pattern := range namespaces {
+					if strings.HasPrefix(pod.Metadata.Namespace, pattern) {
+						Expect(strings.HasPrefix(pod.Metadata.Namespace, pattern)).To(BeFalse())
+					}
+				}
+			}
+		}
 	})
 })
