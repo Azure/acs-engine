@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"reflect"
 
+	"fmt"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
@@ -82,6 +84,9 @@ func (a *Apiloader) LoadContainerService(
 			}
 		}
 		setContainerServiceDefaultsv20160930(containerService)
+		if containerService.Properties == nil {
+			return nil, fmt.Errorf("missing ContainerService Properties")
+		}
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -102,6 +107,9 @@ func (a *Apiloader) LoadContainerService(
 			}
 		}
 		setContainerServiceDefaultsv20160330(containerService)
+		if containerService.Properties == nil {
+			return nil, fmt.Errorf("missing ContainerService Properties")
+		}
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -123,6 +131,9 @@ func (a *Apiloader) LoadContainerService(
 			}
 		}
 		setContainerServiceDefaultsv20170131(containerService)
+		if containerService.Properties == nil {
+			return nil, fmt.Errorf("missing ContainerService Properties")
+		}
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -142,6 +153,9 @@ func (a *Apiloader) LoadContainerService(
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
 			}
+		}
+		if containerService.Properties == nil {
+			return nil, fmt.Errorf("missing ContainerService Properties")
 		}
 		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e
@@ -167,6 +181,9 @@ func (a *Apiloader) LoadContainerService(
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
 			}
+		}
+		if containerService.Properties == nil {
+			return nil, fmt.Errorf("missing ContainerService Properties")
 		}
 		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e

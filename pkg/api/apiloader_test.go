@@ -5,6 +5,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
 
+	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 )
@@ -83,5 +85,32 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	}
 	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersionWindows() {
 		t.Errorf("Failed to set orcherstator version to windows default when it is not set in the json API v20170131, got %s but expected %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion, common.GetDefaultKubernetesVersionWindows())
+	}
+}
+
+func TestLoadContainerServiceWithNilProperties(t *testing.T) {
+	jsonWithoutProperties := `{
+        "type": "Microsoft.ContainerService/managedClusters",
+        "name": "[parameters('clusterName')]",
+        "apiVersion": "2017-07-01",
+        "location": "[resourceGroup().location]"
+        }`
+
+	tmpFile, err := ioutil.TempFile("", "containerService-invalid")
+	fileName := tmpFile.Name()
+	defer os.Remove(fileName)
+
+	err = ioutil.WriteFile(fileName, []byte(jsonWithoutProperties), os.ModeAppend)
+
+	apiloader := &Apiloader{}
+	existingContainerService := &ContainerService{Name: "test",
+		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.6.9"}}}
+	_, _, err = apiloader.LoadContainerServiceFromFile(fileName, true, false, existingContainerService)
+	if err == nil {
+		t.Errorf("Expected error to be thrown")
+	}
+	expectedMsg := "missing ContainerService Properties"
+	if err.Error() != expectedMsg {
+		t.Errorf("Expected error with message %s but got %s", expectedMsg, err.Error())
 	}
 }
