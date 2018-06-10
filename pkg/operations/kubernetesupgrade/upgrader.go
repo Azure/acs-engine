@@ -415,12 +415,6 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 				return err
 			}
 
-			ku.logger.Infof(
-				"Deleting VM %s in VMSS %s",
-				vmToUpgrade.Name,
-				vmssToUpgrade.Name,
-			)
-
 			// Before we can delete the node we should safely and responsibly drain it
 			var kubeAPIServerURL string
 			getClientTimeout := 10 * time.Second
@@ -440,6 +434,8 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 				ku.logger.Errorf("Error getting Kubernetes client: %v", err)
 				return err
 			}
+
+			ku.logger.Infof("Draining node %s", vmToUpgrade.Name)
 			err = operations.SafelyDrainNodeWithClient(
 				client,
 				ku.logger,
@@ -450,6 +446,12 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 				ku.logger.Errorf("Error draining VM in VMSS: %v", err)
 				return err
 			}
+
+			ku.logger.Infof(
+				"Deleting VM %s in VMSS %s",
+				vmToUpgrade.Name,
+				vmssToUpgrade.Name,
+			)
 
 			// At this point we have our buffer node that will replace the node to delete
 			// so we can just remove this current node then
