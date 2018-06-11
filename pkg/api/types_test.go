@@ -691,8 +691,7 @@ func TestLinuxProfile(t *testing.T) {
 }
 
 func TestGetAPIServerEtcdAPIVersion(t *testing.T) {
-	o := OrchestratorProfile{},
-	}
+	o := OrchestratorProfile{}
 
 	if o.GetAPIServerEtcdAPIVersion() != "" {
 		t.Fatalf("Expected GetAPIServerEtcdAPIVersion() to return \"\" but instead got %s", o.GetAPIServerEtcdAPIVersion())
