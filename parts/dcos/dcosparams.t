@@ -6,7 +6,7 @@
       "type": "string"
     },
     "dcosWindowsBootstrapURL": {
-      "defaultValue": "https://dcos-mirror.azureedge.net/winagent",
+      "defaultValue": "http://dcos-win.westus.cloudapp.azure.com/dcos-windows/stable/",
       "metadata": {
         "description": "The default mesosphere bootstrap package location for windows."
       },

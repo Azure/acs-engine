@@ -368,6 +368,18 @@ func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) strin
 	return ""
 }
 
+func getDCOSDefaultWindowsBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
+	if profile.OrchestratorType == api.DCOS {
+		switch profile.OrchestratorVersion {
+		case common.DCOSVersion1Dot11Dot2:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-2"
+		case common.DCOSVersion1Dot11Dot0:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-0"
+		}
+	}
+	return ""
+}
+
 func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {

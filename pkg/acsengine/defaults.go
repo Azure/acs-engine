@@ -50,7 +50,7 @@ var (
 		DCOS198BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable/1.9.8", "f4ae0d20665fc68ee25282d6f78681b2773c6e10"),
 		DCOS110BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable/1.10.0", "4d92536e7381176206e71ee15b5ffe454439920c"),
 		DCOS111BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable/1.11.0", "a0654657903fb68dff60f6e522a7f241c1bfbf0f"),
-		DCOSWindowsBootstrapDownloadURL: "https://dcos-mirror.azureedge.net/winagent/",
+		DCOSWindowsBootstrapDownloadURL: "http://dcos-win.westus.cloudapp.azure.com/dcos-windows/stable/",
 		DcosRepositoryURL:               "https://dcosio.azureedge.net/dcos/stable/1.11.0",
 		DcosClusterPackageListID:        "248a66388bba1adbcb14a52fd3b7b424ab06fa76",
 	}
@@ -620,9 +620,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	case api.DCOS:
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
-		}
-		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
-			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
 		dcosSemVer, _ := semver.Make(o.OrchestratorVersion)
 		dcosBootstrapSemVer, _ := semver.Make(common.DCOSVersion1Dot11Dot0)
