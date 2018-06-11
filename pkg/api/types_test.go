@@ -697,7 +697,10 @@ func TestGetAPIServerEtcdAPIVersion(t *testing.T) {
 		t.Fatalf("Expected GetAPIServerEtcdAPIVersion() to return \"\" but instead got %s", o.GetAPIServerEtcdAPIVersion())
 	}
 
-	o.KubernetesConfig.EtcdVersion = "3.2.1"
+	o.KubernetesConfig = &KubernetesConfig{
+		EtcdVersion: "3.2.1",
+	}
+
 	if o.GetAPIServerEtcdAPIVersion() != "etcd3" {
 		t.Fatalf("Expected GetAPIServerEtcdAPIVersion() to return \"etcd3\" but instead got %s", o.GetAPIServerEtcdAPIVersion())
 	}
