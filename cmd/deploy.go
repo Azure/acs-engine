@@ -366,5 +366,10 @@ func (dc *deployCmd) run() error {
 		log.Fatalln(err)
 	}
 
+	if dc.containerService.Properties.OrchestratorProfile.OrchestratorType == api.OpenShift {
+		// TODO: when the Azure client library is updated, read this from the template `masterFQDN` output
+		fmt.Printf("OpenShift web UI available at https://%s.%s.cloudapp.azure.com:8443/\n", dc.containerService.Properties.MasterProfile.DNSPrefix, dc.location)
+	}
+
 	return nil
 }
