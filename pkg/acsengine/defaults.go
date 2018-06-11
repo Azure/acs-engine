@@ -395,7 +395,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		switch o.KubernetesConfig.NetworkPolicy {
 		case NetworkPluginAzure:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			o.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
 		case NetworkPolicyNone:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
