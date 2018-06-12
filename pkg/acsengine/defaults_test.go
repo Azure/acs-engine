@@ -393,7 +393,7 @@ func TestGenerateEtcdEncryptionKey(t *testing.T) {
 		t.Fatalf("generateEtcdEncryptionKey should return a unique key each time, instead returned identical %s and %s", key1, key2)
 	}
 	for _, val := range []string{key1, key2} {
-		_, err := base64.URLEncoding.DecodeString(val)
+		_, err := base64.StdEncoding.DecodeString(val)
 		if err != nil {
 			t.Fatalf("generateEtcdEncryptionKey should return a base64 encoded key, instead returned %s", val)
 		}
