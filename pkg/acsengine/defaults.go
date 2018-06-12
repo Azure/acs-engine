@@ -621,9 +621,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
 		}
-		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
-			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
-		}
 		dcosSemVer, _ := semver.Make(o.OrchestratorVersion)
 		dcosBootstrapSemVer, _ := semver.Make(common.DCOSVersion1Dot11Dot0)
 		if !dcosSemVer.LT(dcosBootstrapSemVer) {
