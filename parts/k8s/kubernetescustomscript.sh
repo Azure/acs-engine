@@ -161,7 +161,7 @@ function installDeps() {
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
     apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
-    systemctlEnableAndStart rpc-bind
+    systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
 
