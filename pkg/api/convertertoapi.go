@@ -721,12 +721,6 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 		if vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 			api.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			api.KubernetesConfig.NetworkPolicy = "" // no-op but included for emphasis
-		} else if vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure {
-			if common.IsKubernetesVersionGe(vp.OrchestratorProfile.OrchestratorVersion, "1.8.0") {
-				api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
-			} else {
-				api.KubernetesConfig.NetworkPolicy = ""
-			}
 		} else {
 			api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin
 			api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy

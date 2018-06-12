@@ -401,8 +401,28 @@ func TestGenerateEtcdEncryptionKey(t *testing.T) {
 }
 
 func TestNetworkPolicyDefaults(t *testing.T) {
-	mockCS := getMockBaseContainerService("1.8.10")
+	mockCS := getMockBaseContainerService("1.7.9")
 	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "" {
+		t.Fatalf("NetworkPolicy did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	setOrchestratorDefaults(&mockCS)
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "azure" {
+		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "azure")
+	}
+
+	mockCS = getMockBaseContainerService("1.8.10")
+	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
 	setOrchestratorDefaults(&mockCS)

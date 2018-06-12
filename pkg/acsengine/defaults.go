@@ -405,6 +405,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
 
+		if o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure {
+			if !common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
+				o.KubernetesConfig.NetworkPolicy = ""
+			}
+		}
+
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{

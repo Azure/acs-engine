@@ -147,32 +147,6 @@ func TestKubernetesVlabsDefaults(t *testing.T) {
 	}
 
 	vp = makeKubernetesPropertiesVlabs()
-	vp.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
-	vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
-	vp.OrchestratorProfile.OrchestratorVersion = "1.7.9"
-	ap = makeKubernetesProperties()
-	setVlabsKubernetesDefaults(vp, ap.OrchestratorProfile)
-	if ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin != vlabs.DefaultNetworkPlugin {
-		t.Fatalf("vlabs defaults not applied, expected NetworkPlugin: %s, instead got: %s", vlabs.DefaultNetworkPlugin, ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
-	}
-	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicy {
-		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicy, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-	}
-
-	vp = makeKubernetesPropertiesVlabs()
-	vp.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
-	vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
-	vp.OrchestratorProfile.OrchestratorVersion = "1.8.0"
-	ap = makeKubernetesProperties()
-	setVlabsKubernetesDefaults(vp, ap.OrchestratorProfile)
-	if ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin != vlabs.DefaultNetworkPlugin {
-		t.Fatalf("vlabs defaults not applied, expected NetworkPlugin: %s, instead got: %s", vlabs.DefaultNetworkPlugin, ap.OrchestratorProfile.KubernetesConfig.NetworkPlugin)
-	}
-	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != NetworkPolicyAzure {
-		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", NetworkPolicyAzure, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-	}
-
-	vp = makeKubernetesPropertiesVlabs()
 	vp.WindowsProfile = &vlabs.WindowsProfile{}
 	vp.AgentPoolProfiles = append(vp.AgentPoolProfiles, &vlabs.AgentPoolProfile{OSType: "Windows"})
 	ap = makeKubernetesProperties()
