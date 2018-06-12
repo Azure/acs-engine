@@ -103,7 +103,7 @@ As you can see above, `addons` is an array child property of `kubernetesConfig`.
 }
 ```
 
-More usefully, let's add some custom configuration to both of the above addons:
+More usefully, let's add some custom configuration to the above addons:
 
 ```
 "kubernetesConfig": {
