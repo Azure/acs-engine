@@ -78,6 +78,7 @@ apt_get_install() {
             return 1
         else
             sleep $wait_sleep
+            apt_get_update
         fi
     done
     echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
