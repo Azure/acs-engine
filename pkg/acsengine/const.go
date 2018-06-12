@@ -50,9 +50,9 @@ const (
 	NetworkPolicyCalico = "calico"
 	// NetworkPolicyCilium is the string expression for cilium network policy config option
 	NetworkPolicyCilium = "cilium"
-	// NetworkPolicyAzure is the string expression for cilium network policy config option
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager
 	NetworkPolicyAzure = "azure"
-	// NetworkPluginAzure is the string expression for Azure CNI network policy
+	// NetworkPluginAzure is the string expression for Azure CNI plugin
 	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"

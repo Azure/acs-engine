@@ -430,9 +430,9 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "azure")
 	}
-	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "" {
+	if properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "azure" {
 		t.Fatalf("NetworkPolicy did not have the expected value, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "")
+			properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, "azure")
 	}
 
 	mockCS = getMockBaseContainerService("1.8.10")

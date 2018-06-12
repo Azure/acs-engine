@@ -645,10 +645,6 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 			networkPolicy: "flannel",
 		},
 		{
-			networkPlugin: "azure",
-			networkPolicy: "azure",
-		},
-		{
 			networkPlugin: "kubenet",
 			networkPolicy: "none",
 		},
