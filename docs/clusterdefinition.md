@@ -69,6 +69,7 @@ Here are the valid values for the orchestrator types:
 |tiller|true|1|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info|
 |kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info|
 |rescheduler|false|1|Delivers the kubernetes rescheduler component|
+|cluster-autoscaler|false|1|Delivers the kubernetes cluster autoscaler component. See https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/azure for more info|
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 
@@ -102,7 +103,7 @@ As you can see above, `addons` is an array child property of `kubernetesConfig`.
 }
 ```
 
-More usefully, let's add some custom configuration to both of the above addons:
+More usefully, let's add some custom configuration to the above addons:
 
 ```
 "kubernetesConfig": {
@@ -131,6 +132,22 @@ More usefully, let's add some custom configuration to both of the above addons:
                   "memoryLimits": "512Mi"
                 }
               ]
+        },
+        {
+            "name": "cluster-autoscaler",
+            "containers": [
+              {
+                "name": "cluster-autoscaler",
+                "cpuRequests": "100m",
+                "memoryRequests": "300Mi",
+                "cpuLimits": "100m",
+                "memoryLimits": "300Mi"
+              }
+            ],
+            "config": {
+              "maxNodes": "5",
+              "minNodes": "1"
+            }
         }
     ]
 }
