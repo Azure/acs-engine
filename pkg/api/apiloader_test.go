@@ -152,6 +152,7 @@ func TestLoadContainerServiceForAgentPoolOnlyCluster(t *testing.T) {
 				Expect(cs2.Properties.ServicePrincipalProfile).NotTo(BeNil())
 				Expect(cs2.Properties.HostedMasterProfile).NotTo(BeNil())
 				Expect(cs2.Properties.HostedMasterProfile.DNSPrefix).To(Equal(model.Properties.DNSPrefix))
+				Expect(cs2.Properties.OrchestratorProfile.OrchestratorVersion).To(Equal(k8sVersions[0]))
 			})
 		})
 
