@@ -1087,5 +1087,5 @@ func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 func generateEtcdEncryptionKey() string {
 	b := make([]byte, 32)
 	rand.Read(b)
-	return base64.URLEncoding.EncodeToString(b)
+	return base64.stdencoding.EncodeToString(b)
 }
