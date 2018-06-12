@@ -508,6 +508,13 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 |clientId|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
 |secret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 |objectId|optional, for Kubernetes clusters|describes the Azure service principal object id.  It is required if enableEncryptionWithExternalKms is true|
+|keyvaultSecretRef.vaultId|no, for Kubernetes clusters|describes the vault id of the keyvault to retrieve the service principal secret from. See below for format.|
+|keyvaultSecretRef.secretName|no, for Kubernetes clusters|describes the name of the service principal secret in keyvault|
+|keyvaultSecretRef.version|no, for Kubernetes clusters|describes the version of the secret to use|
+
+
+format for `keyvaultSecretRef.vaultId`, can be obtained in cli, or found in the portal:
+`/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>`. See [keyvault params](../examples/keyvault-params/README.md#service-principal-profile) for an example.
 
 ## Cluster Defintions for apiVersion "2016-03-30"
 
