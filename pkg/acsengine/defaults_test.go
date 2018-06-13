@@ -558,7 +558,31 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestIsAzureCNINetworkmonitorAddon(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10.3")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	setOrchestratorDefaults(&mockCS)
+
+	i := getAddonsIndexByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	if !helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.Addons[i].Enabled) {
+		t.Fatalf("Azure CNI network plugin configuration should add Azure CNI networkmonitor addon")
+	}
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "kubenet"
+	setOrchestratorDefaults(&mockCS)
+
+	i = getAddonsIndexByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	if helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.Addons[i].Enabled) {
+		t.Fatalf("Azure CNI networkmonitor addon should only be present in Azure CNI configurations")
+	}
 }
 
 func getMockAddon(name string) api.KubernetesAddon {

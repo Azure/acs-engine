@@ -215,6 +215,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+    sed -i "s|<azureCNINetworkMonitorImage>|{{WrapAsVariable "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"

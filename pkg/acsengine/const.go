@@ -140,6 +140,8 @@ const (
 	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
 	ContainerMonitoringAddonName = "container-monitoring"
+	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon
+	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
