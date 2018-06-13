@@ -466,13 +466,13 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 			case <-res:
 				ku.logger.Infof(
 					"Successfully deleted VM %s in VMSS %s",
-					vmToUpgrade,
+					vmToUpgrade.Name,
 					vmssToUpgrade.Name,
 				)
 			case err := <-failure:
 				ku.logger.Errorf(
 					"Failed to delete VM %s in VMSS %s",
-					vmToUpgrade,
+					vmToUpgrade.Name,
 					vmssToUpgrade,
 				)
 				return err
