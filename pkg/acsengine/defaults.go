@@ -34,6 +34,7 @@ var (
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		ACIConnectorImageBase:            "microsoft/",
 		NVIDIAImageBase:                  "nvidia/",
+		AzureCNIImageBase:                "containernetworking/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsPackageSASURLBase:         "https://acs-mirror.azureedge.net/wink8s/",
@@ -333,6 +334,16 @@ var (
 			},
 		},
 	}
+
+	// DefaultAzureCNINetworkMonitorAddonsConfig is the default Azure CNI networkmonitor Kubernetes addon Config
+	DefaultAzureCNINetworkMonitorAddonsConfig = api.KubernetesAddon{
+		Name: AzureCNINetworkMonitoringAddonName,
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: AzureCNINetworkMonitoringAddonName,
+			},
+		},
+	}
 )
 
 // setPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -405,8 +416,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultMetricsServerAddonsConfig,
 				DefaultNVIDIADevicePluginAddonsConfig,
 				DefaultContainerMonitoringAddonsConfig,
+				DefaultAzureCNINetworkMonitorAddonsConfig,
 			}
-			enforceK8sVersionAddonOverrides(o.KubernetesConfig.Addons, o)
+			enforceK8sAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
 			// For each addon, provide default configuration if user didn't provide its own config
 			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
@@ -450,6 +462,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if cm < 0 {
 				// Provide default acs-engine config for Container Monitoring
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultContainerMonitoringAddonsConfig)
+			}
+			aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+			if aN < 0 {
+				// Provide default acs-engine config for Azure CNI containernetworking Device Plugin
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureCNINetworkMonitorAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -553,6 +570,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		cm := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[cm].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
+		}
+		aN := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(a.OrchestratorProfile.IsAzureCNI()) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[aN] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aN], DefaultAzureCNINetworkMonitorAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
@@ -1075,13 +1096,19 @@ func mapToString(valueMap map[string]string) string {
 	return strings.TrimSuffix(buf.String(), ",")
 }
 
-func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
+func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
 	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
+	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+}
+
+func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.IsAzureCNI())
 }
 
 func generateEtcdEncryptionKey() string {

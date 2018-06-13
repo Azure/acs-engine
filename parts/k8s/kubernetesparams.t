@@ -914,3 +914,12 @@
        }
      }
  {{end}}
+ {{if IsAzureCNI}}
+    ,"AzureCNINetworkMonitorImageURL": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Azure CNI networkmonitor Image URL"
+      },
+      "type": "string"
+    }
+ {{end}}
