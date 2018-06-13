@@ -171,7 +171,6 @@ var k8sComponentVersions = map[string]map[string]string{
 		"rescheduler":                      "rescheduler:v0.3.1",
 		"aci-connector":                    "virtual-kubelet:latest",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
-		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
