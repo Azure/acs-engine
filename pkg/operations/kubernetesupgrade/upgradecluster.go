@@ -148,42 +148,44 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	if err != nil {
 		return err
 	}
-	for _, vmScaleSet := range *vmScaleSets.Value {
-		vmScaleSetVMs, err := uc.Client.ListVirtualMachineScaleSetVMs(resourceGroup, *vmScaleSet.Name)
-		if err != nil {
-			return err
-		}
-		scaleSetToUpgrade := AgentPoolScaleSet{
-			Name:     *vmScaleSet.Name,
-			Sku:      *vmScaleSet.Sku,
-			Location: *vmScaleSet.Location,
-		}
-		for _, vm := range *vmScaleSetVMs.Value {
-			if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
-				uc.Logger.Infof("No tags found for scale set VM: %s skipping.\n", *vm.Name)
-				continue
+	if vmScaleSets.Value != nil {
+		for _, vmScaleSet := range *vmScaleSets.Value {
+			vmScaleSetVMs, err := uc.Client.ListVirtualMachineScaleSetVMs(resourceGroup, *vmScaleSet.Name)
+			if err != nil {
+				return err
 			}
+			scaleSetToUpgrade := AgentPoolScaleSet{
+				Name:     *vmScaleSet.Name,
+				Sku:      *vmScaleSet.Sku,
+				Location: *vmScaleSet.Location,
+			}
+			for _, vm := range *vmScaleSetVMs.Value {
+				if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
+					uc.Logger.Infof("No tags found for scale set VM: %s skipping.\n", *vm.Name)
+					continue
+				}
 
-			scaleSetVMOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
-			if scaleSetVMOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
-				// This condition is a scale set VM that is an older version and should be handled
-				uc.Logger.Infof(
-					"VM %s in VMSS %s has a current tag of %s and a desired tag of %s. Upgrading this node.\n",
-					*vm.Name,
-					*vmScaleSet.Name,
-					scaleSetVMOrchestratorTypeAndVersion,
-					targetOrchestratorTypeVersion,
-				)
-				scaleSetToUpgrade.VMsToUpgrade = append(
-					scaleSetToUpgrade.VMsToUpgrade,
-					AgentPoolScaleSetVM{
-						Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
-						InstanceID: *vm.InstanceID,
-					},
-				)
+				scaleSetVMOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
+				if scaleSetVMOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
+					// This condition is a scale set VM that is an older version and should be handled
+					uc.Logger.Infof(
+						"VM %s in VMSS %s has a current tag of %s and a desired tag of %s. Upgrading this node.\n",
+						*vm.Name,
+						*vmScaleSet.Name,
+						scaleSetVMOrchestratorTypeAndVersion,
+						targetOrchestratorTypeVersion,
+					)
+					scaleSetToUpgrade.VMsToUpgrade = append(
+						scaleSetToUpgrade.VMsToUpgrade,
+						AgentPoolScaleSetVM{
+							Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
+							InstanceID: *vm.InstanceID,
+						},
+					)
+				}
 			}
+			uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
 		}
-		uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
 	}
 
 	for _, vm := range *vmListResult.Value {
