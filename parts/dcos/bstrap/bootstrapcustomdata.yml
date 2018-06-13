@@ -30,10 +30,6 @@ runcmd:
     - [ ln, -s, /bin/mount, /usr/bin/mount ]
     - [ ln, -s, /bin/bash, /usr/bin/bash ]
     - [ ln, -s, /usr/sbin/useradd, /usr/bin/useradd ]
-    - [ systemctl, disable, --now, resolvconf.service ]
-    - [ systemctl, mask, --now, lxc-net.service ]
-    - [ systemctl, disable, --now, unscd.service ]
-    - [ systemctl, stop, --now, unscd.service ]
     - /opt/azure/containers/provision.sh
     - /opt/azure/dcos/init_bootstrap.sh
 write_files:
@@ -60,6 +56,7 @@ write_files:
 MASTER_IP_LIST
     resolvers:
     - 168.63.129.16
+    dns_search:
   owner: root
   path: /opt/azure/dcos/genconf/config.yaml
   permissions: '0644'
@@ -67,6 +64,11 @@ MASTER_IP_LIST
     #!/bin/bash
 
     source /opt/azure/containers/provision_source.sh
+
+    # update dns_search
+    dns=$(grep search /etc/resolv.conf | cut -d " " -f 2)
+    sed -i "/dns_search:/c dns_search: $dns" /opt/azure/dcos/genconf/config.yaml
+    # install and run bootstrap package
     cd /opt/azure/dcos
     retrycmd_if_failure 10 10 120 curl -fsSL -o dcos_generate_config.sh.sha1sum {{{dcosBootstrapURL}}}.sha1sum
     retry_download 1 1 120 {{{dcosBootstrapURL}}} dcos_generate_config.sh $(cat dcos_generate_config.sh.sha1sum)
