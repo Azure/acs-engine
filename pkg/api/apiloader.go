@@ -204,9 +204,8 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(
 		if managedCluster.Properties == nil {
 			if !isUpdate {
 				return nil, false, a.Translator.Errorf("properties object in managed cluster should not be nil")
-			} else {
-				managedCluster.Properties = &v20170831.Properties{}
 			}
+			managedCluster.Properties = &v20170831.Properties{}
 		}
 
 		if hasExistingCS {
@@ -243,9 +242,8 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(
 		if managedCluster.Properties == nil {
 			if !isUpdate {
 				return nil, false, a.Translator.Errorf("properties object in managed cluster should not be nil")
-			} else {
-				managedCluster.Properties = &v20180331.Properties{}
 			}
+			managedCluster.Properties = &v20180331.Properties{}
 		}
 
 		if hasExistingCS {
