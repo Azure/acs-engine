@@ -185,7 +185,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, HasWindows bool) error {
 							minVersion, o.OrchestratorVersion)
 					}
 					if o.KubernetesConfig.EtcdEncryptionKey != "" {
-						_, err = base64.URLEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
+						_, err = base64.StdEncoding.DecodeString(o.KubernetesConfig.EtcdEncryptionKey)
 						if err != nil {
 							return fmt.Errorf("etcdEncryptionKey must be base64 encoded. Please provide a valid base64 encoded value or leave the etcdEncryptionKey empty to auto-generate the value")
 						}
