@@ -20,21 +20,24 @@ import (
 
 //MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
-	FailDeployTemplate              bool
-	FailDeployTemplateQuota         bool
-	FailDeployTemplateConflict      bool
-	FailEnsureResourceGroup         bool
-	FailListVirtualMachines         bool
-	FailListVirtualMachineScaleSets bool
-	FailGetVirtualMachine           bool
-	FailDeleteVirtualMachine        bool
-	FailGetStorageClient            bool
-	FailDeleteNetworkInterface      bool
-	FailGetKubernetesClient         bool
-	FailListProviders               bool
-	ShouldSupportVMIdentity         bool
-	FailDeleteRoleAssignment        bool
-	MockKubernetesClient            *MockKubernetesClient
+	FailDeployTemplate                    bool
+	FailDeployTemplateQuota               bool
+	FailDeployTemplateConflict            bool
+	FailEnsureResourceGroup               bool
+	FailListVirtualMachines               bool
+	FailListVirtualMachineScaleSets       bool
+	FailGetVirtualMachine                 bool
+	FailDeleteVirtualMachine              bool
+	FailDeleteVirtualMachineScaleSetVM    bool
+	FailSetVirtualMachineScaleSetCapacity bool
+	FailListVirtualMachineScaleSetVMs     bool
+	FailGetStorageClient                  bool
+	FailDeleteNetworkInterface            bool
+	FailGetKubernetesClient               bool
+	FailListProviders                     bool
+	ShouldSupportVMIdentity               bool
+	FailDeleteRoleAssignment              bool
+	MockKubernetesClient                  *MockKubernetesClient
 }
 
 //MockStorageClient mock implementation of StorageClient
@@ -342,6 +345,79 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 		respChan <- compute.OperationStatusResponse{}
 	}()
 	return respChan, errChan
+}
+
+//DeleteVirtualMachineScaleSetVM mock
+func (mc *MockACSEngineClient) DeleteVirtualMachineScaleSetVM(resourceGroup, virtualMachineScaleSet, instanceID string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
+	if mc.FailDeleteVirtualMachineScaleSetVM {
+		errChan := make(chan error)
+		respChan := make(chan compute.OperationStatusResponse)
+		go func() {
+			defer func() {
+				close(errChan)
+			}()
+			defer func() {
+				close(respChan)
+			}()
+			errChan <- fmt.Errorf("DeleteVirtualMachineScaleSetVM failed")
+		}()
+		return respChan, errChan
+	}
+
+	errChan := make(chan error)
+	respChan := make(chan compute.OperationStatusResponse)
+	go func() {
+		defer func() {
+			close(errChan)
+		}()
+		defer func() {
+			close(respChan)
+		}()
+		errChan <- nil
+		respChan <- compute.OperationStatusResponse{}
+	}()
+	return respChan, errChan
+}
+
+//SetVirtualMachineScaleSetCapacity mock
+func (mc *MockACSEngineClient) SetVirtualMachineScaleSetCapacity(resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
+	if mc.FailSetVirtualMachineScaleSetCapacity {
+		errChan := make(chan error)
+		respChan := make(chan compute.VirtualMachineScaleSet)
+		go func() {
+			defer func() {
+				close(errChan)
+			}()
+			defer func() {
+				close(respChan)
+			}()
+			errChan <- fmt.Errorf("SetVirtualMachineScaleSetCapacity failed")
+		}()
+		return respChan, errChan
+	}
+
+	errChan := make(chan error)
+	respChan := make(chan compute.VirtualMachineScaleSet)
+	go func() {
+		defer func() {
+			close(errChan)
+		}()
+		defer func() {
+			close(respChan)
+		}()
+		errChan <- nil
+		respChan <- compute.VirtualMachineScaleSet{}
+	}()
+	return respChan, errChan
+}
+
+//ListVirtualMachineScaleSetVMs mock
+func (mc *MockACSEngineClient) ListVirtualMachineScaleSetVMs(resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResult, error) {
+	if mc.FailDeleteVirtualMachineScaleSetVM {
+		return compute.VirtualMachineScaleSetVMListResult{}, fmt.Errorf("DeleteVirtualMachineScaleSetVM failed")
+	}
+
+	return compute.VirtualMachineScaleSetVMListResult{}, nil
 }
 
 //GetStorageClient mock
