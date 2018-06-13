@@ -144,15 +144,6 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
-	// Loop through all of the scale sets and see if the VMs in the scale
-	// set are at the current targetOrchestratorTypeVersion
-	//
-	// If they are not, then add them to be "ugpraded"
-	//
-	// Subsequently loop through the VMs to be upgrade and add scale up
-	// the VMSS by one and then remove the old node
-	//
-	// The unique identifier of a scale set vm is VmssName:InstanceId
 	vmScaleSets, err := uc.Client.ListVirtualMachineScaleSets(resourceGroup)
 	if err != nil {
 		return err
