@@ -137,6 +137,10 @@ const (
 	DefaultPrivateClusterEnabled = false
 	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager
 	NetworkPolicyAzure = "azure"
+	// NetworkPolicyCalico is the string expression for calico network policy config option
+	NetworkPolicyCalico = "calico"
+	// NetworkPolicyCilium is the string expression for cilium network policy config option
+	NetworkPolicyCilium = "cilium"
 	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
 	NetworkPolicyNone = "none"
 	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
