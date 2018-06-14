@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 // Validate implements APIObject
