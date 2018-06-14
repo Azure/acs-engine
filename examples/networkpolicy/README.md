@@ -3,7 +3,7 @@
 There are 2 different Network Policy options :
 
 - Calico
-- Cilium (docs are //TODO)
+- Cilium
 
 ## Calico
 
@@ -93,4 +93,4 @@ The kubernetes-cilium deployment template enables Cilium networking and policies
 
 Once the template has been successfully deployed, following the [deploy the demo application](http://cilium.readthedocs.io/en/latest/gettingstarted/minikube/#step-2-deploy-the-demo-application) tutorial will provide a good foundation for how to do L3/4 policy as well as more advanced Layer 7 inspection and routing. If you have [Istio](https://istio.io) you can try this [tutorial](http://cilium.readthedocs.io/en/latest/gettingstarted/istio/) where cilium is used to side by side with Istio to enforce security policies in a Kubernetes deployment. 
 
-For the latest documentation on Cilium (including BPF and XDP reference guides), please refer to (this)[http://cilium.readthedocs.io/en/latest/].
+For the latest documentation on Cilium (including BPF and XDP reference guides), please refer to (this)[http://cilium.readthedocs.io/en/latest/]
