@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	validator "gopkg.in/go-playground/validator.v9"
@@ -50,4 +51,16 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 		}
 	}
 	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+}
+
+func validateDNSPrefix(dnsName string) error {
+	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
+	re, err := regexp.Compile(dnsNameRegex)
+	if err != nil {
+		return err
+	}
+	if !re.MatchString(dnsName) {
+		return fmt.Errorf("DNSPrefix '%s' is invalid. The DNSPrefix must contain between 3 and 45 characters. The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number. (length was %d)", dnsName, len(dnsName))
+	}
+	return nil
 }

@@ -321,7 +321,7 @@ func (a *Properties) validateMasterProfile() error {
 			return err
 		}
 	}
-	return validateDNSName(m.DNSPrefix)
+	return common.validateDNSPrefix(m.DNSPrefix)
 }
 
 func (a *Properties) validateAgentPoolProfiles() error {
@@ -745,7 +745,7 @@ func (a *AgentPoolProfile) validateOrchestratorSpecificProperties(orchestratorTy
 	}
 
 	if a.DNSPrefix != "" {
-		if e := validateDNSName(a.DNSPrefix); e != nil {
+		if e := common.validateDNSPrefix(a.DNSPrefix); e != nil {
 			return e
 		}
 		if len(a.Ports) > 0 {
@@ -1101,18 +1101,6 @@ func validatePoolName(poolName string) error {
 func validatePoolOSType(os OSType) error {
 	if os != Linux && os != Windows && os != "" {
 		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
-	}
-	return nil
-}
-
-func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
-	re, err := regexp.Compile(dnsNameRegex)
-	if err != nil {
-		return err
-	}
-	if !re.MatchString(dnsName) {
-		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was %d)", dnsName, len(dnsName))
 	}
 	return nil
 }
