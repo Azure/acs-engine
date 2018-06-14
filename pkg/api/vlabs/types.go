@@ -609,11 +609,6 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
 }
 
-// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
-func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
-	return a.AcceleratedNetworkingEnabled
-}
-
 // HasSearchDomain returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSearchDomain() bool {
 	if l.CustomSearchDomain != nil {

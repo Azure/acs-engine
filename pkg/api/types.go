@@ -443,13 +443,12 @@ type AgentPoolProfile struct {
 	Distro                       Distro               `json:"distro,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
 	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
-
-	FQDN                  string            `json:"fqdn,omitempty"`
-	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
-	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
-	Extensions            []Extension       `json:"extensions"`
-	KubernetesConfig      *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-	ImageRef              *ImageReference   `json:"imageReference,omitempty"`
+	FQDN                         string               `json:"fqdn,omitempty"`
+	CustomNodeLabels             map[string]string    `json:"customNodeLabels,omitempty"`
+	PreprovisionExtension        *Extension           `json:"preProvisionExtension"`
+	Extensions                   []Extension          `json:"extensions"`
+	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
@@ -556,7 +555,7 @@ type AADProfile struct {
 	// cluster-admin RBAC role.
 	// Optional
 	AdminGroupID string `json:"adminGroupID,omitempty"`
-	// The authenticator to use, either "OIDC" or "Webhook".
+	// The authenticator to use, either "oidc" or "webhook".
 	Authenticator AuthenticatorType `json:"authenticator"`
 }
 
@@ -642,7 +641,7 @@ func (p *Properties) HasManagedDisks() bool {
 			return true
 		}
 	}
-	if p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == ManagedDisks {
+	if p.OrchestratorProfile != nil && p.OrchestratorProfile.KubernetesConfig != nil && p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == ManagedDisks {
 		return true
 	}
 	return false
@@ -650,7 +649,7 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
-	if p.OrchestratorProfile.OrchestratorType == OpenShift {
+	if p.OrchestratorProfile != nil && p.OrchestratorProfile.OrchestratorType == OpenShift {
 		return true
 	}
 	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
@@ -661,7 +660,7 @@ func (p *Properties) HasStorageAccountDisks() bool {
 			return true
 		}
 	}
-	if p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == StorageAccount {
+	if p.OrchestratorProfile != nil && p.OrchestratorProfile.KubernetesConfig != nil && p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == StorageAccount {
 		return true
 	}
 	return false
@@ -767,11 +766,6 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
-}
-
-// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
-func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
-	return a.AcceleratedNetworkingEnabled
 }
 
 // HasSecrets returns true if the customer specified secrets to install
