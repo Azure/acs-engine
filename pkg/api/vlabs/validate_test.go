@@ -1008,14 +1008,6 @@ func TestMasterProfileValidate(t *testing.T) {
 			},
 			expectedErr: "when specifying a vnetsubnetid the firstconsecutivestaticip is required",
 		},
-		{ // test existing vnet: run with only specifying firstconsecutivestaticip
-			orchestratorType: OpenShift,
-			masterProfile: MasterProfile{
-				FirstConsecutiveStaticIP: "10.0.0.1",
-				Count: 1,
-			},
-			expectedErr: "when specifying the firstconsecutivestaticip the vnetsubnetid is required",
-		},
 		{ // test existing vnet: run with specifying both vnetsubnetid and firstconsecutivestaticip
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{

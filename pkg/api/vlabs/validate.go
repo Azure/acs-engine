@@ -311,9 +311,6 @@ func (a *Properties) validateMasterProfile() error {
 		if m.VnetSubnetID != "" && m.FirstConsecutiveStaticIP == "" {
 			return errors.New("when specifying a vnetsubnetid the firstconsecutivestaticip is required")
 		}
-		if m.FirstConsecutiveStaticIP != "" && m.VnetSubnetID == "" {
-			return errors.New("when specifying the firstconsecutivestaticip the vnetsubnetid is required")
-		}
 		if m.StorageProfile != ManagedDisks {
 			return errors.New("OpenShift orchestrator supports only ManagedDisks")
 		}
