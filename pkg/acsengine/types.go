@@ -50,6 +50,8 @@ type KubernetesSpecConfig struct {
 	KubernetesImageBase              string
 	TillerImageBase                  string
 	ACIConnectorImageBase            string
+	NVIDIAImageBase                  string
+	AzureCNIImageBase                string
 	EtcdDownloadURLBase              string
 	KubeBinariesSASURLBase           string
 	WindowsPackageSASURLBase         string
@@ -85,3 +87,17 @@ type AzureEnvironmentSpecConfig struct {
 type Context struct {
 	Translator *i18n.Translator
 }
+
+// KeyVaultID represents a KeyVault instance on Azure
+type KeyVaultID struct {
+	ID string `json:"id"`
+}
+
+// KeyVaultRef represents a reference to KeyVault instance on Azure
+type KeyVaultRef struct {
+	KeyVault      KeyVaultID `json:"keyVault"`
+	SecretName    string     `json:"secretName"`
+	SecretVersion string     `json:"secretVersion,omitempty"`
+}
+
+type paramsMap map[string]interface{}

@@ -479,6 +479,17 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		api.Secrets = append(api.Secrets, *secret)
 	}
 	api.ScriptRootURL = vlabs.ScriptRootURL
+	if vlabs.CustomSearchDomain != nil {
+		api.CustomSearchDomain = &CustomSearchDomain{}
+		api.CustomSearchDomain.Name = vlabs.CustomSearchDomain.Name
+		api.CustomSearchDomain.RealmUser = vlabs.CustomSearchDomain.RealmUser
+		api.CustomSearchDomain.RealmPassword = vlabs.CustomSearchDomain.RealmPassword
+	}
+
+	if vlabs.CustomNodesDNS != nil {
+		api.CustomNodesDNS = &CustomNodesDNS{}
+		api.CustomNodesDNS.DNSServer = vlabs.CustomNodesDNS.DNSServer
+	}
 }
 
 func convertV20160930WindowsProfile(v20160930 *v20160930.WindowsProfile, api *WindowsProfile) {
@@ -754,6 +765,18 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 	}
 }
 
+func convertCustomFilesToAPI(v *vlabs.MasterProfile, a *MasterProfile) {
+	if v.CustomFiles != nil {
+		a.CustomFiles = &[]CustomFile{}
+		for i := range *v.CustomFiles {
+			*a.CustomFiles = append(*a.CustomFiles, CustomFile{
+				Dest:   (*v.CustomFiles)[i].Dest,
+				Source: (*v.CustomFiles)[i].Source,
+			})
+		}
+	}
+}
+
 func convertKubeletConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 	a.KubeletConfig = map[string]string{}
 	for key, val := range v.KubeletConfig {
@@ -896,6 +919,8 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 		api.ImageRef.Name = vlabs.ImageRef.Name
 		api.ImageRef.ResourceGroup = vlabs.ImageRef.ResourceGroup
 	}
+
+	convertCustomFilesToAPI(vlabs, api)
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -977,6 +1002,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+	api.AcceleratedNetworkingEnabled = vlabs.AcceleratedNetworkingEnabled
 
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {

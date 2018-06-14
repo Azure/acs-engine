@@ -1,5 +1,9 @@
     {
+{{if .IsAcceleratedNetworkingEnabled}}
+      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+{{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -12,10 +16,13 @@
       "[variables('vnetID')]"
 {{end}}
 {{else}}
-{{if not .IsCustomVNET}}
+{{if .IsCustomVNET}}
+      "[concat(variables('masterVMNamePrefix'), 'nic-0')]",
+{{else}}
       "[variables('vnetID')]",
 {{end}}
 {{if eq .Role "infra"}}
+      "[variables('routerLBName')]",
       "[variables('routerNSGID')]"
 {{else}}
       "[variables('nsgID')]"
@@ -25,6 +32,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.IsAcceleratedNetworkingEnabled}}",
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {

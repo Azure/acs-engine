@@ -596,6 +596,8 @@ func mainInternal() error {
 		case "japanwest": // no D2V2 support
 		case "chinaeast": // private cloud
 		case "chinanorth": // private cloud
+		case "chinaeast2": // private cloud
+		case "chinanorth2": // private cloud
 		case "germanycentral": // Germany cloud
 		case "germanynortheast": // Germany cloud
 		case "usgovvirginia": // US Gov cloud

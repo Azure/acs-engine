@@ -136,8 +136,12 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
-	// DefaultContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
-	DefaultContainerMonitoringAddonName = "container-monitoring"
+	// DefaultNVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
+	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
+	ContainerMonitoringAddonName = "container-monitoring"
+	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon
+	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
@@ -183,4 +187,95 @@ const (
 const (
 	//DefaultConfigurationScriptRootURL  Root URL for configuration script (used for script extension on RHEL)
 	DefaultConfigurationScriptRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/parts/"
+)
+
+const (
+	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
+	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
+	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
+	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
+	kubernetesCustomSearchDomainsScript      = "k8s/setup-custom-search-domains.sh"
+	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
+	kubernetesAgentCustomDataYaml            = "k8s/kubernetesagentcustomdata.yml"
+	kubernetesJumpboxCustomDataYaml          = "k8s/kubernetesjumpboxcustomdata.yml"
+	kubeConfigJSON                           = "k8s/kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
+	// OpenShift custom scripts
+	openshiftNodeScript     = "openshift/unstable/openshiftnodescript.sh"
+	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
+	openshift39NodeScript   = "openshift/release-3.9/openshiftnodescript.sh"
+	openshift39MasterScript = "openshift/release-3.9/openshiftmasterscript.sh"
+)
+
+const (
+	dcosCustomData188       = "dcos/dcoscustomdata188.t"
+	dcosCustomData190       = "dcos/dcoscustomdata190.t"
+	dcosCustomData198       = "dcos/dcoscustomdata198.t"
+	dcosCustomData110       = "dcos/dcoscustomdata110.t"
+	dcosProvision           = "dcos/dcosprovision.sh"
+	dcosWindowsProvision    = "dcos/dcosWindowsProvision.ps1"
+	dcosProvisionSource     = "dcos/dcosprovisionsource.sh"
+	dcos2Provision          = "dcos/bstrap/dcosprovision.sh"
+	dcos2BootstrapProvision = "dcos/bstrap/bootstrapprovision.sh"
+	dcos2CustomData1110     = "dcos/bstrap/dcos1.11.0.customdata.t"
+	dcos2CustomData1112     = "dcos/bstrap/dcos1.11.2.customdata.t"
+)
+
+const (
+	swarmProvision            = "swarm/configure-swarm-cluster.sh"
+	swarmWindowsProvision     = "swarm/Install-ContainerHost-And-Join-Swarm.ps1"
+	swarmModeProvision        = "swarm/configure-swarmmode-cluster.sh"
+	swarmModeWindowsProvision = "swarm/Join-SwarmMode-cluster.ps1"
+)
+
+const (
+	agentOutputs                  = "agentoutputs.t"
+	agentParams                   = "agentparams.t"
+	classicParams                 = "classicparams.t"
+	dcosAgentResourcesVMAS        = "dcos/dcosagentresourcesvmas.t"
+	dcosWindowsAgentResourcesVMAS = "dcos/dcosWindowsAgentResourcesVmas.t"
+	dcosAgentResourcesVMSS        = "dcos/dcosagentresourcesvmss.t"
+	dcosWindowsAgentResourcesVMSS = "dcos/dcosWindowsAgentResourcesVmss.t"
+	dcosAgentVars                 = "dcos/dcosagentvars.t"
+	dcosBaseFile                  = "dcos/dcosbase.t"
+	dcosParams                    = "dcos/dcosparams.t"
+	dcosMasterResources           = "dcos/dcosmasterresources.t"
+	dcosMasterVars                = "dcos/dcosmastervars.t"
+	dcos2BaseFile                 = "dcos/bstrap/dcosbase.t"
+	dcos2BootstrapVars            = "dcos/bstrap/bootstrapvars.t"
+	dcos2BootstrapParams          = "dcos/bstrap/bootstrapparams.t"
+	dcos2BootstrapResources       = "dcos/bstrap/bootstrapresources.t"
+	dcos2BootstrapCustomdata      = "dcos/bstrap/bootstrapcustomdata.yml"
+	dcos2MasterVars               = "dcos/bstrap/dcosmastervars.t"
+	dcos2MasterResources          = "dcos/bstrap/dcosmasterresources.t"
+	iaasOutputs                   = "iaasoutputs.t"
+	kubernetesBaseFile            = "k8s/kubernetesbase.t"
+	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
+	kubernetesAgentResourcesVMSS  = "k8s/kubernetesagentresourcesvmss.t"
+	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
+	kubernetesMasterResources     = "k8s/kubernetesmasterresources.t"
+	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
+	kubernetesParams              = "k8s/kubernetesparams.t"
+	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
+	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
+	masterOutputs                 = "masteroutputs.t"
+	masterParams                  = "masterparams.t"
+	swarmBaseFile                 = "swarm/swarmbase.t"
+	swarmParams                   = "swarm/swarmparams.t"
+	swarmAgentResourcesVMAS       = "swarm/swarmagentresourcesvmas.t"
+	swarmAgentResourcesVMSS       = "swarm/swarmagentresourcesvmss.t"
+	swarmAgentResourcesClassic    = "swarm/swarmagentresourcesclassic.t"
+	swarmAgentVars                = "swarm/swarmagentvars.t"
+	swarmMasterResources          = "swarm/swarmmasterresources.t"
+	swarmMasterVars               = "swarm/swarmmastervars.t"
+	swarmWinAgentResourcesVMAS    = "swarm/swarmwinagentresourcesvmas.t"
+	swarmWinAgentResourcesVMSS    = "swarm/swarmwinagentresourcesvmss.t"
+	windowsParams                 = "windowsparams.t"
+)
+
+const (
+	azurePublicCloud       = "AzurePublicCloud"
+	azureChinaCloud        = "AzureChinaCloud"
+	azureGermanCloud       = "AzureGermanCloud"
+	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )

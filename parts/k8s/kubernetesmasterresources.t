@@ -467,6 +467,13 @@
         ,
         "enableIPForwarding": true
 {{end}}
+{{if HasCustomNodesDNS}}
+ ,"dnsSettings": {
+          "dnsServers": [
+              "[variables('dnsServer')]"
+          ]
+      }
+{{end}}
 {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
@@ -542,6 +549,13 @@
   {{if not IsAzureCNI}}
           ,
           "enableIPForwarding": true
+  {{end}}
+  {{if HasCustomNodesDNS}}
+   ,"dnsSettings": {
+          "dnsServers": [
+              "[variables('dnsServer')]"
+          ]
+      }
   {{end}}
   {{if or .MasterProfile.IsCustomVNET IsOpenShift}}
           ,"networkSecurityGroup": {

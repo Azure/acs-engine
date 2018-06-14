@@ -1,9 +1,7 @@
 package openshift
 
 import (
-	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"time"
@@ -46,33 +44,6 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition:  csInput,
 		ExpandedDefinition: csGenerated,
 	}
-	signal.Notify(ch, os.Interrupt)
-})
-
-var _ = AfterEach(func() {
-	// Recommended way to optionally act on failures after
-	// tests finish - see https://github.com/onsi/ginkgo/issues/361
-	failed = failed || CurrentGinkgoTestDescription().Failed
-})
-
-var _ = AfterSuite(func() {
-	select {
-	case <-ch:
-		// interrupt
-		interrupted = true
-	default:
-	}
-
-	if !failed && !interrupted {
-		return
-	}
-
-	nodeOut, _ := util.DumpNodes()
-	fmt.Println(nodeOut)
-	podOut, _ := util.DumpPods()
-	fmt.Println(podOut)
-	diagnosticsOut, _ := util.RunDiagnostics()
-	fmt.Println(diagnosticsOut)
 })
 
 var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", func() {
@@ -137,7 +108,11 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 				false)
 		}
 		expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
-		Expect(version).To(Equal("v" + expectedVersionRationalized))
+
+		// skip unstable test as the version will constantly be changing
+		if expectedVersionRationalized != "unstable" {
+			Expect(version).To(Equal("v" + expectedVersionRationalized))
+		}
 	})
 
 	It("should have router running", func() {
@@ -159,15 +134,12 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 	})
 
 	It("should deploy a sample app and access it via a route", func() {
-		err := util.CreateFromTemplate("nginx-example", "openshift", "default")
-		if err != nil && strings.Contains(err.Error(), "AlreadyExists") {
-			err = nil
-		}
+		err := util.ApplyFromTemplate("nginx-example", "openshift", "default")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(util.WaitForDeploymentConfig("nginx-example", "default")).NotTo(HaveOccurred())
 		host, err := util.GetHost("nginx-example", "default")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(util.TestHost(host, 10, 200*time.Microsecond)).NotTo(HaveOccurred())
+		Expect(util.TestHost(host, 10, 200*time.Millisecond)).NotTo(HaveOccurred())
 	})
 
 	It("should have the openshift webconsole running", func() {

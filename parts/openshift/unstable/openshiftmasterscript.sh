@@ -9,6 +9,7 @@ else
 	SERVICE_TYPE=origin
 fi
 VERSION="$(rpm -q $SERVICE_TYPE --queryformat %{VERSION})"
+IP_ADDRESS="{{ .MasterIP }}"
 
 if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
 	ANSIBLE_DEPLOY_TYPE="openshift-enterprise"
@@ -30,7 +31,13 @@ else
 	COCKPIT_BASENAME="kubernetes"
 	COCKPIT_VERSION="latest"
 fi
-systemctl restart docker.service
+
+# TODO: with WALinuxAgent>=v2.2.21 (https://github.com/Azure/WALinuxAgent/pull/1005)
+# we should be able to append context=system_u:object_r:container_var_lib_t:s0
+# to ResourceDisk.MountOptions in /etc/waagent.conf and remove this stanza.
+systemctl stop docker.service
+restorecon -R /var/lib/docker
+systemctl start docker.service
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
@@ -101,13 +108,20 @@ for loc in /root/.kube/config /etc/origin/node/bootstrap.kubeconfig /etc/origin/
   cp /etc/origin/master/admin.kubeconfig "$loc"
 done
 
-# Move each static pod into place so the kubelet will run it.
-# Pods: [apiserver, controller, etcd]
-mv /etc/origin/node/disabled/* /etc/origin/node/pods
 
-systemctl start ${SERVICE_TYPE}-node
+# Patch the etcd_ip address placed inside of the static pod definition from the node install
+sed -i "s/ETCD_IP_REPLACE/${IP_ADDRESS}/g" /etc/origin/node/disabled/etcd.yaml
 
 export KUBECONFIG=/etc/origin/master/admin.kubeconfig
+
+# Move each static pod into place so the kubelet will run it.
+# Pods: [apiserver, controller, etcd]
+oc set env --local -f /etc/origin/node/disabled/apiserver.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/apiserver.yaml
+oc set env --local -f /etc/origin/node/disabled/controller.yaml DEBUG_LOGLEVEL=4 -o yaml --dry-run > /etc/origin/node/pods/controller.yaml
+mv /etc/origin/node/disabled/etcd.yaml /etc/origin/node/pods/etcd.yaml
+rm -rf /etc/origin/node/disabled
+
+systemctl start ${SERVICE_TYPE}-node
 
 while ! curl -o /dev/null -m 2 -kfs https://localhost:8443/healthz; do
 	sleep 1

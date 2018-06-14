@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -10,7 +11,7 @@ import (
 
 func setKubeletConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+	cloudSpecConfig := getCloudSpecConfig(cs.Location)
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                     "0.0.0.0",
 		"--allow-privileged":            "true",
@@ -47,6 +48,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--event-qps":                       DefaultKubeletEventQPS,
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
+		"--image-pull-progress-deadline":    "30m",
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -60,7 +62,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Override default --network-plugin?
 	if o.KubernetesConfig.NetworkPlugin == NetworkPluginKubenet {
-		o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		if o.KubernetesConfig.NetworkPolicy != NetworkPolicyCalico {
+			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		}
 		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
@@ -105,8 +109,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
-
 	}
+
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
@@ -114,8 +118,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
-			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+
+		// For N Series (GPU) VMs
+		if strings.Contains(profile.VMSize, "Standard_N") {
+			if !cs.Properties.IsNVIDIADevicePluginEnabled() && !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
+				// enabling accelerators for Kubernetes >= 1.6 to <= 1.9
+				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+			}
 		}
 	}
 }

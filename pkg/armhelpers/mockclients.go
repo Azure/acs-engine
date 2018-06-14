@@ -212,7 +212,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 	poolnameString := "poolName"
 
 	creationSource := "acsengine-k8s-agentpool1-12345678-0"
-	orchestrator := "Kubernetes:1.6.8"
+	orchestrator := "Kubernetes:1.6.9"
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 
@@ -272,7 +272,7 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 	poolnameString := "poolName"
 
 	creationSource := "acsengine-k8s-agentpool1-12345678-0"
-	orchestrator := "Kubernetes:1.6.8"
+	orchestrator := "Kubernetes:1.6.9"
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 

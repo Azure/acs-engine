@@ -15,7 +15,7 @@ RUN curl -fsSL https://get.docker.com/ | sh
 ENV GOPATH /gopath
 ENV PATH "${PATH}:${GOPATH}/bin:/usr/local/go/bin"
 
-RUN go get -u github.com/jteeuwen/go-bindata/go-bindata
+RUN go get -u github.com/go-bindata/go-bindata/go-bindata
 
 WORKDIR /gopath/src/k8s.io/kubernetes
 

@@ -26,6 +26,7 @@
         {{end}}
       ],
 {{end}}
+    "orchestratorVersion": "{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if .HasWindows}}
     "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",

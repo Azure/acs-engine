@@ -83,7 +83,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
 		defaultAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
-		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
+		if getCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
 		defaultAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"

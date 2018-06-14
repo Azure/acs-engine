@@ -53,6 +53,7 @@
               "name": "[variables('{{.Name}}VMNamePrefix')]",
               "properties": {
                 "primary": true,
+                "enableAcceleratedNetworking" : "{{.IsAcceleratedNetworkingEnabled}}",
                 {{if .IsCustomVNET}}
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"
@@ -74,6 +75,13 @@
                   {{if lt $seq $.IPAddressCount}},{{end}}
                   {{end}}
                 ]
+{{if HasCustomNodesDNS}}
+                 ,"dnsSettings": {
+                    "dnsServers": [
+                        "[variables('dnsServer')]"
+                    ]
+                }
+{{end}}
                 {{if not IsAzureCNI}}
                 ,"enableIPForwarding": true
                 {{end}}

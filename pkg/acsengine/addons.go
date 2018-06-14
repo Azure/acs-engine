@@ -33,6 +33,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			true,
 		},
 		{
+			"kubernetesmasteraddons-nvidia-device-plugin-daemonset.yaml",
+			"nvidia-device-plugin.yaml",
+			profile.IsNVIDIADevicePluginEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 			"kubernetes-dashboard-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled(),
@@ -98,9 +103,14 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.IsMetricsServerEnabled(),
 		},
 		{
-			"kubernetesmasteraddons-omsagent-daemonset.yaml",
+			"omsagent-daemonset.yaml",
 			"omsagent-daemonset.yaml",
 			profile.OrchestratorProfile.IsContainerMonitoringEnabled(),
+		},
+		{
+			"azure-cni-networkmonitor.yaml",
+			"azure-cni-networkmonitor.yaml",
+			profile.OrchestratorProfile.IsAzureCNI(),
 		},
 	}
 }

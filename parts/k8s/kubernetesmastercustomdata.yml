@@ -70,6 +70,15 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
+{{if HasCustomSearchDomain}}
+- path: "/opt/azure/containers/setup-custom-search-domains.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "customSearchDomainsScript"}}
+{{end}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -132,6 +141,8 @@ write_files:
 MASTER_MANIFESTS_CONFIG_PLACEHOLDER
 
 MASTER_ADDONS_CONFIG_PLACEHOLDER
+
+MASTER_CUSTOM_FILES_PLACEHOLDER
 
 - path: "/etc/systemd/system/hyperkube-extract.service"
   permissions: "0644"
@@ -206,6 +217,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+    sed -i "s|<azureCNINetworkMonitorImage>|{{WrapAsVariable "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
@@ -271,16 +283,12 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
-    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceGuid>|{{WrapAsVariable "workspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceKey>|{{WrapAsVariable "workspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+{{if IsNVIDIADevicePluginEnabled}}
+    sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}
-    sed -i "s|<etcdEncryptionSecret>|{{WrapAsVariable "etcdEncryptionKey"}}|g" "/etc/kubernetes/encryption-config.yaml"
+    sed -i "s|<etcdEncryptionSecret>|\"{{WrapAsVariable "etcdEncryptionKey"}}\"|g" "/etc/kubernetes/encryption-config.yaml"
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
@@ -290,9 +298,9 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
     # If Cilium Policy enabled then update the etcd certs and address
     sed -i "s|<ETCD_URL>|{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_CERT>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CA>|\"$(base64 -w 0 /etc/kubernetes/certs/ca.crt)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_KEY>|\"$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_CERT>|\"$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
 {{end}}
 {{if UseCloudControllerManager }}
     sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
@@ -307,6 +315,22 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
     sed -i "s|# Required|Requires=kms.service|g" "/etc/systemd/system/kubelet.service"
+{{end}}
+{{if HasCustomSearchDomain}}
+    sed -i "s|<searchDomainName>|{{WrapAsVariable "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmUser>|{{WrapAsVariable "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+{{end}}
+{{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
+    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<workspaceGuid>|{{WrapAsVariable "workspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<workspaceKey>|{{WrapAsVariable "workspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPURequests>|{{WrapAsVariable "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsVariable "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsVariable "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsVariable "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"

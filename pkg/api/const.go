@@ -103,8 +103,10 @@ const (
 	DefaultSecureKubeletEnabled = true
 	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon
 	DefaultMetricsServerAddonEnabled = false
+	// DefaultNVIDIADevicePluginAddonEnabled determines the acs-engine provided default for enabling NVIDIA Device Plugin
+	DefaultNVIDIADevicePluginAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
-	DefaultContainerMonitoringAddonEnabled = true
+	DefaultContainerMonitoringAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
@@ -117,8 +119,10 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
-	// DefaultContainerMonitoringAddonName is the name of the kubernetes container monitoring addon deployment
-	DefaultContainerMonitoringAddonName = "container-monitoring"
+	// DefaultNVIDIADevicePluginAddonName is the name of the NVIDIA device plugin addon deployment
+	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
+	ContainerMonitoringAddonName = "container-monitoring"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
 	// NetworkPolicyAzure is the string expression for the deprecated NetworkPolicy usage pattern "azure"

@@ -7,11 +7,20 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
     SERVICE_TYPE=atomic-openshift
 fi
 
+# TODO: with WALinuxAgent>=v2.2.21 (https://github.com/Azure/WALinuxAgent/pull/1005)
+# we should be able to append context=system_u:object_r:container_var_lib_t:s0
+# to ResourceDisk.MountOptions in /etc/waagent.conf and remove this stanza.
+systemctl stop docker.service
+restorecon -R /var/lib/docker
+systemctl start docker.service
+
 {{if eq .Role "infra"}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{else}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-compute" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{end}}
+
+sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-node
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 

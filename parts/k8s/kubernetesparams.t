@@ -82,7 +82,7 @@
         "metadata": {
           "description": "The base 64 server private keys used on the master."
         },
-        "type": "securestring"	
+        "type": "securestring"
       },
       {{if ge .MasterProfile.Count 5}}
         "etcdPeerCertificate3": {
@@ -304,38 +304,10 @@
       },
       "type": "string"
     },
-    "omsAgentVersion": {
-      {{PopulateClassicModeDefaultValue "omsAgentVersion"}}
+    "kubernetesNVIDIADevicePluginSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginSpec"}}
       "metadata": {
-        "description": "OMS agent version for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "dockerProviderVersion": {
-      {{PopulateClassicModeDefaultValue "dockerProviderVersion"}}
-      "metadata": {
-        "description": "Docker provider version for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "kubernetesContainerMonitoringSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesContainerMonitoringSpec"}}
-      "metadata": {
-        "description": "OMS agent image for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "workspaceGuid": {
-      {{PopulateClassicModeDefaultValue "workspaceGuid"}}
-      "metadata": {
-        "description": "OMS workspace guid"
-      },
-      "type": "string"
-    },
-    "workspaceKey": {
-      {{PopulateClassicModeDefaultValue "workspaceKey"}}
-      "metadata": {
-        "description": "OMS workspace key"
+        "description": "The container spec for NVIDIA Device Plugin."
       },
       "type": "string"
     },
@@ -729,6 +701,69 @@
       },
       "type": "int"
     },
+    "omsAgentVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentDockerProviderVersion": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Docker provider version for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentImage": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS agent image for Container Monitoring."
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceGuid": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace guid"
+      },
+      "type": "string"
+    },
+    "omsAgentWorkspaceKey": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS workspace key"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentCPURequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryRequests": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory requests resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentCPULimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent CPU limit resource limit"
+      },
+      "type": "string"
+    },
+    "kubernetesOMSAgentMemoryLimit": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Agent memory limit resource limit"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
@@ -824,6 +859,39 @@
       "type": "string"
     }
 {{end}}
+{{if HasCustomSearchDomain}}
+    ,"searchDomainName": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Custom Search Domain name."
+      },
+      "type": "string"
+    },
+    "searchDomainRealmUser": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user name to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "string"
+    },
+    "searchDomainRealmPassword": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Windows server AD user password to join the Linux Machines with active directory and be able to change dns registries."
+      },
+      "type": "securestring"
+    }
+{{end}}
+{{if HasCustomNodesDNS}}
+    ,"dnsServer": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "DNS Server IP"
+      },
+      "type": "string"
+    }
+{{end}}
+
 {{if EnableEncryptionWithExternalKms}}
    ,
    {{if not UseManagedIdentity}}
@@ -845,4 +913,13 @@
          "description": "SKU for the key vault used by the cluster"
        }
      }
+ {{end}}
+ {{if IsAzureCNI}}
+    ,"AzureCNINetworkMonitorImageURL": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Azure CNI networkmonitor Image URL"
+      },
+      "type": "string"
+    }
  {{end}}

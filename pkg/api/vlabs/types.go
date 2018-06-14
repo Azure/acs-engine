@@ -124,13 +124,27 @@ type LinuxProfile struct {
 	SSH           struct {
 		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
-	ScriptRootURL string            `json:"scriptroot,omitempty"`
+	Secrets            []KeyVaultSecrets   `json:"secrets,omitempty"`
+	ScriptRootURL      string              `json:"scriptroot,omitempty"`
+	CustomSearchDomain *CustomSearchDomain `json:"customSearchDomain,omitempty"`
+	CustomNodesDNS     *CustomNodesDNS     `json:"customNodesDNS,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
 type PublicKey struct {
 	KeyData string `json:"keyData"`
+}
+
+// CustomSearchDomain represents the Search Domain when the custom vnet has a windows server DNS as a nameserver.
+type CustomSearchDomain struct {
+	Name          string `json:"name,omitempty"`
+	RealmUser     string `json:"realmUser,omitempty"`
+	RealmPassword string `json:"realmPassword,omitempty"`
+}
+
+// CustomNodesDNS represents the Search Domain
+type CustomNodesDNS struct {
+	DNSServer string `json:"dnsServer,omitempty"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -305,6 +319,13 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
+// CustomFile has source as the full absolute source path to a file and dest
+// is the full absolute desired destination path to put the file on a master node
+type CustomFile struct {
+	Source string `json:"source,omitempty"`
+	Dest   string `json:"dest,omitempty"`
+}
+
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
 	VMSize       string `json:"vmSize,omitempty"`
@@ -360,6 +381,7 @@ type MasterProfile struct {
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -400,24 +422,25 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                   string               `json:"name" validate:"required"`
-	Count                  int                  `json:"count" validate:"required,min=1,max=100"`
-	VMSize                 string               `json:"vmSize" validate:"required"`
-	OSDiskSizeGB           int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	DNSPrefix              string               `json:"dnsPrefix,omitempty"`
-	OSType                 OSType               `json:"osType,omitempty"`
-	Ports                  []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
-	AvailabilityProfile    string               `json:"availabilityProfile"`
-	ScaleSetPriority       string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
-	ScaleSetEvictionPolicy string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
-	StorageProfile         string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	DiskSizesGB            []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
-	VnetSubnetID           string               `json:"vnetSubnetID,omitempty"`
-	IPAddressCount         int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro                 Distro               `json:"distro,omitempty"`
-	KubernetesConfig       *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
-	ImageRef               *ImageReference      `json:"imageReference,omitempty"`
-	Role                   AgentPoolProfileRole `json:"role,omitempty"`
+	Name                         string               `json:"name" validate:"required"`
+	Count                        int                  `json:"count" validate:"required,min=1,max=100"`
+	VMSize                       string               `json:"vmSize" validate:"required"`
+	OSDiskSizeGB                 int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	DNSPrefix                    string               `json:"dnsPrefix,omitempty"`
+	OSType                       OSType               `json:"osType,omitempty"`
+	Ports                        []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	AvailabilityProfile          string               `json:"availabilityProfile"`
+	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
+	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
+	StorageProfile               string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB                  []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
+	VnetSubnetID                 string               `json:"vnetSubnetID,omitempty"`
+	IPAddressCount               int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro                       Distro               `json:"distro,omitempty"`
+	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
+	Role                         AgentPoolProfileRole `json:"role,omitempty"`
+	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -556,6 +579,11 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 	return a.AvailabilityProfile == VirtualMachineScaleSets
 }
 
+// IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
+func (a *AgentPoolProfile) IsNSeriesSKU() bool {
+	return strings.Contains(a.VMSize, "Standard_N")
+}
+
 // IsManagedDisks returns true if the customer specified managed disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
@@ -579,6 +607,31 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
+func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
+	return a.AcceleratedNetworkingEnabled
+}
+
+// HasSearchDomain returns true if the customer specified secrets to install
+func (l *LinuxProfile) HasSearchDomain() bool {
+	if l.CustomSearchDomain != nil {
+		if l.CustomSearchDomain.Name != "" && l.CustomSearchDomain.RealmPassword != "" && l.CustomSearchDomain.RealmUser != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasCustomNodesDNS returns true if the customer specified secrets to install
+func (l *LinuxProfile) HasCustomNodesDNS() bool {
+	if l.CustomNodesDNS != nil {
+		if l.CustomNodesDNS.DNSServer != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator

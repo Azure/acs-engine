@@ -89,6 +89,8 @@ etcdStorageConfig:
 imageConfig:
   format: IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}
   latest: false
+imagePolicyConfig:
+  internalRegistryHostname: docker-registry.default.svc:5000
 kind: MasterConfig
 kubeletClientInfo:
   ca: ca-bundle.crt

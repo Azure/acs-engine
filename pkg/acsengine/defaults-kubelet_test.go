@@ -12,7 +12,10 @@ func TestKubeletConfigDefaults(t *testing.T) {
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	// TODO test all default config values
-	for key, val := range map[string]string{"--azure-container-registry-config": "/etc/kubernetes/azure.json"} {
+	for key, val := range map[string]string{
+		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
+		"--image-pull-progress-deadline":    "30m",
+	} {
 		if k[key] != val {
 			t.Fatalf("got unexpected kubelet config value for %s: %s, expected %s",
 				key, k[key], val)
@@ -171,5 +174,16 @@ func TestKubeletMaxPods(t *testing.T) {
 	if k["--max-pods"] != strconv.Itoa(DefaultKubernetesMaxPods) {
 		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
 			NetworkPluginKubenet, k["--max-pods"])
+	}
+}
+
+func TestKubeletCalico(t *testing.T) {
+	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyCalico
+	setKubeletConfig(cs)
+	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--network-plugin"] != "cni" {
+		t.Fatalf("got unexpected '--network-plugin' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPolicyCalico, k["--network-plugin"])
 	}
 }

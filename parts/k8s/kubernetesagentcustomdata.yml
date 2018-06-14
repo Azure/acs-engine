@@ -34,7 +34,14 @@ write_files:
       "log-opts":  {
          "max-size": "50m",
          "max-file": "5"
-      }
+      }{{if IsNVIDIADevicePluginEnabled}}
+      ,"default-runtime": "nvidia",
+      "runtimes": {
+         "nvidia": {
+             "path": "/usr/bin/nvidia-container-runtime",
+             "runtimeArgs": []
+        }
+      }{{end}}
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"
@@ -50,6 +57,15 @@ write_files:
   owner: "root"
   content: |
     {{WrapAsVariable "clientCertificate"}}
+
+{{if HasCustomSearchDomain}}
+- path: "/opt/azure/containers/setup-custom-search-domains.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "customSearchDomainsScript"}}
+{{end}}
 
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
@@ -132,9 +148,15 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+    sed -i "s|<azureCNINetworkMonitorImage>|{{WrapAsVariable "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
 {{end}}
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+{{end}}
+{{if HasCustomSearchDomain}}
+    sed -i "s|<searchDomainName>|{{WrapAsVariable "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmUser>|{{WrapAsVariable "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"

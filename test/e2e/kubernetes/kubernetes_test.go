@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/networkpolicy"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
@@ -384,6 +385,24 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Skip("rescheduler disabled for this cluster, will not test")
 			}
 		})
+
+		It("should have nvidia-device-plugin running", func() {
+			if eng.HasGPUNodes() {
+				if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
+					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(running).To(Equal(true))
+					pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					for i, c := range NVIDIADevicePluginAddon.Containers {
+						err := pods[0].Spec.Containers[i].ValidateResources(c)
+						Expect(err).NotTo(HaveOccurred())
+					}
+				} else {
+					Skip("nvidia-device-plugin disabled for this cluster, will not test")
+				}
+			}
+		})
 	})
 
 	Describe("with a linux agent pool", func() {
@@ -551,16 +570,83 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
 			if eng.HasGPUNodes() {
-				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
-				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
+				version := common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+					eng.HasWindowsAgents())
+				if common.IsKubernetesVersionGe(version, "1.10.0") {
+					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := j.Delete()
+					if delErr != nil {
+						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+						fmt.Println(delErr)
+					}
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
+				} else {
+					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+					delErr := j.Delete()
+					if delErr != nil {
+						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+						fmt.Println(delErr)
+					}
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
 				}
+			}
+		})
+	})
+
+	Describe("with calico network policy enabled", func() {
+		It("should apply a network policy and deny outbound internet access to nginx pod", func() {
+			if eng.HasNetworkPolicy("calico") {
+				namespace := "default"
+				By("Creating a nginx deployment")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
+				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, namespace, "")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+
+				By("Ensure there is a Running nginx pod")
+				running, err := pod.WaitOnReady(deploymentName, namespace, 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Ensuring we have outbound internet access from the nginx pods")
+				nginxPods, err := nginxDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(nginxPods)).ToNot(BeZero())
+				for _, nginxPod := range nginxPods {
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Applying a network policy to deny egress access")
+				networkPolicyName := "calico-policy"
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "calico-policy.yaml"), networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring we no longer have outbound internet access from the nginx pods")
+				for _, nginxPod := range nginxPods {
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
+					Expect(err).Should(HaveOccurred())
+					Expect(pass).To(BeFalse())
+				}
+
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				// TODO delete networkpolicy
+				// Expect(err).NotTo(HaveOccurred())
+				err = nginxDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("Calico network policy was not provisioned for this Cluster Definition")
 			}
 		})
 	})

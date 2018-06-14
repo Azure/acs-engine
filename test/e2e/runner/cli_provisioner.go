@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -24,7 +23,6 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	onode "github.com/Azure/acs-engine/test/e2e/openshift/node"
-	outil "github.com/Azure/acs-engine/test/e2e/openshift/util"
 	"github.com/Azure/acs-engine/test/e2e/remote"
 )
 
@@ -151,6 +149,12 @@ func (cli *CLIProvisioner) provision() error {
 	}
 	cli.Engine.ExpandedDefinition = csGenerated
 
+	// Both Openshift and Kubernetes deployments should have a kubeconfig available
+	// at this point.
+	if (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) && !cli.IsPrivate() {
+		cli.Config.SetKubeConfig()
+	}
+
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
 	if err != nil {
@@ -187,7 +191,6 @@ func (cli *CLIProvisioner) generateName() string {
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() || cli.Config.IsOpenShift() {
 		if !cli.IsPrivate() {
-			cli.Config.SetKubeConfig()
 			log.Println("Waiting on nodes to go into ready state...")
 			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 			if !ready {
@@ -288,73 +291,17 @@ func (cli *CLIProvisioner) IsPrivate() bool {
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
 }
 
-type resource struct {
-	kind      string
-	namespace string
-	name      string
-}
-
-func (r resource) String() string {
-	return fmt.Sprintf("%s_%s_%s", r.namespace, r.kind, r.name)
-}
-
-// FetchOpenShiftInfraLogs returns logs for Openshift infra components.
-func (cli *CLIProvisioner) FetchOpenShiftInfraLogs(logPath string) error {
-	infraResources := []resource{
-		// TODO: Maybe collapse this list and the actual readiness check tests
-		// in openshift e2e.
-		{kind: "deploymentconfig", namespace: "default", name: "router"},
-		{kind: "deploymentconfig", namespace: "default", name: "docker-registry"},
-		{kind: "deploymentconfig", namespace: "default", name: "registry-console"},
-		{kind: "statefulset", namespace: "openshift-infra", name: "bootstrap-autoapprover"},
-		{kind: "statefulset", namespace: "openshift-metrics", name: "prometheus"},
-		{kind: "daemonset", namespace: "kube-service-catalog", name: "apiserver"},
-		{kind: "daemonset", namespace: "kube-service-catalog", name: "controller-manager"},
-		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb"},
-		{kind: "deploymentconfig", namespace: "openshift-ansible-service-broker", name: "asb-etcd"},
-		{kind: "daemonset", namespace: "openshift-template-service-broker", name: "apiserver"},
-		{kind: "deployment", namespace: "openshift-web-console", name: "webconsole"},
-	}
-
-	var errs []error
-	for _, r := range infraResources {
-		log := outil.FetchLogs(r.kind, r.namespace, r.name)
-		path := filepath.Join(logPath, "infra-"+r.String())
-		err := ioutil.WriteFile(path, []byte(log), 0644)
+// FetchActivityLog gets the activity log for the all resource groups used in the provisioner.
+func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, logPath string) error {
+	for _, rg := range cli.ResourceGroups {
+		log, err := acct.FetchActivityLog(rg)
 		if err != nil {
-			errs = append(errs, err)
+			return fmt.Errorf("cannot fetch activity log for resource group %s: %v", rg, err)
+		}
+		path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", rg))
+		if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
+			return fmt.Errorf("cannot write activity log in file: %v", err)
 		}
 	}
-
-	return kerrors.NewAggregate(errs)
-}
-
-// FetchOpenShiftMachineLogs returns logs for Openshift machine components.
-func (cli *CLIProvisioner) FetchOpenShiftMachineLogs(cfg *config.Config, eng *engine.Engine, logPath string) error {
-	sshKeyPath := cfg.GetSSHKeyPath()
-
-	master := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com",
-		eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername,
-		cfg.Name,
-		cfg.Location)
-
-	services := []string{"etcd.service"}
-
-	var errs []error
-	for _, service := range services {
-		cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, "sudo journalctl -u etcd.service")
-		util.PrintCommand(cmd)
-		out, err := cmd.Output()
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		path := filepath.Join(logPath, "machine-"+service)
-		err = ioutil.WriteFile(path, out, 0644)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	return kerrors.NewAggregate(errs)
+	return nil
 }

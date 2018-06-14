@@ -69,6 +69,7 @@ Here are the valid values for the orchestrator types:
 |tiller|true|1|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info|
 |kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info|
 |rescheduler|false|1|Delivers the kubernetes rescheduler component|
+|cluster-autoscaler|false|1|Delivers the kubernetes cluster autoscaler component. See https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/azure for more info|
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 
@@ -102,7 +103,7 @@ As you can see above, `addons` is an array child property of `kubernetesConfig`.
 }
 ```
 
-More usefully, let's add some custom configuration to both of the above addons:
+More usefully, let's add some custom configuration to the above addons:
 
 ```
 "kubernetesConfig": {
@@ -131,6 +132,22 @@ More usefully, let's add some custom configuration to both of the above addons:
                   "memoryLimits": "512Mi"
                 }
               ]
+        },
+        {
+            "name": "cluster-autoscaler",
+            "containers": [
+              {
+                "name": "cluster-autoscaler",
+                "cpuRequests": "100m",
+                "memoryRequests": "300Mi",
+                "cpuLimits": "100m",
+                "memoryLimits": "300Mi"
+              }
+            ],
+            "config": {
+              "maxNodes": "5",
+              "minNodes": "1"
+            }
         }
     ]
 }
@@ -172,7 +189,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--cloud-provider"|"azure"|
 |"--cluster-domain"|"cluster.local"|
 |"--pod-infra-container-image"|"pause-amd64:*version*"|
-|"--max-pods"|"30", or "100" if using kubenet --network-plugin (i.e., `"networkPlugin": "kubenet"`)|
+|"--max-pods"|"30", or "110" if using kubenet --network-plugin (i.e., `"networkPlugin": "kubenet"`)|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
 |"--node-status-update-frequency"|"10s"|
 |"--image-gc-high-threshold"|"85"|
@@ -180,6 +197,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--pod-max-pids"|"100" (need to activate the feature in --feature-gates=SupportPodPidsLimit=true)|
+|"--image-pull-progress-deadline"|"30m"|
 |"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option for k8s versions before 1.11.0|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
@@ -440,6 +458,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, `apiServerConfig`, and `
 |imageReference.name|no|The name of the Linux OS image. Needs to be used in conjunction with resourceGroup, below|
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
 |distro|no|Select Master(s) Operating System (Linux only). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `RHEL`: OpenShift; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
+|customFiles|no|The custom files to be provisioned to the master nodes. Defined as an array of json objects with each defined as `"source":"absolute-local-path", "dest":"absolute-path-on-masternodes"`.[See examples](../examples/customfiles) |
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, user-defined OS Images, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
@@ -462,6 +481,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |imageReference.resourceGroup|no|Resource group that contains the Linux OS image. Needs to be used in conjunction with name, above|
 |osType|no|Specifies the agent pool's Operating System. Supported values are `Windows` and `Linux`. Defaults to `Linux`|
 |distro|no|Specifies the agent pool's Linux distribution. Supported values are `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `RHEL`: OpenShift; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|acceleratedNetworkingEnabled|no|Use [Azure Accelerated Networking](https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/) feature for agents (You must select a VM SKU that support Accelerated Networking)|
 
 ### linuxProfile
 
@@ -472,6 +492,10 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |adminUsername|yes|Describes the username to be used on all linux clusters|
 |ssh.publicKeys.keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation)|
 |secrets|no|Specifies an array of key vaults to pull secrets from and what secrets to pull from each|
+|customSearchDomain.name|no|describes the search domain to be used on all linux clusters|
+|customSearchDomain.realmUser|no|describes the realm user with permissions to update dns registries on Windows Server DNS|
+|customSearchDomain.realmPassword|no|describes the realm user password to update dns registries on Windows Server DNS|
+|customNodesDNS.dnsServer|no|describes the IP address of the DNS Server|
 
 #### secrets
 `secrets` details which certificates to install on the masters and nodes in the cluster.
@@ -501,6 +525,13 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 |clientId|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
 |secret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 |objectId|optional, for Kubernetes clusters|describes the Azure service principal object id.  It is required if enableEncryptionWithExternalKms is true|
+|keyvaultSecretRef.vaultId|no, for Kubernetes clusters|describes the vault id of the keyvault to retrieve the service principal secret from. See below for format.|
+|keyvaultSecretRef.secretName|no, for Kubernetes clusters|describes the name of the service principal secret in keyvault|
+|keyvaultSecretRef.version|no, for Kubernetes clusters|describes the version of the secret to use|
+
+
+format for `keyvaultSecretRef.vaultId`, can be obtained in cli, or found in the portal:
+`/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>`. See [keyvault params](../examples/keyvault-params/README.md#service-principal-profile) for an example.
 
 ## Cluster Defintions for apiVersion "2016-03-30"
 
