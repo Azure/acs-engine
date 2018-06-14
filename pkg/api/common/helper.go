@@ -53,7 +53,8 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
 }
 
-func validateDNSPrefix(dnsName string) error {
+// ValidateDNSPrefix is a helper function to check that a DNS Prefix is valid
+func ValidateDNSPrefix(dnsName string) error {
 	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {

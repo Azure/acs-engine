@@ -66,7 +66,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 func (m *MasterProfile) Validate() error {
 	// Don't need to call validate.Struct(m)
 	// It is handled by Properties.Validate()
-	return common.validateDNSPrefix(m.DNSPrefix)
+	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
 // Validate implements APIObject
@@ -89,7 +89,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	}
 	if a.DNSPrefix != "" {
-		if e := common.validateDNSPrefix(a.DNSPrefix); e != nil {
+		if e := common.ValidateDNSPrefix(a.DNSPrefix); e != nil {
 			return e
 		}
 		if len(a.Ports) > 0 {

@@ -29,7 +29,7 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
 		return e
 	}
-	return common.validateDNSPrefix(m.DNSPrefix)
+	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
 // Validate implements APIObject
@@ -54,7 +54,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	}
 	if a.DNSPrefix != "" {
-		if e := common.validateDNSPrefix(a.DNSPrefix); e != nil {
+		if e := common.ValidateDNSPrefix(a.DNSPrefix); e != nil {
 			return e
 		}
 	}

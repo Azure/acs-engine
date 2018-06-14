@@ -68,7 +68,7 @@ func (a *Properties) Validate() error {
 
 	// Don't need to call validate.Struct(m)
 	// It is handled by Properties.Validate()
-	if e := common.validateDNSPrefix(a.DNSPrefix); e != nil {
+	if e := common.ValidateDNSPrefix(a.DNSPrefix); e != nil {
 		return e
 	}
 

@@ -321,7 +321,7 @@ func (a *Properties) validateMasterProfile() error {
 			return err
 		}
 	}
-	return common.validateDNSPrefix(m.DNSPrefix)
+	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
 func (a *Properties) validateAgentPoolProfiles() error {
@@ -745,7 +745,7 @@ func (a *AgentPoolProfile) validateOrchestratorSpecificProperties(orchestratorTy
 	}
 
 	if a.DNSPrefix != "" {
-		if e := common.validateDNSPrefix(a.DNSPrefix); e != nil {
+		if e := common.ValidateDNSPrefix(a.DNSPrefix); e != nil {
 			return e
 		}
 		if len(a.Ports) > 0 {
