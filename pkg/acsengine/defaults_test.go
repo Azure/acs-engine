@@ -486,7 +486,7 @@ func TestStorageProfile(t *testing.T) {
 			properties.AgentPoolProfiles[0].AvailabilityProfile, api.AvailabilitySet)
 	}
 
-	mockCS = getMockBaseContainerService("1.10.0")
+	mockCS = getMockBaseContainerService("1.10.2")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	setPropertiesDefaults(&mockCS, false)
