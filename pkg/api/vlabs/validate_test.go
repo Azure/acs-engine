@@ -1000,6 +1000,23 @@ func TestMasterProfileValidate(t *testing.T) {
 			},
 			expectedErr: "openshift can only deployed with one master",
 		},
+		{ // test existing vnet: run with only specifying vnetsubnetid
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				VnetSubnetID: "testvnetstring",
+				Count:        1,
+			},
+			expectedErr: "when specifying a vnetsubnetid the firstconsecutivestaticip is required",
+		},
+		{ // test existing vnet: run with specifying both vnetsubnetid and firstconsecutivestaticip
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix:                "dummy",
+				VnetSubnetID:             "testvnetstring",
+				FirstConsecutiveStaticIP: "10.0.0.1",
+				Count: 1,
+			},
+		},
 	}
 
 	for i, test := range tests {
