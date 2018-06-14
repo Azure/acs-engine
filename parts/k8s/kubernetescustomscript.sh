@@ -59,7 +59,7 @@ function testOutboundConnection() {
         retrycmd_if_failure 120 1 20 ncat -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 ncat -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
     else
         retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
-
+    fi
 }
 
 function waitForCloudInit() {
