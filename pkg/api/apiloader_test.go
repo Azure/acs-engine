@@ -11,6 +11,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 )
@@ -210,4 +212,31 @@ func TestLoadContainerServiceForAgentPoolOnlyCluster(t *testing.T) {
 			})
 		})
 	})
+}
+
+func TestLoadContainerServiceWithNilProperties(t *testing.T) {
+	jsonWithoutProperties := `{
+        "type": "Microsoft.ContainerService/managedClusters",
+        "name": "[parameters('clusterName')]",
+        "apiVersion": "2017-07-01",
+        "location": "[resourceGroup().location]"
+        }`
+
+	tmpFile, err := ioutil.TempFile("", "containerService-invalid")
+	fileName := tmpFile.Name()
+	defer os.Remove(fileName)
+
+	err = ioutil.WriteFile(fileName, []byte(jsonWithoutProperties), os.ModeAppend)
+
+	apiloader := &Apiloader{}
+	existingContainerService := &ContainerService{Name: "test",
+		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.6.9"}}}
+	_, _, err = apiloader.LoadContainerServiceFromFile(fileName, true, false, existingContainerService)
+	if err == nil {
+		t.Errorf("Expected error to be thrown")
+	}
+	expectedMsg := "missing ContainerService Properties"
+	if err.Error() != expectedMsg {
+		t.Errorf("Expected error with message %s but got %s", expectedMsg, err.Error())
+	}
 }
