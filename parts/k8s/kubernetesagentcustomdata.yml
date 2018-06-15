@@ -22,7 +22,11 @@ write_files:
   content: |
     [Service]
     ExecStart=
+{{if .IsCoreOS}}
+    ExecStart=/usr/bin/dockerd -H fd:// -storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+{{else}}
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+{{end}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
