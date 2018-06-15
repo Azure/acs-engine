@@ -177,7 +177,9 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 
     systemctl enable rpcbind
     systemctl enable rpc-statd
-    systemctl start rpcbind
+    #rpc-statd should not be enabled, but started automatically
+    #https://github.com/coreos/bugs/issues/2038
+    #systemctl start rpcbind
     systemctl start rpc-statd
 
     # Simulates runcmd completion
