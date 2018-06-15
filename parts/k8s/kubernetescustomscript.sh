@@ -64,7 +64,7 @@ function testOutboundConnection() {
 
 function waitForCloudInit() {
     if [[ $OS == $COREOS_OS_NAME ]]; then
-      wait_for_file 900 1 /opt/azure/containers/kubelet.sh || exit $ERR_CLOUD_INIT_TIMEOUT
+      wait_for_file 900 1 /opt/azure/containers/runcmd.complete || exit $ERR_CLOUD_INIT_TIMEOUT
     else
       wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
     fi
@@ -502,9 +502,11 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
     $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
 installDeps
 installDocker
 runAptDaily
+fi
 configureK8s
 ensureDocker
 configNetworkPlugin
