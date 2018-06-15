@@ -96,9 +96,6 @@ func init() {
 
 // Validate implements APIObject
 func (a *Properties) Validate(isUpdate bool) error {
-	if a == nil {
-		return fmt.Errorf("missing ContainerService Properties")
-	}
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
