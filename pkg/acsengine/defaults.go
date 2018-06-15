@@ -321,16 +321,16 @@ var (
 		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
 		Config: map[string]string{
 			"omsAgentVersion":       "1.6.0-42",
-			"dockerProviderVersion": "2.0.0-2",
+			"dockerProviderVersion": "2.0.0-3",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "dockerio.azureedge.net/microsoft/oms:ciprod05082018",
+				Image:          "dockerio.azureedge.net/microsoft/oms:ciprod06072018",
 				CPURequests:    "50m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "150Mi",
+				MemoryRequests: "100Mi",
+				CPULimits:      "150m",
+				MemoryLimits:   "500Mi",
 			},
 		},
 	}
