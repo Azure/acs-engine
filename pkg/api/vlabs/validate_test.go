@@ -852,15 +852,6 @@ func Test_Properties_ValidateAddons(t *testing.T) {
 	}
 }
 
-func TestPropertiesValidationNil(t *testing.T) {
-	containerService := &ContainerService{}
-	err := containerService.Properties.Validate(true)
-	expected := "missing ContainerService Properties"
-	if err == nil || err.Error() != expected {
-		t.Errorf("Expected error with message %s", expected)
-	}
-}
-
 func TestWindowsVersions(t *testing.T) {
 	for _, version := range common.GetAllSupportedKubernetesVersionsWindows() {
 		p := getK8sDefaultProperties(true)
