@@ -539,7 +539,9 @@ if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; the
 fi
 
 ensureKubelet
-ensureJournal
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
+  ensureJournal
+fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
