@@ -152,7 +152,7 @@ MASTER_CUSTOM_FILES_PLACEHOLDER
     Description=kubectl and kubelet extraction
     Requires=docker.service
     After=docker.service
-{{if .IsCoreOS}}
+{{if .MasterProfile.IsCoreOS}}
     ConditionPathExists=!/opt/kubectl
 {{else}}
     ConditionPathExists=!/usr/local/bin/kubectl
@@ -165,7 +165,7 @@ MASTER_CUSTOM_FILES_PLACEHOLDER
     ExecStartPre=/bin/mkdir -p /tmp/hyperkubedir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/hyperkubedir:/opt/hyperkubedir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/hyperkubedir/"
-{{if .IsCoreOS}}
+{{if .MasterProfile.IsCoreOS}}
     ExecStartPre=/bin/cp /tmp/hyperkubedir/hyperkube /opt/kubelet
     ExecStartPre=/bin/mv /tmp/hyperkubedir/hyperkube /opt/kubectl
     ExecStart=/bin/chmod a+x /opt/kubelet /opt/kubectl
