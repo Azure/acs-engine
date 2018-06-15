@@ -37,7 +37,11 @@ fi
 # to ResourceDisk.MountOptions in /etc/waagent.conf and remove this stanza.
 systemctl stop docker.service
 restorecon -R /var/lib/docker
-systemctl start docker.service
+rv=0; systemctl start docker.service || rv=$?
+if [ $rv -ne 0 ]; then
+	journalctl -u docker.service
+	exit $rv
+fi
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
