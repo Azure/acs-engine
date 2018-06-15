@@ -23,7 +23,7 @@ write_files:
     [Service]
     ExecStart=
 {{if .IsCoreOS}}
-    ExecStart=/usr/bin/dockerd -H fd:// -storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 {{else}}
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 {{end}}
