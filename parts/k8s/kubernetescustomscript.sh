@@ -368,6 +368,10 @@ function ensureKMS() {
 }
 
 function ensureKubelet() {
+    #on CoreOS kubelet is on a different path
+if [[ $OS == $COREOS_OS_NAME ]]; then
+    sed -i "s|/usr/local/bin/kubelet|/opt/kubelet|g" "/etc/systemd/system/kubelet.service"
+fi
     systemctlEnableAndStart kubelet
 }
 
