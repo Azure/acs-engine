@@ -694,12 +694,7 @@ func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
 			if *o.KubernetesConfig.UseInstanceMetadata && sv.LT(minVersion) {
 				return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 			}
-		} else {
-			if sv.LT(minVersion) {
-				return fmt.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
-			}
 		}
-
 		if (a.AvailabilityProfile == VirtualMachineScaleSets || len(a.AvailabilityProfile) == 0) && a.StorageProfile == StorageAccount {
 			return fmt.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
 		}
