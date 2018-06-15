@@ -177,7 +177,7 @@ function installDocker() {
 }
 
 function runAptDaily() {
-    retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_DAILY_TIMEOUT
+    /usr/lib/apt/apt.systemd.daily
 }
 
 function generateAggregatedAPICerts() {
