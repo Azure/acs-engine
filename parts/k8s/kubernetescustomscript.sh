@@ -63,7 +63,11 @@ function testOutboundConnection() {
 }
 
 function waitForCloudInit() {
-    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    if [[ $OS == $COREOS_OS_NAME ]]; then
+      wait_for_file 900 1 /opt/azure/containers/kubelet.sh || exit $ERR_CLOUD_INIT_TIMEOUT
+    else
+      wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    fi
 }
 
 function systemctlEnableAndStart() {
