@@ -971,7 +971,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			masterProfile: MasterProfile{
 				DNSPrefix: "bad!",
 			},
-			expectedErr: "DNS name 'bad!' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
+			expectedErr: "DNS prefix 'bad!' is invalid. The DNS prefix must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
 		},
 		{
 			masterProfile: MasterProfile{
