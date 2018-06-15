@@ -1,6 +1,9 @@
 package helpers
 
 import (
+	"bytes"
+	"crypto/x509"
+	"encoding/pem"
 	"math/rand"
 	"testing"
 
@@ -126,9 +129,14 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 	if err != nil {
 		t.Fatalf("failed to generate SSH: %s", err)
 	}
-	privateKeyString := string(privateKeyToPem(privateKey))
+	pemBlock := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	}
+	pemBuffer := bytes.Buffer{}
+	pem.Encode(&pemBuffer, pemBlock)
 
-	if privateKeyString != expectedPrivateKeyString {
+	if string(pemBuffer.Bytes()) != expectedPrivateKeyString {
 		t.Fatalf("Private Key did not match expected format/value")
 	}
 
