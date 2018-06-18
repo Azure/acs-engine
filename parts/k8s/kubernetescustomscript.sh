@@ -28,6 +28,7 @@ ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
+ERR_APT_DIST_UPGRADE_TIMEOUT=100 # Timeout waiting for apt-get update to complete
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -157,6 +158,18 @@ function updateApt() {
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
+}
+
+function upgradeOs() {
+    echo `date`,`hostname`, apt-get_dist-upgrade_begin>>/opt/m
+    apt_get_dist_upgrade 5 30 600 || exit $ERR_APT_DIST_UPGRADE_TIMEOUT
+    echo `date`,`hostname`, apt-get_dist-upgrade_end>>/opt/m
+
+    if [ -f /var/run/reboot-required ]; then
+        REBOOTREQUIRED=true
+    else
+        REBOOTREQUIRED=false
+    fi
 }
 
 function installDeps() {
@@ -490,6 +503,7 @@ testOutboundConnection
 waitForCloudInit
 configureAptSources
 updateApt
+upgradeOs
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
