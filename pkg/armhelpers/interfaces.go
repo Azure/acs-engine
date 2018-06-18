@@ -44,6 +44,15 @@ type ACSEngineClient interface {
 	// ListVirtualMachineScaleSets lists the vmss resources in the resource group
 	ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error)
 
+	// ListVirtualMachineScaleSetVMs lists the virtual machines contained in a vmss
+	ListVirtualMachineScaleSetVMs(resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResult, error)
+
+	// DeleteVirtualMachineScaleSetVM deletes a VM in a VMSS
+	DeleteVirtualMachineScaleSetVM(resourceGroup, virtualMachineScaleSet, instanceID string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error)
+
+	// SetVirtualMachineScaleSetCapacity sets the VMSS capacity
+	SetVirtualMachineScaleSetCapacity(resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error)
+
 	//
 	// STORAGE
 

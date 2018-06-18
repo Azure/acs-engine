@@ -124,6 +124,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]",
       "properties": {
+        "overprovision": false,
         "upgradePolicy": {
           "mode": "Manual"
         },

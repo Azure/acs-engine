@@ -46,17 +46,18 @@ type AzureClient struct {
 	environment     azure.Environment
 	subscriptionID  string
 
-	authorizationClient           authorization.RoleAssignmentsClient
-	deploymentsClient             resources.DeploymentsClient
-	deploymentOperationsClient    resources.DeploymentOperationsClient
-	resourcesClient               resources.GroupClient
-	storageAccountsClient         storage.AccountsClient
-	interfacesClient              network.InterfacesClient
-	groupsClient                  resources.GroupsClient
-	providersClient               resources.ProvidersClient
-	virtualMachinesClient         compute.VirtualMachinesClient
-	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
-	disksClient                   disk.DisksClient
+	authorizationClient             authorization.RoleAssignmentsClient
+	deploymentsClient               resources.DeploymentsClient
+	deploymentOperationsClient      resources.DeploymentOperationsClient
+	resourcesClient                 resources.GroupClient
+	storageAccountsClient           storage.AccountsClient
+	interfacesClient                network.InterfacesClient
+	groupsClient                    resources.GroupsClient
+	providersClient                 resources.ProvidersClient
+	virtualMachinesClient           compute.VirtualMachinesClient
+	virtualMachineScaleSetsClient   compute.VirtualMachineScaleSetsClient
+	virtualMachineScaleSetVMsClient compute.VirtualMachineScaleSetVMsClient
+	disksClient                     disk.DisksClient
 
 	applicationsClient      graphrbac.ApplicationsClient
 	servicePrincipalsClient graphrbac.ServicePrincipalsClient
@@ -264,17 +265,18 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		environment:    env,
 		subscriptionID: subscriptionID,
 
-		authorizationClient:           authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		deploymentsClient:             resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		deploymentOperationsClient:    resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		resourcesClient:               resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		storageAccountsClient:         storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		interfacesClient:              network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		groupsClient:                  resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		providersClient:               resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		virtualMachinesClient:         compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		virtualMachineScaleSetsClient: compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		disksClient:                   disk.NewDisksClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		authorizationClient:             authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		deploymentsClient:               resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		deploymentOperationsClient:      resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		resourcesClient:                 resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		storageAccountsClient:           storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		interfacesClient:                network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:                    resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		providersClient:                 resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachinesClient:           compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachineScaleSetsClient:   compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachineScaleSetVMsClient: compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		disksClient:                     disk.NewDisksClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 
 		applicationsClient:      graphrbac.NewApplicationsClientWithBaseURI(env.GraphEndpoint, tenantID),
 		servicePrincipalsClient: graphrbac.NewServicePrincipalsClientWithBaseURI(env.GraphEndpoint, tenantID),
@@ -291,6 +293,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
 	c.virtualMachineScaleSetsClient.Authorizer = authorizer
+	c.virtualMachineScaleSetVMsClient.Authorizer = authorizer
 	c.disksClient.Authorizer = authorizer
 
 	c.deploymentsClient.PollingDelay = time.Second * 5

@@ -66,7 +66,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 func (m *MasterProfile) Validate() error {
 	// Don't need to call validate.Struct(m)
 	// It is handled by Properties.Validate()
-	return validateDNSName(m.DNSPrefix)
+	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
 // Validate implements APIObject
@@ -89,7 +89,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	}
 	if a.DNSPrefix != "" {
-		if e := validateDNSName(a.DNSPrefix); e != nil {
+		if e := common.ValidateDNSPrefix(a.DNSPrefix); e != nil {
 			return e
 		}
 		if len(a.Ports) > 0 {
@@ -205,18 +205,6 @@ func validatePoolName(poolName string) error {
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
 		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
-	}
-	return nil
-}
-
-func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
-	re, err := regexp.Compile(dnsNameRegex)
-	if err != nil {
-		return err
-	}
-	if !re.MatchString(dnsName) {
-		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number. (length was %d)", dnsName, len(dnsName))
 	}
 	return nil
 }
