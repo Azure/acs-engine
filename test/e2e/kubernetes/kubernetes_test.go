@@ -351,6 +351,74 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have cluster-omsagent daemonset running", func() {
+			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range clusterContainerMonitoringAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("container monitoring disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have cluster-omsagent replicaset running", func() {
+			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range clusterContainerMonitoringAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("container monitoring disabled for this cluster, will not test")
+			}
+		})
+
+		It("should be successfully running kubepodinventory plugin - ContainerMonitoring", func() {
+			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range clusterContainerMonitoringAddon.Containers {
+					out, err := pods[0].Exec("grep", "\"in_kube_podinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("container monitoring disabled for this cluster, will not test")
+			}
+		})
+
+		It("should be successfully running kubenodeinventory plugin - ContainerMonitoring", func() {
+			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range clusterContainerMonitoringAddon.Containers {
+					out, err := pods[0].Exec("grep", "\"in_kube_nodeinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+					Expect(err).NotTo(HaveOccurred())
+				}
+			} else {
+				Skip("container monitoring disabled for this cluster, will not test")
+			}
+		})
+
 		It("should have rescheduler running", func() {
 			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
