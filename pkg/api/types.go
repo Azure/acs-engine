@@ -148,10 +148,10 @@ type PublicKey struct {
 type CustomSearchDomain struct {
 	Name          string `json:"name,omitempty"`
 	RealmUser     string `json:"realmUser,omitempty"`
-	RealmPassword string `json:"realmPassword,omitempty" `
+	RealmPassword string `json:"realmPassword,omitempty"`
 }
 
-// CustomNodesDNS represents the Search Domain when the custom vnet for a custom DNS as a nameserver.
+// CustomNodesDNS represents the Search Domain whenthe custom vnet for a custom DNS as a nameserver.
 type CustomNodesDNS struct {
 	DNSServer string `json:"dnsServer,omitempty"`
 }
