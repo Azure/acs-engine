@@ -160,7 +160,7 @@ function installDeps() {
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
@@ -171,7 +171,7 @@ function installDocker() {
     echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
     printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
 }
@@ -308,19 +308,6 @@ function installClearContainersRuntime() {
 	systemctlEnableAndStart cc-proxy
 }
 
-function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
-
-    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-
-	echo "Successfully installed cri-containerd..."
-	setupContainerd
-}
-
 function setupContainerd() {
 	echo "Configuring cri-containerd..."
 
@@ -340,6 +327,21 @@ function setupContainerd() {
 	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+}
+
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0"
+	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+
+    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+	rm -f "$CONTAINERD_TGZ_TMP"
+
+	echo "Successfully installed cri-containerd..."
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+		setupContainerd
+	fi
 }
 
 function ensureContainerd() {
@@ -521,6 +523,10 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo `date`,`hostname`, configAddonsDone>>/opt/m
 fi
 
+# containerd needs to be installed before extractHyperkube
+# so runc is present.
+echo `date`,`hostname`, installContainerdStart>>/opt/m
+installContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
 echo `date`,`hostname`, extractHyperkubeDone>>/opt/m
@@ -530,10 +536,6 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		installClearContainersRuntime
 	fi
-fi
-if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
-	echo `date`,`hostname`, installContainerdStart>>/opt/m
-	installContainerd
 fi
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
