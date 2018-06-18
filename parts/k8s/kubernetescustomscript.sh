@@ -364,8 +364,22 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    systemctlEnableAndStart hyperkube-extract
+    TMP_DIR=$(mktemp -d)
+    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://github.com/genuinetools/img/releases/download/v0.4.6/img-linux-amd64"
+    chmod +x /usr/local/bin/img
+    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || $ERR_K8S_DOWNLOAD_TIMEOUT
+    path=$(find /tmp/img -name "hyperkube")
+
+    if [[ $OS == $COREOS_OS_NAME ]]; then
+        cp "$path" "/opt/kubelet"
+        cp "$path" "/opt/kubectl"
+        chmod a+x /opt/kubelet /opt/kubectl
+    else
+        cp "$path" "/usr/local/bin/kubelet"
+        cp "$path" "/usr/local/bin/kubectl"
+        chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
+    fi
+    rm -rf /tmp/hyperkube.tar "/tmp/img"
 }
 
 function ensureJournal(){
