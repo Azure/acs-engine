@@ -10,29 +10,22 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
-func TestPointerToBool(t *testing.T) {
-	boolVar := true
-	ret := PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(true) to return *true, instead returned %#v", ret)
-	}
+type ContainerService struct {
+	ID       string `json:"id"`
+	Location string `json:"location"`
+	Name     string `json:"name"`
+}
 
-	if IsTrueBoolPointer(ret) != boolVar {
-		t.Fatalf("expected IsTrueBoolPointer(*true) to return true, instead returned %#v", IsTrueBoolPointer(ret))
-	}
-
-	boolVar = false
-	ret = PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(false) to return *false, instead returned %#v", ret)
-	}
-
-	if IsTrueBoolPointer(ret) != boolVar {
-		t.Fatalf("expected IsTrueBoolPointer(*false) to return false, instead returned %#v", IsTrueBoolPointer(ret))
+func TestJSONMarshal(t *testing.T) {
+	input := &ContainerService{}
+	result, _ := JSONMarshal(input, false)
+	expected := "{\"id\":\"\",\"location\":\"\",\"name\":\"\"}"
+	if string(result) != expected {
+		t.Fatalf("JSONMarshal returned unexpected result: expected %s but got %s", expected, string(result))
 	}
 }
 
-func TestIsRegionNormalized(t *testing.T) {
+func TestNormalizaAzureRegion(t *testing.T) {
 	cases := []struct {
 		input          string
 		expectedResult string
@@ -60,6 +53,28 @@ func TestIsRegionNormalized(t *testing.T) {
 		if c.expectedResult != result {
 			t.Fatalf("NormalizeAzureRegion returned unexpected result: expected %s but got %s", c.expectedResult, result)
 		}
+	}
+}
+
+func TestPointerToBool(t *testing.T) {
+	boolVar := true
+	ret := PointerToBool(boolVar)
+	if *ret != boolVar {
+		t.Fatalf("expected PointerToBool(true) to return *true, instead returned %#v", ret)
+	}
+
+	if IsTrueBoolPointer(ret) != boolVar {
+		t.Fatalf("expected IsTrueBoolPointer(*true) to return true, instead returned %#v", IsTrueBoolPointer(ret))
+	}
+
+	boolVar = false
+	ret = PointerToBool(boolVar)
+	if *ret != boolVar {
+		t.Fatalf("expected PointerToBool(false) to return *false, instead returned %#v", ret)
+	}
+
+	if IsTrueBoolPointer(ret) != boolVar {
+		t.Fatalf("expected IsTrueBoolPointer(*false) to return false, instead returned %#v", IsTrueBoolPointer(ret))
 	}
 }
 
