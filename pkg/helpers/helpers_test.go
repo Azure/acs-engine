@@ -19,9 +19,14 @@ type ContainerService struct {
 func TestJSONMarshal(t *testing.T) {
 	input := &ContainerService{}
 	result, _ := JSONMarshal(input, false)
-	expected := "{\"id\":\"\",\"location\":\"\",\"name\":\"\"}"
+	expected := "{\"id\":\"\",\"location\":\"\",\"name\":\"\"}\n"
 	if string(result) != expected {
 		t.Fatalf("JSONMarshal returned unexpected result: expected %s but got %s", expected, string(result))
+	}
+	result, _ = JSONMarshalIndent(input, "", "", false)
+	expected = "{\n\"id\": \"\",\n\"location\": \"\",\n\"name\": \"\"\n}\n"
+	if string(result) != expected {
+		t.Fatalf("JSONMarshal returned unexpected result: expected \n%sbut got \n%s", expected, result)
 	}
 }
 
