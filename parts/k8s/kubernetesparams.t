@@ -115,24 +115,28 @@
 {{end}}
 {{if not IsOpenShift}}
     "sasToken": {
+      "defaultValue": "",
       "metadata": {
         "description": "The SAS token used to upload cse logs to a storage account"
       },
       "type": "securestring"
     },
     "cseLogsStorageAccount": {
+      "defaultValue": "",
       "metadata": {
         "description": "The name of the storage account to upload cse logs to"
       },
       "type": "string"
     },
     "cseLogsContainerName": {
+      "defaultValue": "",
       "metadata": {
         "description": "The name of the container to upload cse logs to"
       },
       "type": "string"
     },
     "cseLogsBlobPrefix": {
+      "defaultValue": "",
       "metadata": {
         "description": "The prefix of the blob to upload cse logs to"
       },
