@@ -386,7 +386,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be successfully running kubepodinventory plugin - ContainerMonitoring", func() {
-			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+			if hasContainerMonitoring := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
 				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -401,7 +401,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be successfully running kubenodeinventory plugin - ContainerMonitoring", func() {
-			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
+			if hasContainerMonitoring := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
 				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
