@@ -393,10 +393,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct resources have been applied")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				for i, c := range clusterContainerMonitoringAddon.Containers {
-					out, err := pods[0].Exec("grep", "\"in_kube_podinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
-					Expect(err).NotTo(HaveOccurred())
-				}
+				err := pods[0].Exec("grep", "\"in_kube_podinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
@@ -410,10 +408,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct resources have been applied")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				for i, c := range clusterContainerMonitoringAddon.Containers {
-					out, err := pods[0].Exec("grep", "\"in_kube_nodeinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
-					Expect(err).NotTo(HaveOccurred())
-				}
+				err := pods[0].Exec("grep", "\"in_kube_nodeinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
