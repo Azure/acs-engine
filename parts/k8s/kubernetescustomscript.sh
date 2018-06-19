@@ -59,7 +59,7 @@ function testOutboundConnection() {
 }
 
 function waitForCloudInit() {
-    wait_for_file 1 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
 }
 
 function systemctlEnableAndStart() {
@@ -354,7 +354,7 @@ function ensureContainerd() {
 }
 
 function ensureDocker() {
-    wait_for_file 1 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
+    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
 }
 function ensureKMS() {
