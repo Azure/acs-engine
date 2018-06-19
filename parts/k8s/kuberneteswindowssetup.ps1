@@ -360,6 +360,24 @@ Write-Host "NetworkPlugin azure, starting kubelet."
 
 # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
 netsh advfirewall set allprofiles state off
+# startup the service
+
+`$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
+
+if (`$hnsNetwork)
+{
+    # Kubelet has been restarted with existing network.
+    # Cleanup all containers
+    docker ps -q | foreach {docker rm `$_ -f}
+    # cleanup network
+    Write-Host "Cleaning up old HNS network found"
+    Remove-HnsNetwork `$hnsNetwork
+    Start-Sleep 10
+    `$cnijson = "$global:KubeDir" + "\azure-vnet*"
+    remove-item `$cnijson  -ErrorAction SilentlyContinue
+}
+
+Restart-Service Kubeproxy
 
 $KubeletCommandLine
 
