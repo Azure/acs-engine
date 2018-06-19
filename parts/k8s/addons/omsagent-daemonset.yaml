@@ -222,6 +222,8 @@ metadata:
                value: my_aks_cluster
              - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
                value: "true"
+             - name: ISTEST
+               value: true
             securityContext:
               privileged: true
             ports:
