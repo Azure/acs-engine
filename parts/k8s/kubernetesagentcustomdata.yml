@@ -8,14 +8,15 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-{{if not .IsCoreOS}}
+{{if .KubernetesConfig.RequiresDocker}}
+    {{if not .IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     MountFlags=shared
-{{end}}
+    {{end}}
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
@@ -43,6 +44,7 @@ write_files:
         }
       }{{end}}
     }
+{{end}}
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
@@ -139,7 +141,10 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     /usr/bin/mkdir -p /etc/kubernetes/manifests
+
+    {{if .KubernetesConfig.RequiresDocker}}
     usermod -aG docker {{WrapAsVariable "username"}}
+    {{end}}
 
     systemctl enable rpcbind
     systemctl enable rpc-statd
