@@ -132,6 +132,12 @@
       },
       "type": "string"
     },
+    "cseLogsBlobPrefix": {
+      "metadata": {
+        "description": "The prefix of the blob to upload cse logs to"
+      },
+      "type": "string"
+    },
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
