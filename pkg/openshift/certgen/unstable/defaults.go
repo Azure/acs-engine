@@ -51,7 +51,7 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		},
 	}
 
-	err := c.PrepareMasterCerts()
+	err := c.PrepareMasterCerts([]byte(a.CertificateProfile.CaCertificate), []byte(a.CertificateProfile.CaPrivateKey))
 	if err != nil {
 		return false, err
 	}
@@ -75,11 +75,13 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
 	}
 
-	masterBundle, err := getConfigBundle(c.WriteMaster)
-	if err != nil {
-		return false, err
+	if !c.IsAgentPoolOnly() {
+		masterBundle, err := getConfigBundle(c.WriteMaster)
+		if err != nil {
+			return false, err
+		}
+		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 
 	nodeBundle, err := getConfigBundle(c.WriteNode)
 	if err != nil {

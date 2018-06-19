@@ -222,9 +222,36 @@ func TestValidateCertificateProfile(t *testing.T) {
 			orchestratorProfile: &OrchestratorProfile{
 				OrchestratorType: common.OpenShift,
 			},
-			certificateProfile: nil,
+			certificateProfile: &CertificateProfile{
+				CaCertificate: "CERT",
+				CaPrivateKey:  "PRIV_KEY",
+			},
 
 			expectedErr: nil,
+		},
+		{
+			name: "openshift orchestrator misses CA cert",
+
+			orchestratorProfile: &OrchestratorProfile{
+				OrchestratorType: common.OpenShift,
+			},
+			certificateProfile: &CertificateProfile{
+				CaPrivateKey: "PRIV_KEY",
+			},
+
+			expectedErr: errors.New("master CA certificate is required"),
+		},
+		{
+			name: "openshift orchestrator misses CA key",
+
+			orchestratorProfile: &OrchestratorProfile{
+				OrchestratorType: common.OpenShift,
+			},
+			certificateProfile: &CertificateProfile{
+				CaCertificate: "CERT",
+			},
+
+			expectedErr: errors.New("master CA private key is required"),
 		},
 		{
 			name: "kubernetes orchestrator requires certificate profile",
@@ -251,10 +278,9 @@ func TestValidateCertificateProfile(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("scenario %q", test.name)
-
 		err := validateCertificateProfile(test.orchestratorProfile, test.certificateProfile)
 		if !reflect.DeepEqual(err, test.expectedErr) {
+			t.Logf("scenario %q", test.name)
 			t.Errorf("unexpected error: %v\nexpected error: %v", err, test.expectedErr)
 		}
 	}

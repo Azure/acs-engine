@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -149,7 +150,7 @@ func writePublicKey(fs filesystem.Writer, filename string, key *rsa.PublicKey) e
 }
 
 // PrepareMasterCerts creates the master certs
-func (c *Config) PrepareMasterCerts() error {
+func (c *Config) PrepareMasterCerts(caCert, caKey []byte) error {
 	if c.cas == nil {
 		c.cas = map[string]CertAndKey{}
 	}
@@ -177,66 +178,85 @@ func (c *Config) PrepareMasterCerts() error {
 
 	now := time.Now()
 
-	// TODO: We probably want to pass master CA as an input to acs-engine.
-	cacerts := []struct {
-		filename string
-		template *x509.Certificate
-	}{
-		{
-			filename: "etc/origin/master/ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+	if !c.IsAgentPoolOnly() {
+		cacerts := []struct {
+			filename string
+			template *x509.Certificate
+		}{
+			{
+				filename: "etc/origin/master/ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/front-proxy-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/front-proxy-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/frontproxy-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("aggregator-proxy-car@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/frontproxy-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("aggregator-proxy-car@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/master.etcd-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("etcd-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/master.etcd-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("etcd-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/service-signer",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-service-serving-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/service-signer",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-service-serving-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/service-catalog/ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: "service-catalog-signer"},
+			{
+				filename: "etc/origin/service-catalog/ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: "service-catalog-signer"},
+				},
 			},
-		},
-	}
-
-	for _, cacert := range cacerts {
-		template := &x509.Certificate{
-			SerialNumber:          c.serial.Get(),
-			NotBefore:             now,
-			NotAfter:              now.AddDate(5, 0, 0),
-			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,
-			BasicConstraintsValid: true,
-			IsCA: true,
 		}
-		template.Subject = cacert.template.Subject
 
-		certAndKey, err := newCertAndKey(cacert.filename, template, nil, nil, cacert.filename == "etc/origin/master/master.etcd-ca", false)
+		for _, cacert := range cacerts {
+			template := &x509.Certificate{
+				SerialNumber:          c.serial.Get(),
+				NotBefore:             now,
+				NotAfter:              now.AddDate(5, 0, 0),
+				KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,
+				BasicConstraintsValid: true,
+				IsCA: true,
+			}
+			template.Subject = cacert.template.Subject
+
+			certAndKey, err := newCertAndKey(cacert.filename, template, nil, nil, cacert.filename == "etc/origin/master/master.etcd-ca", false)
+			if err != nil {
+				return err
+			}
+
+			c.cas[cacert.filename] = certAndKey
+		}
+	} else {
+		certBlock, _ := pem.Decode(caCert)
+		if certBlock == nil {
+			return errors.New("failed to decode pem block from certificate")
+		}
+		cert, err := x509.ParseCertificate(certBlock.Bytes)
 		if err != nil {
-			return err
+			return fmt.Errorf("cannot parse certificate: %v", err)
 		}
-
-		c.cas[cacert.filename] = certAndKey
+		keyBlock, _ := pem.Decode(caKey)
+		if keyBlock == nil {
+			return errors.New("failed to decode pem block from private key")
+		}
+		key, err := x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+		if err != nil {
+			return fmt.Errorf("cannot parse private key: %v", err)
+		}
+		c.cas["etc/origin/master/ca"] = CertAndKey{cert: cert, key: key}
 	}
 
 	type cert struct {

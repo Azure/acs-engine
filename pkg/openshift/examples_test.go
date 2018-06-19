@@ -86,6 +86,10 @@ func TestAgentsOnlyExample(t *testing.T) {
 			{KeyData: "KEY_DATA"},
 		},
 	}
+	m.Properties.CertificateProfile = &vlabs.CertificateProfile{
+		CaCertificate: "CA_CERT",
+		CaPrivateKey:  "CA_PRIV_KEY",
+	}
 
 	if err := m.Properties.Validate(); err != nil {
 		t.Fatalf("cannot validate file %s: %v", example, err)

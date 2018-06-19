@@ -180,11 +180,17 @@ func validateOpenShiftAgent(orchestratorType string, a *AgentPoolProfile) error 
 }
 
 func validateCertificateProfile(orchestratorProfile *OrchestratorProfile, certificateProfile *CertificateProfile) error {
-	if orchestratorProfile != nil && orchestratorProfile.OrchestratorType == common.OpenShift {
-		return nil
-	}
 	if certificateProfile == nil {
 		return errors.New("certificateProfile is required")
+	}
+	if orchestratorProfile != nil && orchestratorProfile.OrchestratorType == common.OpenShift {
+		// Invalidate missing master CA cert and key
+		if certificateProfile.CaCertificate == "" {
+			return errors.New("master CA certificate is required")
+		}
+		if certificateProfile.CaPrivateKey == "" {
+			return errors.New("master CA private key is required")
+		}
 	}
 	return nil
 }
