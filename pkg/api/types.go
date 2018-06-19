@@ -80,7 +80,7 @@ type AzProfile struct {
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
 	ClientID          string             `json:"clientId"`
-	Secret            string             `json:"secret,omitempty"`
+	Secret            string             `json:"secret,omitempty" conform:"redact"`
 	ObjectID          string             `json:"objectId,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
@@ -96,33 +96,33 @@ type KeyvaultSecretRef struct {
 // CertificateProfile represents the definition of the master cluster
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
-	CaCertificate string `json:"caCertificate,omitempty"`
+	CaCertificate string `json:"caCertificate,omitempty" conform:"redact"`
 	// CaPrivateKey is the certificate authority key.
-	CaPrivateKey string `json:"caPrivateKey,omitempty"`
+	CaPrivateKey string `json:"caPrivateKey,omitempty" conform:"redact"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
-	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
+	APIServerCertificate string `json:"apiServerCertificate,omitempty" conform:"redact"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
-	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
+	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty" conform:"redact"`
 	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
-	ClientCertificate string `json:"clientCertificate,omitempty"`
+	ClientCertificate string `json:"clientCertificate,omitempty" conform:"redact"`
 	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
-	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
+	ClientPrivateKey string `json:"clientPrivateKey,omitempty" conform:"redact"`
 	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
-	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
+	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty" conform:"redact"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
-	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
+	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty" conform:"redact"`
 	// EtcdServerCertificate is the server certificate for etcd, and signed by the CA
-	EtcdServerCertificate string `json:"etcdServerCertificate,omitempty"`
+	EtcdServerCertificate string `json:"etcdServerCertificate,omitempty" conform:"redact"`
 	// EtcdServerPrivateKey is the server private key for etcd, and signed by the CA
-	EtcdServerPrivateKey string `json:"etcdServerPrivateKey,omitempty"`
+	EtcdServerPrivateKey string `json:"etcdServerPrivateKey,omitempty" conform:"redact"`
 	// EtcdClientCertificate is etcd client certificate, and signed by the CA
-	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
+	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty" conform:"redact"`
 	// EtcdClientPrivateKey is the etcd client private key, and signed by the CA
-	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty" conform:"redact"`
 	// EtcdPeerCertificates is list of etcd peer certificates, and signed by the CA
-	EtcdPeerCertificates []string `json:"etcdPeerCertificates,omitempty"`
+	EtcdPeerCertificates []string `json:"etcdPeerCertificates,omitempty" conform:"redact"`
 	// EtcdPeerPrivateKeys is list of etcd peer private keys, and signed by the CA
-	EtcdPeerPrivateKeys []string `json:"etcdPeerPrivateKeys,omitempty"`
+	EtcdPeerPrivateKeys []string `json:"etcdPeerPrivateKeys,omitempty" conform:"redact"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
@@ -158,7 +158,7 @@ type CustomNodesDNS struct {
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
 	AdminUsername         string            `json:"adminUsername"`
-	AdminPassword         string            `json:"adminPassword"`
+	AdminPassword         string            `json:"adminPassword" conform:"redact"`
 	ImageVersion          string            `json:"imageVersion"`
 	WindowsImageSourceURL string            `json:"windowsImageSourceURL"`
 	WindowsPublisher      string            `json:"windowsPublisher"`
@@ -537,7 +537,7 @@ type AADProfile struct {
 	// The server AAD application ID.
 	ServerAppID string `json:"serverAppID,omitempty"`
 	// The server AAD application secret
-	ServerAppSecret string `json:"serverAppSecret,omitempty"`
+	ServerAppSecret string `json:"serverAppSecret,omitempty" conform:"redact"`
 	// The AAD tenant ID to use for authentication.
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
