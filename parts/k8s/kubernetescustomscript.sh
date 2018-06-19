@@ -505,7 +505,7 @@ installAzCli(){
 }
 
 exitScript() {
-    if [[ "$SAS_TOKEN" != "" ]]; then
+    if [[ "$SAS_TOKEN" != "" ]] && [[ "$CONTAINER_NAME" != "" ]] && [[ "$STORAGE_ACCOUNT_NAME" != "" ]] && [[ "$BLOB_PREFIX" != "" ]]; then
         installAzCli || echo "Failed to install az cli"
         set +x
         az storage blob upload -f /var/log/azure/cluster-provision.log -c $CONTAINER_NAME -n $BLOB_PREFIX-`hostname` --account-name $STORAGE_ACCOUNT_NAME --sas-token $SAS_TOKEN || echo "Failed to upload to Storage Account"
