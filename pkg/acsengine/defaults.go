@@ -67,7 +67,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201805220",
+		ImageVersion:   "16.04.201806120",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -326,7 +326,7 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "dockerio.azureedge.net/microsoft/oms:ciprod06072018",
+				Image:          "microsoft/oms:ciprod06072018",
 				CPURequests:    "50m",
 				MemoryRequests: "100Mi",
 				CPULimits:      "150m",

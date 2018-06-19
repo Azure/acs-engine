@@ -63,7 +63,7 @@ type ManagedClusterAccessProfile struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty"`
+	Secret   string `json:"secret,omitempty" conform:"redact"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -83,7 +83,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty"`
+	AdminPassword string `json:"adminPassword,omitempty" conform:"redact"`
 }
 
 // ProvisioningState represents the current state of container service resource.
