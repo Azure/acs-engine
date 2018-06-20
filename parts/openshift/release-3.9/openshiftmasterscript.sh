@@ -31,13 +31,6 @@ else
 	COCKPIT_VERSION="latest"
 fi
 
-# TODO: with WALinuxAgent>=v2.2.21 (https://github.com/Azure/WALinuxAgent/pull/1005)
-# we should be able to append context=system_u:object_r:container_var_lib_t:s0
-# to ResourceDisk.MountOptions in /etc/waagent.conf and remove this stanza.
-systemctl stop docker.service
-restorecon -R /var/lib/docker
-systemctl start docker.service
-
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
 for dst in tcp,2379 tcp,2380 tcp,8443 tcp,8444 tcp,8053 udp,8053 tcp,9090; do
