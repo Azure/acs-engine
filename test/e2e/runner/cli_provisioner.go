@@ -250,7 +250,7 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	masterFiles := agentFiles
 	masterFiles = append(masterFiles, "/opt/azure/containers/mountetcd.sh", "/opt/azure/containers/setup-etcd.sh", "/opt/azure/containers/setup-etcd.log")
 	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
-	cmd := exec.Command("ssh-agent -s")
+	cmd := exec.Command("ssh-agent", "-s")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while trying to start ssh agent:%s\nOutput:%s", err, out)
