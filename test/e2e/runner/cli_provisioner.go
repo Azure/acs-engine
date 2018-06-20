@@ -255,6 +255,7 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	if err != nil {
 		return fmt.Errorf("Error while trying to start ssh agent:%s\nOutput:%s", err, out)
 	}
+	log.Printf("Output:%s, SSH_AUTH_SOCK is %s", out, os.Getenv("SSH_AUTH_SOCK"))
 	conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
 	if err != nil {
 		return err
