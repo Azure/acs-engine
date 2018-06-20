@@ -32,6 +32,7 @@ var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResource
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
 	kubernetesTemplateFiles,
+	openshiftInfraResources,
 	openshiftNodeScript,
 	openshiftMasterScript,
 	openshift39NodeScript,
