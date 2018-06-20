@@ -708,7 +708,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should be able to attach azure file", func() {
+		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
 				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
@@ -743,7 +743,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
-			}
+			}*/
 		})
 	})
 })
