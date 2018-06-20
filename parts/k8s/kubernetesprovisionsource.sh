@@ -54,7 +54,7 @@ wait_for_file() {
     done
 }
 apt_get_update() {
-    retries=10
+    retries=1
     apt_update_output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
         timeout 30 dpkg --configure -a
