@@ -55,11 +55,11 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exitScript $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
-    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exitScript $ERR_CLOUD_INIT_TIMEOUT
 }
 
 function systemctlEnableAndStart() {
@@ -68,12 +68,12 @@ function systemctlEnableAndStart() {
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     if [ $RESTART_STATUS -ne 0 ]; then
         echo "$1 could not be started"
-        exit $ERR_SYSTEMCTL_START_FAIL
+        exitScript $ERR_SYSTEMCTL_START_FAIL
     fi
     retrycmd_if_failure 10 5 3 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
-        exit $ERR_SYSTEMCTL_ENABLE_FAIL
+        exitScript $ERR_SYSTEMCTL_ENABLE_FAIL
     fi
 }
 
@@ -137,10 +137,10 @@ function installEtcd() {
     /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
-        exit $RET
+        exitScript $RET
     fi
 
-    /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
+    /opt/azure/containers/mountetcd.sh || exitScript $ERR_ETCD_VOL_MOUNT_FAIL
     systemctlEnableAndStart etcd
     for i in $(seq 1 600); do
         MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
@@ -150,28 +150,28 @@ function installEtcd() {
             sleep 1
         fi
     done
-    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
+    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exitScript $ERR_ETCD_CONFIG_FAIL
 }
 
 function installDeps() {
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_update || exitScript $ERR_APT_INSTALL_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
     # make sure walinuxagent doesn't get updated in the middle of running this script
-    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exitScript $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exitScript $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
 
 function installDocker() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exitScript $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exitScript $ERR_DOCKER_APT_KEY_TIMEOUT
     echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
     printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    apt_get_update || exitScript $ERR_APT_UPDATE_TIMEOUT
+    apt_get_install 20 30 120 docker-engine || exitScript $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
 }
@@ -246,7 +246,7 @@ function setKubeletOpts () {
 function installCNI() {
     mkdir -p $CNI_BIN_DIR
     CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exitScript $ERR_CNI_DOWNLOAD_TIMEOUT
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
@@ -259,7 +259,7 @@ function configAzureCNI() {
     chmod 755 $CNI_CONFIG_DIR
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exitScript $ERR_CNI_DOWNLOAD_TIMEOUT
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -282,8 +282,8 @@ function installClearContainersRuntime() {
 	echo "Adding Clear Containers repository key..."
     CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
     CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exitScript $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exitScript $ERR_APT_INSTALL_TIMEOUT
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -354,7 +354,7 @@ function ensureContainerd() {
 }
 
 function ensureDocker() {
-    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
+    wait_for_file 600 1 $DOCKER || exitScript $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
 }
 function ensureKMS() {
@@ -369,7 +369,7 @@ function extractHyperkube(){
     TMP_DIR=$(mktemp -d)
     retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://github.com/genuinetools/img/releases/download/v0.4.6/img-linux-amd64"
     chmod +x /usr/local/bin/img
-    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || exitScript $ERR_K8S_DOWNLOAD_TIMEOUT
     path=$(find /tmp/img -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
@@ -403,13 +403,13 @@ function ensureK8sControlPlane() {
     if $REBOOTREQUIRED; then
         return
     fi
-    wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 600 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    wait_for_file 600 1 $KUBECTL || exitScript $ERR_FILE_WATCH_TIMEOUT
+    retrycmd_if_failure 600 1 20 $KUBECTL 2>/dev/null cluster-info || exitScript $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
-    retrycmd_if_failure 120 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
+    retrycmd_if_failure 120 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exitScriptScript $ERR_ETCD_RUNNING_TIMEOUT
 }
 
 function writeKubeConfig() {
@@ -496,6 +496,25 @@ configAddons() {
     fi
 }
 
+installAzCli(){
+    AZ_REPO=$(lsb_release -cs)
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
+    sudo tee /etc/apt/sources.list.d/azure-cli.list
+    retrycmd_if_failure 5 1 10 curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    apt_get_update && apt_get_install 3 20 60 azure-cli
+}
+
+exitScript() {
+    if [[ "$SAS_TOKEN" != "" ]] && [[ "$CONTAINER_NAME" != "" ]] && [[ "$STORAGE_ACCOUNT_NAME" != "" ]] && [[ "$BLOB_PREFIX" != "" ]]; then
+        installAzCli || echo "Failed to install az cli"
+        set +x
+        az storage blob upload -f /var/log/azure/cluster-provision.log -c $CONTAINER_NAME -n $BLOB_PREFIX-`hostname` --account-name $STORAGE_ACCOUNT_NAME --sas-token $SAS_TOKEN || echo "Failed to upload to Storage Account"
+        set -x
+    fi
+    exit $1
+}
+
+
 testOutboundConnection
 waitForCloudInit
 
@@ -507,7 +526,7 @@ else
 fi
 
 if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
-    $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
+    $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exitScript $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
 installDeps
@@ -557,7 +576,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENTs
+    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exitScript $ERR_RELEASE_HOLD_WALINUXAGENTs
 fi
 
 echo "Install complete successfully"
@@ -572,3 +591,5 @@ if $REBOOTREQUIRED; then
 else
   runAptDaily &
 fi
+
+exitScript 0
