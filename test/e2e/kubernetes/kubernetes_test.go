@@ -673,7 +673,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should be able to reach hostport in an iis webserver", func() {
+		/*It("should be able to reach hostport in an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				hostport := 8123
@@ -704,7 +704,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
-		})
+		})*/
 
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
