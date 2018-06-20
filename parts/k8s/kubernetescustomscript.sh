@@ -500,8 +500,8 @@ installAzCli(){
     AZ_REPO=$(lsb_release -cs)
     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
     sudo tee /etc/apt/sources.list.d/azure-cli.list
-    retrycmd_if_failure 3 1 30 curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-    apt_get_update && apt_get_install 2 20 120 azure-cli
+    retrycmd_if_failure 5 1 10 curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    apt_get_update && apt_get_install 3 20 60 azure-cli
 }
 
 exitScript() {
