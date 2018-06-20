@@ -63,14 +63,14 @@ function waitForCloudInit() {
 }
 
 function systemctlEnableAndStart() {
-    systemctl_restart 1 5 30 $1
+    systemctl_restart 100 5 30 $1
     RESTART_STATUS=$?
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     if [ $RESTART_STATUS -ne 0 ]; then
         echo "$1 could not be started"
         exit $ERR_SYSTEMCTL_START_FAIL
     fi
-    retrycmd_if_failure 1 5 3 systemctl enable $1
+    retrycmd_if_failure 10 5 3 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
         exit $ERR_SYSTEMCTL_ENABLE_FAIL
@@ -158,7 +158,7 @@ function installDeps() {
     apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
     # make sure walinuxagent doesn't get updated in the middle of running this script
-    retrycmd_if_failure 1 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
     apt_get_install 1 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
