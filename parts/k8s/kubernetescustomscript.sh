@@ -369,7 +369,7 @@ function extractHyperkube(){
     TMP_DIR=$(mktemp -d)
     retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
     chmod +x /usr/local/bin/img
-    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     path=$(find /tmp/img -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
