@@ -75,7 +75,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 		{
 			"kubernetesmasteraddons-azure-npm-daemonset.yaml",
 			"azure-npm-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure,
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure && profile.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure,
 		},
 		{
 			"kubernetesmasteraddons-calico-daemonset.yaml",

@@ -572,9 +572,10 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 
 	k8sVersion = "1.7.9"
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
 	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err == nil {
 		t.Errorf(
-			"should error on azure networkPolicy with k8s version < 1.8.0",
+			"should error on azure networkPolicy + azure networkPlugin with k8s version < 1.8.0",
 		)
 	}
 

@@ -718,7 +718,7 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 
 	if vp.OrchestratorProfile.KubernetesConfig != nil {
 		// Included here for backwards compatibility with deprecated NetworkPolicy usage patterns
-		if vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin != NetworkPluginAzure &&
+		if vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin == "" &&
 			vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure {
 			api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 			api.KubernetesConfig.NetworkPolicy = "" // no-op but included for emphasis

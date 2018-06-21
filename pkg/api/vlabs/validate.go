@@ -1014,6 +1014,7 @@ func (k *KubernetesConfig) validateNetworkPlugin() error {
 func (k *KubernetesConfig) validateNetworkPolicy(k8sVersion string, hasWindows bool) error {
 
 	networkPolicy := k.NetworkPolicy
+	networkPlugin := k.NetworkPlugin
 
 	// Check NetworkPolicy has a valid value.
 	valid := false
@@ -1027,7 +1028,7 @@ func (k *KubernetesConfig) validateNetworkPolicy(k8sVersion string, hasWindows b
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
 	}
 
-	if networkPolicy == "azure" && !common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
+	if networkPolicy == "azure" && networkPlugin == "azure" && !common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
 		return fmt.Errorf("networkPolicy azure requires kubernetes version of 1.8 or higher")
 	}
 
