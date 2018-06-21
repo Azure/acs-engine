@@ -24,7 +24,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"aci-connector":                    "virtual-kubelet:latest",
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
-		"cluster-autoscaler":               "cluster-autoscaler:v1.3",
+		"cluster-autoscaler":               "cluster-autoscaler:v1.3.0",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
