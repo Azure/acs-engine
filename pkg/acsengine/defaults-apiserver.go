@@ -15,7 +15,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
 		"--anonymous-auth":             "false",
-		"--audit-log-path":             "/var/log/audit.log",
+		"--audit-log-path":             "/var/log/kubeaudit/audit.log",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
