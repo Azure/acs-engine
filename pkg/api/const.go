@@ -131,6 +131,8 @@ const (
 	NetworkPolicyNone = "none"
 	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
 	NetworkPluginKubenet = "kubenet"
+	// NetworkPluginAzure is thee string expression for Azure CNI plugin.
+	NetworkPluginAzure = "azure"
 )
 
 const (
