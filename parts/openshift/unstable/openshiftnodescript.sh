@@ -31,6 +31,8 @@ if grep -q ^ResourceDisk.Filesystem=xfs /etc/waagent.conf; then
 fi
 
 systemctl stop docker.service
+# Also a bad image: the umount should also go away.
+umount /var/lib/docker || true
 mkfs.xfs -f /dev/sdb1
 echo '/dev/sdb1  /var/lib/docker  xfs  grpquota  0 0' >>/etc/fstab
 mount /var/lib/docker
