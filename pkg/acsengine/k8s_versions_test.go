@@ -29,6 +29,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		DefaultACIConnectorAddonName:       k8sComponentVersions["1.11"]["aci-connector"],
 		ContainerMonitoringAddonName:       k8sComponentVersions["1.11"][ContainerMonitoringAddonName],
 		AzureCNINetworkMonitoringAddonName: k8sComponentVersions["1.11"][AzureCNINetworkMonitoringAddonName],
+		DefaultClusterAutoscalerAddonName:  k8sComponentVersions["1.11"]["cluster-autoscaler"],
 		"nodestatusfreq":                   k8sComponentVersions["1.11"]["nodestatusfreq"],
 		"nodegraceperiod":                  k8sComponentVersions["1.11"]["nodegraceperiod"],
 		"podeviction":                      k8sComponentVersions["1.11"]["podeviction"],

@@ -55,7 +55,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
@@ -160,7 +160,7 @@ function installDeps() {
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ebtables ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
@@ -367,9 +367,9 @@ function ensureKubelet() {
 
 function extractHyperkube(){
     TMP_DIR=$(mktemp -d)
-    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://github.com/genuinetools/img/releases/download/v0.4.6/img-linux-amd64"
+    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
     chmod +x /usr/local/bin/img
-    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     path=$(find /tmp/img -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then

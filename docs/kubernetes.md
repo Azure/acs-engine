@@ -22,4 +22,4 @@ Here are recommended links to learn more about Kubernetes:
 
 1. [Kubernetes Bootcamp](https://kubernetesbootcamp.github.io/kubernetes-bootcamp/index.html) - shows you how to deploy, scale, update, and debug containerized applications.
 2. [Kubernetes Userguide](http://kubernetes.io/docs/user-guide/) - provides information on running programs in an existing Kubernetes cluster.
-3. [Kubernetes Examples](https://github.com/kubernetes/kubernetes/tree/master/examples) - provides a number of examples on how to run real applications with Kubernetes.
+3. [Kubernetes Examples](https://github.com/kubernetes/examples) - provides a number of examples on how to run real applications with Kubernetes.

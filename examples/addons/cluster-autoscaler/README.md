@@ -2,8 +2,8 @@
 
 [Cluster Autoscaler](https://github.com/kubernetes/autoscaler) is a tool that automatically adjusts the size of the Kubernetes cluster when:
 
-* there are pods that failed to run in the cluster due to insufficient resources.
-* some nodes in the cluster are so underutilized, for an extended period of time, that they can be deleted and their pods will be easily placed on some other, existing nodes.
+- there are pods that failed to run in the cluster due to insufficient resources.
+- some nodes in the cluster are so underutilized, for an extended period of time, that they can be deleted and their pods will be easily placed on some other, existing nodes.
 
 This is the Kubernetes Cluster Autoscaler add-on for Virtual Machine Scale Sets. Add this add-on to your json file as shown below to automatically enable cluster autoscaler in your new Kubernetes cluster.
 
@@ -85,4 +85,4 @@ Follow the README at https://github.com/kubernetes/autoscaler/tree/master/cluste
 
 ## Supported Orchestrators
 
-* Kubernetes
+- Kubernetes
