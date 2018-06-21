@@ -3,10 +3,9 @@ package api
 import (
 	"crypto/rand"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"reflect"
-
-	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
@@ -404,6 +403,22 @@ func (a *Apiloader) serializeHostedContainerService(containerService *ContainerS
 		v20180331ContainerService := ConvertContainerServiceToV20180331AgentPoolOnly(containerService)
 		armContainerService := &V20180331ARMManagedContainerService{}
 		armContainerService.ManagedCluster = v20180331ContainerService
+		armContainerService.APIVersion = version
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	case apvlabs.APIVersion:
+		// So far there have been no conversion to vlabs for anything
+		// else other than the openshift orchestrator so ignore the rest
+		if containerService.Properties.OrchestratorProfile == nil ||
+			containerService.Properties.OrchestratorProfile.OrchestratorType != OpenShift {
+			return nil, a.Translator.Errorf("invalid version %s for conversion back from unversioned object", version)
+		}
+		vlabsContainerService := ConvertContainerServiceToVLabsAgentPoolOnly(containerService)
+		armContainerService := &VlabsARMManagedContainerService{}
+		armContainerService.ManagedCluster = vlabsContainerService
 		armContainerService.APIVersion = version
 		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
 		if err != nil {

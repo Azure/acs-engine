@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -13,8 +14,6 @@ import (
 	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	"encoding/json"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
@@ -80,10 +79,10 @@ func newDeployCmd() *cobra.Command {
 				log.Fatalf(fmt.Sprintf("error merging API model in deployCmd: %s", err.Error()))
 			}
 			if err := dc.loadAPIModel(cmd, args); err != nil {
-				log.Fatalln("failed to load apimodel: %s", err.Error())
+				log.Fatalf("failed to load apimodel: %s", err.Error())
 			}
 			if _, _, err := dc.validateApimodel(); err != nil {
-				log.Fatalln("Failed to validate the apimodel after populating values: %s", err.Error())
+				log.Fatalf("Failed to validate the apimodel after populating values: %s", err.Error())
 			}
 			return dc.run()
 		},
@@ -152,7 +151,7 @@ func (dc *deployCmd) mergeAPIModel() error {
 			return fmt.Errorf(fmt.Sprintf("error merging --set values with the api model: %s", err.Error()))
 		}
 
-		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
+		log.Infof(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
 	}
 
 	return nil
@@ -238,24 +237,40 @@ func autofillApimodel(dc *deployCmd) error {
 		}
 	}
 
-	if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
-		return fmt.Errorf("invalid configuration: the apimodel masterProfile.dnsPrefix and --dns-prefix were both specified")
-	}
-	if dc.containerService.Properties.MasterProfile.DNSPrefix == "" {
-		if dc.dnsPrefix == "" {
-			return fmt.Errorf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
+	switch {
+	case dc.containerService.Properties.MasterProfile != nil:
+		if dc.dnsPrefix != "" && dc.containerService.Properties.MasterProfile.DNSPrefix != "" {
+			return fmt.Errorf("invalid configuration: the apimodel masterProfile.dnsPrefix and --dns-prefix were both specified")
 		}
-		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
-		dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
-	}
+		if dc.containerService.Properties.MasterProfile.DNSPrefix == "" {
+			if dc.dnsPrefix == "" {
+				return fmt.Errorf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
+			}
+			log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
+			dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
+		}
+		if dc.autoSuffix {
+			suffix := strconv.FormatInt(time.Now().Unix(), 16)
+			dc.containerService.Properties.MasterProfile.DNSPrefix += "-" + suffix
+		}
+		dc.dnsPrefix = dc.containerService.Properties.MasterProfile.DNSPrefix
 
-	if dc.autoSuffix {
-		suffix := strconv.FormatInt(time.Now().Unix(), 16)
-		dc.containerService.Properties.MasterProfile.DNSPrefix += "-" + suffix
-	}
-
-	if dc.outputDirectory == "" {
-		dc.outputDirectory = path.Join("_output", dc.containerService.Properties.MasterProfile.DNSPrefix)
+	case dc.containerService.Properties.HostedMasterProfile != nil:
+		if dc.dnsPrefix != "" && dc.containerService.Properties.HostedMasterProfile.DNSPrefix != "" {
+			return fmt.Errorf("invalid configuration: the apimodel hostedMasterProfile.dnsPrefix and --dns-prefix were both specified")
+		}
+		if dc.containerService.Properties.HostedMasterProfile.DNSPrefix == "" {
+			if dc.dnsPrefix == "" {
+				return fmt.Errorf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
+			}
+			log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
+			dc.containerService.Properties.HostedMasterProfile.DNSPrefix = dc.dnsPrefix
+		}
+		if dc.autoSuffix {
+			suffix := strconv.FormatInt(time.Now().Unix(), 16)
+			dc.containerService.Properties.HostedMasterProfile.DNSPrefix += "-" + suffix
+		}
+		dc.dnsPrefix = dc.containerService.Properties.HostedMasterProfile.DNSPrefix
 	}
 
 	if _, err := os.Stat(dc.outputDirectory); !dc.forceOverwrite && err == nil {
@@ -263,9 +278,8 @@ func autofillApimodel(dc *deployCmd) error {
 	}
 
 	if dc.resourceGroup == "" {
-		dnsPrefix := dc.containerService.Properties.MasterProfile.DNSPrefix
-		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dnsPrefix)
-		dc.resourceGroup = dnsPrefix
+		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dc.dnsPrefix)
+		dc.resourceGroup = dc.dnsPrefix
 		if dc.location == "" {
 			return fmt.Errorf("--resource-group was not specified. --location must be specified in case the resource group needs creation")
 		}
@@ -299,7 +313,7 @@ func autofillApimodel(dc *deployCmd) error {
 			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
-			appName := dc.containerService.Properties.MasterProfile.DNSPrefix
+			appName := dc.dnsPrefix
 			appURL := fmt.Sprintf("https://%s/", appName)
 			var replyURLs *[]string
 			var requiredResourceAccess *[]graphrbac.RequiredResourceAccess
@@ -372,13 +386,12 @@ func (dc *deployCmd) run() error {
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, dc.classicMode)
 	if err != nil {
-		log.Fatalln("failed to initialize template generator: %s", err.Error())
+		log.Fatalf("failed to initialize template generator: %s", err.Error())
 	}
 
 	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
-		os.Exit(1)
 	}
 
 	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
@@ -429,7 +442,7 @@ func (dc *deployCmd) run() error {
 
 	if dc.containerService.Properties.OrchestratorProfile.OrchestratorType == api.OpenShift {
 		// TODO: when the Azure client library is updated, read this from the template `masterFQDN` output
-		fmt.Printf("OpenShift web UI available at https://%s.%s.cloudapp.azure.com:8443/\n", dc.containerService.Properties.MasterProfile.DNSPrefix, dc.location)
+		fmt.Printf("OpenShift web UI available at https://%s.%s.cloudapp.azure.com:8443/\n", dc.dnsPrefix, dc.location)
 	}
 
 	return nil
