@@ -393,13 +393,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		// we translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
 		// and set a default network policy enforcement configuration
 		switch o.KubernetesConfig.NetworkPolicy {
-		case NetworkPolicyAzure:
+		case NetworkPluginAzure:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
-			if !common.IsKubernetesVersionGe(k8sVersion, "1.8.0") {
-				o.KubernetesConfig.NetworkPolicy = ""
-			} else {
-			o.KubernetesConfig.NetworkPolicy = NetworkPolicyAzure
-			}
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		case NetworkPolicyNone:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
@@ -408,7 +404,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		case NetworkPolicyCilium:
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
-		
+
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
