@@ -14,7 +14,7 @@
       "type": "string"
     },
 {{end}}
-{{if IsHostedMaster}}
+{{if and IsHostedMaster (not IsOpenShift)}}
     "kubernetesEndpoint": {
       "metadata": {
         "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
@@ -113,19 +113,7 @@
     {{end}}
 {{end}}
 {{end}}
-{{if not IsOpenShift}}
-    "apiServerCertificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      },
-      "type": "string"
-    },
-    "apiServerPrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      },
-      "type": "securestring"
-    },
+{{if HasCaCertificates}}
     "caCertificate": {
       "metadata": {
         "description": "The base 64 certificate authority certificate"
@@ -136,6 +124,20 @@
       {{PopulateClassicModeDefaultValue "caPrivateKey"}}
       "metadata": {
         "description": "The base 64 CA private key used on the master."
+      },
+      "type": "securestring"
+    },
+{{end}}
+{{if not IsOpenShift}}
+    "apiServerCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      },
+      "type": "string"
+    },
+    "apiServerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
       },
       "type": "securestring"
     },
