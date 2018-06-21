@@ -36,6 +36,14 @@
             ]
           },
           {
+            "name": "cluster-autoscaler",
+            "enabled": true,
+            "config": {
+              "minNodes": "1",
+              "maxNodes": "5"
+            }
+          },
+          {
             "name": "rescheduler",
             "enabled": true,
             "containers": [
