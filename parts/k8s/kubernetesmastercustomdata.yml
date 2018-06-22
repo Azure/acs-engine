@@ -289,7 +289,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 {{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
     sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<workspaceGuid>|{{WrapAsVariable "workspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
     sed -i "s|<workspaceKey>|{{WrapAsVariable "workspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
