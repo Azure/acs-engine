@@ -598,6 +598,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if e != nil {
 				return ""
 			}
+			preprovisionCmd := ""
+			if profile.PreprovisionExtension != nil {
+				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
+			}
+			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetMasterSwarmModeCustomData": func() string {
