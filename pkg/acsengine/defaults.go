@@ -326,7 +326,7 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "microsoft/oms:ciprod06072018",
+				Image:          "microsoft/oms:June21st",
 				CPURequests:    "50m",
 				MemoryRequests: "100Mi",
 				CPULimits:      "150m",
