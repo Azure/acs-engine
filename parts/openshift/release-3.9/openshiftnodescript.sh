@@ -7,6 +7,15 @@ if [ -f "/etc/sysconfig/atomic-openshift-node" ]; then
     SERVICE_TYPE=atomic-openshift
 fi
 
+systemctl stop docker.service
+# the umount should go away.
+umount /mnt/resource || true
+mkfs.xfs -f /dev/sdb1
+echo '/dev/sdb1  /var/lib/docker  xfs  grpquota  0 0' >>/etc/fstab
+mount /var/lib/docker
+restorecon -R /var/lib/docker
+systemctl start docker.service
+
 {{if eq .Role "infra"}}
 echo "BOOTSTRAP_CONFIG_NAME=node-config-infra" >>/etc/sysconfig/${SERVICE_TYPE}-node
 {{else}}
