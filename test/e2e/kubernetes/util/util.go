@@ -13,7 +13,7 @@ func PrintCommand(cmd *exec.Cmd) {
 	fmt.Printf("\n$ %s\n", strings.Join(cmd.Args, " "))
 }
 
-// RunAndLogCommand logs the command with a timestamp when it's run, and duration at and
+// RunAndLogCommand logs the command with a timestamp when it's run, and the duration at end
 func RunAndLogCommand(cmd *exec.Cmd) ([]byte, error) {
 	cmdLine := fmt.Sprintf("$ %s", strings.Join(cmd.Args, " "))
 	start := time.Now()
