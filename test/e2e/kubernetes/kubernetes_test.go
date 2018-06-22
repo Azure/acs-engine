@@ -658,7 +658,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				iisPods, err := iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
-				// BUG - https://github.com/Azure/acs-engine/issues/3143 
+				// BUG - https://github.com/Azure/acs-engine/issues/3143
 				// for _, iisPod := range iisPods {
 				// 	pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
 				// 	Expect(err).NotTo(HaveOccurred())
