@@ -18,15 +18,16 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 	}
 
 	var ips []net.IP
-	var dnsPrefix string
+	var externalMasterHostname string
+
 	if a.MasterProfile != nil {
 		ips = []net.IP{net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)}
-		dnsPrefix = a.MasterProfile.DNSPrefix
+		externalMasterHostname = fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
 	} else if a.HostedMasterProfile == nil {
 		return false, fmt.Errorf("no masterProfile or hostedMasterProfile found")
 	} else {
 		// agent pool api only
-		dnsPrefix = a.HostedMasterProfile.DNSPrefix
+		externalMasterHostname = a.HostedMasterProfile.FQDN
 	}
 
 	c := Config{
@@ -35,7 +36,7 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 			IPs:      ips,
 			Port:     8443,
 		},
-		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", dnsPrefix, a.AzProfile.Location),
+		ExternalMasterHostname:  externalMasterHostname,
 		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
