@@ -674,38 +674,40 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should be able to reach hostport in an iis webserver", func() {
-			if eng.HasWindowsAgents() {
-				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				hostport := 8123
-				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, hostport)
-				Expect(err).NotTo(HaveOccurred())
+		// Windows Bug 16598869
+		/*
+			It("should be able to reach hostport in an iis webserver", func() {
+				if eng.HasWindowsAgents() {
+					r := rand.New(rand.NewSource(time.Now().UnixNano()))
+					hostport := 8123
+					deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
+					iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, hostport)
+					Expect(err).NotTo(HaveOccurred())
 
-				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
+					running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(running).To(Equal(true))
 
-				iisPods, err := iisDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(iisPods)).ToNot(BeZero())
+					iisPods, err := iisDeploy.Pods()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(len(iisPods)).ToNot(BeZero())
 
-				kubeConfig, err := GetConfig()
-				Expect(err).NotTo(HaveOccurred())
-				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-				sshKeyPath := cfg.GetSSHKeyPath()
+					kubeConfig, err := GetConfig()
+					Expect(err).NotTo(HaveOccurred())
+					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+					sshKeyPath := cfg.GetSSHKeyPath()
 
-				for _, iisPod := range iisPods {
-					valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, sshKeyPath)
-					Expect(valid).To(BeTrue())
+					for _, iisPod := range iisPods {
+						valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, sshKeyPath)
+						Expect(valid).To(BeTrue())
+					}
+
+					err = iisDeploy.Delete()
+					Expect(err).NotTo(HaveOccurred())
+				} else {
+					Skip("No windows agent was provisioned for this Cluster Definition")
 				}
-
-				err = iisDeploy.Delete()
-				Expect(err).NotTo(HaveOccurred())
-			} else {
-				Skip("No windows agent was provisioned for this Cluster Definition")
-			}
-		})
+			})*/
 
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
