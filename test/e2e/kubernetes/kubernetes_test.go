@@ -714,12 +714,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("with a windows agent pool", func() {
-		// TODO stabilize this test
-		/*It("should be able to deploy an iis webserver", func() {
+		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, -1)
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
@@ -751,15 +750,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
-		})*/
+		})
 
-		// TODO stabilize this test
 		/*It("should be able to reach hostport in an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				hostport := 8123
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, hostport)
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, hostport)
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
@@ -787,10 +785,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})*/
 
-		// TODO stabilize this test
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion ,"1.8") {
+				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())
