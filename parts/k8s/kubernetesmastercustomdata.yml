@@ -288,15 +288,15 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
 {{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
-    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "omsAgentImage"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceGuid>|{{WrapAsVariable "omsAgentWorkspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceKey>|{{WrapAsVariable "omsAgentWorkspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentCPURequests>|{{WrapAsVariable "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsVariable "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsVariable "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsVariable "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "omsAgentImage"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<workspaceGuid>|{{WrapAsVariable "omsAgentWorkspaceGuid"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<workspaceKey>|{{WrapAsVariable "omsAgentWorkspaceKey"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPURequests>|{{WrapAsVariable "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsVariable "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsVariable "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsVariable "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
