@@ -15,7 +15,7 @@ localmaster:
 
     openshift_web_console_image_name: "IMAGE_PREFIX/IMAGE_TYPE-web-console:vVERSION"
 
-    oreg_url: 'IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}'
+    oreg_url: 'MASTER_OREG_URL-${component}:${version}'
     openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
 
     # FIXME
