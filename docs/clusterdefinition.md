@@ -72,7 +72,7 @@ Here are the valid values for the orchestrator types:
 | rescheduler                                                           | false               | 1                   | Delivers the Kubernetes rescheduler component                                                                                                                       |
 | [cluster-autoscaler](../examples/addons/cluster-autoscaler/README.md) | false               | 1                   | Delivers the Kubernetes cluster autoscaler component. See https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/azure for more info |
 | [nvidia-device-plugin](../examples/addons/nvidia-device-plugin/README.md) | true if using a Kubernetes cluster (v1.10+) with an N-series agent pool               | 1                   | Delivers the Kubernetes NVIDIA device plugin component. See https://github.com/NVIDIA/k8s-device-plugin for more info |
-| container-monitoring | false               | 1                   | Delivers the Kubernetes container monitoring component |
+| container-monitoring                       | false               | 1                   | Delivers the Kubernetes container monitoring component |
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 
