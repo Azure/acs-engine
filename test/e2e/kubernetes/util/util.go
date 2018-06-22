@@ -14,9 +14,9 @@ func PrintCommand(cmd *exec.Cmd) {
 }
 
 func RunAndLogCommand(cmd *exec.Cmd) ([]byte, error) {
-	cmdLine := fmt.Sprintf("\n$ %s\n", strings.Join(cmd.Args, " "))
+	cmdLine := fmt.Sprintf("$ %s\n", strings.Join(cmd.Args, " "))
 	start := time.Now()
-	log.Printf("%s #### Started at %s", cmdLine, start.String())
+	log.Printf("%s", cmdLine)
 	out, err := cmd.CombinedOutput()
 	end := time.Now()
 	log.Printf("\n#### %s completed in %s", end.Sub(start).String())
