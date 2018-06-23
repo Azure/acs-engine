@@ -52,7 +52,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		os.RemoveAll("./translations")
 	})
 
-	It("Should return error message when failing to detete VMs during upgrade operation", func() {
+	It("Should return error message when failing to delete VMs during upgrade operation", func() {
 		cs := acsengine.CreateMockContainerService("testcluster", "1.6.9", 1, 1)
 
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.14"
