@@ -840,9 +840,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
-			Expect(pod.Status.ContainerStatuses[0].RestartCount).To(Equal(0))
+			restarts := pod.Status.ContainerStatuses[0].RestartCount
 			err = pod.Delete()
 			Expect(err).NotTo(HaveOccurred())
+			Expect(restarts).To(Equal(0))
 		})
 	})
 })
