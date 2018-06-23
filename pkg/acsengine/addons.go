@@ -58,6 +58,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled(),
 		},
 		{
+			"kubernetesmasteraddons-aad-pod-identity-deployment.yaml",
+			"aad-pod-identity-deployment.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-aci-connector-deployment.yaml",
 			"aci-connector-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled(),

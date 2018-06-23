@@ -54,6 +54,12 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
 				}
 			}
+			aadPodIdentityAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultAADPodIdentityAddonName)
+			c = getAddonContainersIndexByName(aadPodIdentityAddon.Containers, DefaultAADPodIdentityAddonName)
+			if c > -1 {
+				addValue(parametersMap, "kubernetesAADPodIdentityEnabled", helpers.IsTrueBoolPointer(aadPodIdentityAddon.Enabled))
+			}
+
 			aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 			c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 			if c > -1 {
