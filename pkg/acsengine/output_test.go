@@ -11,7 +11,7 @@ import (
 
 func TestWriteTLSArtifacts(t *testing.T) {
 
-	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, true)
 	writer := &ArtifactWriter{
 		Translator: &i18n.Translator{
 			Locale: nil,

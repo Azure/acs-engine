@@ -105,7 +105,7 @@ type KeyVaultRef struct {
 type paramsMap map[string]interface{}
 
 // CreateMockContainerService returns a mock container service for testing purposes
-func CreateMockContainerService(containerServiceName string, orchestratorVersion string, masterCount int, agentCount int) *api.ContainerService {
+func CreateMockContainerService(containerServiceName, orchestratorVersion string, masterCount, agentCount int, certs bool) *api.ContainerService {
 	cs := api.ContainerService{}
 	cs.ID = uuid.NewV4().String()
 	cs.Location = "eastus"
@@ -166,20 +166,23 @@ func CreateMockContainerService(containerServiceName string, orchestratorVersion
 	}
 
 	cs.Properties.CertificateProfile = &api.CertificateProfile{}
-	cs.Properties.CertificateProfile.CaCertificate = "cacert"
-	cs.Properties.CertificateProfile.CaPrivateKey = "cakey"
-	cs.Properties.CertificateProfile.KubeConfigCertificate = "kubeconfigcert"
-	cs.Properties.CertificateProfile.KubeConfigPrivateKey = "kubeconfigkey"
-	cs.Properties.CertificateProfile.APIServerCertificate = "apiservercert"
-	cs.Properties.CertificateProfile.APIServerPrivateKey = "apiserverkey"
-	cs.Properties.CertificateProfile.ClientCertificate = "clientcert"
-	cs.Properties.CertificateProfile.ClientPrivateKey = "clientkey"
-	cs.Properties.CertificateProfile.EtcdServerCertificate = "etcdservercert"
-	cs.Properties.CertificateProfile.EtcdServerPrivateKey = "etcdserverkey"
-	cs.Properties.CertificateProfile.EtcdClientCertificate = "etcdclientcert"
-	cs.Properties.CertificateProfile.EtcdClientPrivateKey = "etcdclientkey"
-	cs.Properties.CertificateProfile.EtcdPeerCertificates = []string{"etcdpeercert1", "etcdpeercert2", "etcdpeercert3", "etcdpeercert4", "etcdpeercert5"}
-	cs.Properties.CertificateProfile.EtcdPeerPrivateKeys = []string{"etcdpeerkey1", "etcdpeerkey2", "etcdpeerkey3", "etcdpeerkey4", "etcdpeerkey5"}
+	if certs {
+		cs.Properties.CertificateProfile.CaCertificate = "cacert"
+		cs.Properties.CertificateProfile.CaPrivateKey = "cakey"
+		cs.Properties.CertificateProfile.KubeConfigCertificate = "kubeconfigcert"
+		cs.Properties.CertificateProfile.KubeConfigPrivateKey = "kubeconfigkey"
+		cs.Properties.CertificateProfile.APIServerCertificate = "apiservercert"
+		cs.Properties.CertificateProfile.APIServerPrivateKey = "apiserverkey"
+		cs.Properties.CertificateProfile.ClientCertificate = "clientcert"
+		cs.Properties.CertificateProfile.ClientPrivateKey = "clientkey"
+		cs.Properties.CertificateProfile.EtcdServerCertificate = "etcdservercert"
+		cs.Properties.CertificateProfile.EtcdServerPrivateKey = "etcdserverkey"
+		cs.Properties.CertificateProfile.EtcdClientCertificate = "etcdclientcert"
+		cs.Properties.CertificateProfile.EtcdClientPrivateKey = "etcdclientkey"
+		cs.Properties.CertificateProfile.EtcdPeerCertificates = []string{"etcdpeercert1", "etcdpeercert2", "etcdpeercert3", "etcdpeercert4", "etcdpeercert5"}
+		cs.Properties.CertificateProfile.EtcdPeerPrivateKeys = []string{"etcdpeerkey1", "etcdpeerkey2", "etcdpeerkey3", "etcdpeerkey4", "etcdpeerkey5"}
+
+	}
 
 	return &cs
 }
