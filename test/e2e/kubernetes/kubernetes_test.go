@@ -66,6 +66,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have functional DNS", func() {
 			if !eng.HasWindowsAgents() {
+				pod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+				Expect(err).NotTo(HaveOccurred())
+				running, err := pod.WaitOnReady(5*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
 				kubeConfig, err := GetConfig()
 				Expect(err).NotTo(HaveOccurred())
 				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
@@ -825,5 +831,18 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
 		})*/
+	})
+
+	Describe("after the cluster has been up for awhile", func() {
+		It("dns-liveness pod should not have any restarts", func() {
+			pod, err := pod.Get("dns-liveness", "default")
+			Expect(err).NotTo(HaveOccurred())
+			running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+			Expect(pod.Status.ContainerStatuses[0].RestartCount).To(Equal(0))
+			err = pod.Delete()
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 })

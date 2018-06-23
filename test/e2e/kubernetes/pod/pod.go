@@ -52,6 +52,16 @@ type Container struct {
 	Resources Resources `json:"resources"`
 }
 
+// ContainerStatus has status of a container
+type ContainerStatus struct {
+	ContainerID  string `json:"containerID"`
+	Image        string `json:"image"`
+	ImageID      string `json:"imageID"`
+	Name         string `json:"name"`
+	Ready        bool   `json:"ready"`
+	RestartCount int    `json:"restartCount"`
+}
+
 // EnvVar holds environment variables
 type EnvVar struct {
 	Name  string `json:"name"`
@@ -84,10 +94,11 @@ type Limits struct {
 
 // Status holds information like hostIP and phase
 type Status struct {
-	HostIP    string    `json:"hostIP"`
-	Phase     string    `json:"phase"`
-	PodIP     string    `json:"podIP"`
-	StartTime time.Time `json:"startTime"`
+	HostIP            string            `json:"hostIP"`
+	Phase             string            `json:"phase"`
+	PodIP             string            `json:"podIP"`
+	StartTime         time.Time         `json:"startTime"`
+	ContainerStatuses []ContainerStatus `json:"containerStatuses"`
 }
 
 // CreatePodFromFile will create a Pod from file with a name
@@ -170,7 +181,7 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 
 	var status []bool
 	for _, pod := range pl.Pods {
-		matched, err := regexp.MatchString(podPrefix+"-.*", pod.Metadata.Name)
+		matched, err := regexp.MatchString(podPrefix, pod.Metadata.Name)
 		if err != nil {
 			log.Printf("Error trying to match pod name:%s\n", err)
 			return false, err
