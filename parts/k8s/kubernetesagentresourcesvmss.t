@@ -145,6 +145,18 @@
                   "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
+            },
+            {
+              "name": "[concat(variables('{{.Name}}VMNamePrefix')), '/computeAksLinuxBilling)]",
+              "apiVersion": "2015-05-01-preview",
+              "location": "[variables('location')]",
+              "properties": {
+                "publisher": "Microsoft.AKS",
+                "type": "Compute.AKS-Engine.Linux.Billing",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {}
+              }
             }
             {{if UseManagedIdentity}}
             ,{
