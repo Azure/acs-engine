@@ -33,15 +33,23 @@ type Pod struct {
 
 // Metadata holds information like name, createdat, labels, and namespace
 type Metadata struct {
-	CreatedAt time.Time         `json:"creationTimestamp"`
-	Labels    map[string]string `json:"labels"`
-	Name      string            `json:"name"`
-	Namespace string            `json:"namespace"`
+	CreatedAt       time.Time         `json:"creationTimestamp"`
+	Labels          map[string]string `json:"labels"`
+	Name            string            `json:"name"`
+	Namespace       string            `json:"namespace"`
+	OwnerReferences []OwnerReferences `json:"ownerReferences"`
+}
+
+// OwnerReferences describes whether pods belong to a daemonset or other deploymenttype
+type OwnerReferences struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }
 
 // Spec holds information like containers
 type Spec struct {
 	Containers []Container `json:"containers"`
+	Nodename   string      `json:"nodeName"`
 }
 
 // Container holds information like image and ports
@@ -50,6 +58,12 @@ type Container struct {
 	Ports     []Port    `json:"ports"`
 	Env       []EnvVar  `json:"env"`
 	Resources Resources `json:"resources"`
+}
+
+// Condition holds pod condition
+type Condition struct {
+	Status string `json:"status"`
+	Type   string `json:"type"`
 }
 
 // EnvVar holds environment variables
@@ -84,10 +98,11 @@ type Limits struct {
 
 // Status holds information like hostIP and phase
 type Status struct {
-	HostIP    string    `json:"hostIP"`
-	Phase     string    `json:"phase"`
-	PodIP     string    `json:"podIP"`
-	StartTime time.Time `json:"startTime"`
+	HostIP     string      `json:"hostIP"`
+	Phase      string      `json:"phase"`
+	PodIP      string      `json:"podIP"`
+	StartTime  time.Time   `json:"startTime"`
+	Conditions []Condition `json:"conditions"`
 }
 
 // CreatePodFromFile will create a Pod from file with a name
@@ -107,9 +122,17 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 	return pod, nil
 }
 
-// GetAll will return all pods in a given namespace
+// GetAll will return all pods in a given namespace. If namespace is "" will return all pods
 func GetAll(namespace string) (*List, error) {
-	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
+	args := []string{"get", "pods", "-o", "json"}
+
+	if namespace == "" {
+		args = append(args, "--all-namespaces")
+	} else {
+		args = append(args, "-n", namespace)
+	}
+
+	cmd := exec.Command("kubectl", args...)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
