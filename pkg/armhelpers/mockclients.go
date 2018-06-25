@@ -23,6 +23,7 @@ type MockACSEngineClient struct {
 	FailDeployTemplate                    bool
 	FailDeployTemplateQuota               bool
 	FailDeployTemplateConflict            bool
+	FailDeployTemplateWithProperties      bool
 	FailEnsureResourceGroup               bool
 	FailListVirtualMachines               bool
 	FailListVirtualMachineScaleSets       bool
@@ -187,6 +188,29 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 					}}},
 			errors.New(errmsg)
 
+	case mc.FailDeployTemplateWithProperties:
+		errmsg := `resources.DeploymentsClient#CreateOrUpdate: Failure sending request: StatusCode=200 -- Original Error: Long running operation terminated with status 'Failed': Code="DeploymentFailed" Message="At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.`
+		resp := `{
+"status":"Failed",
+"error":{
+	"code":"DeploymentFailed",
+	"message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.",
+	"details":[{
+		"code":"Conflict",
+		"message":"{\r\n  \"error\": {\r\n    \"code\": \"PropertyChangeNotAllowed\",\r\n    \"target\": \"dataDisk.createOption\",\r\n    \"message\": \"Changing property 'dataDisk.createOption' is not allowed.\"\r\n  }\r\n}"
+}]}}`
+		provisioningState := "Failed"
+		return &resources.DeploymentExtended{
+				Response: autorest.Response{
+					Response: &http.Response{
+						Status:     "200 OK",
+						StatusCode: 200,
+						Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
+					}},
+				Properties: &resources.DeploymentPropertiesExtended{
+					ProvisioningState: &provisioningState,
+				}},
+			errors.New(errmsg)
 	default:
 		return nil, nil
 	}
@@ -541,7 +565,40 @@ func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, er
 
 // ListDeploymentOperations gets all deployments operations for a deployment.
 func (mc *MockACSEngineClient) ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error) {
-	return resources.DeploymentOperationsListResult{}, nil
+	resp := `{
+ "properties": {
+   "provisioningState":"Failed",
+   "correlationId":"d5062e45-6e9f-4fd3-a0a0-6b2c56b15757",
+   "error":{
+     "code":"DeploymentFailed","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see http://aka.ms/arm-debug for usage details.",
+     "details":[{"code":"Conflict","message":"{\r\n  \"error\": {\r\n    \"message\": \"Conflict\",\r\n    \"code\": \"Conflict\"\r\n  }\r\n}"}]
+   }  
+ }
+}`
+
+	provisioningState := "Failed"
+	id := "00000000"
+	operationID := "d5062e45-6e9f-4fd3-a0a0-6b2c56b15757"
+	nextLink := fmt.Sprintf("https://management.azure.com/subscriptions/11111/resourcegroups/%s/deployments/%s/operations?$top=%s&api-version=2018-02-01", resourceGroupName, deploymentName, "5")
+	return resources.DeploymentOperationsListResult{
+		Response: autorest.Response{
+			Response: &http.Response{
+				Status:     "200 OK",
+				StatusCode: 200,
+				Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
+			},
+		},
+		Value: &[]resources.DeploymentOperation{
+			{
+				ID:          &id,
+				OperationID: &operationID,
+				Properties: &resources.DeploymentOperationProperties{
+					ProvisioningState: &provisioningState,
+				},
+			},
+		},
+		NextLink: &nextLink,
+	}, nil
 }
 
 // ListDeploymentOperationsNextResults retrieves the next set of results, if any.
