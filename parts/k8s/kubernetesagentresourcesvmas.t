@@ -326,19 +326,20 @@
       }
     },
     {
-    "type": "Microsoft.Compute/virtualMachines/extensions",
-    "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling)]",
-    "apiVersion": "2015-05-01-preview",
-    "location": "[variables('location')]",
-    "dependsOn": [
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling)]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[variables('location')]",
+      "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
-    ],
-    "properties": {
+      ],
+      "properties": {
         "publisher": "Microsoft.AKS",
-        "type": "Compute.AKS-Engine.Linux.Billing",
+        "type": {{if IsHostedMaster}}"Compute.AKS.Linux.Billing"{{else}}"Compute.AKS-Engine.Linux.Billing"{{end}},
         "typeHandlerVersion": "1.0",
         "autoUpgradeMinorVersion": true,
         "settings": {
         }
       }
     }
+    
