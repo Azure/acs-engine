@@ -113,6 +113,7 @@ More usefully, let's add some custom configuration to the above addons:
     "addons": [
         {
             "name": "tiller",
+            "enabled": true,
             "containers": [
                 {
                   "name": "tiller",
@@ -126,6 +127,7 @@ More usefully, let's add some custom configuration to the above addons:
         },
         {
             "name": "kubernetes-dashboard",
+            "enabled": true,
             "containers": [
                 {
                   "name": "kubernetes-dashboard",
@@ -138,6 +140,7 @@ More usefully, let's add some custom configuration to the above addons:
         },
         {
             "name": "cluster-autoscaler",
+            "enabled": true,
             "containers": [
               {
                 "name": "cluster-autoscaler",
