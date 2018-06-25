@@ -409,7 +409,7 @@ func (a *Properties) validateAddons() error {
 		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
 			switch addon.Name {
 			case "cluster-autoscaler":
-				if *addon.Enabled && isAvailabilitySets {
+				if helpers.IsTrueBoolPointer(addon.Enabled) && isAvailabilitySets {
 					return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
 				}
 			case "nvidia-device-plugin":
