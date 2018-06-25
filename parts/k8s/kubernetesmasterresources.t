@@ -911,4 +911,5 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
         }
+      }
     }{{WriteLinkedTemplatesForExtensions}}
