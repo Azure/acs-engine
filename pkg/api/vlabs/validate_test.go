@@ -1197,6 +1197,14 @@ func TestOpenshiftValidate(t *testing.T) {
 						StorageProfile:      ManagedDisks,
 						AvailabilityProfile: AvailabilitySet,
 					},
+					{
+						Name:                "infra",
+						Role:                "infra",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
 				},
 				LinuxProfile: &LinuxProfile{
 					AdminUsername: "admin",
@@ -1314,5 +1322,87 @@ func validOpenShiftConifg() *OpenShiftConfig {
 	return &OpenShiftConfig{
 		ClusterUsername: "foo",
 		ClusterPassword: "bar",
+	}
+}
+
+func TestValidateAgentPoolProfiles(t *testing.T) {
+	tests := []struct {
+		name        string
+		properties  *Properties
+		expectedErr error
+	}{
+		{
+			name: "valid",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						Role:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "invalid - role wrong",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: errors.New("OpenShift requires that the 'infra' agent pool profile, and no other, should have role 'infra'"),
+		},
+		{
+			name: "invalid - profiles misnamed",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "bad",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						Role:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: errors.New("OpenShift requires exactly two agent pool profiles: compute and infra"),
+		},
+	}
+
+	for _, test := range tests {
+		gotErr := test.properties.validateAgentPoolProfiles()
+		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+			t.Logf("running scenario %q", test.name)
+			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
+		}
 	}
 }
