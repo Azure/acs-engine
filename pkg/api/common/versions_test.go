@@ -340,6 +340,11 @@ func Test_GetValidPatchVersion(t *testing.T) {
 		t.Errorf("It is not the default Kubernetes version")
 	}
 
+	v = GetValidPatchVersion(Mesos, "1.6.0", false)
+	if v != "" {
+		t.Errorf("Expected empty version for unsupported orchType")
+	}
+
 	for version, enabled := range AllKubernetesWindowsSupportedVersions {
 		if enabled {
 			v = GetValidPatchVersion(Kubernetes, version, true)
@@ -406,6 +411,13 @@ func TestGetMaxVersion(t *testing.T) {
 
 	expected = "1.2.3-alpha.1"
 	versions = []string{"1.0.1", "1.1.2", expected}
+	max = GetMaxVersion(versions, true)
+	if max != expected {
+		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
+	}
+
+	expected = "1.1.2"
+	versions = []string{"1.1.1", "1.0.0-alpha.1", expected}
 	max = GetMaxVersion(versions, true)
 	if max != expected {
 		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)

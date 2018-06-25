@@ -30,7 +30,7 @@ func TestJSONMarshal(t *testing.T) {
 	}
 }
 
-func TestNormalizaAzureRegion(t *testing.T) {
+func TestNormalizeAzureRegion(t *testing.T) {
 	cases := []struct {
 		input          string
 		expectedResult string

@@ -503,8 +503,8 @@ func (a *Properties) validateVNET() error {
 
 func (a *Properties) validateServicePrincipalProfile() error {
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
-			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
+		useManagedIdentity := a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 
 		if !useManagedIdentity {
 			if a.ServicePrincipalProfile == nil {
