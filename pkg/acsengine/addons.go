@@ -103,7 +103,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.IsMetricsServerEnabled(),
 		},
 		{
-			"omsagent-daemonset.yaml",
+			"kubernetesmasteraddons-omsagent-daemonset.yaml",
 			"omsagent-daemonset.yaml",
 			profile.OrchestratorProfile.IsContainerMonitoringEnabled(),
 		},
