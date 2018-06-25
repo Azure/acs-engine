@@ -553,10 +553,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-    echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-    sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
-
     retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENTs
 fi
 
