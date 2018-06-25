@@ -125,6 +125,8 @@ jobs:
           name: ginkgo k8s e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -149,6 +151,8 @@ jobs:
           name: ginkgo k8s e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -175,6 +179,8 @@ jobs:
           name: ginkgo k8s e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -230,6 +236,8 @@ jobs:
           name: ginkgo k8s e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -256,6 +264,8 @@ jobs:
           name: ginkgo k8s e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -280,6 +290,8 @@ jobs:
           name: ginkgo k8s windows e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -304,6 +316,8 @@ jobs:
           name: ginkgo k8s windows e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -328,6 +342,8 @@ jobs:
           name: ginkgo k8s windows e2e tests
           command: make test-kubernetes
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -360,6 +376,8 @@ jobs:
           name: ginkgo openshift e2e tests
           command: make test-openshift
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -392,6 +410,8 @@ jobs:
           name: ginkgo openshift e2e tests
           command: make test-openshift
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -424,6 +444,8 @@ jobs:
           name: ginkgo openshift e2e tests
           command: make test-openshift
           no_output_timeout: "30m"
+      - store_test_results:
+          path: test/junit
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
