@@ -633,3 +633,9 @@ func (l *LinuxProfile) HasCustomNodesDNS() bool {
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
 }
+
+// RequiresDocker returns if the kubernetes settings require docker to be installed.
+func (k *KubernetesConfig) RequiresDocker() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "docker" || runtime == ""
+}
