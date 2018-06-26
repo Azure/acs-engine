@@ -66,11 +66,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have functional DNS", func() {
 			if !eng.HasWindowsAgents() {
-				pod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
-				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(5*time.Second, 2*time.Minute)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
+				if !eng.HasNetworkPolicy("calico") {
+					pod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+					Expect(err).NotTo(HaveOccurred())
+					running, err := pod.WaitOnReady(5*time.Second, 2*time.Minute)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(running).To(Equal(true))
+				}
 
 				kubeConfig, err := GetConfig()
 				Expect(err).NotTo(HaveOccurred())
@@ -672,7 +674,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("after the cluster has been up for awhile", func() {
 		It("dns-liveness pod should not have any restarts", func() {
-			if !eng.HasWindowsAgents() {
+			if !eng.HasWindowsAgents() && !eng.HasNetworkPolicy("calico") {
 				pod, err := pod.Get("dns-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
 				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
