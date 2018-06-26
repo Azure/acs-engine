@@ -670,6 +670,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
+	Describe("after the cluster has been up for awhile", func() {
+		It("dns-liveness pod should not have any restarts", func() {
+			if !eng.HasWindowsAgents() {
+				pod, err := pod.Get("dns-liveness", "default")
+				Expect(err).NotTo(HaveOccurred())
+				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				restarts := pod.Status.ContainerStatuses[0].RestartCount
+				err = pod.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(restarts).To(Equal(0))
+			}
+		})
+	})
+
 	Describe("with calico network policy enabled", func() {
 		It("should apply a network policy and deny outbound internet access to nginx pod", func() {
 			if eng.HasNetworkPolicy("calico") {
@@ -831,21 +847,5 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
 		})*/
-	})
-
-	Describe("after the cluster has been up for awhile", func() {
-		It("dns-liveness pod should not have any restarts", func() {
-			if !eng.HasWindowsAgents() {
-				pod, err := pod.Get("dns-liveness", "default")
-				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
-				restarts := pod.Status.ContainerStatuses[0].RestartCount
-				err = pod.Delete()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(restarts).To(Equal(0))
-			}
-		})
 	})
 })
