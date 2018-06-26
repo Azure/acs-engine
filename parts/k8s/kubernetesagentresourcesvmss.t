@@ -147,7 +147,7 @@
               }
             },
             {
-              "name": "[concat(variables('{{.Name}}VMNamePrefix'), '/computeAksLinuxBilling')]",
+              "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'computeAksLinuxBilling')]",
               "location": "[variables('location')]",
               "properties": {
                 "publisher": "Microsoft.AKS",
