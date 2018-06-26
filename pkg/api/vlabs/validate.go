@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -377,10 +378,23 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			}
 		}
 
+		if a.OrchestratorProfile.OrchestratorType == OpenShift {
+			if (agentPoolProfile.Name == "infra") != (agentPoolProfile.Role == "infra") {
+				return fmt.Errorf("OpenShift requires that the 'infra' agent pool profile, and no other, should have role 'infra'")
+			}
+		}
+
 		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile); agentPoolProfile.OSType == Windows && e != nil {
 			return e
 		}
 	}
+
+	if a.OrchestratorProfile.OrchestratorType == OpenShift {
+		if !reflect.DeepEqual(profileNames, map[string]bool{"compute": true, "infra": true}) {
+			return fmt.Errorf("OpenShift requires exactly two agent pool profiles: compute and infra")
+		}
+	}
+
 	return nil
 }
 
