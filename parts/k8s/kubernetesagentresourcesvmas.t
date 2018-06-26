@@ -324,4 +324,26 @@
         {{end}}
         }
       }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "name": "vmLoopNode"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.AKS",
+        "type": {{if IsHostedMaster}}"Compute.AKS.Linux.Billing"{{else}}"Compute.AKS-Engine.Linux.Billing"{{end}},
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+        }
+      }
     }
+    

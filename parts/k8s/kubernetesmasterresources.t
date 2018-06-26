@@ -895,4 +895,25 @@
         {{end}}
         }
       }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
+        "name": "vmLoopNode"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.AKS",
+        "type": "Compute.AKS-Engine.Linux.Billing",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+        }
+      }
     }{{WriteLinkedTemplatesForExtensions}}
