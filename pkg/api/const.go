@@ -119,8 +119,8 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
-	// DefaultNVIDIADevicePluginAddonName is the name of the NVIDIA device plugin addon deployment
-	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// NVIDIADevicePluginAddonName is the name of the NVIDIA device plugin addon deployment
+	NVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
 	ContainerMonitoringAddonName = "container-monitoring"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster

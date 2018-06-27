@@ -25,6 +25,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.3.0",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -55,7 +56,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.2.2",
-		"nvidia-device-plugin":             "k8s-device-plugin:1.10",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -277,6 +278,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"ratelimitbucket":                  k8sComponentVersions["1.11"]["ratelimitbucket"],
 			"gchighthreshold":                  k8sComponentVersions["1.11"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.11"]["gclowthreshold"],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
 		}
 	case "1.10":
 		ret = map[string]string{
@@ -311,7 +313,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"gchighthreshold":                  k8sComponentVersions["1.10"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.10"]["gclowthreshold"],
 			DefaultClusterAutoscalerAddonName:  k8sComponentVersions["1.10"]["cluster-autoscaler"],
-			DefaultNVIDIADevicePluginAddonName: k8sComponentVersions["1.10"]["nvidia-device-plugin"],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.10"][NVIDIADevicePluginAddonName],
 		}
 	case "1.9":
 		ret = map[string]string{
