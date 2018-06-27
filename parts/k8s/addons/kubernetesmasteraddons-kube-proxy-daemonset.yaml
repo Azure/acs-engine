@@ -19,10 +19,6 @@ spec:
         operator: Equal
         value: "true"
         effect: NoSchedule
-      - key: nvidia.com/gpu
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
       containers:
       - command:
         - "/hyperkube"
