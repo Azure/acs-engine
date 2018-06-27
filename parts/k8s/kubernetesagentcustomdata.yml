@@ -137,11 +137,6 @@ write_files:
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
-{{if IsNSeriesSKU .}}
-  {{if IsNVIDIADevicePluginEnabled}}
-    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithGpuTaints"}}
-  {{end}}
-{{end}}
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 
