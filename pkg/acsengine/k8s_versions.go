@@ -25,7 +25,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.3.0",
- 		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -256,25 +256,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"addonresizer":                k8sComponentVersions["1.11"]["addon-resizer"],
 			"heapster":                    k8sComponentVersions["1.11"]["heapster"],
 			DefaultMetricsServerAddonName: k8sComponentVersions["1.11"]["metrics-server"],
-			"dns":                        k8sComponentVersions["1.11"]["kube-dns"],
-			"addonmanager":               k8sComponentVersions["1.11"]["addon-manager"],
-			"dnsmasq":                    k8sComponentVersions["1.11"]["dnsmasq"],
-			"pause":                      k8sComponentVersions["1.11"]["pause"],
-			DefaultTillerAddonName:       k8sComponentVersions["1.11"]["tiller"],
-			DefaultReschedulerAddonName:  k8sComponentVersions["1.11"]["rescheduler"],
-			DefaultACIConnectorAddonName: k8sComponentVersions["1.11"]["aci-connector"],
-			"nodestatusfreq":             k8sComponentVersions["1.11"]["nodestatusfreq"],
-			"nodegraceperiod":            k8sComponentVersions["1.11"]["nodegraceperiod"],
-			"podeviction":                k8sComponentVersions["1.11"]["podeviction"],
-			"routeperiod":                k8sComponentVersions["1.11"]["routeperiod"],
-			"backoffretries":             k8sComponentVersions["1.11"]["backoffretries"],
-			"backoffjitter":              k8sComponentVersions["1.11"]["backoffjitter"],
-			"backoffduration":            k8sComponentVersions["1.11"]["backoffduration"],
-			"backoffexponent":            k8sComponentVersions["1.11"]["backoffexponent"],
-			"ratelimitqps":               k8sComponentVersions["1.11"]["ratelimitqps"],
-			"ratelimitbucket":            k8sComponentVersions["1.11"]["ratelimitbucket"],
-			"gchighthreshold":            k8sComponentVersions["1.11"]["gchighthreshold"],
-			"gclowthreshold":             k8sComponentVersions["1.11"]["gclowthreshold"],
 			"dns":                              k8sComponentVersions["1.11"]["kube-dns"],
 			"addonmanager":                     k8sComponentVersions["1.11"]["addon-manager"],
 			"dnsmasq":                          k8sComponentVersions["1.11"]["dnsmasq"],
@@ -297,7 +278,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"ratelimitbucket":                  k8sComponentVersions["1.11"]["ratelimitbucket"],
 			"gchighthreshold":                  k8sComponentVersions["1.11"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.11"]["gclowthreshold"],
-			NVIDIADevicePluginAddonName:  k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
 		}
 	case "1.10":
 		ret = map[string]string{
@@ -332,7 +313,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"gchighthreshold":                  k8sComponentVersions["1.10"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.10"]["gclowthreshold"],
 			DefaultClusterAutoscalerAddonName:  k8sComponentVersions["1.10"]["cluster-autoscaler"],
-			NVIDIADevicePluginAddonName:       k8sComponentVersions["1.10"][NVIDIADevicePluginAddonName],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.10"][NVIDIADevicePluginAddonName],
 		}
 	case "1.9":
 		ret = map[string]string{

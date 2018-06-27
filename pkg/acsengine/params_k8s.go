@@ -124,14 +124,14 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
 				}
 			}
-      nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
-      c = getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
-      if c > -1 {
-        if nvidiaDeviceginAddon.Containers[c].Image != "" {
-          addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
-        } else {
-          addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName])
-        }
+			nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
+			c = getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
+			if c > -1 {
+				if nvidiaDevicePluginAddon.Containers[c].Image != "" {
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
+				} else {
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName])
+				}
 			}
 			containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
 			c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, "omsagent")
