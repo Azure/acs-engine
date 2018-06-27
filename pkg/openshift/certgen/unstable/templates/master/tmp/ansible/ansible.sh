@@ -18,7 +18,7 @@ done
 #         to it
 mkdir -p /etc/origin/master/named_certificates
 
-# Deploy the router reusing relevant parts from openshift-ansible
+# Deploy all infra components reusing relevant parts from openshift-ansible
 ANSIBLE_ROLES_PATH=/usr/share/ansible/openshift-ansible/roles/ \
   ansible-playbook\
   -M /usr/share/ansible/openshift-ansible/roles/lib_utils/library \

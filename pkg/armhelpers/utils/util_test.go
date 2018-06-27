@@ -157,16 +157,42 @@ func Test_GetK8sVMName(t *testing.T) {
 		nameSuffix, agentPoolName  string
 		agentPoolIndex, agentIndex int
 		expected                   string
+		expectedErr                bool
 	}{
-		{api.Linux, true, "35953384", "agentpool1", 0, 2, "aks-agentpool1-35953384-2"},
-		{api.Windows, false, "35953384", "agentpool1", 0, 2, "35953k8s9002"},
+		{api.Linux, true, "35953384", "agentpool1", 0, 2, "aks-agentpool1-35953384-2", false},
+		{api.Windows, false, "35953384", "agentpool1", 0, 2, "35953k8s9002", false},
+		{"macOS", false, "35953384", "agentpool1", 0, 2, "", true},
 	} {
 		vmName, err := GetK8sVMName(s.osType, s.isAKS, s.nameSuffix, s.agentPoolName, s.agentPoolIndex, s.agentIndex)
-		if err != nil {
-			t.Fatalf("unexpected error: %s", err)
+
+		if !s.expectedErr {
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 		}
 		if vmName != s.expected {
 			t.Fatalf("vmName %s, expected %s", vmName, s.expected)
 		}
+	}
+}
+
+func Test_ResourceName(t *testing.T) {
+	s := "https://vhdstorage8h8pjybi9hbsl6.blob.core.windows.net/vhds/osdisks/disk1234.vhd"
+	expected := "disk1234.vhd"
+	r, err := ResourceName(s)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if r != expected {
+		t.Fatalf("resourceName %s, expected %s", r, expected)
+	}
+}
+
+func Test_ResourceNameInvalid(t *testing.T) {
+	s := "https://vhdstorage8h8pjybi9hbsl6.blob.core.windows.net/vhds/osdisks/"
+	expectedMsg := "resource name was missing from identifier"
+	_, err := ResourceName(s)
+	if err == nil || err.Error() != expectedMsg {
+		t.Fatalf("expected error with message: %s", expectedMsg)
 	}
 }

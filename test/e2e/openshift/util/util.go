@@ -97,6 +97,7 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 			return nil
 		}
 		log.Printf("got status %q while trying to access %s", resp.Status, host)
+		log.Printf("sleeping for %fs", backoff.Seconds())
 		time.Sleep(backoff)
 		backoff *= 2
 	}
@@ -130,18 +131,6 @@ func DumpPods() (string, error) {
 	return string(out), nil
 }
 
-// RunDiagnostics runs the openshift diagnostics command.
-func RunDiagnostics() (string, error) {
-	cmd := exec.Command("oc", "adm", "diagnostics")
-	printCmd(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error trying to run diagnostics: %s", string(out))
-		return "", err
-	}
-	return string(out), nil
-}
-
 // FetchLogs returns logs for the provided kind/name in namespace.
 func FetchLogs(kind, namespace, name string) string {
 	cmd := exec.Command("oc", "logs", fmt.Sprintf("%s/%s", kind, name), "-n", namespace)
@@ -153,15 +142,39 @@ func FetchLogs(kind, namespace, name string) string {
 	return string(out)
 }
 
+// FetchClusterInfo returns node and pod information about the cluster.
+func FetchClusterInfo(logPath string) error {
+	needsLog := map[string]func() (string, error){
+		"node-info": DumpNodes,
+		"pod-info":  DumpPods,
+	}
+
+	var errs []error
+	for base, logFn := range needsLog {
+		logs, err := logFn()
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		path := filepath.Join(logPath, base)
+		if err := ioutil.WriteFile(path, []byte(logs), 0644); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
 // FetchOpenShiftLogs returns logs for all OpenShift components
 // (control plane and infra).
-func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) {
+func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) error {
 	if err := fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath); err != nil {
-		log.Printf("Cannot fetch logs for control plane components: %v", err)
+		return fmt.Errorf("cannot fetch logs for control plane components: %v", err)
 	}
 	if err := fetchInfraLogs(logPath); err != nil {
-		log.Printf("Cannot fetch logs for infra components: %v", err)
+		return fmt.Errorf("cannot fetch logs for infra components: %v", err)
 	}
+	return nil
 }
 
 // fetchControlPlaneLogs returns logs for Openshift control plane components.
@@ -174,14 +187,15 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 	case common.OpenShiftVersionUnstable:
 		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
 	default:
-		panic(fmt.Sprintf("BUG: invalid OpenShift version %s", version))
+		return fmt.Errorf("invalid OpenShift version %q - won't gather logs from the control plane", version)
 	}
 }
 
 func fetch39ControlPlaneLogs(distro, sshKeyPath, sshAddress, logPath string) error {
 	var errs []error
 	for _, service := range getSystemdServices(distro) {
-		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		path := filepath.Join(logPath, service)
 		if err := ioutil.WriteFile(path, out, 0644); err != nil {
 			errs = append(errs, err)
@@ -204,12 +218,11 @@ func getSystemdServices(distro string) []string {
 	return services
 }
 
-func fetchSystemdServiceLog(sshKeyPath, sshAddress, service string) []byte {
-	cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+func remoteExec(sshKeyPath, sshAddress, cmdToExec string) []byte {
 	cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", sshAddress, cmdToExec)
 	out, err := cmd.Output()
 	if err != nil {
-		log.Printf("Cannot fetch logs for systemd service %q: %v", service, err)
+		log.Printf("Cannot execute remote command %q: %v", cmdToExec, err)
 	}
 	return out
 }
@@ -246,7 +259,8 @@ func fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath
 		if service != "atomic-openshift-node" && service != "origin-node" {
 			continue
 		}
-		out := fetchSystemdServiceLog(sshKeyPath, sshAddress, service)
+		cmdToExec := fmt.Sprintf("sudo journalctl -u %s.service", service)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		path := filepath.Join(logPath, service)
 		if err := ioutil.WriteFile(path, out, 0644); err != nil {
 			errs = append(errs, err)
@@ -282,6 +296,77 @@ func fetchInfraLogs(logPath string) error {
 		err := ioutil.WriteFile(path, []byte(log), 0644)
 		if err != nil {
 			errs = append(errs, err)
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+// FetchOpenShiftMetrics gathers metrics from etcd and the control plane.
+func FetchOpenShiftMetrics(logPath string) error {
+	var errs []error
+
+	// api server metrics
+	cmd := exec.Command("oc", "get", "--raw", "https://localhost:8443/metrics")
+	printCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("cannot get api server metrics: %v", err))
+	} else {
+		path := filepath.Join(logPath, "api-server-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("cannot write api server metrics: %v", err))
+		}
+	}
+
+	// controller manager metrics
+	cmd = exec.Command("oc", "get", "--raw", "https://localhost:8444/metrics")
+	printCmd(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("cannot get controller manager metrics: %v", err))
+	} else {
+		path := filepath.Join(logPath, "controller-manager-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("cannot write controller manager metrics: %v", err))
+		}
+	}
+
+	// etcd metrics
+	cmd = exec.Command("oc", "get", "--raw", "https://localhost:2380/metrics")
+	printCmd(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("cannot get etcd metrics: %v", err))
+	} else {
+		path := filepath.Join(logPath, "etcd-metrics")
+		err := ioutil.WriteFile(path, []byte(out), 0644)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("cannot write etcd metrics: %v", err))
+		}
+	}
+
+	return kerrors.NewAggregate(errs)
+}
+
+// FetchWaagentLogs returns stdout and stderr from waagent.
+func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) error {
+	sshAddress := fmt.Sprintf("%s@%s.%s.cloudapp.azure.com", adminName, name, location)
+
+	paths := []string{
+		"/var/lib/waagent/custom-script/download/0/stderr",
+		"/var/lib/waagent/custom-script/download/0/stdout",
+	}
+
+	var errs []error
+	for _, path := range paths {
+		cmdToExec := fmt.Sprintf("sudo cat %s", path)
+		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
+		logPath := filepath.Join(logPath, fmt.Sprintf("waagent-%s", filepath.Base(path)))
+		if err := ioutil.WriteFile(logPath, out, 0644); err != nil {
+			errs = append(errs, fmt.Errorf("Cannot write to path %s: %v", logPath, err))
 		}
 	}
 

@@ -130,7 +130,7 @@ func (s *SeriesSegment) InitForWrite() (err error) {
 	} else if _, err := s.file.Seek(int64(s.size), io.SeekStart); err != nil {
 		return err
 	}
-	s.w = bufio.NewWriterSize(s.file, 32*1024)
+	s.w = bufio.NewWriter(s.file)
 
 	return nil
 }
@@ -167,9 +167,6 @@ func (s *SeriesSegment) CloseForWrite() (err error) {
 	}
 	return err
 }
-
-// Data returns the raw data.
-func (s *SeriesSegment) Data() []byte { return s.data }
 
 // ID returns the id the segment was initialized with.
 func (s *SeriesSegment) ID() uint16 { return s.id }

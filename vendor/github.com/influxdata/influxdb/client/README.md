@@ -72,8 +72,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer c.Close()
-	
+
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -100,11 +99,6 @@ func main() {
 	// Write the batch
 	if err := c.Write(bp); err != nil {
 		log.Fatal(err)
-	}
-	
-	// Close client resources
-	if err := c.Close(); err != nil {
-    		log.Fatal(err)
 	}
 }
 

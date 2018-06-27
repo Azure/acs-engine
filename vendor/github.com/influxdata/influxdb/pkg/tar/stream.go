@@ -57,17 +57,11 @@ func SinceFilterTarFile(since time.Time) func(f os.FileInfo, shardRelativePath, 
 
 // stream a single file to tw, extending the header name using the shardRelativePath
 func StreamFile(f os.FileInfo, shardRelativePath, fullPath string, tw *tar.Writer) error {
-	return StreamRenameFile(f, f.Name(), shardRelativePath, fullPath, tw)
-}
-
-/// Stream a single file to tw, using tarHeaderFileName instead of the actual filename
-// e.g., when we want to write a *.tmp file using the original file's non-tmp name.
-func StreamRenameFile(f os.FileInfo, tarHeaderFileName, relativePath, fullPath string, tw *tar.Writer) error {
 	h, err := tar.FileInfoHeader(f, f.Name())
 	if err != nil {
 		return err
 	}
-	h.Name = filepath.ToSlash(filepath.Join(relativePath, tarHeaderFileName))
+	h.Name = filepath.ToSlash(filepath.Join(shardRelativePath, f.Name()))
 
 	if err := tw.WriteHeader(h); err != nil {
 		return err
@@ -124,7 +118,10 @@ func extractFile(tr *tar.Reader, dir string) error {
 	subDir, _ := filepath.Split(relativePath)
 	// If this is a directory entry (usually just `index` for tsi), create it an move on.
 	if hdr.Typeflag == tar.TypeDir {
-		return os.MkdirAll(filepath.Join(dir, subDir), os.FileMode(hdr.Mode).Perm())
+		if err := os.MkdirAll(filepath.Join(dir, subDir), os.FileMode(hdr.Mode).Perm()); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	// Make sure the dir we need to write into exists.  It should, but just double check in

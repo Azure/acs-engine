@@ -55,7 +55,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 120 1 20 nc -v 8.8.8.8 53 || retrycmd_if_failure 120 1 20 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
@@ -153,20 +153,31 @@ function installEtcd() {
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
+function installDeps() {
+    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
+    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    echo `date`,`hostname`, apt-get_update_end>>/opt/m
+    # make sure walinuxagent doesn't get updated in the middle of running this script
+    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+    # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
+    systemctlEnableAndStart rpcbind
+    systemctlEnableAndStart rpc-statd
+}
+
 function installDocker() {
-    apt_get_install 20 30 120 apt-transport-https ca-certificates iptables iproute2 socat util-linux mount ebtables ethtool init-system-helpers || exit $ERR_APT_INSTALL_TIMEOUT
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
     echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
     printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 ebtables docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
 }
 
 function runAptDaily() {
-    retrycmd_if_failure 20 30 60 /usr/lib/apt/apt.systemd.daily || exit $ERR_APT_DAILY_TIMEOUT
+    /usr/lib/apt/apt.systemd.daily
 }
 
 function generateAggregatedAPICerts() {
@@ -297,19 +308,6 @@ function installClearContainersRuntime() {
 	systemctlEnableAndStart cc-proxy
 }
 
-function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
-
-    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-
-	echo "Successfully installed cri-containerd..."
-	setupContainerd
-}
-
 function setupContainerd() {
 	echo "Configuring cri-containerd..."
 
@@ -329,6 +327,22 @@ function setupContainerd() {
 	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
 	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+}
+
+function installContainerd() {
+	CRI_CONTAINERD_VERSION="1.1.0"
+	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+
+    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
+	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+	rm -f "$CONTAINERD_TGZ_TMP"
+	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
+
+	echo "Successfully installed cri-containerd..."
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+		setupContainerd
+	fi
 }
 
 function ensureContainerd() {
@@ -353,16 +367,30 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    retrycmd_if_failure 100 1 60 docker pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    systemctlEnableAndStart hyperkube-extract
+    TMP_DIR=$(mktemp -d)
+    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
+    chmod +x /usr/local/bin/img
+    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+    path=$(find /tmp/img -name "hyperkube")
+
+    if [[ $OS == $COREOS_OS_NAME ]]; then
+        cp "$path" "/opt/kubelet"
+        cp "$path" "/opt/kubectl"
+        chmod a+x /opt/kubelet /opt/kubectl
+    else
+        cp "$path" "/usr/local/bin/kubelet"
+        cp "$path" "/usr/local/bin/kubectl"
+        chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
+    fi
+    rm -rf /tmp/hyperkube.tar "/tmp/img"
 }
 
 function ensureJournal(){
-    systemctlEnableAndStart systemd-journald
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
+    systemctlEnableAndStart systemd-journald
 }
 
 function ensurePodSecurityPolicy() {
@@ -377,7 +405,7 @@ function ensureK8sControlPlane() {
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 100 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    retrycmd_if_failure 600 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
@@ -470,16 +498,6 @@ configAddons() {
 }
 
 testOutboundConnection
-
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
-    echo `date`,`hostname`, apt-get_update_end>>/opt/m
-	# make sure walinuxagent doesn't get updated in the middle of running this script
-	retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
-
-fi
-
 waitForCloudInit
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
@@ -493,10 +511,15 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
     $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
-installDocker
-runAptDaily
+installDeps
+
+if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+    installDocker
+    ensureDocker
+fi
+
 configureK8s
-ensureDocker
+
 configNetworkPlugin
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
@@ -505,6 +528,10 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo `date`,`hostname`, configAddonsDone>>/opt/m
 fi
 
+# containerd needs to be installed before extractHyperkube
+# so runc is present.
+echo `date`,`hostname`, installContainerdStart>>/opt/m
+installContainerd
 echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
 extractHyperkube
 echo `date`,`hostname`, extractHyperkubeDone>>/opt/m
@@ -514,10 +541,6 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
 		installClearContainersRuntime
 	fi
-fi
-if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
-	echo `date`,`hostname`, installContainerdStart>>/opt/m
-	installContainerd
 fi
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
@@ -552,4 +575,6 @@ if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
+else
+  runAptDaily &
 fi

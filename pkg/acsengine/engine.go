@@ -32,6 +32,7 @@ var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResource
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
 	kubernetesTemplateFiles,
+	openshiftInfraResources,
 	openshiftNodeScript,
 	openshiftMasterScript,
 	openshift39NodeScript,
@@ -63,6 +64,12 @@ func GenerateClusterID(properties *api.Properties) string {
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
 func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
+	if properties == nil {
+		return "", fmt.Errorf("Properties nil in GenerateKubeConfig")
+	}
+	if properties.CertificateProfile == nil {
+		return "", fmt.Errorf("CertificateProfile property may not be nil in GenerateKubeConfig")
+	}
 	b, err := Asset(kubeConfigJSON)
 	if err != nil {
 		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeConfigJSON, err.Error())
@@ -70,7 +77,10 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig := string(b)
 	// variable replacement
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	if properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
+	if properties.OrchestratorProfile != nil &&
+		properties.OrchestratorProfile.KubernetesConfig != nil &&
+		properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
+		helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
 		if properties.MasterProfile.Count > 1 {
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
@@ -176,7 +186,7 @@ func validateDistro(cs *api.ContainerService) bool {
 func getCloudTargetEnv(location string) string {
 	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
 	switch {
-	case loc == "chinaeast" || loc == "chinanorth":
+	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
 		return azureChinaCloud
 	case loc == "germanynortheast" || loc == "germanycentral":
 		return azureGermanCloud
@@ -359,6 +369,18 @@ func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) strin
 	return ""
 }
 
+func getDCOSDefaultWindowsBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
+	if profile.OrchestratorType == api.DCOS {
+		switch profile.OrchestratorVersion {
+		case common.DCOSVersion1Dot11Dot2:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-2"
+		case common.DCOSVersion1Dot11Dot0:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-0"
+		}
+	}
+	return ""
+}
+
 func getDCOSDefaultProviderPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorVersion {
@@ -436,7 +458,7 @@ func isCustomVNET(a []*api.AgentPoolProfile) bool {
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "390.30"
+	dv := "396.26"
 	dest := "/usr/local/nvidia"
 	nvidiaDockerVersion := "2.0.3"
 	dockerVersion := "1.13.1-1"

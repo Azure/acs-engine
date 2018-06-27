@@ -9,7 +9,7 @@ import (
 
 func setControllerManagerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	staticLinuxControllerManagerConfig := map[string]string{
+	staticControllerManagerConfig := map[string]string{
 		"--kubeconfig":                       "/var/lib/kubelet/kubeconfig",
 		"--allocate-node-cidrs":              strconv.FormatBool(!o.IsAzureCNI()),
 		"--configure-cloud-routes":           strconv.FormatBool(o.RequireRouteTable()),
@@ -25,23 +25,16 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 
 	// Set --cluster-name based on appropriate DNS prefix
 	if cs.Properties.MasterProfile != nil {
-		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
+		staticControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
 	} else if cs.Properties.HostedMasterProfile != nil {
-		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
+		staticControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
 	}
 
 	// Enable cloudprovider if we're not using cloud controller manager
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
-		staticLinuxControllerManagerConfig["--cloud-provider"] = "azure"
-		staticLinuxControllerManagerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
+		staticControllerManagerConfig["--cloud-provider"] = "azure"
+		staticControllerManagerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
 	}
-
-	staticWindowsControllerManagerConfig := make(map[string]string)
-	for key, val := range staticLinuxControllerManagerConfig {
-		staticWindowsControllerManagerConfig[key] = val
-	}
-	// Windows controller-manager config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
 
 	// Default controller-manager config
 	defaultControllerManagerConfig := map[string]string{
@@ -70,13 +63,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideControllerManagerConfig map[string]string
-	if cs.Properties.HasWindows() {
-		overrideControllerManagerConfig = staticWindowsControllerManagerConfig
-	} else {
-		overrideControllerManagerConfig = staticLinuxControllerManagerConfig
-	}
-	for key, val := range overrideControllerManagerConfig {
+	for key, val := range staticControllerManagerConfig {
 		o.KubernetesConfig.ControllerManagerConfig[key] = val
 	}
 

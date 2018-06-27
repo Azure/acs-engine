@@ -120,10 +120,6 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 	agentIndex, _ = strconv.Atoi(poolInfo[3:])
 	fmt.Printf("%d\n", agentIndex)
 
-	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
-	}
-
 	return poolPrefix, acsStr, poolIndex, agentIndex, nil
 }
 

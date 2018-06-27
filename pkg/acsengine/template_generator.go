@@ -15,7 +15,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Masterminds/semver"
+	log "github.com/sirupsen/logrus"
 )
 
 // TemplateGenerator represents the object that performs the template generation.
@@ -173,17 +173,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.IsKubernetes() && common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"IsKubernetesVersionLt": func(version string) bool {
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint("<" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
-		},
-		"IsKubernetesVersionTilde": func(version string) bool {
-			// examples include
-			// ~2.3 is equivalent to >= 2.3, < 2.4
-			// ~1.2.x is equivalent to >= 1.2.0, < 1.3.0
-			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			constraint, _ := semver.NewConstraint("~" + version)
-			return cs.Properties.OrchestratorProfile.IsKubernetes() && constraint.Check(orchestratorVersion)
+			return cs.Properties.OrchestratorProfile.IsKubernetes() && !common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
 		"GetMasterKubernetesLabels": func(rg string) string {
 			var buf bytes.Buffer
@@ -323,6 +313,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"HasBootstrap": func() bool {
 			return cs.Properties.OrchestratorProfile.DcosConfig != nil && cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil
+		},
+		"HasBootstrapPublicIP": func() bool {
+			return false
 		},
 		"IsHostedBootstrap": func() bool {
 			return false
@@ -496,6 +489,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				"MASTER_ADDONS_CONFIG_PLACEHOLDER",
 				profile.OrchestratorProfile.OrchestratorVersion)
 
+			// add custom files
+			customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
+			if err != nil {
+				log.Fatalf("Could not read custom files: %s", err.Error())
+			}
+			str = substituteConfigStringCustomFiles(str,
+				customFilesReader,
+				"MASTER_CUSTOM_FILES_PLACEHOLDER")
+
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
@@ -600,6 +602,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if e != nil {
 				return ""
 			}
+			preprovisionCmd := ""
+			if profile.PreprovisionExtension != nil {
+				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
+			}
+			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetMasterSwarmModeCustomData": func() string {

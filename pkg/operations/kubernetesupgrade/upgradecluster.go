@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Masterminds/semver"
+	"github.com/blang/semver"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -27,8 +27,24 @@ type ClusterTopology struct {
 	AgentPoolsToUpgrade map[string]bool
 	AgentPools          map[string]*AgentPoolTopology
 
+	AgentPoolScaleSetsToUpgrade []AgentPoolScaleSet
+
 	MasterVMs         *[]compute.VirtualMachine
 	UpgradedMasterVMs *[]compute.VirtualMachine
+}
+
+// AgentPoolScaleSet contains necessary data required to upgrade a VMSS
+type AgentPoolScaleSet struct {
+	Name         string
+	Sku          compute.Sku
+	Location     string
+	VMsToUpgrade []AgentPoolScaleSetVM
+}
+
+// AgentPoolScaleSetVM represents a VM in a VMSS
+type AgentPoolScaleSetVM struct {
+	Name       string
+	InstanceID string
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -128,6 +144,50 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
+	vmScaleSets, err := uc.Client.ListVirtualMachineScaleSets(resourceGroup)
+	if err != nil {
+		return err
+	}
+	if vmScaleSets.Value != nil {
+		for _, vmScaleSet := range *vmScaleSets.Value {
+			vmScaleSetVMs, err := uc.Client.ListVirtualMachineScaleSetVMs(resourceGroup, *vmScaleSet.Name)
+			if err != nil {
+				return err
+			}
+			scaleSetToUpgrade := AgentPoolScaleSet{
+				Name:     *vmScaleSet.Name,
+				Sku:      *vmScaleSet.Sku,
+				Location: *vmScaleSet.Location,
+			}
+			for _, vm := range *vmScaleSetVMs.Value {
+				if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
+					uc.Logger.Infof("No tags found for scale set VM: %s skipping.\n", *vm.Name)
+					continue
+				}
+
+				scaleSetVMOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
+				if scaleSetVMOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
+					// This condition is a scale set VM that is an older version and should be handled
+					uc.Logger.Infof(
+						"VM %s in VMSS %s has a current tag of %s and a desired tag of %s. Upgrading this node.\n",
+						*vm.Name,
+						*vmScaleSet.Name,
+						scaleSetVMOrchestratorTypeAndVersion,
+						targetOrchestratorTypeVersion,
+					)
+					scaleSetToUpgrade.VMsToUpgrade = append(
+						scaleSetToUpgrade.VMsToUpgrade,
+						AgentPoolScaleSetVM{
+							Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
+							InstanceID: *vm.InstanceID,
+						},
+					)
+				}
+			}
+			uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
+		}
+	}
+
 	for _, vm := range *vmListResult.Value {
 		if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
 			uc.Logger.Infof("No tags found for VM: %s skipping.\n", *vm.Name)
@@ -176,7 +236,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 	if len(arr) != 2 {
 		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
 	}
-	currentVer, err := semver.NewVersion(arr[1])
+	currentVer, err := semver.Make(arr[1])
 	if err != nil {
 		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer.String())
 	}

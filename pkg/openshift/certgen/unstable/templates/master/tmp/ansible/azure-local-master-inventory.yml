@@ -15,7 +15,7 @@ localmaster:
 
     openshift_web_console_image_name: "IMAGE_PREFIX/IMAGE_TYPE-web-console:vVERSION"
 
-    oreg_url: 'IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}'
+    oreg_url: 'MASTER_OREG_URL-${component}:${version}'
     openshift_master_default_subdomain: 'TEMPROUTERIP.nip.io'
 
     # FIXME
@@ -60,6 +60,7 @@ localmaster:
     openshift_deployment_type: 'ANSIBLE_DEPLOY_TYPE'
 
     ansible_service_broker_install: True
+    ansible_service_broker_image:  {{`"{{ l_asb_default_images_dict[openshift_deployment_type] if openshift_deployment_type == 'origin' else l_asb_image_url }}"`}}
     openshift_service_catalog_image: "IMAGE_PREFIX/IMAGE_TYPE-service-catalog:vVERSION"
     openshift_master_etcd_urls: ["https://HOSTNAME:2379"]
 

@@ -194,7 +194,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 
 	nameSuffixParam := templateParameters["nameSuffix"].(map[string]interface{})
 	sc.nameSuffix = nameSuffixParam["defaultValue"].(string)
-	log.Infoln("Name suffix: %s", sc.nameSuffix)
+	log.Infof("Name suffix: %s", sc.nameSuffix)
 	return nil
 }
 
@@ -229,8 +229,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				continue
 			}
 
-			osPublisher := *vm.StorageProfile.ImageReference.Publisher
-			if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
+			osPublisher := vm.StorageProfile.ImageReference.Publisher
+			if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
 				_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(*vm.Name)
 			} else {
 				_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)

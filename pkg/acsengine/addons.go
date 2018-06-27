@@ -102,6 +102,16 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"kube-metrics-server-deployment.yaml",
 			profile.OrchestratorProfile.IsMetricsServerEnabled(),
 		},
+		{
+			"kubernetesmasteraddons-omsagent-daemonset.yaml",
+			"omsagent-daemonset.yaml",
+			profile.OrchestratorProfile.IsContainerMonitoringEnabled(),
+		},
+		{
+			"azure-cni-networkmonitor.yaml",
+			"azure-cni-networkmonitor.yaml",
+			profile.OrchestratorProfile.IsAzureCNI(),
+		},
 	}
 }
 

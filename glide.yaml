@@ -50,8 +50,8 @@ import:
   version: v2.0.0
 - package: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
-- package: github.com/Masterminds/semver
-  version: v1.3.1
+- package: github.com/blang/semver
+  version: v3.5.1
 - package: github.com/imdario/mergo
   version: ^0.2.2
 - package: k8s.io/apiserver
@@ -63,6 +63,9 @@ import:
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/Jeffail/gabs
   version: 1.0
+- package: github.com/rjtsdl/conform
+  version: 1.2.1
+- package: github.com/etgryphon/stringUp
 testImport:
 # glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
@@ -75,5 +78,3 @@ testImport:
 - package: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/influxdata/influxdb/client/v2
-- package: github.com/rjtsdl/conform
-  version: 1.2.1

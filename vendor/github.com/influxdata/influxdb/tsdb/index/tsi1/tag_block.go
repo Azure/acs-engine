@@ -271,6 +271,9 @@ type TagBlockKeyElem struct {
 	}
 
 	size int
+
+	// Reusable iterator.
+	itr tagBlockValueIterator
 }
 
 // Deleted returns true if the key has been tombstoned.
@@ -346,21 +349,18 @@ func (e *TagBlockValueElem) SeriesID(i int) uint64 {
 }
 
 // SeriesIDs returns a list decoded series ids.
-func (e *TagBlockValueElem) SeriesIDs() ([]uint64, error) {
+func (e *TagBlockValueElem) SeriesIDs() []uint64 {
 	a := make([]uint64, 0, e.series.n)
 	var prev uint64
 	for data := e.series.data; len(data) > 0; {
-		delta, n, err := uvarint(data)
-		if err != nil {
-			return nil, err
-		}
+		delta, n := binary.Uvarint(data)
 		data = data[n:]
 
 		seriesID := prev + uint64(delta)
 		a = append(a, seriesID)
 		prev = seriesID
 	}
-	return a, nil
+	return a
 }
 
 // Size returns the size of the element.
@@ -485,7 +485,7 @@ func ReadTagBlockTrailer(data []byte) (TagBlockTrailer, error) {
 	t.HashIndex.Size, buf = int64(binary.BigEndian.Uint64(buf[0:8])), buf[8:]
 
 	// Read total size.
-	t.Size = int64(binary.BigEndian.Uint64(buf[0:8]))
+	t.Size, buf = int64(binary.BigEndian.Uint64(buf[0:8])), buf[8:]
 
 	return t, nil
 }
@@ -647,7 +647,11 @@ func (enc *TagBlockEncoder) Close() error {
 	// Write trailer.
 	nn, err := enc.trailer.WriteTo(enc.w)
 	enc.n += nn
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ensureHeaderWritten writes a single byte to offset the rest of the block.

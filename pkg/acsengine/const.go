@@ -123,7 +123,7 @@ const (
 	// DefaultOpenshiftOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOpenshiftOrchestratorName = "ocp"
 	// DefaultEtcdVersion specifies the default etcd version to install
-	DefaultEtcdVersion = "3.2.16"
+	DefaultEtcdVersion = "3.2.23"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "256"
 	// DefaultEtcdDiskSizeGT3Nodes = size for Kubernetes master etcd disk volumes in GB if > 3 nodes
@@ -138,6 +138,10 @@ const (
 	DefaultMetricsServerAddonName = "metrics-server"
 	// NVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
 	NVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
+	ContainerMonitoringAddonName = "container-monitoring"
+	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon
+	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
@@ -256,6 +260,7 @@ const (
 	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
+	openshiftInfraResources       = "openshift/infraresources.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
 	swarmParams                   = "swarm/swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarm/swarmagentresourcesvmas.t"

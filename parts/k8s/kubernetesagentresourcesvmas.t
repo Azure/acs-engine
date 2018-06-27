@@ -1,5 +1,9 @@
     {
+{{if .AcceleratedNetworkingEnabled}}
+      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+{{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -12,10 +16,13 @@
       "[variables('vnetID')]"
 {{end}}
 {{else}}
-{{if not .IsCustomVNET}}
+{{if .IsCustomVNET}}
+      "[concat(variables('masterVMNamePrefix'), 'nic-0')]",
+{{else}}
       "[variables('vnetID')]",
 {{end}}
 {{if eq .Role "infra"}}
+      "[variables('routerLBName')]",
       "[variables('routerNSGID')]"
 {{else}}
       "[variables('nsgID')]"
@@ -25,6 +32,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
@@ -316,4 +324,26 @@
         {{end}}
         }
       }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "name": "vmLoopNode"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.AKS",
+        "type": {{if IsHostedMaster}}"Compute.AKS.Linux.Billing"{{else}}"Compute.AKS-Engine.Linux.Billing"{{end}},
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+        }
+      }
     }
+    

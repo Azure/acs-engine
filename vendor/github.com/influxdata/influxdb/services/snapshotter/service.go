@@ -93,10 +93,10 @@ func (s *Service) serve() {
 		// Wait for next connection.
 		conn, err := s.Listener.Accept()
 		if err != nil && strings.Contains(err.Error(), "connection closed") {
-			s.Logger.Info("Listener closed")
+			s.Logger.Info("snapshot listener closed")
 			return
 		} else if err != nil {
-			s.Logger.Info("Error accepting snapshot request", zap.Error(err))
+			s.Logger.Info(fmt.Sprint("error accepting snapshot request: ", err.Error()))
 			continue
 		}
 
@@ -169,7 +169,11 @@ func (s *Service) updateShardsLive(conn net.Conn) error {
 	}
 	defer s.TSDBStore.SetShardEnabled(sid, true)
 
-	return s.TSDBStore.RestoreShard(sid, conn)
+	if err := s.TSDBStore.RestoreShard(sid, conn); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) updateMetaStore(conn net.Conn, bits []byte, backupDBName, restoreDBName, backupRPName, restoreRPName string) error {
@@ -246,8 +250,10 @@ func (s *Service) respondIDMap(conn net.Conn, IDMap map[uint64]uint64) error {
 		next += 16
 	}
 
-	_, err := conn.Write(numBytes[:])
-	return err
+	if _, err := conn.Write(numBytes[:]); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Service) writeMetaStore(conn net.Conn) error {
@@ -397,7 +403,7 @@ func (s *Service) readRequest(conn net.Conn) (Request, []byte, error) {
 		// it is a bit random but sometimes the Json decoder will consume all the bytes and sometimes
 		// it will leave a few behind.
 		if err != io.EOF && n < int(r.UploadSize+1) {
-			_, err = conn.Read(bits[n:])
+			n, err = conn.Read(bits[n:])
 		}
 
 		if err != nil && err != io.EOF {

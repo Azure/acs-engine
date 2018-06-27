@@ -209,6 +209,30 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 			a["--oidc-issuer-url"])
 	}
 
+	cs.Location = "chinaeast2"
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
+		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
+			a["--oidc-issuer-url"])
+	}
+
+	cs.Location = "chinanorth"
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
+		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
+			a["--oidc-issuer-url"])
+	}
+
+	cs.Location = "chinanorth2"
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
+		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
+			a["--oidc-issuer-url"])
+	}
+
 	// Test HasAadProfile = false
 	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
 	setAPIServerConfig(cs)

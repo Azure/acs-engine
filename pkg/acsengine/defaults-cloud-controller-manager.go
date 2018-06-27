@@ -8,7 +8,7 @@ import (
 
 func setCloudControllerManagerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	staticLinuxCloudControllerManagerConfig := map[string]string{
+	staticCloudControllerManagerConfig := map[string]string{
 		"--allocate-node-cidrs":    strconv.FormatBool(!o.IsAzureCNI()),
 		"--configure-cloud-routes": strconv.FormatBool(o.RequireRouteTable()),
 		"--cloud-provider":         "azure",
@@ -21,17 +21,10 @@ func setCloudControllerManagerConfig(cs *api.ContainerService) {
 
 	// Set --cluster-name based on appropriate DNS prefix
 	if cs.Properties.MasterProfile != nil {
-		staticLinuxCloudControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
+		staticCloudControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
 	} else if cs.Properties.HostedMasterProfile != nil {
-		staticLinuxCloudControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
+		staticCloudControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
 	}
-
-	staticWindowsCloudControllerManagerConfig := make(map[string]string)
-	for key, val := range staticLinuxCloudControllerManagerConfig {
-		staticWindowsCloudControllerManagerConfig[key] = val
-	}
-	// Windows cloud-controller-manager config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
 
 	// Default cloud-controller-manager config
 	defaultCloudControllerManagerConfig := map[string]string{
@@ -53,13 +46,7 @@ func setCloudControllerManagerConfig(cs *api.ContainerService) {
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideCloudControllerManagerConfig map[string]string
-	if cs.Properties.HasWindows() {
-		overrideCloudControllerManagerConfig = staticWindowsCloudControllerManagerConfig
-	} else {
-		overrideCloudControllerManagerConfig = staticLinuxCloudControllerManagerConfig
-	}
-	for key, val := range overrideCloudControllerManagerConfig {
+	for key, val := range staticCloudControllerManagerConfig {
 		o.KubernetesConfig.CloudControllerManagerConfig[key] = val
 	}
 

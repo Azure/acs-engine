@@ -27,12 +27,14 @@ type Config struct {
 
 // AzureConfig represents the azure.conf configuration
 type AzureConfig struct {
-	TenantID        string
-	SubscriptionID  string
-	AADClientID     string
-	AADClientSecret string
-	ResourceGroup   string
-	Location        string
+	TenantID                   string
+	SubscriptionID             string
+	AADClientID                string
+	AADClientSecret            string
+	ResourceGroup              string
+	Location                   string
+	SecurityGroupName          string
+	PrimaryAvailabilitySetName string
 }
 
 // Master represents an OpenShift master configuration

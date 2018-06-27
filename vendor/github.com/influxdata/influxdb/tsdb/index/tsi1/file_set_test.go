@@ -12,7 +12,10 @@ import (
 
 // Ensure fileset can return an iterator over all series in the index.
 func TestFileSet_SeriesIDIterator(t *testing.T) {
-	idx := MustOpenIndex(1)
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
+	idx := MustOpenIndex(sfile.SeriesFile, 1)
 	defer idx.Close()
 
 	// Create initial set of series.
@@ -81,7 +84,10 @@ func TestFileSet_SeriesIDIterator(t *testing.T) {
 
 // Ensure fileset can return an iterator over all series for one measurement.
 func TestFileSet_MeasurementSeriesIDIterator(t *testing.T) {
-	idx := MustOpenIndex(1)
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
+	idx := MustOpenIndex(sfile.SeriesFile, 1)
 	defer idx.Close()
 
 	// Create initial set of series.
@@ -147,7 +153,10 @@ func TestFileSet_MeasurementSeriesIDIterator(t *testing.T) {
 
 // Ensure fileset can return an iterator over all measurements for the index.
 func TestFileSet_MeasurementIterator(t *testing.T) {
-	idx := MustOpenIndex(1)
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
+	idx := MustOpenIndex(sfile.SeriesFile, 1)
 	defer idx.Close()
 
 	// Create initial set of series.
@@ -171,16 +180,12 @@ func TestFileSet_MeasurementIterator(t *testing.T) {
 			t.Fatal("expected iterator")
 		}
 
-		expectedNames := []string{"cpu", "mem", ""} // Empty string implies end
-		for _, name := range expectedNames {
-			e := itr.Next()
-			if name == "" && e != nil {
-				t.Errorf("got measurement %s, expected nil measurement", e.Name())
-			} else if e == nil && name != "" {
-				t.Errorf("got nil measurement, expected %s", name)
-			} else if e != nil && string(e.Name()) != name {
-				t.Errorf("got measurement %s, expected %s", e.Name(), name)
-			}
+		if e := itr.Next(); string(e.Name()) != `cpu` {
+			t.Fatalf("unexpected measurement: %s", e.Name())
+		} else if e := itr.Next(); string(e.Name()) != `mem` {
+			t.Fatalf("unexpected measurement: %s", e.Name())
+		} else if e := itr.Next(); e != nil {
+			t.Fatalf("expected nil measurement: %s", e.Name())
 		}
 	})
 
@@ -205,23 +210,24 @@ func TestFileSet_MeasurementIterator(t *testing.T) {
 			t.Fatal("expected iterator")
 		}
 
-		expectedNames := []string{"cpu", "disk", "mem", ""} // Empty string implies end
-		for _, name := range expectedNames {
-			e := itr.Next()
-			if name == "" && e != nil {
-				t.Errorf("got measurement %s, expected nil measurement", e.Name())
-			} else if e == nil && name != "" {
-				t.Errorf("got nil measurement, expected %s", name)
-			} else if e != nil && string(e.Name()) != name {
-				t.Errorf("got measurement %s, expected %s", e.Name(), name)
-			}
+		if e := itr.Next(); string(e.Name()) != `cpu` {
+			t.Fatalf("unexpected measurement: %s", e.Name())
+		} else if e := itr.Next(); string(e.Name()) != `disk` {
+			t.Fatalf("unexpected measurement: %s", e.Name())
+		} else if e := itr.Next(); string(e.Name()) != `mem` {
+			t.Fatalf("unexpected measurement: %s", e.Name())
+		} else if e := itr.Next(); e != nil {
+			t.Fatalf("expected nil measurement: %s", e.Name())
 		}
 	})
 }
 
 // Ensure fileset can return an iterator over all keys for one measurement.
 func TestFileSet_TagKeyIterator(t *testing.T) {
-	idx := MustOpenIndex(1)
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
+	idx := MustOpenIndex(sfile.SeriesFile, 1)
 	defer idx.Close()
 
 	// Create initial set of series.

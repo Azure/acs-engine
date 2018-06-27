@@ -319,6 +319,13 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
+// CustomFile has source as the full absolute source path to a file and dest
+// is the full absolute desired destination path to put the file on a master node
+type CustomFile struct {
+	Source string `json:"source,omitempty"`
+	Dest   string `json:"dest,omitempty"`
+}
+
 // BootstrapProfile represents the definition of the DCOS bootstrap node used to deploy the cluster
 type BootstrapProfile struct {
 	VMSize       string `json:"vmSize,omitempty"`
@@ -374,6 +381,7 @@ type MasterProfile struct {
 	Distro                   Distro            `json:"distro,omitempty"`
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -414,24 +422,25 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                   string               `json:"name" validate:"required"`
-	Count                  int                  `json:"count" validate:"required,min=1,max=100"`
-	VMSize                 string               `json:"vmSize" validate:"required"`
-	OSDiskSizeGB           int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	DNSPrefix              string               `json:"dnsPrefix,omitempty"`
-	OSType                 OSType               `json:"osType,omitempty"`
-	Ports                  []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
-	AvailabilityProfile    string               `json:"availabilityProfile"`
-	ScaleSetPriority       string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
-	ScaleSetEvictionPolicy string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
-	StorageProfile         string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	DiskSizesGB            []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
-	VnetSubnetID           string               `json:"vnetSubnetID,omitempty"`
-	IPAddressCount         int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro                 Distro               `json:"distro,omitempty"`
-	KubernetesConfig       *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
-	ImageRef               *ImageReference      `json:"imageReference,omitempty"`
-	Role                   AgentPoolProfileRole `json:"role,omitempty"`
+	Name                         string               `json:"name" validate:"required"`
+	Count                        int                  `json:"count" validate:"required,min=1,max=100"`
+	VMSize                       string               `json:"vmSize" validate:"required"`
+	OSDiskSizeGB                 int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	DNSPrefix                    string               `json:"dnsPrefix,omitempty"`
+	OSType                       OSType               `json:"osType,omitempty"`
+	Ports                        []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	AvailabilityProfile          string               `json:"availabilityProfile"`
+	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
+	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
+	StorageProfile               string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB                  []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
+	VnetSubnetID                 string               `json:"vnetSubnetID,omitempty"`
+	IPAddressCount               int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro                       Distro               `json:"distro,omitempty"`
+	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
+	Role                         AgentPoolProfileRole `json:"role,omitempty"`
+	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -623,4 +632,10 @@ func (l *LinuxProfile) HasCustomNodesDNS() bool {
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
+}
+
+// RequiresDocker returns if the kubernetes settings require docker to be installed.
+func (k *KubernetesConfig) RequiresDocker() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "docker" || runtime == ""
 }

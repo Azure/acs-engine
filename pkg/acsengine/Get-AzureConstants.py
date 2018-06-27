@@ -55,6 +55,8 @@ def getLocations():
     #hard code Azure China Cloud location
     locationList.append('chinanorth')
     locationList.append('chinaeast')
+    locationList.append('chinanorth2')
+    locationList.append('chinaeast2')
     # Adding two Canary locations
     locationList.append('centraluseuap')
     locationList.append('eastus2euap')
@@ -86,6 +88,8 @@ var AzureLocations = []string{
 
     text += r"""        "chinaeast",
 	"chinanorth",
+	"chinanorth2",
+	"chinaeast2",
 	"germanycentral",
 	"germanynortheast",
 	"usgovvirginia",

@@ -10,7 +10,7 @@ import (
 
 func setAPIServerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
-	staticLinuxAPIServerConfig := map[string]string{
+	staticAPIServerConfig := map[string]string{
 		"--bind-address":               "0.0.0.0",
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
@@ -36,13 +36,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--v":                          "4",
 	}
 
-	// Windows apiserver config overrides
-	// TODO placeholder for specific config overrides for Windows clusters
-	staticWindowsAPIServerConfig := make(map[string]string)
-	for key, val := range staticLinuxAPIServerConfig {
-		staticWindowsAPIServerConfig[key] = val
-	}
-
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
 		"--audit-log-maxage":    "30",
@@ -50,14 +43,9 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--audit-log-maxsize":   "100",
 	}
 
-	// Data Encryption at REST configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
-	}
-
-	// Data Encryption at REST with external KMS configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
-		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
+	// Data Encryption at REST configuration conditions
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) || helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableEncryptionWithExternalKms) {
+		staticAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
 	// Aggregated API configuration
@@ -73,8 +61,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Enable cloudprovider if we're not using cloud controller manager
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
-		staticLinuxAPIServerConfig["--cloud-provider"] = "azure"
-		staticLinuxAPIServerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
+		staticAPIServerConfig["--cloud-provider"] = "azure"
+		staticAPIServerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
 	}
 
 	// AAD configuration
@@ -91,7 +79,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Audit Policy configuration
 	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
-		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
+		staticAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
 	}
 
 	// RBAC configuration
@@ -122,13 +110,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideAPIServerConfig map[string]string
-	if cs.Properties.HasWindows() {
-		overrideAPIServerConfig = staticWindowsAPIServerConfig
-	} else {
-		overrideAPIServerConfig = staticLinuxAPIServerConfig
-	}
-	for key, val := range overrideAPIServerConfig {
+	for key, val := range staticAPIServerConfig {
 		o.KubernetesConfig.APIServerConfig[key] = val
 	}
 

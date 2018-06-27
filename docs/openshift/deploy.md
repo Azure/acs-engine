@@ -117,3 +117,45 @@ Run `acs-engine generate examples/openshift.json`
 After couple of minutes, your OpenShift web console should be accessible at `https://${dnsprefix}.${location}.cloudapp.azure.com:8443/`. You can log in with `clusterUsername` and `clusterPassword` values you set in the `openshift.json` file or with your Azure account if you've used AAD integration.
 
 For next steps, see [getting started documentation](https://docs.openshift.org/latest/getting_started/index.html) on OpenShift website.
+
+## Custom VNET
+
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the master IP address in `firstConsecutiveStaticIP`. Note: Currently OpenShift clusters cannot be set up in the 172.30.0.0/16 range. 
+
+To create a vnet and a subnet, for example:
+
+```bash
+az network vnet create -g $RESOURCE_GROUP -n $VNET_NAME --address-prefixes 10.239.0.0/16 --subnet-name $SUBNET_NAME --subnet-prefix 10.239.0.0/24
+```
+To get the `vnetSubnetId`:
+
+```bash
+az network vnet subnet show -n $SUBNET_NAME -g $RESOURCE_GROUP --vnet-name $VNET_NAME --query id
+```
+
+Edit the [OpenShift with custom vnet cluster definition](/examples/vnet/openshift-vnet.json) and fill out the required values (every value with empty default `""` must be filled in).
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
+
+```json
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+  "firstConsecutiveStaticIP": "10.239.0.239",
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "compute",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+    ...
+  },
+  {
+    ...
+    "name": "infra",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+    ...
+  },
+```

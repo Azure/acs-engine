@@ -152,6 +152,15 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
+    "omsAgentVersion": "[parameters('omsAgentVersion')]",
+    "omsAgentDockerProviderVersion": "[parameters('omsAgentDockerProviderVersion')]",
+    "omsAgentImage": "[parameters('omsAgentImage')]",
+    "omsAgentWorkspaceGuid": "[parameters('omsAgentWorkspaceGuid')]",
+    "omsAgentWorkspaceKey": "[parameters('omsAgentWorkspaceKey')]",
+    "kubernetesOMSAgentCPURequests": "[parameters('kubernetesOMSAgentCPURequests')]",
+    "kubernetesOMSAgentMemoryRequests": "[parameters('kubernetesOMSAgentMemoryRequests')]",
+    "kubernetesOMSAgentCPULimit": "[parameters('kubernetesOMSAgentCPULimit')]",
+    "kubernetesOMSAgentMemoryLimit": "[parameters('kubernetesOMSAgentMemoryLimit')]",
 {{if EnableDataEncryptionAtRest}}
     "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
 {{end}}
@@ -182,6 +191,7 @@
     "masterOffset": "[parameters('masterOffset')]",
 {{end}}
     "apiVersionDefault": "2016-03-30",
+    "apiVersionAcceleratedNetworking": "2018-04-01",
     "apiVersionLinkDefault": "2015-01-01",
     "locations": [
          "[resourceGroup().location]",
@@ -268,6 +278,7 @@
 
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
+    "AzureCNINetworkMonitorImageURL": "[parameters('AzureCNINetworkMonitorImageURL')]",
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}

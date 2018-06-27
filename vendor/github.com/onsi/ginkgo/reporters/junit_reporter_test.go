@@ -76,7 +76,6 @@ var _ = Describe("JUnit Reporter", func() {
 
 		It("should record the test as passing", func() {
 			output := readOutputFile()
-			Ω(output.Name).Should(Equal("My test suite"))
 			Ω(output.Tests).Should(Equal(1))
 			Ω(output.Failures).Should(Equal(0))
 			Ω(output.Time).Should(Equal(10.0))
@@ -113,7 +112,6 @@ var _ = Describe("JUnit Reporter", func() {
 
 		It("should record the test as having failed", func() {
 			output := readOutputFile()
-			Ω(output.Name).Should(Equal("My test suite"))
 			Ω(output.Tests).Should(Equal(1))
 			Ω(output.Failures).Should(Equal(1))
 			Ω(output.Time).Should(Equal(10.0))
@@ -152,7 +150,6 @@ var _ = Describe("JUnit Reporter", func() {
 
 		It("should record the test as having failed", func() {
 			output := readOutputFile()
-			Ω(output.Name).Should(Equal("My test suite"))
 			Ω(output.Tests).Should(Equal(1))
 			Ω(output.Failures).Should(Equal(1))
 			Ω(output.Time).Should(Equal(10.0))
@@ -203,7 +200,6 @@ var _ = Describe("JUnit Reporter", func() {
 
 			It("should record test as failing", func() {
 				output := readOutputFile()
-				Ω(output.Name).Should(Equal("My test suite"))
 				Ω(output.Tests).Should(Equal(1))
 				Ω(output.Failures).Should(Equal(1))
 				Ω(output.Time).Should(Equal(10.0))
