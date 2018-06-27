@@ -427,24 +427,26 @@ func (a *Properties) validateAddons() error {
 					return fmt.Errorf("Cluster Autoscaler add-on can only be used with VirtualMachineScaleSets. Please specify \"availabilityProfile\": \"%s\"", VirtualMachineScaleSets)
 				}
 			case "nvidia-device-plugin":
-				version := common.RationalizeReleaseAndVersion(
-					a.OrchestratorProfile.OrchestratorType,
-					a.OrchestratorProfile.OrchestratorRelease,
-					a.OrchestratorProfile.OrchestratorVersion,
-					false)
-				if version == "" {
-					return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
-				}
-				sv, err := semver.Make(version)
-				if err != nil {
-					return fmt.Errorf("could not validate version %s", version)
-				}
-				minVersion, err := semver.Make("1.10.0")
-				if err != nil {
-					return fmt.Errorf("could not validate version")
-				}
-				if isNSeriesSKU && sv.LT(minVersion) {
-					return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
+				if helpers.IsTrueBoolPointer(addon.Enabled) {
+					version := common.RationalizeReleaseAndVersion(
+						a.OrchestratorProfile.OrchestratorType,
+						a.OrchestratorProfile.OrchestratorRelease,
+						a.OrchestratorProfile.OrchestratorVersion,
+						false)
+					if version == "" {
+						return fmt.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+					}
+					sv, err := semver.Make(version)
+					if err != nil {
+						return fmt.Errorf("could not validate version %s", version)
+					}
+					minVersion, err := semver.Make("1.10.0")
+					if err != nil {
+						return fmt.Errorf("could not validate version")
+					}
+					if isNSeriesSKU && sv.LT(minVersion) {
+						return fmt.Errorf("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
+					}
 				}
 			}
 		}
