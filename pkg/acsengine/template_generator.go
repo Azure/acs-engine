@@ -188,6 +188,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
+			if isNSeriesSKU(profile) {
+				accelerator := "nvidia"
+				buf.WriteString(fmt.Sprintf(",accelerator=%s", accelerator))
+			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
@@ -747,8 +751,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
-				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
-				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, DefaultNVIDIADevicePluginAddonName)
+				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
+				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -954,7 +958,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = nvidiaDevicePluginAddon.Containers[nC].Image
 						}
 					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName]
+						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {

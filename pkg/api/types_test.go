@@ -898,7 +898,7 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 	p.AgentPoolProfiles[0].VMSize = "Standard_D2_v2"
 	p.OrchestratorProfile.KubernetesConfig.Addons = []KubernetesAddon{
 		{
-			Name:    DefaultNVIDIADevicePluginAddonName,
+			Name:    NVIDIADevicePluginAddonName,
 			Enabled: helpers.PointerToBool(false),
 		},
 	}

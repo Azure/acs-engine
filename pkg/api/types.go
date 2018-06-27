@@ -943,7 +943,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	k := p.OrchestratorProfile.KubernetesConfig
 	o := p.OrchestratorProfile
 	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultNVIDIADevicePluginAddonName {
+		if k.Addons[i].Name == NVIDIADevicePluginAddonName {
 			nvidiaDevicePluginAddon = k.Addons[i]
 		}
 	}

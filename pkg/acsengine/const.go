@@ -136,8 +136,8 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
-	// DefaultNVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
-	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// NVIDIADevicePluginAddonName is the name of the kubernetes NVIDIA Device Plugin daemon set
+	NVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
 	ContainerMonitoringAddonName = "container-monitoring"
 	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon

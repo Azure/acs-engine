@@ -307,10 +307,10 @@ var (
 
 	// DefaultNVIDIADevicePluginAddonsConfig is the default NVIDIA Device Plugin Kubernetes addon Config
 	DefaultNVIDIADevicePluginAddonsConfig = api.KubernetesAddon{
-		Name: DefaultNVIDIADevicePluginAddonName,
+		Name: NVIDIADevicePluginAddonName,
 		Containers: []api.KubernetesContainerSpec{
 			{
-				Name: DefaultNVIDIADevicePluginAddonName,
+				Name: NVIDIADevicePluginAddonName,
 			},
 		},
 	}
@@ -453,7 +453,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				m = getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 			}
-			n := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+			n := getAddonsIndexByName(o.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 			if n < 0 {
 				// Provide default acs-engine config for NVIDIA Device Plugin
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonsConfig)
@@ -563,7 +563,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultMetricsServerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
-		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[n].IsEnabled(api.DefaultNVIDIADevicePluginAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[n] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[n], DefaultNVIDIADevicePluginAddonsConfig)
 		}
