@@ -60,11 +60,6 @@ spec:
         app: helm
         name: tiller
     spec:
-      tolerations:
-      - key: nvidia.com/gpu
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
       serviceAccountName: tiller
       containers:
       - env:

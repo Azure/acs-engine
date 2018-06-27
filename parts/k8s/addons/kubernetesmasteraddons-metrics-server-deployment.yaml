@@ -119,11 +119,6 @@ spec:
       labels:
         k8s-app: metrics-server
     spec:
-      tolerations:
-      - key: nvidia.com/gpu
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
       serviceAccountName: metrics-server
       containers:
       - name: metrics-server

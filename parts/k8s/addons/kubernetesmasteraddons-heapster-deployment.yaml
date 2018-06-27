@@ -167,9 +167,5 @@ spec:
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
-        - key: nvidia.com/gpu
-          operator: Equal
-          value: "true"
-          effect: NoSchedule
       nodeSelector:
         beta.kubernetes.io/os: linux    
