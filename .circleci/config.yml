@@ -335,7 +335,7 @@ jobs:
   openshift-3.9-rhel-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: registry.svc.ci.openshift.org/ci/acs-engine-tests:v3.9
+      - image: registry.svc.ci.openshift.org/azure/acs-engine-tests:v3.9
         environment:
           GOPATH: /go
     steps:
@@ -367,7 +367,7 @@ jobs:
   openshift-3.9-rhel-e2e-vnet:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: registry.svc.ci.openshift.org/ci/acs-engine-tests:v3.9
+      - image: registry.svc.ci.openshift.org/azure/acs-engine-tests:v3.9
         environment:
           GOPATH: /go
     steps:
@@ -399,7 +399,7 @@ jobs:
   openshift-3.9-centos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: registry.svc.ci.openshift.org/ci/acs-engine-tests:v3.9
+      - image: registry.svc.ci.openshift.org/azure/acs-engine-tests:v3.9
         environment:
           GOPATH: /go
     steps:
