@@ -899,7 +899,7 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 	p.OrchestratorProfile.KubernetesConfig.Addons = []KubernetesAddon{
 		{
 			Name:    NVIDIADevicePluginAddonName,
-			Enabled: &b,
+			Enabled: helpers.PointerToBool(false),
 		},
 	}
 

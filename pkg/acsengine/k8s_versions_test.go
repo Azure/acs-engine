@@ -30,7 +30,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		ContainerMonitoringAddonName:       k8sComponentVersions["1.11"][ContainerMonitoringAddonName],
 		AzureCNINetworkMonitoringAddonName: k8sComponentVersions["1.11"][AzureCNINetworkMonitoringAddonName],
 		DefaultClusterAutoscalerAddonName:  k8sComponentVersions["1.11"]["cluster-autoscaler"],
-		NVIDIADevicePluginAddonName:  k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
+		NVIDIADevicePluginAddonName:        k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
 		"nodestatusfreq":                   k8sComponentVersions["1.11"]["nodestatusfreq"],
 		"nodegraceperiod":                  k8sComponentVersions["1.11"]["nodegraceperiod"],
 		"podeviction":                      k8sComponentVersions["1.11"]["podeviction"],
