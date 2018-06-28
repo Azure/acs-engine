@@ -6,7 +6,9 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
@@ -120,14 +122,13 @@ func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 		} else if len(args) > 1 {
 			cmd.Usage()
 			return errors.New("too many arguments were provided to 'deploy'")
-		} else {
-			cmd.Usage()
-			return errors.New("--api-model was not supplied, nor was one specified as a positional argument")
 		}
 	}
 
-	if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
-		return errors.Errorf("specified api model does not exist (%s)", dc.apimodelPath)
+	if dc.apimodelPath != "" {
+		if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
+			return errors.Errorf("specified api model does not exist (%s)", dc.apimodelPath)
+		}
 	}
 
 	if dc.location == "" {
@@ -141,15 +142,30 @@ func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 func (dc *deployCmd) mergeAPIModel() error {
 	var err error
 
+	if dc.apimodelPath == "" {
+		log.Infoln("no --api-model was specified, using default model")
+		f, err := ioutil.TempFile("", fmt.Sprintf("%s-default-api-model_%s-%s_", filepath.Base(os.Args[0]), BuildSHA, GitTreeState))
+		if err != nil {
+			return errors.Wrap(err, "error creating temp file for default API model")
+		}
+		log.Infoln("default api model generated at", f.Name())
+
+		defer f.Close()
+		if err := writeDefaultModel(f); err != nil {
+			return err
+		}
+		dc.apimodelPath = f.Name()
+	}
+
 	// if --set flag has been used
-	if dc.set != nil && len(dc.set) > 0 {
+	if len(dc.set) > 0 {
 		m := make(map[string]transform.APIModelValue)
 		transform.MapValues(m, dc.set)
 
 		// overrides the api model and generates a new file
 		dc.apimodelPath, err = transform.MergeValuesWithAPIModel(dc.apimodelPath, m)
 		if err != nil {
-			return errors.Wrap(err, "error merging --set values with the api model: %s")
+			return errors.Wrapf(err, "error merging --set values with the api model: %s")
 		}
 
 		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
@@ -353,6 +369,15 @@ func (dc *deployCmd) validateApimodel() (*api.ContainerService, string, error) {
 		Translator: &i18n.Translator{
 			Locale: dc.locale,
 		},
+	}
+
+	p := dc.containerService.Properties
+	if strings.ToLower(p.OrchestratorProfile.OrchestratorType) == "kubernetes" {
+		if p.ServicePrincipalProfile == nil || (p.ServicePrincipalProfile.ClientID == "" || p.ServicePrincipalProfile.Secret == "") {
+			if p.OrchestratorProfile.KubernetesConfig != nil && !p.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+				return nil, "", errors.New("when using the kubernetes orchestrator, must either set useManagedIdentity in the kubernetes config or set --client-id and --client-secret (also available in the API model)")
+			}
+		}
 	}
 
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code

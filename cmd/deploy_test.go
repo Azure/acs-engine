@@ -110,9 +110,10 @@ func TestValidate(t *testing.T) {
 				forceOverwrite:    false,
 				caCertificatePath: "test",
 				caPrivateKeyPath:  "test",
+				location:          "west europe",
 			},
 			args:        []string{},
-			expectedErr: errors.New("--api-model was not supplied, nor was one specified as a positional argument"),
+			expectedErr: nil,
 		},
 		{
 			dc: &deployCmd{

@@ -35,6 +35,29 @@ func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string, validate, isUp
 	return a.DeserializeContainerService(contents, validate, isUpdate, existingContainerService)
 }
 
+// LoadDefaultContainerServiceProperties loads the default API model
+func LoadDefaultContainerServiceProperties() (TypeMeta, *vlabs.Properties) {
+	return TypeMeta{APIVersion: vlabs.APIVersion}, &vlabs.Properties{
+		OrchestratorProfile: &vlabs.OrchestratorProfile{
+			OrchestratorType: "kubernetes",
+		},
+		MasterProfile: &vlabs.MasterProfile{
+			Count:        3,
+			VMSize:       "Standard_DS2_v2",
+			OSDiskSizeGB: 200,
+		},
+		AgentPoolProfiles: []*vlabs.AgentPoolProfile{
+			{
+				Name:         "agent",
+				Count:        3,
+				VMSize:       "Standard_DS2_v2",
+				OSDiskSizeGB: 200,
+			},
+		},
+		LinuxProfile: &vlabs.LinuxProfile{AdminUsername: "azureuser"},
+	}
+}
+
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
 func (a *Apiloader) DeserializeContainerService(contents []byte, validate, isUpdate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
 	m := &TypeMeta{}
