@@ -123,7 +123,7 @@ func TestValidateAgents(t *testing.T) {
 			},
 			profiles: []*AgentPoolProfile{
 				{
-					Name: "foo",
+					Name: "infra",
 					ImageRef: &ImageReference{
 						Name:          "rhel7",
 						ResourceGroup: "images",
@@ -132,7 +132,7 @@ func TestValidateAgents(t *testing.T) {
 					AvailabilityProfile: common.AvailabilitySet,
 				},
 				{
-					Name: "bar",
+					Name: "compute",
 					ImageRef: &ImageReference{
 						Name:          "rhel7",
 						ResourceGroup: "images",
@@ -198,10 +198,9 @@ func TestValidateAgents(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("scenario %q", test.name)
-
 		err := validateAgents(test.orchestratorProfile, test.profiles)
 		if !reflect.DeepEqual(err, test.expectedErr) {
+			t.Logf("scenario %q", test.name)
 			t.Errorf("unexpected error: %v\nexpected error: %v", err, test.expectedErr)
 		}
 	}

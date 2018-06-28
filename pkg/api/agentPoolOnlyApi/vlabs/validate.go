@@ -3,6 +3,7 @@ package vlabs
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -137,7 +138,13 @@ func validateAgents(orchestratorProfile *OrchestratorProfile, profiles []*AgentP
 		orchestratorType = orchestratorProfile.OrchestratorType
 	}
 
+	profileNames := make(map[string]bool)
 	for _, agentPoolProfile := range profiles {
+		// validate that each AgentPoolProfile Name is unique
+		if _, ok := profileNames[agentPoolProfile.Name]; ok {
+			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", agentPoolProfile.Name)
+		}
+		profileNames[agentPoolProfile.Name] = true
 		if err := agentPoolProfile.Validate(); err != nil {
 			return err
 		}
@@ -146,6 +153,11 @@ func validateAgents(orchestratorProfile *OrchestratorProfile, profiles []*AgentP
 		}
 		if err := validateOpenShiftAgent(orchestratorType, agentPoolProfile); err != nil {
 			return err
+		}
+	}
+	if orchestratorType == common.OpenShift {
+		if !reflect.DeepEqual(profileNames, map[string]bool{"compute": true, "infra": true}) {
+			return fmt.Errorf("OpenShift requires exactly two agent pool profiles: compute and infra")
 		}
 	}
 	return nil
@@ -175,6 +187,9 @@ func validateOpenShiftAgent(orchestratorType string, a *AgentPoolProfile) error 
 	}
 	if a.AvailabilityProfile != common.AvailabilitySet {
 		return fmt.Errorf("only AvailabilityProfile: AvailabilitySet is supported for Orchestrator 'OpenShift'")
+	}
+	if (a.Name == "infra") != (a.Role == "infra") {
+		return errors.New("OpenShift requires that the 'infra' agent pool profile, and no other, should have role 'infra'")
 	}
 	return nil
 }
