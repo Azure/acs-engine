@@ -797,7 +797,7 @@ func (a *AgentPoolProfile) validateOrchestratorSpecificProperties(orchestratorTy
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
 	for _, s := range secrets {
 		if len(s.VaultCertificates) == 0 {
-			return fmt.Errorf("Invalid KeyVaultSecrets must have no empty VaultCertificates")
+			return fmt.Errorf("Valid KeyVaultSecrets must have no empty VaultCertificates")
 		}
 		if s.SourceVault == nil {
 			return fmt.Errorf("missing SourceVault in KeyVaultSecrets")
