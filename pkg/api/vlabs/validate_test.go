@@ -550,40 +550,51 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	p.OrchestratorProfile = &OrchestratorProfile{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 
+	k8sVersion := "1.8.0"
 	for _, policy := range NetworkPolicyValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
-		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err != nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err != nil {
 			t.Errorf(
-				"should not error on networkPolicy=\"%s\"",
+				"should not error on networkPolicy=\"%s\" on k8sVersion=\"%s\"",
 				policy,
+				k8sVersion,
 			)
 		}
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "not-existing"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err == nil {
 		t.Errorf(
 			"should error on invalid networkPolicy",
 		)
 	}
 
+	k8sVersion = "1.7.9"
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err == nil {
+		t.Errorf(
+			"should error on azure networkPolicy + azure networkPlugin with k8s version < 1.8.0",
+		)
+	}
+
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on cilium for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on flannel for windows clusters",
 		)
@@ -643,10 +654,6 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 		{
 			networkPlugin: "azure",
 			networkPolicy: "flannel",
-		},
-		{
-			networkPlugin: "azure",
-			networkPolicy: "azure",
 		},
 		{
 			networkPlugin: "kubenet",

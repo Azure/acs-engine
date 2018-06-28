@@ -344,6 +344,16 @@ var (
 			},
 		},
 	}
+
+	// DefaultAzureNetworkPolicyAddonsConfig is the default Azure NetworkPolicy addon config
+	DefaultAzureNetworkPolicyAddonsConfig = api.KubernetesAddon{
+		Name: AzureNetworkPolicyAddonName,
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: AzureNetworkPolicyAddonName,
+			},
+		},
+	}
 )
 
 // setPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -394,8 +404,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		// and set a default network policy enforcement configuration
 		switch o.KubernetesConfig.NetworkPolicy {
 		case NetworkPluginAzure:
-			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		case NetworkPolicyNone:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
@@ -417,6 +429,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultNVIDIADevicePluginAddonsConfig,
 				DefaultContainerMonitoringAddonsConfig,
 				DefaultAzureCNINetworkMonitorAddonsConfig,
+				DefaultAzureNetworkPolicyAddonsConfig,
 			}
 			enforceK8sAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
@@ -467,6 +480,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if aN < 0 {
 				// Provide default acs-engine config for Azure CNI containernetworking Device Plugin
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureCNINetworkMonitorAddonsConfig)
+			}
+			aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+			if aNP < 0 {
+				// Provide default acs-engine config for Azure NetworkPolicy addon
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureNetworkPolicyAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -574,6 +592,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		aN := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(a.OrchestratorProfile.IsAzureCNI()) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[aN] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aN], DefaultAzureCNINetworkMonitorAddonsConfig)
+		}
+		aNP := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[aNP].IsEnabled(a.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[aNP] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aNP], DefaultAzureNetworkPolicyAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
@@ -1105,6 +1127,8 @@ func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorP
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
+	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
@@ -1113,6 +1137,10 @@ func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 
 func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.IsAzureCNI())
+}
+
+func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
 }
 
 func generateEtcdEncryptionKey() string {

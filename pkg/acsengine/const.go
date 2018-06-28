@@ -50,7 +50,9 @@ const (
 	NetworkPolicyCalico = "calico"
 	// NetworkPolicyCilium is the string expression for cilium network policy config option
 	NetworkPolicyCilium = "cilium"
-	// NetworkPluginAzure is the string expression for Azure CNI network policy
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager
+	NetworkPolicyAzure = "azure"
+	// NetworkPluginAzure is the string expression for Azure CNI plugin
 	NetworkPluginAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
@@ -142,6 +144,8 @@ const (
 	ContainerMonitoringAddonName = "container-monitoring"
 	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon
 	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
+	// AzureNetworkPolicyAddonName is the name of the Azure CNI networkmonitor addon
+	AzureNetworkPolicyAddonName = "azure-npm-daemonset"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

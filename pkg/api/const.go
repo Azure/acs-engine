@@ -125,12 +125,14 @@ const (
 	ContainerMonitoringAddonName = "container-monitoring"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
-	// NetworkPolicyAzure is the string expression for the deprecated NetworkPolicy usage pattern "azure"
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager
 	NetworkPolicyAzure = "azure"
 	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
 	NetworkPolicyNone = "none"
 	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
 	NetworkPluginKubenet = "kubenet"
+	// NetworkPluginAzure is thee string expression for Azure CNI plugin.
+	NetworkPluginAzure = "azure"
 )
 
 const (

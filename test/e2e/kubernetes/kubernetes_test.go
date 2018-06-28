@@ -690,7 +690,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with calico network policy enabled", func() {
 		It("should apply a network policy and deny outbound internet access to nginx pod", func() {
-			if eng.HasNetworkPolicy("calico") {
+			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") {
 				namespace := "default"
 				By("Creating a nginx deployment")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
