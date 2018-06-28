@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -44,6 +45,24 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newUpgradeCmd())
 	rootCmd.AddCommand(newScaleCmd())
 	rootCmd.AddCommand(newDcosUpgradeCmd())
+
+	var completionCmd = &cobra.Command{
+		Use:   "completion",
+		Short: "Generates bash completion scripts",
+		Long: `To load completion run 
+		
+	source <(acs-engine completion)
+		
+	To configure your bash shell to load completions for each session, add this to your bashrc
+	
+	# ~/.bashrc or ~/.profile
+	source <(acs-engine completion)
+	`,
+		Run: func(cmd *cobra.Command, args []string) {
+			rootCmd.GenBashCompletion(os.Stdout)
+		},
+	}
+	rootCmd.AddCommand(completionCmd)
 
 	return rootCmd
 }
