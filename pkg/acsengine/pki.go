@@ -13,6 +13,8 @@ import (
 	"net"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -58,7 +60,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		etcdClientPrivateKey  *rsa.PrivateKey
 		etcdPeerCertPairs     []*PkiKeyCertPair
 	)
-	errors := make(chan error)
+	var group errgroup.Group
 
 	var err error
 	caCertificate, err = pemToCertificate(caPair.CertificatePem)
@@ -70,62 +72,53 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	go func() {
-		var err error
+	group.Go(func() (err error) {
 		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, false, true, extraFQDNs, extraIPs, nil)
-		errors <- err
-	}()
+		return err
+	})
 
-	go func() {
-		var err error
+	group.Go(func() (err error) {
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
 		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, organization)
-		errors <- err
-	}()
+		return err
+	})
 
-	go func() {
-		var err error
+	group.Go(func() (err error) {
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
 		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, organization)
-		errors <- err
-	}()
+		return err
+	})
 
-	go func() {
-		var err error
+	group.Go(func() (err error) {
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
 		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, true, nil, peerIPs, nil)
-		errors <- err
-	}()
+		return err
+	})
 
-	go func() {
-		var err error
+	group.Go(func() (err error) {
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
 		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
-		errors <- err
-	}()
+		return err
+	})
 
 	etcdPeerCertPairs = make([]*PkiKeyCertPair, masterCount)
 	for i := 0; i < masterCount; i++ {
-		go func(i int) {
-			var err error
+		i := i
+		group.Go(func() (err error) {
 			ip := net.ParseIP("127.0.0.1").To4()
 			peerIPs := append(extraIPs, ip)
 			etcdPeerCertificate, etcdPeerPrivateKey, err := createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
 			etcdPeerCertPairs[i] = &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))}
-			errors <- err
-		}(i)
+			return err
+		})
 	}
 
-	e := make([]error, (masterCount + 5))
-	for i := 0; i < len(e); i++ {
-		e[i] = <-errors
-		if e[i] != nil {
-			return nil, nil, nil, nil, nil, nil, e[i]
-		}
+	if err := group.Wait(); err != nil {
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
