@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -15,6 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations/dcosupgrade"
 	"github.com/leonelquinteros/gotext"
+	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -76,28 +76,28 @@ func (uc *dcosUpgradeCmd) validate(cmd *cobra.Command) error {
 
 	uc.locale, err = i18n.LoadTranslations()
 	if err != nil {
-		return fmt.Errorf("error loading translation files: %s", err.Error())
+		return errors.Wrap(err, "error loading translation files")
 	}
 
 	if len(uc.resourceGroupName) == 0 {
 		cmd.Usage()
-		return fmt.Errorf("--resource-group must be specified")
+		return errors.New("--resource-group must be specified")
 	}
 
 	if len(uc.location) == 0 {
 		cmd.Usage()
-		return fmt.Errorf("--location must be specified")
+		return errors.New("--location must be specified")
 	}
 	uc.location = helpers.NormalizeAzureRegion(uc.location)
 
 	if len(uc.upgradeVersion) == 0 {
 		cmd.Usage()
-		return fmt.Errorf("--upgrade-version must be specified")
+		return errors.New("--upgrade-version must be specified")
 	}
 
 	if len(uc.deploymentDirectory) == 0 {
 		cmd.Usage()
-		return fmt.Errorf("--deployment-dir must be specified")
+		return errors.New("--deployment-dir must be specified")
 	}
 
 	if len(uc.sshPrivateKeyPath) == 0 {
@@ -105,11 +105,11 @@ func (uc *dcosUpgradeCmd) validate(cmd *cobra.Command) error {
 	}
 	if uc.sshPrivateKey, err = ioutil.ReadFile(uc.sshPrivateKeyPath); err != nil {
 		cmd.Usage()
-		return fmt.Errorf("ssh-private-key-path must be specified: %s", err)
+		return errors.Wrap(err, "ssh-private-key-path must be specified")
 	}
 
 	if err = uc.authArgs.validateAuthArgs(); err != nil {
-		return fmt.Errorf("%s", err)
+		return err
 	}
 	return nil
 }
@@ -118,19 +118,19 @@ func (uc *dcosUpgradeCmd) loadCluster(cmd *cobra.Command) error {
 	var err error
 
 	if uc.client, err = uc.authArgs.getClient(); err != nil {
-		return fmt.Errorf("Failed to get client: %s", err)
+		return errors.Wrap(err, "Failed to get client")
 	}
 
 	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
-		return fmt.Errorf("Error ensuring resource group: %s", err)
+		return errors.Wrap(err, "Error ensuring resource group")
 	}
 
 	// load apimodel from the deployment directory
 	apiModelPath := path.Join(uc.deploymentDirectory, "apimodel.json")
 
 	if _, err = os.Stat(apiModelPath); os.IsNotExist(err) {
-		return fmt.Errorf("specified api model does not exist (%s)", apiModelPath)
+		return errors.Errorf("specified api model does not exist (%s)", apiModelPath)
 	}
 
 	apiloader := &api.Apiloader{
@@ -140,24 +140,24 @@ func (uc *dcosUpgradeCmd) loadCluster(cmd *cobra.Command) error {
 	}
 	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath, true, true, nil)
 	if err != nil {
-		return fmt.Errorf("error parsing the api model: %s", err.Error())
+		return errors.Wrap(err, "error parsing the api model")
 	}
 	uc.currentDcosVersion = uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion
 
 	if uc.currentDcosVersion == uc.upgradeVersion {
-		return fmt.Errorf("already running DCOS %s", uc.upgradeVersion)
+		return errors.Errorf("already running DCOS %s", uc.upgradeVersion)
 	}
 
 	if len(uc.containerService.Location) == 0 {
 		uc.containerService.Location = uc.location
 	} else if uc.containerService.Location != uc.location {
-		return fmt.Errorf("--location does not match api model location")
+		return errors.New("--location does not match api model location")
 	}
 
 	// get available upgrades for container service
 	orchestratorInfo, err := api.GetOrchestratorVersionProfile(uc.containerService.Properties.OrchestratorProfile)
 	if err != nil {
-		return fmt.Errorf("error getting list of available upgrades: %s", err.Error())
+		return errors.Wrap(err, "error getting list of available upgrades")
 	}
 	// add the current version if upgrade has failed
 	orchestratorInfo.Upgrades = append(orchestratorInfo.Upgrades, &api.OrchestratorProfile{
@@ -174,7 +174,7 @@ func (uc *dcosUpgradeCmd) loadCluster(cmd *cobra.Command) error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("upgrade to DCOS %s is not supported", uc.upgradeVersion)
+		return errors.Errorf("upgrade to DCOS %s is not supported", uc.upgradeVersion)
 	}
 
 	// Read name suffix to identify nodes in the resource group that belong

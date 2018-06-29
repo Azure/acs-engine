@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -883,7 +884,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
-		return false, fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
+		return false, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 	}
 
 	ips := []net.IP{firstMasterIP}

@@ -23,6 +23,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -75,7 +76,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 
 	home, err := homedir.Dir()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
+		return nil, errors.Wrap(err, "Failed to get user home directory to look for cached token")
 	}
 	cachePath := filepath.Join(home, ApplicationDir, "cache", fmt.Sprintf("%s_%s.token.json", tenantID, acsEngineClientID))
 
@@ -157,22 +158,22 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
 	certificateData, err := ioutil.ReadFile(certificatePath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read certificate: %q", err)
+		return nil, errors.Wrap(err, "Failed to read certificate")
 	}
 
 	block, _ := pem.Decode(certificateData)
 	if block == nil {
-		return nil, fmt.Errorf("Failed to decode pem block from certificate")
+		return nil, errors.New("Failed to decode pem block from certificate")
 	}
 
 	certificate, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse certificate: %q", err)
+		return nil, errors.Wrap(err, "Failed to parse certificate")
 	}
 
 	privateKey, err := parseRsaPrivateKey(privateKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse rsa private key: %q", err)
+		return nil, errors.Wrap(err, "Failed to parse rsa private key")
 	}
 
 	return NewAzureClientWithClientCertificate(env, subscriptionID, clientID, certificate, privateKey)
@@ -186,11 +187,11 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	}
 
 	if certificate == nil {
-		return nil, fmt.Errorf("certificate should not be nil")
+		return nil, errors.New("certificate should not be nil")
 	}
 
 	if privateKey == nil {
-		return nil, fmt.Errorf("privateKey  should not be nil")
+		return nil, errors.New("privateKey should not be nil")
 	}
 
 	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)
@@ -231,7 +232,7 @@ func tryLoadCachedToken(cachePath string) (*adal.Token, error) {
 
 	token, err := adal.LoadToken(cachePath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load token from file: %v", err)
+		return nil, errors.Wrap(err, "Failed to load token from file")
 	}
 
 	return token, nil
@@ -313,7 +314,7 @@ func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
 		return err
 	}
 	if registeredProviders.Value == nil {
-		return fmt.Errorf("Providers list was nil. subscription=%q", subscriptionID)
+		return errors.Errorf("Providers list was nil. subscription=%q", subscriptionID)
 	}
 
 	m := make(map[string]bool)
@@ -324,7 +325,7 @@ func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
 	for _, provider := range RequiredResourceProviders {
 		registered, ok := m[strings.ToLower(provider)]
 		if !ok {
-			return fmt.Errorf("Unknown resource provider %q", provider)
+			return errors.Errorf("Unknown resource provider %q", provider)
 		}
 		if registered {
 			log.Debugf("Already registered for %q", provider)
@@ -346,7 +347,7 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 
 	block, _ := pem.Decode(privateKeyData)
 	if block == nil {
-		return nil, fmt.Errorf("Failed to decode a pem block from private key")
+		return nil, errors.New("Failed to decode a pem block from private key")
 	}
 
 	privatePkcs1Key, errPkcs1 := x509.ParsePKCS1PrivateKey(block.Bytes)
@@ -358,12 +359,12 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	if errPkcs8 == nil {
 		privatePkcs8RsaKey, ok := privatePkcs8Key.(*rsa.PrivateKey)
 		if !ok {
-			return nil, fmt.Errorf("pkcs8 contained non-RSA key. Expected RSA key")
+			return nil, errors.New("pkcs8 contained non-RSA key. Expected RSA key")
 		}
 		return privatePkcs8RsaKey, nil
 	}
 
-	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+	return nil, errors.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
 }
 
 //AddAcceptLanguages sets the list of languages to accept on this request

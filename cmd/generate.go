@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +80,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 	gc.locale, err = i18n.LoadTranslations()
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+		return errors.Wrap(err, "error loading translation files")
 	}
 
 	if gc.apimodelPath == "" {
@@ -96,7 +96,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
+		return errors.Errorf("specified api model does not exist (%s)", gc.apimodelPath)
 	}
 
 	return nil
@@ -113,7 +113,7 @@ func (gc *generateCmd) mergeAPIModel() error {
 		// overrides the api model and generates a new file
 		gc.apimodelPath, err = transform.MergeValuesWithAPIModel(gc.apimodelPath, m)
 		if err != nil {
-			return fmt.Errorf(fmt.Sprintf("error merging --set values with the api model: %s", err.Error()))
+			return errors.Wrap(err, "error merging --set values with the api model")
 		}
 
 		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", gc.apimodelPath))
@@ -134,7 +134,7 @@ func (gc *generateCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
 	}
 	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, false, nil)
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
+		return errors.Wrap(err, "error parsing the api model")
 	}
 
 	if gc.outputDirectory == "" {
@@ -152,10 +152,10 @@ func (gc *generateCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
 	}
 	if gc.caCertificatePath != "" {
 		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
-			return fmt.Errorf(fmt.Sprintf("failed to read CA certificate file: %s", err.Error()))
+			return errors.Wrap(err, "failed to read CA certificate file")
 		}
 		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
-			return fmt.Errorf(fmt.Sprintf("failed to read CA private key file: %s", err.Error()))
+			return errors.Wrap(err, "failed to read CA private key file")
 		}
 
 		prop := gc.containerService.Properties

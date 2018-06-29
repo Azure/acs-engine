@@ -3,7 +3,6 @@ package acsengine
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -15,6 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -80,7 +80,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		if r := recover(); r != nil {
 			s := debug.Stack()
-			err = fmt.Errorf("%v - %s", r, s)
+			err = errors.Errorf("%v - %s", r, s)
 
 			// invalidate the template and the parameters
 			templateRaw = ""
@@ -89,7 +89,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}()
 
 	if !validateDistro(containerService) {
-		return templateRaw, parametersRaw, certsGenerated, fmt.Errorf("Invalid distro")
+		return templateRaw, parametersRaw, certsGenerated, errors.New("Invalid distro")
 	}
 
 	var b bytes.Buffer
