@@ -87,8 +87,10 @@ etcdStorageConfig:
   openShiftStoragePrefix: openshift.io
   openShiftStorageVersion: v1
 imageConfig:
-  format: IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}
+  format: MASTER_OREG_URL-${component}:${version}
   latest: false
+imagePolicyConfig:
+  internalRegistryHostname: docker-registry.default.svc:5000
 kind: MasterConfig
 kubeletClientInfo:
   ca: ca-bundle.crt

@@ -22,6 +22,27 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 			mc.Properties.DNSPrefix)
 	}
 
+	// Merge Properties.AgentPoolProfiles
+	if mc.Properties.AgentPoolProfiles == nil {
+		mc.Properties.AgentPoolProfiles = emc.Properties.AgentPoolProfiles
+	}
+	// Merge Properties.LinuxProfile
+	if mc.Properties.LinuxProfile == nil {
+		mc.Properties.LinuxProfile = emc.Properties.LinuxProfile
+	}
+	// Merge Properties.WindowsProfile
+	if mc.Properties.WindowsProfile == nil {
+		mc.Properties.WindowsProfile = emc.Properties.WindowsProfile
+	}
+	// Merge Properties.ServicePrincipalProfile
+	if mc.Properties.ServicePrincipalProfile == nil {
+		mc.Properties.ServicePrincipalProfile = emc.Properties.ServicePrincipalProfile
+	}
+	// Merge Properties.KubernetesVersion
+	if mc.Properties.KubernetesVersion == "" {
+		mc.Properties.KubernetesVersion = emc.Properties.KubernetesVersion
+	}
+
 	// Merge properties.enableRBAC
 	if emc.Properties.EnableRBAC == nil {
 		return fmt.Errorf("existing ManagedCluster expect properties.enableRBAC not to be nil")

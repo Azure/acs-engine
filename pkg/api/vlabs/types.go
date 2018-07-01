@@ -609,11 +609,6 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
 }
 
-// IsAcceleratedNetworkingEnabled returns true if the customer enabled Accelerated Networking
-func (a *AgentPoolProfile) IsAcceleratedNetworkingEnabled() bool {
-	return a.AcceleratedNetworkingEnabled
-}
-
 // HasSearchDomain returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSearchDomain() bool {
 	if l.CustomSearchDomain != nil {
@@ -637,4 +632,10 @@ func (l *LinuxProfile) HasCustomNodesDNS() bool {
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
+}
+
+// RequiresDocker returns if the kubernetes settings require docker to be installed.
+func (k *KubernetesConfig) RequiresDocker() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "docker" || runtime == ""
 }

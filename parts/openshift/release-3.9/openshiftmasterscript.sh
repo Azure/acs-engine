@@ -30,7 +30,6 @@ else
 	COCKPIT_BASENAME="kubernetes"
 	COCKPIT_VERSION="latest"
 fi
-systemctl restart docker.service
 
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
@@ -47,6 +46,11 @@ sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-master-a
 sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-master-controllers
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
+
+MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE"
+if [[ -f /etc/origin/oreg_url ]]; then
+	MASTER_OREG_URL=$(cat /etc/origin/oreg_url)
+fi
 
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
@@ -95,6 +99,7 @@ for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansi
     sed -i "s|COCKPIT_VERSION|${COCKPIT_VERSION}|g; s|COCKPIT_BASENAME|${COCKPIT_BASENAME}|g; s|COCKPIT_PREFIX|${COCKPIT_PREFIX}|g;" $i
     sed -i "s|VERSION|${VERSION}|g; s|SHORT_VER|${VERSION%.*}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
     sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
+    sed -i "s|MASTER_OREG_URL|${MASTER_OREG_URL}|g" $i
 done
 
 # note: ${SERVICE_TYPE}-node crash loops until master is up

@@ -41,6 +41,11 @@
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
         {{template "k8s/kubernetesagentvars.t" .}}
+        {{if IsNSeriesSKU .}}
+          {{if IsNVIDIADevicePluginEnabled}}
+          "registerWithGpuTaints": "nvidia.com/gpu=true:NoSchedule",
+          {{end}}
+        {{end}}
         {{if .IsStorageAccount}}
           {{if .HasDisks}}
             "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
@@ -51,6 +56,9 @@
     {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
+    {{if IsOpenShift}}
+      {{template "openshift/infraresources.t" .}}
+    {{end}}
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
       {{if .IsWindows}}

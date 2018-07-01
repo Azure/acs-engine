@@ -3,8 +3,34 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.10",
       "kubernetesConfig": {
-        "networkPlugin":"flannel",
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled": true
+          },
+          {
+            "name": "aci-connector",
+            "enabled": true
+          },
+          {
+            "name": "kubernetes-dashboard",
+            "enabled": true
+          },
+          {
+            "name": "rescheduler",
+            "enabled": true
+          },
+          {
+            "name": "nvidia-device-plugin",
+            "enabled": true
+          },
+          {
+            "name": "container-monitoring",
+            "enabled": true
+          }
+        ]
       }
     },
     "masterProfile": {
@@ -16,8 +42,7 @@
       {
         "name": "linuxpool1",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "vmSize": "Standard_D2_v2"
       }
     ],
     "linuxProfile": {

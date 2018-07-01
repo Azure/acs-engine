@@ -27,6 +27,9 @@ const (
 	ValidKubernetesCloudProviderRateLimitBucket     = 10
 )
 
+var falseVal = false
+var trueVal = true
+
 func Test_OrchestratorProfile_Validate(t *testing.T) {
 	tests := map[string]struct {
 		properties    *Properties
@@ -44,6 +47,104 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			},
 			expectedError: "KubernetesConfig can be specified only when OrchestratorType is Kubernetes or OpenShift",
 		},
+		"should error when KubernetesConfig has invalid etcd version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "Kubernetes",
+					KubernetesConfig: &KubernetesConfig{
+						EtcdVersion: "1.0.0",
+					},
+				},
+			},
+			expectedError: "Invalid etcd version \"1.0.0\", please use one of the following versions: [2.2.5 2.3.0 2.3.1 2.3.2 2.3.3 2.3.4 2.3.5 2.3.6 2.3.7 2.3.8 3.0.0 3.0.1 3.0.2 3.0.3 3.0.4 3.0.5 3.0.6 3.0.7 3.0.8 3.0.9 3.0.10 3.0.11 3.0.12 3.0.13 3.0.14 3.0.15 3.0.16 3.0.17 3.1.0 3.1.1 3.1.2 3.1.2 3.1.3 3.1.4 3.1.5 3.1.6 3.1.7 3.1.8 3.1.9 3.1.10 3.2.0 3.2.1 3.2.2 3.2.3 3.2.4 3.2.5 3.2.6 3.2.7 3.2.8 3.2.9 3.2.11 3.2.12 3.2.13 3.2.14 3.2.15 3.2.16 3.2.23 3.3.0 3.3.1]",
+		},
+		"should error when KubernetesConfig has enableAggregatedAPIs enabled with an invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.6.6",
+					KubernetesConfig: &KubernetesConfig{
+						EnableAggregatedAPIs: true,
+					},
+				},
+			},
+			expectedError: "enableAggregatedAPIs is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.6",
+		},
+		"should error when KubernetesConfig has enableAggregatedAPIs enabled and enableRBAC disabled": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.0",
+					KubernetesConfig: &KubernetesConfig{
+						EnableAggregatedAPIs: true,
+						EnableRbac:           &falseVal,
+					},
+				},
+			},
+			expectedError: "enableAggregatedAPIs requires the enableRbac feature as a prerequisite",
+		},
+		"should error when KubernetesConfig has enableDataEncryptionAtRest enabled with invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.6.6",
+					KubernetesConfig: &KubernetesConfig{
+						EnableDataEncryptionAtRest: &trueVal,
+					},
+				},
+			},
+			expectedError: "enableDataEncryptionAtRest is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.6",
+		},
+		"should error when KubernetesConfig has enableDataEncryptionAtRest enabled with invalid encryption key": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.0",
+					KubernetesConfig: &KubernetesConfig{
+						EnableDataEncryptionAtRest: &trueVal,
+						EtcdEncryptionKey:          "fakeEncryptionKey",
+					},
+				},
+			},
+			expectedError: "etcdEncryptionKey must be base64 encoded. Please provide a valid base64 encoded value or leave the etcdEncryptionKey empty to auto-generate the value",
+		},
+		"should error when KubernetesConfig has enableEncryptionWithExternalKms enabled with invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.6.6",
+					KubernetesConfig: &KubernetesConfig{
+						EnableEncryptionWithExternalKms: &trueVal,
+					},
+				},
+			},
+			expectedError: "enableEncryptionWithExternalKms is only available in Kubernetes version 1.10.0 or greater; unable to validate for Kubernetes version 1.6.6",
+		},
+		"should error when KubernetesConfig has enablePodSecurity enabled with invalid settings": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.0",
+					KubernetesConfig: &KubernetesConfig{
+						EnablePodSecurityPolicy: &trueVal,
+					},
+				},
+			},
+			expectedError: "enablePodSecurityPolicy requires the enableRbac feature as a prerequisite",
+		},
+		"should error when KubernetesConfig has enablePodSecurity enabled with invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.7.0",
+					KubernetesConfig: &KubernetesConfig{
+						EnableRbac:              &trueVal,
+						EnablePodSecurityPolicy: &trueVal,
+					},
+				},
+			},
+			expectedError: "enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version 1.8.0 or greater; unable to validate for Kubernetes version 1.7.0",
+		},
 		"should not error with empty object": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
@@ -51,6 +152,28 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 					DcosConfig:       &DcosConfig{},
 				},
 			},
+		},
+		"should error when DcosConfig orchestrator has invalid configuration": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "DCOS",
+					OrchestratorVersion: "1.12.0",
+				},
+			},
+			expectedError: "the following OrchestratorProfile configuration is not supported: OrchestratorType: DCOS, OrchestratorRelease: , OrchestratorVersion: 1.12.0. Please check supported Release or Version for this build of acs-engine",
+		},
+		"should error when DcosConfig orchestrator configuration has invalid static IP": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: "DCOS",
+					DcosConfig: &DcosConfig{
+						BootstrapProfile: &BootstrapProfile{
+							StaticIP: "0.0.0.0.0.0",
+						},
+					},
+				},
+			},
+			expectedError: "DcosConfig.BootstrapProfile.StaticIP '0.0.0.0.0.0' is an invalid IP address",
 		},
 		"should error when DcosConfig populated for non-Kubernetes OrchestratorType 1": {
 			properties: &Properties{
@@ -427,40 +550,51 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 	p.OrchestratorProfile = &OrchestratorProfile{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 
+	k8sVersion := "1.8.0"
 	for _, policy := range NetworkPolicyValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
-		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err != nil {
+		if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err != nil {
 			t.Errorf(
-				"should not error on networkPolicy=\"%s\"",
+				"should not error on networkPolicy=\"%s\" on k8sVersion=\"%s\"",
 				policy,
+				k8sVersion,
 			)
 		}
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "not-existing"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(false); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err == nil {
 		t.Errorf(
 			"should error on invalid networkPolicy",
 		)
 	}
 
+	k8sVersion = "1.7.9"
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	p.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, false); err == nil {
+		t.Errorf(
+			"should error on azure networkPolicy + azure networkPlugin with k8s version < 1.8.0",
+		)
+	}
+
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on cilium for windows clusters",
 		)
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "flannel"
-	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(true); err == nil {
+	if err := p.OrchestratorProfile.KubernetesConfig.validateNetworkPolicy(k8sVersion, true); err == nil {
 		t.Errorf(
 			"should error on flannel for windows clusters",
 		)
@@ -520,10 +654,6 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 		{
 			networkPlugin: "azure",
 			networkPolicy: "flannel",
-		},
-		{
-			networkPlugin: "azure",
-			networkPolicy: "azure",
 		},
 		{
 			networkPlugin: "kubenet",
@@ -971,7 +1101,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			masterProfile: MasterProfile{
 				DNSPrefix: "bad!",
 			},
-			expectedErr: "DNS name 'bad!' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number (length was 4)",
+			expectedErr: "DNSPrefix 'bad!' is invalid. The DNSPrefix must contain between 3 and 45 characters and can contain only letters, numbers, and hyphens.  It must start with a letter and must end with a letter or a number. (length was 4)",
 		},
 		{
 			masterProfile: MasterProfile{
@@ -999,6 +1129,23 @@ func TestMasterProfileValidate(t *testing.T) {
 				Count:     3,
 			},
 			expectedErr: "openshift can only deployed with one master",
+		},
+		{ // test existing vnet: run with only specifying vnetsubnetid
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				VnetSubnetID: "testvnetstring",
+				Count:        1,
+			},
+			expectedErr: "when specifying a vnetsubnetid the firstconsecutivestaticip is required",
+		},
+		{ // test existing vnet: run with specifying both vnetsubnetid and firstconsecutivestaticip
+			orchestratorType: OpenShift,
+			masterProfile: MasterProfile{
+				DNSPrefix:                "dummy",
+				VnetSubnetID:             "testvnetstring",
+				FirstConsecutiveStaticIP: "10.0.0.1",
+				Count: 1,
+			},
 		},
 	}
 
@@ -1052,6 +1199,14 @@ func TestOpenshiftValidate(t *testing.T) {
 				AgentPoolProfiles: []*AgentPoolProfile{
 					{
 						Name:                "compute",
+						Count:               1,
+						VMSize:              "Standard_D4s_v3",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						Role:                "infra",
 						Count:               1,
 						VMSize:              "Standard_D4s_v3",
 						StorageProfile:      ManagedDisks,
@@ -1174,5 +1329,87 @@ func validOpenShiftConifg() *OpenShiftConfig {
 	return &OpenShiftConfig{
 		ClusterUsername: "foo",
 		ClusterPassword: "bar",
+	}
+}
+
+func TestValidateAgentPoolProfiles(t *testing.T) {
+	tests := []struct {
+		name        string
+		properties  *Properties
+		expectedErr error
+	}{
+		{
+			name: "valid",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						Role:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "invalid - role wrong",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "compute",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: errors.New("OpenShift requires that the 'infra' agent pool profile, and no other, should have role 'infra'"),
+		},
+		{
+			name: "invalid - profiles misnamed",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: OpenShift,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "bad",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+					{
+						Name:                "infra",
+						Role:                "infra",
+						StorageProfile:      ManagedDisks,
+						AvailabilityProfile: AvailabilitySet,
+					},
+				},
+			},
+			expectedErr: errors.New("OpenShift requires exactly two agent pool profiles: compute and infra"),
+		},
+	}
+
+	for _, test := range tests {
+		gotErr := test.properties.validateAgentPoolProfiles()
+		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+			t.Logf("running scenario %q", test.name)
+			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
+		}
 	}
 }

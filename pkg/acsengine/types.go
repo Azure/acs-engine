@@ -51,6 +51,7 @@ type KubernetesSpecConfig struct {
 	TillerImageBase                  string
 	ACIConnectorImageBase            string
 	NVIDIAImageBase                  string
+	AzureCNIImageBase                string
 	EtcdDownloadURLBase              string
 	KubeBinariesSASURLBase           string
 	WindowsPackageSASURLBase         string

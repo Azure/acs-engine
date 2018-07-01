@@ -124,7 +124,7 @@ Get-BootstrapScript($download_uri, $download_dir)
     # Get Mesos Binaries
     $scriptfile = "DCOSWindowsAgentSetup.ps1"
 
-    Write-Log " get script "+ ($download_uri+"/"+$scriptfile) + "and put it "+ ($download_dir+"\"+$scriptfile)
+    Write-Log "get script $download_uri/$scriptfile and put it $download_dir\$scriptfile"
 
     Invoke-WebRequest -Uri ($download_uri+"/"+$scriptfile) -OutFile ($download_dir+"\"+$scriptfile)
 }
@@ -193,6 +193,7 @@ try
         $run_cmd += ">"+$global:BootstrapInstallDir+"\DCOSWindowsAgentSetup.log 2>&1"
         Write-Log "run setup script $run_cmd"
         Invoke-Expression $run_cmd
+        Write-Log "setup script completed"
     }
     else # We must be deploying a master
     {
@@ -202,9 +203,12 @@ try
     }
 
     PREPROVISION_EXTENSION
+
+    Write-Log "Provisioning script succeeded"
 }
 catch
 {
+    Write-Log "Provisioning script failed"
     Write-Error $_
     exit 1
 }

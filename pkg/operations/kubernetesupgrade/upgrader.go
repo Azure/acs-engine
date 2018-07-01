@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 )
@@ -53,6 +54,10 @@ func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clus
 // RunUpgrade runs the upgrade pipeline
 func (ku *Upgrader) RunUpgrade() error {
 	if err := ku.upgradeMasterNodes(); err != nil {
+		return err
+	}
+
+	if err := ku.upgradeAgentScaleSets(); err != nil {
 		return err
 	}
 
@@ -370,6 +375,113 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			upgradedCount++
 		}
 	}
+
+	return nil
+}
+
+func (ku *Upgrader) upgradeAgentScaleSets() error {
+	for _, vmssToUpgrade := range ku.ClusterTopology.AgentPoolScaleSetsToUpgrade {
+		ku.logger.Infof("Upgrading VMSS %s", vmssToUpgrade.Name)
+
+		if len(vmssToUpgrade.VMsToUpgrade) == 0 {
+			ku.logger.Infof("No VMs to upgrade for VMSS %s, skipping", vmssToUpgrade.Name)
+			continue
+		}
+
+		newCapacity := *vmssToUpgrade.Sku.Capacity + 1
+		ku.logger.Infof(
+			"VMSS %s current capacity is %d and new capacity will be %d while each node is swapped",
+			vmssToUpgrade.Name,
+			*vmssToUpgrade.Sku.Capacity,
+			newCapacity,
+		)
+
+		*vmssToUpgrade.Sku.Capacity = newCapacity
+
+		for _, vmToUpgrade := range vmssToUpgrade.VMsToUpgrade {
+			success, failure := ku.Client.SetVirtualMachineScaleSetCapacity(
+				ku.ClusterTopology.ResourceGroup,
+				vmssToUpgrade.Name,
+				vmssToUpgrade.Sku,
+				vmssToUpgrade.Location,
+				make(chan struct{}),
+			)
+
+			select {
+			case <-success:
+				ku.logger.Infof("Successfully set capacity for VMSS %s", vmssToUpgrade.Name)
+			case err := <-failure:
+				ku.logger.Errorf("Failure to set capacity for VMSS %s", vmssToUpgrade.Name)
+				return err
+			}
+
+			// Before we can delete the node we should safely and responsibly drain it
+			var kubeAPIServerURL string
+			getClientTimeout := 10 * time.Second
+
+			if ku.DataModel.Properties.HostedMasterProfile != nil {
+				kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+			} else {
+				kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+			}
+			client, err := ku.Client.GetKubernetesClient(
+				kubeAPIServerURL,
+				ku.kubeConfig,
+				interval,
+				getClientTimeout,
+			)
+			if err != nil {
+				ku.logger.Errorf("Error getting Kubernetes client: %v", err)
+				return err
+			}
+
+			ku.logger.Infof("Draining node %s", vmToUpgrade.Name)
+			err = operations.SafelyDrainNodeWithClient(
+				client,
+				ku.logger,
+				vmToUpgrade.Name,
+				time.Minute,
+			)
+			if err != nil {
+				ku.logger.Errorf("Error draining VM in VMSS: %v", err)
+				return err
+			}
+
+			ku.logger.Infof(
+				"Deleting VM %s in VMSS %s",
+				vmToUpgrade.Name,
+				vmssToUpgrade.Name,
+			)
+
+			// At this point we have our buffer node that will replace the node to delete
+			// so we can just remove this current node then
+			res, failure := ku.Client.DeleteVirtualMachineScaleSetVM(
+				ku.ClusterTopology.ResourceGroup,
+				vmssToUpgrade.Name,
+				vmToUpgrade.InstanceID,
+				make(chan struct{}),
+			)
+
+			select {
+			case <-res:
+				ku.logger.Infof(
+					"Successfully deleted VM %s in VMSS %s",
+					vmToUpgrade.Name,
+					vmssToUpgrade.Name,
+				)
+			case err := <-failure:
+				ku.logger.Errorf(
+					"Failed to delete VM %s in VMSS %s",
+					vmToUpgrade.Name,
+					vmssToUpgrade,
+				)
+				return err
+			}
+		}
+		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade)
+	}
+
+	ku.logger.Infoln("Completed upgrading all VMSS")
 
 	return nil
 }

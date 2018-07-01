@@ -32,6 +32,7 @@ var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResource
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
 	kubernetesTemplateFiles,
+	openshiftInfraResources,
 	openshiftNodeScript,
 	openshiftMasterScript,
 	openshift39NodeScript,
@@ -363,6 +364,18 @@ func getDCOSDefaultBootstrapInstallerURL(profile *api.OrchestratorProfile) strin
 			return "https://dcos-mirror.azureedge.net/dcos-1-11-2/dcos_generate_config.sh"
 		case common.DCOSVersion1Dot11Dot0:
 			return "https://dcos-mirror.azureedge.net/dcos-1-11-0/dcos_generate_config.sh"
+		}
+	}
+	return ""
+}
+
+func getDCOSDefaultWindowsBootstrapInstallerURL(profile *api.OrchestratorProfile) string {
+	if profile.OrchestratorType == api.DCOS {
+		switch profile.OrchestratorVersion {
+		case common.DCOSVersion1Dot11Dot2:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-2"
+		case common.DCOSVersion1Dot11Dot0:
+			return "https://dcos-mirror.azureedge.net/dcos-windows/1-11-0"
 		}
 	}
 	return ""

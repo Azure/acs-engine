@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: azure-cni-networkmonitor
+  namespace: kube-system
+  labels:
+    app: azure-cnms
+    addonmanager.kubernetes.io/mode: "EnsureExists"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: azure-cnms
+  template:
+    metadata:
+      labels:
+        k8s-app: azure-cnms
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      containers:
+        - name: azure-cnms
+          image: <azureCNINetworkMonitorImage>
+          securityContext:
+            privileged: true
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+          - name: ebtables-rule-repo
+            mountPath: /var/run
+          - name: log
+            mountPath: /var/log
+      hostNetwork: true
+      volumes:
+      - name: log
+        hostPath:
+          path: /var/log
+          type: Directory
+      - name: ebtables-rule-repo
+        hostPath:
+          path: /var/run/
+          type: Directory
