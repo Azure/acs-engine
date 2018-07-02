@@ -176,6 +176,13 @@ function installDocker() {
     usermod -aG docker ${ADMINUSER}
 }
 
+function installBlobfuse() {
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb
+    retrycmd_if_failure 10 5 10 dpkg -i /tmp/packages-microsoft-prod.deb
+    apt_get_update
+    apt_get_install 20 30 120 blobfuse fuse
+}
+
 function runAptDaily() {
     /usr/lib/apt/apt.systemd.daily
 }
@@ -512,6 +519,7 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
 fi
 
 installDeps
+installBlobfuse
 
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
     installDocker
