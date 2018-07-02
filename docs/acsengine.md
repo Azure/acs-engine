@@ -12,6 +12,14 @@ You can also choose to install acs-engine using [gofish](https://www.gofi.sh/#ab
 
 If you would prefer to build `acs-engine` from source or you are interested in contributing to `acs-engine` see [building from source](#build-acs-engine-from-source) below.
 
+## Completion
+
+`acs-engine` supports bash completion. To enable this, add the following to your `.bashrc` or `~/.profile`
+
+```bash
+source <(acs-engine completion)
+```
+
 ## Usage
 
 `acs-engine` reads a JSON [cluster definition](./clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The generated files include:
