@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -149,7 +150,7 @@ func writePublicKey(fs filesystem.Writer, filename string, key *rsa.PublicKey) e
 }
 
 // PrepareMasterCerts creates the master certs
-func (c *Config) PrepareMasterCerts() error {
+func (c *Config) PrepareMasterCerts(caCert, caKey []byte) error {
 	if c.cas == nil {
 		c.cas = map[string]CertAndKey{}
 	}
@@ -177,144 +178,94 @@ func (c *Config) PrepareMasterCerts() error {
 
 	now := time.Now()
 
-	cacerts := []struct {
-		filename string
-		template *x509.Certificate
-	}{
-		{
-			filename: "etc/origin/master/ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+	if !c.IsAgentPoolOnly() {
+		cacerts := []struct {
+			filename string
+			template *x509.Certificate
+		}{
+			{
+				filename: "etc/origin/master/ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/front-proxy-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/front-proxy-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/frontproxy-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("aggregator-proxy-car@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/frontproxy-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("aggregator-proxy-car@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/master.etcd-ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("etcd-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/master.etcd-ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("etcd-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/master/service-signer",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-service-serving-signer@%d", now.Unix())},
+			{
+				filename: "etc/origin/master/service-signer",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: fmt.Sprintf("openshift-service-serving-signer@%d", now.Unix())},
+				},
 			},
-		},
-		{
-			filename: "etc/origin/service-catalog/ca",
-			template: &x509.Certificate{
-				Subject: pkix.Name{CommonName: "service-catalog-signer"},
+			{
+				filename: "etc/origin/service-catalog/ca",
+				template: &x509.Certificate{
+					Subject: pkix.Name{CommonName: "service-catalog-signer"},
+				},
 			},
-		},
-	}
-
-	for _, cacert := range cacerts {
-		template := &x509.Certificate{
-			SerialNumber:          c.serial.Get(),
-			NotBefore:             now,
-			NotAfter:              now.AddDate(5, 0, 0),
-			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,
-			BasicConstraintsValid: true,
-			IsCA: true,
 		}
-		template.Subject = cacert.template.Subject
 
-		certAndKey, err := newCertAndKey(cacert.filename, template, nil, nil, cacert.filename == "etc/origin/master/master.etcd-ca", false)
+		for _, cacert := range cacerts {
+			template := &x509.Certificate{
+				SerialNumber:          c.serial.Get(),
+				NotBefore:             now,
+				NotAfter:              now.AddDate(5, 0, 0),
+				KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,
+				BasicConstraintsValid: true,
+				IsCA: true,
+			}
+			template.Subject = cacert.template.Subject
+
+			certAndKey, err := newCertAndKey(cacert.filename, template, nil, nil, cacert.filename == "etc/origin/master/master.etcd-ca", false)
+			if err != nil {
+				return err
+			}
+
+			c.cas[cacert.filename] = certAndKey
+		}
+	} else {
+		certBlock, _ := pem.Decode(caCert)
+		if certBlock == nil {
+			return errors.New("failed to decode pem block from certificate")
+		}
+		cert, err := x509.ParseCertificate(certBlock.Bytes)
 		if err != nil {
-			return err
+			return fmt.Errorf("cannot parse certificate: %v", err)
 		}
-
-		c.cas[cacert.filename] = certAndKey
+		keyBlock, _ := pem.Decode(caKey)
+		if keyBlock == nil {
+			return errors.New("failed to decode pem block from private key")
+		}
+		key, err := x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+		if err != nil {
+			return fmt.Errorf("cannot parse private key: %v", err)
+		}
+		c.cas["etc/origin/master/ca"] = CertAndKey{cert: cert, key: key}
 	}
 
-	certs := []struct {
+	type cert struct {
 		filename string
 		template *x509.Certificate
 		signer   string
-	}{
-		{
-			filename: "etc/origin/master/admin",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{Organization: []string{"system:cluster-admins", "system:masters"}, CommonName: "system:admin"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-		},
-		{
-			filename: "etc/origin/master/aggregator-front-proxy",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: "aggregator-front-proxy"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-			signer: "etc/origin/master/front-proxy-ca",
-		},
-		{
-			filename: "etc/origin/master/etcd.server",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: c.Master.IPs[0].String()},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-				DNSNames:    dns,
-				IPAddresses: ips,
-			},
-		},
-		{
-			filename: "etc/origin/master/master.etcd-client",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: c.Master.Hostname},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-				DNSNames:    []string{c.Master.Hostname}, // TODO
-				IPAddresses: []net.IP{c.Master.IPs[0]},   // TODO
-			},
-			signer: "etc/origin/master/master.etcd-ca",
-		},
-		{
-			filename: "etc/origin/master/master.kubelet-client",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{Organization: []string{"system:node-admins"}, CommonName: "system:openshift-node-admin"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-		},
-		{
-			filename: "etc/origin/master/master.proxy-client",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: "system:master-proxy"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-		},
-		{
-			filename: "etc/origin/master/master.server",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: c.Master.IPs[0].String()},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-				DNSNames:    dns,
-				IPAddresses: ips,
-			},
-		},
-		{
-			filename: "etc/origin/master/openshift-aggregator",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: "system:openshift-aggregator"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-			signer: "etc/origin/master/frontproxy-ca",
-		},
-		{
-			filename: "etc/origin/master/openshift-master",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{Organization: []string{"system:masters", "system:openshift-master"}, CommonName: "system:openshift-master"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-			},
-		},
+	}
+
+	certs := []cert{
 		{
 			filename: "etc/origin/master/node-bootstrapper",
 			template: &x509.Certificate{
@@ -322,16 +273,95 @@ func (c *Config) PrepareMasterCerts() error {
 				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			},
 		},
-		{
-			filename: "etc/origin/service-catalog/apiserver",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: "apiserver.kube-service-catalog"},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-				DNSNames:    []string{"apiserver.kube-service-catalog", "apiserver.kube-service-catalog.svc", "apiserver.kube-service-catalog.svc.cluster.local"},
+	}
+
+	// Generate the rest of the certificates if we don't use the agent
+	// pool api only.
+	if !c.IsAgentPoolOnly() {
+		certs = append(certs, []cert{
+			{
+				filename: "etc/origin/master/admin",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{Organization: []string{"system:cluster-admins", "system:masters"}, CommonName: "system:admin"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
 			},
-			signer: "etc/origin/service-catalog/ca",
-		},
-		// TODO: registry cert
+			{
+				filename: "etc/origin/master/aggregator-front-proxy",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: "aggregator-front-proxy"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
+				signer: "etc/origin/master/front-proxy-ca",
+			},
+			{
+				filename: "etc/origin/master/etcd.server",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: c.Master.IPs[0].String()},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+					DNSNames:    dns,
+					IPAddresses: ips,
+				},
+			},
+			{
+				filename: "etc/origin/master/master.etcd-client",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: c.Master.Hostname},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+					DNSNames:    []string{c.Master.Hostname}, // TODO
+					IPAddresses: []net.IP{c.Master.IPs[0]},   // TODO
+				},
+				signer: "etc/origin/master/master.etcd-ca",
+			},
+			{
+				filename: "etc/origin/master/master.kubelet-client",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{Organization: []string{"system:node-admins"}, CommonName: "system:openshift-node-admin"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
+			},
+			{
+				filename: "etc/origin/master/master.proxy-client",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: "system:master-proxy"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
+			},
+			{
+				filename: "etc/origin/master/master.server",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: c.Master.IPs[0].String()},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+					DNSNames:    dns,
+					IPAddresses: ips,
+				},
+			},
+			{
+				filename: "etc/origin/master/openshift-aggregator",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: "system:openshift-aggregator"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
+				signer: "etc/origin/master/frontproxy-ca",
+			},
+			{
+				filename: "etc/origin/master/openshift-master",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{Organization: []string{"system:masters", "system:openshift-master"}, CommonName: "system:openshift-master"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+				},
+			},
+			{
+				filename: "etc/origin/service-catalog/apiserver",
+				template: &x509.Certificate{
+					Subject:     pkix.Name{CommonName: "apiserver.kube-service-catalog"},
+					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+					DNSNames:    []string{"apiserver.kube-service-catalog", "apiserver.kube-service-catalog.svc", "apiserver.kube-service-catalog.svc.cluster.local"},
+				},
+				signer: "etc/origin/service-catalog/ca",
+			},
+			// TODO: registry cert
+		}...)
 	}
 
 	for _, cert := range certs {
@@ -357,6 +387,11 @@ func (c *Config) PrepareMasterCerts() error {
 		}
 
 		c.Master.certs[cert.filename] = certAndKey
+	}
+
+	// Agent pool only API; ignore generating etcd certificates.
+	if c.IsAgentPoolOnly() {
+		return nil
 	}
 
 	etcdcerts := []struct {

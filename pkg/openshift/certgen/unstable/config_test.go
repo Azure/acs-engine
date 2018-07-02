@@ -40,7 +40,7 @@ func TestConfigFilePermissions(t *testing.T) {
 		},
 	}
 
-	err := c.PrepareMasterCerts()
+	err := c.PrepareMasterCerts(nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

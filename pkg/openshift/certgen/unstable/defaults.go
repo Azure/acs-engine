@@ -17,15 +17,26 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		return true, nil
 	}
 
+	var ips []net.IP
+	var externalMasterHostname string
+
+	if a.MasterProfile != nil {
+		ips = []net.IP{net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)}
+		externalMasterHostname = fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location)
+	} else if a.HostedMasterProfile == nil {
+		return false, fmt.Errorf("no masterProfile or hostedMasterProfile found")
+	} else {
+		// agent pool api only
+		externalMasterHostname = a.HostedMasterProfile.FQDN
+	}
+
 	c := Config{
 		Master: &Master{
 			Hostname: fmt.Sprintf("%s-master-%s-0", orchestratorName, clusterID),
-			IPs: []net.IP{
-				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
-			},
-			Port: 8443,
+			IPs:      ips,
+			Port:     8443,
 		},
-		ExternalMasterHostname:  fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, a.AzProfile.Location),
+		ExternalMasterHostname:  externalMasterHostname,
 		ClusterUsername:         a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
@@ -41,17 +52,19 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		},
 	}
 
-	err := c.PrepareMasterCerts()
+	err := c.PrepareMasterCerts([]byte(a.CertificateProfile.CaCertificate), []byte(a.CertificateProfile.CaPrivateKey))
 	if err != nil {
 		return false, err
 	}
-	err = c.PrepareMasterKubeConfigs()
-	if err != nil {
-		return false, err
-	}
-	err = c.PrepareMasterFiles()
-	if err != nil {
-		return false, err
+	if !c.IsAgentPoolOnly() {
+		err = c.PrepareMasterKubeConfigs()
+		if err != nil {
+			return false, err
+		}
+		err = c.PrepareMasterFiles()
+		if err != nil {
+			return false, err
+		}
 	}
 
 	err = c.PrepareBootstrapKubeConfig()
@@ -63,11 +76,13 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
 	}
 
-	masterBundle, err := getConfigBundle(c.WriteMaster)
-	if err != nil {
-		return false, err
+	if !c.IsAgentPoolOnly() {
+		masterBundle, err := getConfigBundle(c.WriteMaster)
+		if err != nil {
+			return false, err
+		}
+		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 	}
-	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 
 	nodeBundle, err := getConfigBundle(c.WriteNode)
 	if err != nil {

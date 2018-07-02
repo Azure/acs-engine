@@ -1,6 +1,8 @@
 package openshift
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"path"
 	"reflect"
 	"testing"
@@ -8,6 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
@@ -56,5 +59,39 @@ func TestExamplesInSync(t *testing.T) {
 			t.Errorf(spew.Sprintf("Testing %s\nExpected:\n%+v\nGot:\n%+v", test, baseExampleCS.Properties, testCS.Properties))
 		}
 	}
+}
 
+func TestAgentsOnlyExample(t *testing.T) {
+	example := "../../examples/openshift-agents-only.json"
+
+	contents, err := ioutil.ReadFile(example)
+	if err != nil {
+		t.Fatalf("cannot read file %s: %v", example, err)
+	}
+
+	m := &vlabs.ManagedCluster{}
+	if err := json.Unmarshal(contents, &m); err != nil {
+		t.Fatalf("cannot unmarshal file %s: %v", example, err)
+	}
+
+	m.Properties.DNSPrefix = "mycluster"
+	m.Properties.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{
+		ClientID: "CLIENT_ID",
+		Secret:   "TOP_SECRET",
+	}
+	m.Properties.LinuxProfile.SSH = struct {
+		PublicKeys []vlabs.PublicKey `json:"publicKeys" validate:"required,len=1"`
+	}{
+		PublicKeys: []vlabs.PublicKey{
+			{KeyData: "KEY_DATA"},
+		},
+	}
+	m.Properties.CertificateProfile = &vlabs.CertificateProfile{
+		CaCertificate: "CA_CERT",
+		CaPrivateKey:  "CA_PRIV_KEY",
+	}
+
+	if err := m.Properties.Validate(); err != nil {
+		t.Fatalf("cannot validate file %s: %v", example, err)
+	}
 }

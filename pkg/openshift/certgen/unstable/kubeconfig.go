@@ -207,7 +207,12 @@ func (c *Config) PrepareMasterKubeConfigs() error {
 
 // PrepareBootstrapKubeConfig creates the node bootstrap kubeconfig
 func (c *Config) PrepareBootstrapKubeConfig() error {
-	ep := fmt.Sprintf("%s:%d", c.ExternalMasterHostname, c.Master.Port)
+	var ep string
+	if c.IsAgentPoolOnly() {
+		ep = c.ExternalMasterHostname
+	} else {
+		ep = fmt.Sprintf("%s:%d", c.ExternalMasterHostname, c.Master.Port)
+	}
 	epName := strings.Replace(ep, ".", "-", -1)
 
 	cacert, err := certAsBytes(c.cas["etc/origin/master/ca"].cert)

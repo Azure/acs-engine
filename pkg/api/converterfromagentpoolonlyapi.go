@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -54,6 +55,34 @@ func ConvertContainerServiceToV20180331AgentPoolOnly(api *ContainerService) *v20
 	v20180331HCP.Properties = &v20180331.Properties{}
 	convertPropertiesToV20180331AgentPoolOnly(api.Properties, v20180331HCP.Properties)
 	return v20180331HCP
+}
+
+// ConvertContainerServiceToVLabsAgentPoolOnly converts an unversioned ContainerService to a vlabs ContainerService
+func ConvertContainerServiceToVLabsAgentPoolOnly(api *ContainerService) *vlabs.ManagedCluster {
+	vlabsHCP := &vlabs.ManagedCluster{}
+	vlabsHCP.ID = api.ID
+	vlabsHCP.Location = api.Location
+	vlabsHCP.Name = api.Name
+	if api.Plan != nil {
+		vlabsHCP.Plan = &vlabs.ResourcePurchasePlan{}
+		convertResourcePurchasePlanToVLabsAgentPoolOnly(api.Plan, vlabsHCP.Plan)
+	}
+	vlabsHCP.Tags = map[string]string{}
+	for k, v := range api.Tags {
+		vlabsHCP.Tags[k] = v
+	}
+	vlabsHCP.Type = api.Type
+	vlabsHCP.Properties = &vlabs.Properties{}
+	convertPropertiesToVLabsAgentPoolOnly(api.Properties, vlabsHCP.Properties)
+	return vlabsHCP
+}
+
+// convertResourcePurchasePlanToVLabsAgentPoolOnly converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
+func convertResourcePurchasePlanToVLabsAgentPoolOnly(api *ResourcePurchasePlan, vlabs *vlabs.ResourcePurchasePlan) {
+	vlabs.Name = api.Name
+	vlabs.Product = api.Product
+	vlabs.PromotionCode = api.PromotionCode
+	vlabs.Publisher = api.Publisher
 }
 
 // convertResourcePurchasePlanToV20170831 converts a v20170831 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -279,4 +308,97 @@ func convertAADProfileToV20180331AgentPoolOnly(api *AADProfile, v20180331 *v2018
 	if api.Authenticator == Webhook {
 		v20180331.ServerAppSecret = api.ServerAppSecret
 	}
+}
+
+func convertPropertiesToVLabsAgentPoolOnly(api *Properties, p *vlabs.Properties) {
+	p.ProvisioningState = vlabs.ProvisioningState(api.ProvisioningState)
+
+	if api.OrchestratorProfile != nil {
+		p.OrchestratorProfile = &vlabs.OrchestratorProfile{}
+		convertOrchestratorProfileToVLabsAgentPoolOnly(api.OrchestratorProfile, p.OrchestratorProfile)
+	}
+	if api.HostedMasterProfile != nil {
+		p.DNSPrefix = api.HostedMasterProfile.DNSPrefix
+		p.FQDN = api.HostedMasterProfile.FQDN
+	}
+	p.AgentPoolProfiles = []*vlabs.AgentPoolProfile{}
+	for _, apiProfile := range api.AgentPoolProfiles {
+		vlabsProfile := &vlabs.AgentPoolProfile{}
+		convertAgentPoolProfileToVLabsAgentPoolOnly(apiProfile, vlabsProfile)
+		p.AgentPoolProfiles = append(p.AgentPoolProfiles, vlabsProfile)
+	}
+	if api.LinuxProfile != nil {
+		p.LinuxProfile = &vlabs.LinuxProfile{}
+		convertLinuxProfileToVLabsAgentPoolOnly(api.LinuxProfile, p.LinuxProfile)
+	}
+	if api.ServicePrincipalProfile != nil {
+		p.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{}
+		convertServicePrincipalProfileToVLabsAgentPoolOnly(api.ServicePrincipalProfile, p.ServicePrincipalProfile)
+	}
+	if api.CertificateProfile != nil {
+		p.CertificateProfile = &vlabs.CertificateProfile{}
+		convertCertificateProfileToVLabsAgentPoolOnly(api.CertificateProfile, p.CertificateProfile)
+	}
+	if api.AzProfile != nil {
+		p.AzProfile = &vlabs.AzProfile{}
+		convertAzProfileToVLabsAgentPoolOnly(api.AzProfile, p.AzProfile)
+	}
+}
+
+func convertOrchestratorProfileToVLabsAgentPoolOnly(api *OrchestratorProfile, p *vlabs.OrchestratorProfile) {
+	p.OrchestratorType = api.OrchestratorType
+	p.OrchestratorVersion = api.OrchestratorVersion
+	if api.OpenShiftConfig != nil {
+		p.OpenShiftConfig = &vlabs.OpenShiftConfig{}
+		convertOpenShiftConfigToVlabsAgentPoolOnly(api.OpenShiftConfig, p.OpenShiftConfig)
+	}
+}
+
+func convertAgentPoolProfileToVLabsAgentPoolOnly(api *AgentPoolProfile, p *vlabs.AgentPoolProfile) {
+	p.Name = api.Name
+	p.Count = api.Count
+	p.VMSize = api.VMSize
+	p.OSType = vlabs.OSType(api.OSType)
+	p.SetSubnet(api.Subnet)
+	p.OSDiskSizeGB = api.OSDiskSizeGB
+	p.StorageProfile = api.StorageProfile
+	p.VnetSubnetID = api.VnetSubnetID
+	p.AvailabilityProfile = api.AvailabilityProfile
+}
+
+func convertLinuxProfileToVLabsAgentPoolOnly(api *LinuxProfile, p *vlabs.LinuxProfile) {
+	p.AdminUsername = api.AdminUsername
+	p.SSH.PublicKeys = []vlabs.PublicKey{}
+	for _, d := range api.SSH.PublicKeys {
+		p.SSH.PublicKeys = append(p.SSH.PublicKeys, vlabs.PublicKey{
+			KeyData: d.KeyData,
+		})
+	}
+}
+
+func convertServicePrincipalProfileToVLabsAgentPoolOnly(api *ServicePrincipalProfile, p *vlabs.ServicePrincipalProfile) {
+	p.ClientID = api.ClientID
+	p.Secret = api.Secret
+}
+
+func convertOpenShiftConfigToVlabsAgentPoolOnly(api *OpenShiftConfig, p *vlabs.OpenShiftConfig) {
+	p.ConfigBundles = api.ConfigBundles
+}
+
+func convertCertificateProfileToVLabsAgentPoolOnly(api *CertificateProfile, p *vlabs.CertificateProfile) {
+	p.CaCertificate = api.CaCertificate
+	p.CaPrivateKey = api.CaPrivateKey
+	p.APIServerCertificate = api.APIServerCertificate
+	p.APIServerPrivateKey = api.APIServerPrivateKey
+	p.ClientCertificate = api.ClientCertificate
+	p.ClientPrivateKey = api.ClientPrivateKey
+	p.KubeConfigCertificate = api.KubeConfigCertificate
+	p.KubeConfigPrivateKey = api.KubeConfigPrivateKey
+}
+
+func convertAzProfileToVLabsAgentPoolOnly(api *AzProfile, p *vlabs.AzProfile) {
+	p.TenantID = api.TenantID
+	p.SubscriptionID = api.SubscriptionID
+	p.ResourceGroup = api.ResourceGroup
+	p.Location = api.Location
 }

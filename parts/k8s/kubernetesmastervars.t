@@ -76,9 +76,11 @@
     "etcdServerKeyFilepath": "/etc/kubernetes/certs/etcdserver.key",
 {{end}}
 {{end}}
-{{ if not IsOpenShift }}
+{{ if HasCaCertificates }}
     "caCertificate": "[parameters('caCertificate')]",
     "caPrivateKey": "[parameters('caPrivateKey')]",
+{{end}}
+{{ if not IsOpenShift }}
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",

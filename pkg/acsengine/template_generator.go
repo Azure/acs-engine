@@ -1151,5 +1151,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsCustomVNET": func() bool {
 			return isCustomVNET(cs.Properties.AgentPoolProfiles)
 		},
+		"HasCaCertificates": func() bool {
+			return cs.Properties.CertificateProfile != nil &&
+				cs.Properties.CertificateProfile.CaCertificate != "" &&
+				cs.Properties.CertificateProfile.CaPrivateKey != ""
+		},
 	}
 }

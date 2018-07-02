@@ -675,9 +675,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 	case api.OpenShift:
-		kc := a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
-		if kc == nil {
-			kc = &api.KubernetesConfig{}
+		kc := &api.KubernetesConfig{}
+		if a.OrchestratorProfile.OpenShiftConfig != nil && a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig != nil {
+			kc = a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
 		}
 		if kc.ContainerRuntime == "" {
 			kc.ContainerRuntime = DefaultContainerRuntime
@@ -685,6 +685,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if kc.NetworkPlugin == "" {
 			kc.NetworkPlugin = DefaultNetworkPlugin
 		}
+		if kc.NetworkPolicy == "" {
+			kc.NetworkPolicy = DefaultNetworkPolicy
+		}
+		a.OrchestratorProfile.KubernetesConfig = kc
 	}
 }
 
@@ -865,7 +869,7 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
-	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
+	if a.OrchestratorProfile.OrchestratorType == api.OpenShift {
 		return certgen.OpenShiftSetDefaultCerts(a, DefaultOpenshiftOrchestratorName, GenerateClusterID(a))
 	}
 

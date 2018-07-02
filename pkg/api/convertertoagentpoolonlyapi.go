@@ -139,7 +139,7 @@ func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchase
 
 func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
-	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesVersion)
+	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.OrchestratorProfile, vlabs.KubernetesVersion)
 	api.MasterProfile = nil
 
 	api.HostedMasterProfile = &HostedMasterProfile{}
@@ -175,6 +175,17 @@ func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Propertie
 		api.CertificateProfile = &CertificateProfile{}
 		convertVLabsAgentPoolOnlyCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
 	}
+	if vlabs.AzProfile != nil {
+		api.AzProfile = &AzProfile{}
+		convertVLabsAgentPoolOnlyAzProfile(vlabs.AzProfile, api.AzProfile)
+	}
+}
+
+func convertVLabsAgentPoolOnlyAzProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
+	api.TenantID = vlabs.TenantID
+	api.SubscriptionID = vlabs.SubscriptionID
+	api.ResourceGroup = vlabs.ResourceGroup
+	api.Location = vlabs.Location
 }
 
 func convertVLabsAgentPoolOnlyLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
@@ -239,11 +250,26 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	}
 }
 
-func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
+func convertVLabsAgentPoolOnlyOrchestratorProfile(orchestratorProfile *vlabs.OrchestratorProfile, kubernetesVersion string) *OrchestratorProfile {
+	if orchestratorProfile != nil {
+		o := &OrchestratorProfile{
+			OrchestratorType:    orchestratorProfile.OrchestratorType,
+			OrchestratorVersion: orchestratorProfile.OrchestratorVersion,
+		}
+		if orchestratorProfile.OpenShiftConfig != nil {
+			o.OpenShiftConfig = &OpenShiftConfig{}
+			convertVLabsAgentPoolOnlyOpenShiftConfig(orchestratorProfile.OpenShiftConfig, o.OpenShiftConfig)
+		}
+		return o
+	}
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion, false),
 	}
+}
+
+func convertVLabsAgentPoolOnlyOpenShiftConfig(vlabs *vlabs.OpenShiftConfig, api *OpenShiftConfig) {
+	api.ConfigBundles = vlabs.ConfigBundles
 }
 
 func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
@@ -270,6 +296,14 @@ func convertVLabsAgentPoolOnlyAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, ap
 	api.AvailabilityProfile = vlabs.AvailabilityProfile
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
+	api.Distro = Distro(vlabs.Distro)
+	if vlabs.ImageRef != nil {
+		api.ImageRef = &ImageReference{
+			Name:          vlabs.ImageRef.Name,
+			ResourceGroup: vlabs.ImageRef.ResourceGroup,
+		}
+	}
+	api.Role = AgentPoolProfileRole(vlabs.Role)
 }
 
 func convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {

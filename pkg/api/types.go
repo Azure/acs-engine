@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
+	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -619,6 +620,14 @@ type V20170831ARMManagedContainerService struct {
 type V20180331ARMManagedContainerService struct {
 	TypeMeta
 	*v20180331.ManagedCluster
+}
+
+// VlabsARMManagedContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsARMManagedContainerService struct {
+	TypeMeta
+	*apvlabs.ManagedCluster
 }
 
 // HasWindows returns true if the cluster contains windows
