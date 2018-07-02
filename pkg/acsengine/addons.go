@@ -117,6 +117,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"azure-cni-networkmonitor.yaml",
 			profile.OrchestratorProfile.IsAzureCNI(),
 		},
+		{
+			"kubernetesmaster-audit-policy.yaml",
+			"audit-policy.yaml",
+			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
+		},
 	}
 }
 
@@ -141,11 +146,6 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 			"kubernetesmaster-pod-security-policy.yaml",
 			"pod-security-policy.yaml",
 			helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
-		},
-		{
-			"kubernetesmaster-audit-policy.yaml",
-			"audit-policy.yaml",
-			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
 		},
 		{
 			"kubernetesmaster-kube-apiserver.yaml",
