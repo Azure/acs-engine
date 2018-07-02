@@ -1,5 +1,5 @@
-hash: 6fa6f282ecddc833638528e7142991e81fbe33987514e2da1ece181a6470c568
-updated: 2018-06-08T11:35:55.674334-07:00
+hash: 90d55cc9eec600a57a5c52688b814b2daca46d5b4546fcd8a98b1d64d91422bd
+updated: 2018-06-29T15:54:03.527724072-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -166,6 +166,10 @@ imports:
   - http2/hpack
   - idna
   - lex/httplex
+- name: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:
