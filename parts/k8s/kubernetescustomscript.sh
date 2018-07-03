@@ -154,13 +154,15 @@ function installEtcd() {
 }
 
 function installDeps() {
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb
+    retrycmd_if_failure 10 5 10 dpkg -i /tmp/packages-microsoft-prod.deb
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
@@ -174,13 +176,6 @@ function installDocker() {
     apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
-}
-
-function installBlobfuse() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb
-    retrycmd_if_failure 10 5 10 dpkg -i /tmp/packages-microsoft-prod.deb
-    apt_get_update
-    apt_get_install 20 30 120 blobfuse fuse
 }
 
 function runAptDaily() {
@@ -519,7 +514,6 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
 fi
 
 installDeps
-installBlobfuse
 
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
     installDocker
