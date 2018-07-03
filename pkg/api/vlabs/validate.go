@@ -792,16 +792,13 @@ func (a *AgentPoolProfile) validateOrchestratorSpecificProperties(orchestratorTy
 			return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s' or specify AvailabilityProfile '%s'", ManagedDisks, AvailabilitySet)
 		}
 	}
-	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
-		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
-	}
 	return nil
 }
 
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
 	for _, s := range secrets {
 		if len(s.VaultCertificates) == 0 {
-			return fmt.Errorf("Invalid KeyVaultSecrets must have no empty VaultCertificates")
+			return fmt.Errorf("Valid KeyVaultSecrets must have no empty VaultCertificates")
 		}
 		if s.SourceVault == nil {
 			return fmt.Errorf("missing SourceVault in KeyVaultSecrets")
