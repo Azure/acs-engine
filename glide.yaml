@@ -68,6 +68,8 @@ import:
 - package: golang.org/x/sync
   subpackages:
   - errgroup
+- package: github.com/pkg/errors
+  version: ~0.8.0
 testImport:
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo

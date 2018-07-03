@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 type orchestratorsFunc func(*OrchestratorProfile) ([]*OrchestratorVersionProfile, error)
@@ -47,10 +47,10 @@ func validate(orchestrator, version string) (string, error) {
 		return OpenShift, nil
 	case orchestrator == "":
 		if version != "" {
-			return "", fmt.Errorf("Must specify orchestrator for version '%s'", version)
+			return "", errors.Errorf("Must specify orchestrator for version '%s'", version)
 		}
 	default:
-		return "", fmt.Errorf("Unsupported orchestrator '%s'", orchestrator)
+		return "", errors.Errorf("Unsupported orchestrator '%s'", orchestrator)
 	}
 	return "", nil
 }
@@ -120,7 +120,7 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service
 func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVersionProfile, error) {
 	if orch.OrchestratorVersion == "" {
-		return nil, fmt.Errorf("Missing Orchestrator Version")
+		return nil, errors.New("Missing Orchestrator Version")
 	}
 	switch orch.OrchestratorType {
 	case Kubernetes, DCOS:
@@ -130,11 +130,11 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 		}
 		// has to be exactly one element per specified orchestrator/version
 		if len(arr) != 1 {
-			return nil, fmt.Errorf("Umbiguous Orchestrator Versions")
+			return nil, errors.New("Umbiguous Orchestrator Versions")
 		}
 		return arr[0], nil
 	default:
-		return nil, fmt.Errorf("Upgrade operation is not supported for '%s'", orch.OrchestratorType)
+		return nil, errors.Errorf("Upgrade operation is not supported for '%s'", orch.OrchestratorType)
 	}
 }
 
@@ -159,7 +159,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 		}
 	} else {
 		if !isVersionSupported(csOrch) {
-			return nil, fmt.Errorf("Kubernetes version %s is not supported", csOrch.OrchestratorVersion)
+			return nil, errors.Errorf("Kubernetes version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
 		upgrades, err := kubernetesUpgrades(csOrch)
@@ -218,7 +218,7 @@ func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error
 		}
 	} else {
 		if !isVersionSupported(csOrch) {
-			return nil, fmt.Errorf("DCOS version %s is not supported", csOrch.OrchestratorVersion)
+			return nil, errors.Errorf("DCOS version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
 		// get info for the specified version
@@ -265,7 +265,7 @@ func swarmInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, erro
 	}
 
 	if !isVersionSupported(csOrch) {
-		return nil, fmt.Errorf("Swarm version %s is not supported", csOrch.OrchestratorVersion)
+		return nil, errors.Errorf("Swarm version %s is not supported", csOrch.OrchestratorVersion)
 	}
 	return []*OrchestratorVersionProfile{
 		{
@@ -291,7 +291,7 @@ func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, e
 	}
 
 	if !isVersionSupported(csOrch) {
-		return nil, fmt.Errorf("Docker CE version %s is not supported", csOrch.OrchestratorVersion)
+		return nil, errors.Errorf("Docker CE version %s is not supported", csOrch.OrchestratorVersion)
 	}
 	return []*OrchestratorVersionProfile{
 		{
@@ -323,7 +323,7 @@ func openShiftInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, 
 		}
 	} else {
 		if !isVersionSupported(csOrch) {
-			return nil, fmt.Errorf("OpenShift version %s is not supported", csOrch.OrchestratorVersion)
+			return nil, errors.Errorf("OpenShift version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
 		// TODO: populate OrchestratorVersionProfile.Upgrades

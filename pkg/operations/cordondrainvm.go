@@ -1,11 +1,11 @@
 package operations
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -177,7 +177,7 @@ func (o *drainOperation) evictPods(pods []v1.Pod, policyGroupVersion string) err
 				} else if apierrors.IsTooManyRequests(err) {
 					time.Sleep(5 * time.Second)
 				} else {
-					errCh <- fmt.Errorf("error when evicting pod %q: %v", pod.Name, err)
+					errCh <- errors.Wrapf(err, "error when evicting pod %q", pod.Name)
 					return
 				}
 			}
@@ -186,7 +186,7 @@ func (o *drainOperation) evictPods(pods []v1.Pod, policyGroupVersion string) err
 			if err == nil {
 				doneCh <- true
 			} else {
-				errCh <- fmt.Errorf("error when waiting for pod %q terminating: %v", pod.Name, err)
+				errCh <- errors.Wrapf(err, "error when waiting for pod %q terminating", pod.Name)
 			}
 		}(pod, doneCh, errCh)
 	}
@@ -202,7 +202,7 @@ func (o *drainOperation) evictPods(pods []v1.Pod, policyGroupVersion string) err
 				return nil
 			}
 		case <-time.After(o.timeout):
-			return fmt.Errorf("Drain did not complete within %v", o.timeout)
+			return errors.Errorf("Drain did not complete within %v", o.timeout)
 		}
 	}
 }
