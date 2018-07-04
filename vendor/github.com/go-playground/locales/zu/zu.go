@@ -10,68 +10,64 @@ import (
 )
 
 type zu struct {
-	locale                 string
-	pluralsCardinal        []locales.PluralRule
-	pluralsOrdinal         []locales.PluralRule
-	pluralsRange           []locales.PluralRule
-	decimal                string
-	group                  string
-	minus                  string
-	percent                string
-	perMille               string
-	timeSeparator          string
-	inifinity              string
-	currencies             []string // idx = enum of currency code
-	currencyNegativePrefix string
-	currencyNegativeSuffix string
-	monthsAbbreviated      []string
-	monthsNarrow           []string
-	monthsWide             []string
-	daysAbbreviated        []string
-	daysNarrow             []string
-	daysShort              []string
-	daysWide               []string
-	periodsAbbreviated     []string
-	periodsNarrow          []string
-	periodsShort           []string
-	periodsWide            []string
-	erasAbbreviated        []string
-	erasNarrow             []string
-	erasWide               []string
-	timezones              map[string]string
+	locale             string
+	pluralsCardinal    []locales.PluralRule
+	pluralsOrdinal     []locales.PluralRule
+	pluralsRange       []locales.PluralRule
+	decimal            string
+	group              string
+	minus              string
+	percent            string
+	perMille           string
+	timeSeparator      string
+	inifinity          string
+	currencies         []string // idx = enum of currency code
+	monthsAbbreviated  []string
+	monthsNarrow       []string
+	monthsWide         []string
+	daysAbbreviated    []string
+	daysNarrow         []string
+	daysShort          []string
+	daysWide           []string
+	periodsAbbreviated []string
+	periodsNarrow      []string
+	periodsShort       []string
+	periodsWide        []string
+	erasAbbreviated    []string
+	erasNarrow         []string
+	erasWide           []string
+	timezones          map[string]string
 }
 
 // New returns a new instance of translator for the 'zu' locale
 func New() locales.Translator {
 	return &zu{
-		locale:                 "zu",
-		pluralsCardinal:        []locales.PluralRule{2, 6},
-		pluralsOrdinal:         []locales.PluralRule{6},
-		pluralsRange:           []locales.PluralRule{2, 6},
-		decimal:                ".",
-		group:                  ",",
-		minus:                  "-",
-		percent:                "%",
-		perMille:               "‰",
-		timeSeparator:          ":",
-		inifinity:              "∞",
-		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "A$", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "R$", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CA$", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CN¥", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "€", "FIM", "FJD", "FKP", "FRF", "£", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HK$", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "₪", "₹", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JP¥", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "₩", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MX$", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZ$", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "฿", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "NT$", "TZS", "UAH", "UAK", "UGS", "UGX", "US$", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "₫", "VNN", "VUV", "WST", "FCFA", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "EC$", "XDR", "XEU", "XFO", "XFU", "CFA", "XPD", "CFPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "R", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
-		currencyNegativePrefix: "(",
-		currencyNegativeSuffix: ")",
-		monthsAbbreviated:      []string{"", "Jan", "Feb", "Mas", "Eph", "Mey", "Jun", "Jul", "Aga", "Sep", "Okt", "Nov", "Dis"},
-		monthsNarrow:           []string{"", "J", "F", "M", "E", "M", "J", "J", "A", "S", "O", "N", "D"},
-		monthsWide:             []string{"", "UMasingana", "Februwari", "Mashi", "Ephreli", "Meyi", "Juni", "Julayi", "Agasti", "Septhemba", "Okthoba", "Novemba", "Disemba"},
-		daysAbbreviated:        []string{"Son", "Mso", "Bil", "Tha", "Sin", "Hla", "Mgq"},
-		daysNarrow:             []string{"S", "M", "B", "T", "S", "H", "M"},
-		daysShort:              []string{"Son", "Mso", "Bil", "Tha", "Sin", "Hla", "Mgq"},
-		daysWide:               []string{"ISonto", "UMsombuluko", "ULwesibili", "ULwesithathu", "ULwesine", "ULwesihlanu", "UMgqibelo"},
-		periodsAbbreviated:     []string{"AM", "PM"},
-		periodsNarrow:          []string{"a", "p"},
-		periodsWide:            []string{"AM", "PM"},
-		erasAbbreviated:        []string{"BC", "AD"},
-		erasNarrow:             []string{"", ""},
-		erasWide:               []string{"BC", "AD"},
-		timezones:              map[string]string{"MDT": "MDT", "HAST": "Isikhathi sase-Hawaii-Aleutia esijwayelekile", "AEDT": "Isikhathi sasemini sase-Australian East", "CLT": "Isikhathi sase-Chile esijwayelekile", "ACST": "Isikhathi sase-Australian Central esivamile", "PST": "Isikhathi sase-North American Pacific esijwayelekile", "WART": "Isikhathi saseNyakatho ne-Argentina esijwayelekile", "LHDT": "Isikhathi sase-Lord Howe sasemini", "HEOG": "Isikhathi sase-West Greenland sasehlobo", "HAT": "Isikhathi sase-Newfoundland sasemini", "HNPMX": "Isikhathi sase-Mexican Pacific esijwayelekile", "CHADT": "Isikhathi sasemini sase-Chatham", "SRT": "Isikhathi sase-Suriname", "AWST": "Isikhathi sase-Australian Western esivamile", "WIT": "Isikhathi sase-Eastern Indonesia", "NZDT": "Isikhathi sasemini sase-New Zealand", "ACWST": "Isikhathi sase-Australian Central West esivamile", "MEZ": "Isikhathi esijwayelekile sase-Central Europe", "VET": "Isikhathi sase-Venezuela", "HNEG": "Isikhathi sase-East Greenland esijwayelekile", "CLST": "Isikhathi sase-Chile sasehlobo", "EAT": "Isikhathi saseMpumalanga Afrika", "GYT": "Isikhathi sase-Guyana", "CAT": "Isikhathi sase-Central Africa", "UYST": "Isikhathi sase-Uruguay sasehlobo", "NZST": "Isikhathi esivamile sase-New Zealand", "WITA": "Isikhathi sase-Central Indonesia", "JDT": "Isikhathi semini sase-Japan", "AKST": "Isikhathi sase-Alaska esijwayelekile", "HECU": "Isikhathi sase-Cuba sasemini", "BT": "Isikhathi sase-Bhutan", "HADT": "Isikhathi sase-Hawaii-Aleutia sasemini", "GFT": "Isikhathi sase-French Guiana", "WESZ": "Isikhathi sasehlobo sase-Western Europe", "ChST": "Isikhathi esijwayelekile sase-Chamorro", "AWDT": "Isikhathi sase-Australian Western sasemini", "ACWDT": "Isikhathi sasemini sase-Australian Central West", "LHST": "Isikhathi sase-Lord Howe esivamile", "ART": "Isikhathi sase-Argentina esijwayelekile", "BOT": "Isikhathi sase-Bolivia", "UYT": "Isikhathi sase-Uruguay esijwayelekile", "TMST": "Isikhathi sehlobo sase-Turkmenistan", "HKT": "Isikhathi esivamile sase-Hong Kong", "HENOMX": "Isikhathi sase-Northwest Mexico sasemini", "ACDT": "Isikhathi sase-Australian Central sasemini", "HNPM": "Iikhathi sase-Saint Pierre nase-Miquelon esijwayelekile", "CHAST": "Isikhathi esivamile sase-Chatham", "CST": "Isikhathi sase-North American Central esijwayelekile", "MST": "MST", "HNNOMX": "Isikhathi sase-Northwest Mexico esijwayelekile", "WAT": "Isikhathi esijwayelekile saseNtshonalanga Afrika", "WAST": "Isikhathi sasehlobo saseNtshonalanga Afrika", "EDT": "Isikhathi sase-North American East sasemini", "∅∅∅": "Isikhathi sase-Amazon sasehlobo", "WEZ": "Isikhathi esijwayelekile sase-Western Europe", "WIB": "Isikhathi sase-Western Indonesia", "MYT": "Isikhathi sase-Malaysia", "HNOG": "Isikhathi sase-West Greenland esijwayelekile", "HNT": "Isikhathi sase-Newfoundland esijwayelekile", "HEPM": "Isikhathi sase-Saint Pierre nase-Miquelon sasemini", "CDT": "Isikhathi sase-North American Central sasemini", "MESZ": "Isikhathi sasehlobo sase-Central Europe", "WARST": "Isikhathi saseNyakatho ne-Argentina sasehlobo", "JST": "Isikhathi esivamile sase-Japan", "ECT": "Isikhathi sase-Ecuador", "OEZ": "Isikhathi esijwayelekile sase-Eastern Europe", "ADT": "Isikhathi sase-Atlantic sasemini", "SAST": "Isikhathi esijwayelekile saseNingizimu Afrika", "COT": "Isikhathi sase-Colombia esijwayelekile", "COST": "Isikhathi sase-Colombia sasehlobo", "SGT": "Isikhathi esivamile sase-Singapore", "GMT": "Isikhathi sase-Greenwich Mean", "HNCU": "Isikhathi sase-Cuba esijwayelekile", "OESZ": "Isikhathi sasehlobo sase-Eastern Europe", "AEST": "Isikhathi esivamile sase-Australian East", "ARST": "Isikhathi sase-Argentina sasehlobo", "HEPMX": "Isikhathi sase-Mexican Pacific sasemini", "PDT": "Isikhathi sase-North American Pacific sasemini", "TMT": "Isikhathi esivamile sase-Turkmenistan", "HKST": "Isikhathi sehlobo sase-Hong Kong", "EST": "Isikhathi sase-North American East esijwayelekile", "AKDT": "Isikhathi sase-Alaska sasemini", "IST": "Isikhathi sase-India esivamile", "AST": "Isikhathi sase-Atlantic esijwayelekile", "HEEG": "Isikhathi sase-East Greenland sasemini"},
+		locale:             "zu",
+		pluralsCardinal:    []locales.PluralRule{2, 6},
+		pluralsOrdinal:     []locales.PluralRule{6},
+		pluralsRange:       []locales.PluralRule{2, 6},
+		decimal:            ".",
+		group:              ",",
+		minus:              "-",
+		percent:            "%",
+		perMille:           "‰",
+		timeSeparator:      ":",
+		inifinity:          "∞",
+		currencies:         []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "A$", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "R$", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CA$", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CN¥", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "€", "FIM", "FJD", "FKP", "FRF", "£", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HK$", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "₪", "₹", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JP¥", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "₩", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MX$", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZ$", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "฿", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "NT$", "TZS", "UAH", "UAK", "UGS", "UGX", "US$", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "₫", "VNN", "VUV", "WST", "FCFA", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "EC$", "XDR", "XEU", "XFO", "XFU", "CFA", "XPD", "CFPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "R", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		monthsAbbreviated:  []string{"", "Jan", "Feb", "Mas", "Eph", "Mey", "Jun", "Jul", "Aga", "Sep", "Okt", "Nov", "Dis"},
+		monthsNarrow:       []string{"", "J", "F", "M", "E", "M", "J", "J", "A", "S", "O", "N", "D"},
+		monthsWide:         []string{"", "Januwari", "Februwari", "Mashi", "Ephreli", "Meyi", "Juni", "Julayi", "Agasti", "Septhemba", "Okthoba", "Novemba", "Disemba"},
+		daysAbbreviated:    []string{"Son", "Mso", "Bil", "Tha", "Sin", "Hla", "Mgq"},
+		daysNarrow:         []string{"S", "M", "B", "T", "S", "H", "M"},
+		daysShort:          []string{"Son", "Mso", "Bil", "Tha", "Sin", "Hla", "Mgq"},
+		daysWide:           []string{"ISonto", "UMsombuluko", "ULwesibili", "ULwesithathu", "ULwesine", "ULwesihlanu", "UMgqibelo"},
+		periodsAbbreviated: []string{"AM", "PM"},
+		periodsNarrow:      []string{"a", "p"},
+		periodsWide:        []string{"AM", "PM"},
+		erasAbbreviated:    []string{"BC", "AD"},
+		erasNarrow:         []string{"", ""},
+		erasWide:           []string{"BC", "AD"},
+		timezones:          map[string]string{"HEPM": "Isikhathi sase-Saint Pierre nase-Miquelon sasemini", "WIT": "Isikhathi sase-Eastern Indonesia", "HNCU": "Isikhathi sase-Cuba esijwayelekile", "CDT": "Isikhathi sase-North American Central sasemini", "NZST": "Isikhathi esivamile sase-New Zealand", "GFT": "Isikhathi sase-French Guiana", "ACWST": "Isikhathi sase-Australian Central West esivamile", "CLT": "Isikhathi sase-Chile esijwayelekile", "CST": "Isikhathi sase-North American Central esijwayelekile", "PST": "Isikhathi sase-North American Pacific esijwayelekile", "BOT": "Isikhathi sase-Bolivia", "HNEG": "Isikhathi sase-East Greenland esijwayelekile", "HNPM": "Iikhathi sase-Saint Pierre nase-Miquelon esijwayelekile", "AEDT": "Isikhathi sasemini sase-Australian East", "SAST": "Isikhathi esijwayelekile saseNingizimu Afrika", "BT": "Isikhathi sase-Bhutan", "NZDT": "Isikhathi sasemini sase-New Zealand", "ECT": "Isikhathi sase-Ecuador", "HNNOMX": "Isikhathi sase-Northwest Mexico esijwayelekile", "MDT": "MDT", "CLST": "Isikhathi sase-Chile sasehlobo", "AWDT": "Isikhathi sase-Australian Western sasemini", "WAST": "Isikhathi sasehlobo saseNtshonalanga Afrika", "JST": "Isikhathi esivamile sase-Japan", "MESZ": "Isikhathi sasehlobo sase-Central Europe", "CHAST": "Isikhathi esivamile sase-Chatham", "JDT": "Isikhathi semini sase-Japan", "ACDT": "Isikhathi sase-Australian Central sasemini", "HEEG": "Isikhathi sase-East Greenland sasemini", "LHST": "Isikhathi sase-Lord Howe esivamile", "LHDT": "Isikhathi sase-Lord Howe sasemini", "EAT": "Isikhathi saseMpumalanga Afrika", "OESZ": "Isikhathi sasehlobo sase-Eastern Europe", "MEZ": "Isikhathi esijwayelekile sase-Central Europe", "HNT": "Isikhathi sase-Newfoundland esijwayelekile", "COST": "Isikhathi sase-Colombia sasehlobo", "ChST": "Isikhathi esijwayelekile sase-Chamorro", "HEPMX": "Isikhathi sase-Mexican Pacific sasemini", "WAT": "Isikhathi esijwayelekile saseNtshonalanga Afrika", "WART": "Isikhathi saseNyakatho ne-Argentina esijwayelekile", "CAT": "Isikhathi sase-Central Africa", "TMT": "Isikhathi esivamile sase-Turkmenistan", "COT": "Isikhathi sase-Colombia esijwayelekile", "WEZ": "Isikhathi esijwayelekile sase-Western Europe", "HNOG": "Isikhathi sase-West Greenland esijwayelekile", "AEST": "Isikhathi esivamile sase-Australian East", "ACST": "Isikhathi sase-Australian Central esivamile", "HKT": "Isikhathi esivamile sase-Hong Kong", "∅∅∅": "Isikhathi sasehlobo sase-Azores", "WITA": "Isikhathi sase-Central Indonesia", "TMST": "Isikhathi sehlobo sase-Turkmenistan", "MYT": "Isikhathi sase-Malaysia", "EST": "Isikhathi sase-North American East esijwayelekile", "EDT": "Isikhathi sase-North American East sasemini", "HAT": "Isikhathi sase-Newfoundland sasemini", "UYST": "Isikhathi sase-Uruguay sasehlobo", "HECU": "Isikhathi sase-Cuba sasemini", "AWST": "Isikhathi sase-Australian Western esivamile", "SGT": "Isikhathi esivamile sase-Singapore", "WARST": "Isikhathi saseNyakatho ne-Argentina sasehlobo", "HADT": "Isikhathi sase-Hawaii-Aleutia sasemini", "ARST": "Isikhathi sase-Argentina sasehlobo", "UYT": "Isikhathi sase-Uruguay esijwayelekile", "HNPMX": "Isikhathi sase-Mexican Pacific esijwayelekile", "AKDT": "Isikhathi sase-Alaska sasemini", "HENOMX": "Isikhathi sase-Northwest Mexico sasemini", "WIB": "Isikhathi sase-Western Indonesia", "ART": "Isikhathi sase-Argentina esijwayelekile", "PDT": "Isikhathi sase-North American Pacific sasemini", "ACWDT": "Isikhathi sasemini sase-Australian Central West", "HEOG": "Isikhathi sase-West Greenland sasehlobo", "HKST": "Isikhathi sehlobo sase-Hong Kong", "VET": "Isikhathi sase-Venezuela", "SRT": "Isikhathi sase-Suriname", "HAST": "Isikhathi sase-Hawaii-Aleutia esijwayelekile", "ADT": "Isikhathi sase-Atlantic sasemini", "WESZ": "Isikhathi sasehlobo sase-Western Europe", "OEZ": "Isikhathi esijwayelekile sase-Eastern Europe", "GMT": "Isikhathi sase-Greenwich Mean", "CHADT": "Isikhathi sasemini sase-Chatham", "IST": "Isikhathi sase-India esivamile", "MST": "MST", "GYT": "Isikhathi sase-Guyana", "AST": "Isikhathi sase-Atlantic esijwayelekile", "AKST": "Isikhathi sase-Alaska esijwayelekile"},
 	}
 }
 
@@ -349,7 +345,7 @@ func (zu *zu) FmtAccounting(num float64, v uint64, currency currency.Type) strin
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := zu.currencies[currency]
-	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2 + 1*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -380,7 +376,7 @@ func (zu *zu) FmtAccounting(num float64, v uint64, currency currency.Type) strin
 			b = append(b, symbol[j])
 		}
 
-		b = append(b, zu.currencyNegativePrefix[0])
+		b = append(b, zu.minus[0])
 
 	} else {
 
@@ -404,10 +400,6 @@ func (zu *zu) FmtAccounting(num float64, v uint64, currency currency.Type) strin
 		for i := 0; i < 2-int(v); i++ {
 			b = append(b, '0')
 		}
-	}
-
-	if num < 0 {
-		b = append(b, zu.currencyNegativeSuffix...)
 	}
 
 	return string(b)

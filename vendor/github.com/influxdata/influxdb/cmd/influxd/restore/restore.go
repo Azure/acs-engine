@@ -16,7 +16,8 @@ import (
 	"strconv"
 	"strings"
 
-	"compress/gzip"
+	gzip "github.com/klauspost/pgzip"
+
 	"github.com/influxdata/influxdb/cmd/influxd/backup_util"
 	tarstream "github.com/influxdata/influxdb/pkg/tar"
 	"github.com/influxdata/influxdb/services/meta"
@@ -34,7 +35,6 @@ type Command struct {
 	Stdout io.Writer
 
 	host   string
-	path   string
 	client *snapshotter.Client
 
 	backupFilesPath     string
@@ -45,7 +45,7 @@ type Command struct {
 	backupRetention     string
 	restoreRetention    string
 	shard               uint64
-	enterprise          bool
+	portable            bool
 	online              bool
 	manifestMeta        *backup_util.MetaEntry
 	manifestFiles       map[uint64]*backup_util.Entry
@@ -74,8 +74,8 @@ func (cmd *Command) Run(args ...string) error {
 		return err
 	}
 
-	if cmd.enterprise {
-		return cmd.runOnlineEnterprise()
+	if cmd.portable {
+		return cmd.runOnlinePortable()
 	} else if cmd.online {
 		return cmd.runOnlineLegacy()
 	} else {
@@ -100,13 +100,13 @@ func (cmd *Command) runOffline() error {
 	return nil
 }
 
-func (cmd *Command) runOnlineEnterprise() error {
-	err := cmd.updateMetaEnterprise()
+func (cmd *Command) runOnlinePortable() error {
+	err := cmd.updateMetaPortable()
 	if err != nil {
 		cmd.StderrLogger.Printf("error updating meta: %v", err)
 		return err
 	}
-	err = cmd.uploadShardsEnterprise()
+	err = cmd.uploadShardsPortable()
 	if err != nil {
 		cmd.StderrLogger.Printf("error updating shards: %v", err)
 		return err
@@ -134,15 +134,18 @@ func (cmd *Command) parseFlags(args []string) error {
 	fs.StringVar(&cmd.host, "host", "localhost:8088", "")
 	fs.StringVar(&cmd.metadir, "metadir", "", "")
 	fs.StringVar(&cmd.datadir, "datadir", "", "")
-	fs.StringVar(&cmd.destinationDatabase, "database", "", "")
-	fs.StringVar(&cmd.restoreRetention, "retention", "", "")
+
+	fs.StringVar(&cmd.sourceDatabase, "database", "", "")
 	fs.StringVar(&cmd.sourceDatabase, "db", "", "")
 	fs.StringVar(&cmd.destinationDatabase, "newdb", "", "")
+
+	fs.StringVar(&cmd.backupRetention, "retention", "", "")
 	fs.StringVar(&cmd.backupRetention, "rp", "", "")
 	fs.StringVar(&cmd.restoreRetention, "newrp", "", "")
+
 	fs.Uint64Var(&cmd.shard, "shard", 0, "")
 	fs.BoolVar(&cmd.online, "online", false, "")
-	fs.BoolVar(&cmd.enterprise, "enterprise", false, "")
+	fs.BoolVar(&cmd.portable, "portable", false, "")
 	fs.SetOutput(cmd.Stdout)
 	fs.Usage = cmd.printUsage
 	if err := fs.Parse(args); err != nil {
@@ -164,26 +167,30 @@ func (cmd *Command) parseFlags(args []string) error {
 		return fmt.Errorf("backup path should be a valid directory: %s", cmd.backupFilesPath)
 	}
 
-	if cmd.enterprise || cmd.online {
+	if cmd.portable || cmd.online {
 		// validate the arguments
 
 		if cmd.metadir != "" {
-			return fmt.Errorf("offline parameter metadir found, not compatible with -enterprise")
+			return fmt.Errorf("offline parameter metadir found, not compatible with -portable")
 		}
 
 		if cmd.datadir != "" {
-			return fmt.Errorf("offline parameter datadir found, not compatible with -enterprise")
+			return fmt.Errorf("offline parameter datadir found, not compatible with -portable")
 		}
 
 		if cmd.restoreRetention == "" {
 			cmd.restoreRetention = cmd.backupRetention
 		}
 
-		if cmd.enterprise {
+		if cmd.portable {
 			var err error
 			cmd.manifestMeta, cmd.manifestFiles, err = backup_util.LoadIncremental(cmd.backupFilesPath)
 			if err != nil {
 				return fmt.Errorf("restore failed while processing manifest files: %s", err.Error())
+			} else if cmd.manifestMeta == nil {
+				// No manifest files found.
+				return fmt.Errorf("No manifest files found in: %s\n", cmd.backupFilesPath)
+
 			}
 		}
 	} else {
@@ -311,7 +318,7 @@ func (cmd *Command) unpackMeta() error {
 	return nil
 }
 
-func (cmd *Command) updateMetaEnterprise() error {
+func (cmd *Command) updateMetaPortable() error {
 	var metaBytes []byte
 	fileName := filepath.Join(cmd.backupFilesPath, cmd.manifestMeta.FileName)
 
@@ -320,7 +327,7 @@ func (cmd *Command) updateMetaEnterprise() error {
 		return err
 	}
 
-	var ep backup_util.EnterprisePacker
+	var ep backup_util.PortablePacker
 	ep.UnmarshalBinary(fileBytes)
 
 	metaBytes = ep.Data
@@ -359,6 +366,9 @@ func (cmd *Command) updateMetaLegacy() error {
 	fileName := metaFiles[len(metaFiles)-1]
 	cmd.StdoutLogger.Printf("Using metastore snapshot: %v\n", fileName)
 	metaBytes, err = backup_util.GetMetaBytes(fileName)
+	if err != nil {
+		return err
+	}
 
 	req := &snapshotter.Request{
 		Type:                   snapshotter.RequestMetaStoreUpdate,
@@ -374,31 +384,19 @@ func (cmd *Command) updateMetaLegacy() error {
 	return err
 }
 
-// unpackShard will look for all backup files in the path matching this shard ID
-// and restore them to the data dir
-func (cmd *Command) unpackShard(shard uint64) error {
-	shardID := strconv.FormatUint(shard, 10)
-	// make sure the shard isn't already there so we don't clobber anything
-	restorePath := filepath.Join(cmd.datadir, cmd.destinationDatabase, cmd.restoreRetention, shardID)
-	if _, err := os.Stat(restorePath); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("shard already present: %s", restorePath)
-	}
-
-	id, err := strconv.ParseUint(shardID, 10, 64)
-	if err != nil {
-		return err
-	}
-
-	// find the shard backup files
-	pat := filepath.Join(cmd.backupFilesPath, fmt.Sprintf(backup_util.BackupFilePattern, cmd.destinationDatabase, cmd.restoreRetention, id))
-	return cmd.unpackFiles(pat + ".*")
-}
-
-func (cmd *Command) uploadShardsEnterprise() error {
+func (cmd *Command) uploadShardsPortable() error {
 	for _, file := range cmd.manifestFiles {
 		if cmd.sourceDatabase == "" || cmd.sourceDatabase == file.Database {
 			if cmd.backupRetention == "" || cmd.backupRetention == file.Policy {
 				if cmd.shard == 0 || cmd.shard == file.ShardID {
+					oldID := file.ShardID
+					// if newID not found then this shard's metadata was NOT imported
+					// and should be skipped
+					newID, ok := cmd.shardIDMap[oldID]
+					if !ok {
+						cmd.StdoutLogger.Printf("Meta info not found for shard %d on database %s. Skipping shard file %s", oldID, file.Database, file.FileName)
+						continue
+					}
 					cmd.StdoutLogger.Printf("Restoring shard %d live from backup %s\n", file.ShardID, file.FileName)
 					f, err := os.Open(filepath.Join(cmd.backupFilesPath, file.FileName))
 					if err != nil {
@@ -416,7 +414,7 @@ func (cmd *Command) uploadShardsEnterprise() error {
 						targetDB = file.Database
 					}
 
-					if err := cmd.client.UploadShard(file.ShardID, cmd.shardIDMap[file.ShardID], cmd.destinationDatabase, cmd.restoreRetention, tr); err != nil {
+					if err := cmd.client.UploadShard(oldID, newID, targetDB, cmd.restoreRetention, tr); err != nil {
 						f.Close()
 						return err
 					}
@@ -451,12 +449,20 @@ func (cmd *Command) uploadShardsLegacy() error {
 		if err != nil {
 			return err
 		}
+
+		// if newID not found then this shard's metadata was NOT imported
+		// and should be skipped
+		newID, ok := cmd.shardIDMap[shardID]
+		if !ok {
+			cmd.StdoutLogger.Printf("Meta info not found for shard %d. Skipping shard file %s", shardID, fn)
+			continue
+		}
 		f, err := os.Open(fn)
 		if err != nil {
 			return err
 		}
 		tr := tar.NewReader(f)
-		if err := cmd.client.UploadShard(shardID, cmd.shardIDMap[shardID], cmd.destinationDatabase, cmd.restoreRetention, tr); err != nil {
+		if err := cmd.client.UploadShard(shardID, newID, cmd.destinationDatabase, cmd.restoreRetention, tr); err != nil {
 			f.Close()
 			return err
 		}
@@ -470,13 +476,13 @@ func (cmd *Command) uploadShardsLegacy() error {
 // and restore them to the data dir
 func (cmd *Command) unpackDatabase() error {
 	// make sure the shard isn't already there so we don't clobber anything
-	restorePath := filepath.Join(cmd.datadir, cmd.destinationDatabase)
+	restorePath := filepath.Join(cmd.datadir, cmd.sourceDatabase)
 	if _, err := os.Stat(restorePath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("database already present: %s", restorePath)
 	}
 
 	// find the database backup files
-	pat := filepath.Join(cmd.backupFilesPath, cmd.destinationDatabase)
+	pat := filepath.Join(cmd.backupFilesPath, cmd.sourceDatabase)
 	return cmd.unpackFiles(pat + ".*")
 }
 
@@ -484,14 +490,34 @@ func (cmd *Command) unpackDatabase() error {
 // and restore them to the data dir
 func (cmd *Command) unpackRetention() error {
 	// make sure the shard isn't already there so we don't clobber anything
-	restorePath := filepath.Join(cmd.datadir, cmd.destinationDatabase, cmd.restoreRetention)
+	restorePath := filepath.Join(cmd.datadir, cmd.sourceDatabase, cmd.backupRetention)
 	if _, err := os.Stat(restorePath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("retention already present: %s", restorePath)
 	}
 
 	// find the retention backup files
-	pat := filepath.Join(cmd.backupFilesPath, cmd.destinationDatabase)
-	return cmd.unpackFiles(fmt.Sprintf("%s.%s.*", pat, cmd.restoreRetention))
+	pat := filepath.Join(cmd.backupFilesPath, cmd.sourceDatabase)
+	return cmd.unpackFiles(fmt.Sprintf("%s.%s.*", pat, cmd.backupRetention))
+}
+
+// unpackShard will look for all backup files in the path matching this shard ID
+// and restore them to the data dir
+func (cmd *Command) unpackShard(shard uint64) error {
+	shardID := strconv.FormatUint(shard, 10)
+	// make sure the shard isn't already there so we don't clobber anything
+	restorePath := filepath.Join(cmd.datadir, cmd.sourceDatabase, cmd.backupRetention, shardID)
+	if _, err := os.Stat(restorePath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("shard already present: %s", restorePath)
+	}
+
+	id, err := strconv.ParseUint(shardID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	// find the shard backup files
+	pat := filepath.Join(cmd.backupFilesPath, fmt.Sprintf(backup_util.BackupFilePattern, cmd.sourceDatabase, cmd.backupRetention, id))
+	return cmd.unpackFiles(pat + ".*")
 }
 
 // unpackFiles will look for backup files matching the pattern and restore them to the data dir
@@ -538,50 +564,37 @@ func (cmd *Command) unpackTar(tarFile string) error {
 
 // printUsage prints the usage message to STDERR.
 func (cmd *Command) printUsage() {
-	fmt.Fprintf(cmd.Stdout, `Uses backups from the PATH to restore the metastore, databases,
-retention policies, or specific shards.  Default mode requires the instance to be stopped before running, and will wipe
-	all databases from the system (e.g., for disaster recovery).  The improved online and enterprise modes requires
-    the instance to be running, and the database name used must not already exist.
+	fmt.Fprintf(cmd.Stdout, `
+Uses backup copies from the specified PATH to restore databases or specific shards from InfluxDB OSS
+  or InfluxDB Enterprise to an InfluxDB OSS instance.
 
-Usage: influxd restore [-enterprise] [flags] PATH
+Usage: influxd restore -portable [options] PATH
 
-The default mode consumes files in an OSS only file format. PATH is a directory containing the backup data
+Note: Restore using the '-portable' option consumes files in an improved Enterprise-compatible 
+  format that includes a file manifest.
 
 Options:
-    -metadir <path>
-            Optional. If set the metastore will be recovered to the given path.
-    -datadir <path>
-            Optional. If set the restore process will recover the specified
-            database, retention policy or shard to the given directory.
-    -database <name>
-            Optional. Required if no metadir given. Will restore a single database's data.
-    -retention <name>
-            Optional. If given, -database is required. Will restore the retention policy's
-            data.
+    -portable 
+            Required to activate the portable restore mode. If not specified, the legacy restore mode is used.
+    -host  <host:port>
+            InfluxDB OSS host to connect to where the data will be restored. Defaults to '127.0.0.1:8088'.
+    -db    <name>
+            Name of database to be restored from the backup (InfluxDB OSS or InfluxDB Enterprise)
+    -newdb <name>
+            Name of the InfluxDB OSS database into which the archived data will be imported on the target system. 
+            Optional. If not given, then the value of '-db <db_name>' is used.  The new database name must be unique 
+            to the target system.
+    -rp    <name>
+            Name of retention policy from the backup that will be restored. Optional. 
+            Requires that '-db <db_name>' is specified.
+    -newrp <name>
+            Name of the retention policy to be created on the target system. Optional. Requires that '-rp <rp_name>' 
+            is set. If not given, the '-rp <rp_name>' value is used.
     -shard <id>
-            Optional. If given, -database and -retention are required. Will restore the shard's
-            data.
-	-online
-	        Optional. If given, the restore will be done using the new process, detailed below.  All other arguments
-	        above should be omitted.
-
-The -enterprise restore mode consumes files in an improved format that includes a file manifest.
-
-Options:
-	-host  <host:port>
-            The host to connect to and perform a snapshot of. Defaults to '127.0.0.1:8088'.
-	-db    <name>
-	        Identifies the database from the backup that will be restored.
-	-newdb <name>
-	        The name of the database into which the archived data will be imported on the target system.
-	        If not given, then the value of -db is used.  The new database name must be unique to the target system.
-	-rp    <name>
-	        Identifies the retention policy from the backup that will be restored.  Requires that -db is set.
-	-newrp <name>
-	        The name of the retention policy that will be created on the target system. Requires that -rp is set.
-	        If not given, the value of -rp is used.
-	-shard <id>
-	        Optional.  If given, -db and -rp are required.  Will restore the single shard's data.
+            Identifier of the shard to be restored. Optional. If specified, then '-db <db_name>' and '-rp <rp_name>' are
+            required.
+    PATH
+            Path to directory containing the backup files.
 
 `)
 }

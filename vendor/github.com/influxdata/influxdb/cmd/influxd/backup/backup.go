@@ -2,7 +2,6 @@
 package backup
 
 import (
-	"compress/gzip"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -11,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -19,6 +19,7 @@ import (
 	"github.com/influxdata/influxdb/cmd/influxd/backup_util"
 	"github.com/influxdata/influxdb/services/snapshotter"
 	"github.com/influxdata/influxdb/tcp"
+	gzip "github.com/klauspost/pgzip"
 )
 
 const (
@@ -54,9 +55,9 @@ type Command struct {
 	start    time.Time
 	end      time.Time
 
-	enterprise         bool
-	manifest           backup_util.Manifest
-	enterpriseFileBase string
+	portable         bool
+	manifest         backup_util.Manifest
+	portableFileBase string
 
 	BackupFiles []string
 }
@@ -107,8 +108,8 @@ func (cmd *Command) Run(args ...string) error {
 		}
 
 		cmd.StdoutLogger.Println("No database, retention policy or shard ID given. Full meta store backed up.")
-		if cmd.enterprise {
-			cmd.StdoutLogger.Println("Backing up all databases in enterprise format")
+		if cmd.portable {
+			cmd.StdoutLogger.Println("Backing up all databases in portable format")
 			if err := cmd.backupDatabase(); err != nil {
 				cmd.StderrLogger.Printf("backup failed: %v", err)
 				return err
@@ -118,8 +119,8 @@ func (cmd *Command) Run(args ...string) error {
 
 	}
 
-	if cmd.enterprise {
-		filename := cmd.enterpriseFileBase + ".manifest"
+	if cmd.portable {
+		filename := cmd.portableFileBase + ".manifest"
 		if err := cmd.manifest.Save(filepath.Join(cmd.path, filename)); err != nil {
 			cmd.StderrLogger.Printf("manifest save failed: %v", err)
 			return err
@@ -145,7 +146,9 @@ func (cmd *Command) parseFlags(args []string) (err error) {
 
 	fs.StringVar(&cmd.host, "host", "localhost:8088", "")
 	fs.StringVar(&cmd.database, "database", "", "")
+	fs.StringVar(&cmd.database, "db", "", "")
 	fs.StringVar(&cmd.retentionPolicy, "retention", "", "")
+	fs.StringVar(&cmd.retentionPolicy, "rp", "", "")
 	fs.StringVar(&cmd.shardID, "shard", "", "")
 	var sinceArg string
 	var startArg string
@@ -153,7 +156,7 @@ func (cmd *Command) parseFlags(args []string) (err error) {
 	fs.StringVar(&sinceArg, "since", "", "")
 	fs.StringVar(&startArg, "start", "", "")
 	fs.StringVar(&endArg, "end", "", "")
-	fs.BoolVar(&cmd.enterprise, "enterprise", false, "")
+	fs.BoolVar(&cmd.portable, "portable", false, "")
 
 	fs.SetOutput(cmd.Stderr)
 	fs.Usage = cmd.printUsage
@@ -165,11 +168,11 @@ func (cmd *Command) parseFlags(args []string) (err error) {
 
 	cmd.BackupFiles = []string{}
 
-	// for enterprise saving, if needed
-	cmd.enterpriseFileBase = time.Now().UTC().Format(backup_util.EnterpriseFileNamePattern)
+	// for portable saving, if needed
+	cmd.portableFileBase = time.Now().UTC().Format(backup_util.PortableFileNamePattern)
 
-	// if startArg and endArg are unspecified, then assume we are doing a full backup of the DB
-	cmd.isBackup = startArg == "" && endArg == ""
+	// if startArg and endArg are unspecified, or if we are using -since then assume we are doing a full backup of the shards
+	cmd.isBackup = (startArg == "" && endArg == "") || sinceArg != ""
 
 	if sinceArg != "" {
 		cmd.since, err = time.Parse(time.RFC3339, sinceArg)
@@ -229,9 +232,13 @@ func (cmd *Command) backupShard(db, rp, sid string) error {
 		return err
 	}
 
-	cmd.StdoutLogger.Printf("backing up db=%v rp=%v shard=%v to %s since %s",
-		db, rp, sid, shardArchivePath, cmd.since)
-
+	if cmd.isBackup {
+		cmd.StdoutLogger.Printf("backing up db=%v rp=%v shard=%v to %s since %s",
+			db, rp, sid, shardArchivePath, cmd.since.Format(time.RFC3339))
+	} else {
+		cmd.StdoutLogger.Printf("backing up db=%v rp=%v shard=%v to %s with boundaries start=%s, end=%s",
+			db, rp, sid, shardArchivePath, cmd.start.Format(time.RFC3339), cmd.end.Format(time.RFC3339))
+	}
 	req := &snapshotter.Request{
 		Type:                  reqType,
 		BackupDatabase:        db,
@@ -244,7 +251,7 @@ func (cmd *Command) backupShard(db, rp, sid string) error {
 
 	// TODO: verify shard backup data
 	err = cmd.downloadAndVerify(req, shardArchivePath, nil)
-	if !cmd.enterprise {
+	if !cmd.portable {
 		cmd.BackupFiles = append(cmd.BackupFiles, shardArchivePath)
 	}
 
@@ -252,14 +259,20 @@ func (cmd *Command) backupShard(db, rp, sid string) error {
 		return err
 	}
 
-	if cmd.enterprise {
+	if cmd.portable {
 		f, err := os.Open(shardArchivePath)
+		if err != nil {
+			return err
+		}
 		defer f.Close()
 		defer os.Remove(shardArchivePath)
 
-		filePrefix := cmd.enterpriseFileBase + ".s" + sid
+		filePrefix := cmd.portableFileBase + ".s" + sid
 		filename := filePrefix + ".tar.gz"
 		out, err := os.OpenFile(filepath.Join(cmd.path, filename), os.O_CREATE|os.O_RDWR, 0600)
+		if err != nil {
+			return err
+		}
 
 		zw := gzip.NewWriter(out)
 		zw.Name = filePrefix + ".tar"
@@ -333,7 +346,12 @@ func (cmd *Command) backupDatabase() error {
 // backupRetentionPolicy will request the retention policy information from the server and then backup
 // every shard in the retention policy. Each shard will be written to a separate file.
 func (cmd *Command) backupRetentionPolicy() error {
-	cmd.StdoutLogger.Printf("backing up rp=%s since %s", cmd.retentionPolicy, cmd.since)
+	if cmd.isBackup {
+		cmd.StdoutLogger.Printf("backing up rp=%s since %s", cmd.retentionPolicy, cmd.since.Format(time.RFC3339))
+	} else {
+		cmd.StdoutLogger.Printf("backing up rp=%s with boundaries start=%s, end=%s",
+			cmd.retentionPolicy, cmd.start.Format(time.RFC3339), cmd.end.Format(time.RFC3339))
+	}
 
 	req := &snapshotter.Request{
 		Type:                  snapshotter.RequestRetentionPolicyInfo,
@@ -413,18 +431,18 @@ func (cmd *Command) backupMetastore() error {
 		return err
 	}
 
-	if !cmd.enterprise {
+	if !cmd.portable {
 		cmd.BackupFiles = append(cmd.BackupFiles, metastoreArchivePath)
 	}
 
-	if cmd.enterprise {
+	if cmd.portable {
 		metaBytes, err := backup_util.GetMetaBytes(metastoreArchivePath)
 		defer os.Remove(metastoreArchivePath)
 		if err != nil {
 			return err
 		}
-		filename := cmd.enterpriseFileBase + ".meta"
-		ep := backup_util.EnterprisePacker{Data: metaBytes, MaxNodeID: 0}
+		filename := cmd.portableFileBase + ".meta"
+		ep := backup_util.PortablePacker{Data: metaBytes, MaxNodeID: 0}
 		protoBytes, err := ep.MarshalBinary()
 		if err != nil {
 			return err
@@ -499,6 +517,7 @@ func (cmd *Command) download(req *snapshotter.Request, path string) error {
 	}
 	defer f.Close()
 
+	min := 2 * time.Second
 	for i := 0; i < 10; i++ {
 		if err = func() error {
 			// Connect to snapshotter service.
@@ -526,8 +545,12 @@ func (cmd *Command) download(req *snapshotter.Request, path string) error {
 		}(); err == nil {
 			break
 		} else if err != nil {
-			cmd.StderrLogger.Printf("Download shard %v failed %s.  Retrying (%d)...\n", req.ShardID, err, i)
-			time.Sleep(time.Second)
+			backoff := time.Duration(math.Pow(3.8, float64(i))) * time.Millisecond
+			if backoff < min {
+				backoff = min
+			}
+			cmd.StderrLogger.Printf("Download shard %v failed %s.  Waiting %v and retrying (%d)...\n", req.ShardID, err, backoff, i)
+			time.Sleep(backoff)
 		}
 	}
 
@@ -564,28 +587,34 @@ func (cmd *Command) requestInfo(request *snapshotter.Request) (*snapshotter.Resp
 
 // printUsage prints the usage message to STDERR.
 func (cmd *Command) printUsage() {
-	fmt.Fprintf(cmd.Stdout, `Downloads a file level age-based snapshot of a data node and saves it to disk.
+	fmt.Fprintf(cmd.Stdout, `
+Creates a backup copy of specified InfluxDB OSS database(s) and saves the files in an Enterprise-compatible
+format to PATH (directory where backups are saved). 
 
-Usage: influxd backup [flags] PATH
+Usage: influxd backup [options] PATH
 
+    -portable
+            Required to generate backup files in a portable format that can be restored to InfluxDB OSS or InfluxDB 
+            Enterprise. Use unless the legacy backup is required.
     -host <host:port>
-            The host to connect to snapshot. Defaults to 127.0.0.1:8088.
-    -database <name>
-            The database to backup.
-    -retention <name>
-            Optional. The retention policy to backup.
+            InfluxDB OSS host to back up from. Optional. Defaults to 127.0.0.1:8088.
+    -db <name>
+            InfluxDB OSS database name to back up. Optional. If not specified, all databases are backed up when 
+            using '-portable'.
+    -rp <name>
+            Retention policy to use for the backup. Optional. If not specified, all retention policies are used by 
+            default.
     -shard <id>
-            Optional. The shard id to backup. If specified, retention is required.
+            The identifier of the shard to back up. Optional. If specified, '-rp <rp_name>' is required.
+    -start <2015-12-24T08:12:23Z>
+            Include all points starting with specified timestamp (RFC3339 format). 
+            Not compatible with '-since <timestamp>'.
+    -end <2015-12-24T08:12:23Z>
+            Exclude all points after timestamp (RFC3339 format). 
+            Not compatible with '-since <timestamp>'.
     -since <2015-12-24T08:12:23Z>
-            Optional. Do an incremental backup since the passed in RFC3339
-            formatted time.  Not compatible with -start or -end.
-	-start <2015-12-24T08:12:23Z>
-            All points earlier than this time stamp will be excluded from the export. Not compatible with -since.
-	-end <2015-12-24T08:12:23Z>
-            All points later than this time stamp will be excluded from the export. Not compatible with -since.
-	-enterprise
-	        Generate backup files in the format used for influxdb enterprise.
-
+            Create an incremental backup of all points after the timestamp (RFC3339 format). Optional. 
+            Recommend using '-start <timestamp>' instead.
 `)
 
 }

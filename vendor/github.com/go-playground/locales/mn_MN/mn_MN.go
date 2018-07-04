@@ -55,12 +55,12 @@ func New() locales.Translator {
 		perMille:               "‰",
 		timeSeparator:          ":",
 		inifinity:              "∞",
-		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
+		currencies:             []string{"ADP", "AED", "AFA", "AFN", "ALK", "ALL", "AMD", "ANG", "AOA", "AOK", "AON", "AOR", "ARA", "ARL", "ARM", "ARP", "ARS", "ATS", "AUD", "AWG", "AZM", "AZN", "BAD", "BAM", "BAN", "BBD", "BDT", "BEC", "BEF", "BEL", "BGL", "BGM", "BGN", "BGO", "BHD", "BIF", "BMD", "BND", "BOB", "BOL", "BOP", "BOV", "BRB", "BRC", "BRE", "BRL", "BRN", "BRR", "BRZ", "BSD", "BTN", "BUK", "BWP", "BYB", "BYN", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLE", "CLF", "CLP", "CNH", "CNX", "CNY", "COP", "COU", "CRC", "CSD", "CSK", "CUC", "CUP", "CVE", "CYP", "CZK", "DDM", "DEM", "DJF", "DKK", "DOP", "DZD", "ECS", "ECV", "EEK", "EGP", "ERN", "ESA", "ESB", "ESP", "ETB", "EUR", "FIM", "FJD", "FKP", "FRF", "GBP", "GEK", "GEL", "GHC", "GHS", "GIP", "GMD", "GNF", "GNS", "GQE", "GRD", "GTQ", "GWE", "GWP", "GYD", "HKD", "HNL", "HRD", "HRK", "HTG", "HUF", "IDR", "IEP", "ILP", "ILR", "ILS", "INR", "IQD", "IRR", "ISJ", "ISK", "ITL", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRH", "KRO", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LTT", "LUC", "LUF", "LUL", "LVL", "LVR", "LYD", "MAD", "MAF", "MCF", "MDC", "MDL", "MGA", "MGF", "MKD", "MKN", "MLF", "MMK", "MNT", "MOP", "MRO", "MTL", "MTP", "MUR", "MVP", "MVR", "MWK", "MXN", "MXP", "MXV", "MYR", "MZE", "MZM", "MZN", "NAD", "NGN", "NIC", "NIO", "NLG", "NOK", "NPR", "NZD", "OMR", "PAB", "PEI", "PEN", "PES", "PGK", "PHP", "PKR", "PLN", "PLZ", "PTE", "PYG", "QAR", "RHD", "ROL", "RON", "RSD", "RUB", "RUR", "RWF", "SAR", "SBD", "SCR", "SDD", "SDG", "SDP", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SRG", "SSP", "STD", "STN", "SUR", "SVC", "SYP", "SZL", "THB", "TJR", "TJS", "TMM", "TMT", "TND", "TOP", "TPE", "TRL", "TRY", "TTD", "TWD", "TZS", "UAH", "UAK", "UGS", "UGX", "USD", "USN", "USS", "UYI", "UYP", "UYU", "UZS", "VEB", "VEF", "VND", "VNN", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XEU", "XFO", "XFU", "XOF", "XPD", "XPF", "XPT", "XRE", "XSU", "XTS", "XUA", "XXX", "YDD", "YER", "YUD", "YUM", "YUN", "YUR", "ZAL", "ZAR", "ZMK", "ZMW", "ZRN", "ZRZ", "ZWD", "ZWL", "ZWR"},
 		currencyPositivePrefix: " ",
 		currencyNegativePrefix: " ",
 		monthsAbbreviated:      []string{"", "1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар", "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар"},
-		monthsNarrow:           []string{"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-		monthsWide:             []string{"", "Нэгдүгээр сар", "Хоёрдугаар сар", "Гуравдугаар сар", "Дөрөвдүгээр сар", "Тавдугаар сар", "Зургадугаар сар", "Долдугаар сар", "Наймдугаар сар", "Есдүгээр сар", "Аравдугаар сар", "Арван нэгдүгээр сар", "Арван хоёрдугаар сар"},
+		monthsNarrow:           []string{"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"},
+		monthsWide:             []string{"", "Нэгдүгээр сар", "Хоёрдугаар сар", "Гуравдугаар сар", "Дөрөвдүгээр сар", "Тавдугаар сар", "Зургаадугаар сар", "Долдугаар сар", "Наймдугаар сар", "Есдүгээр сар", "Аравдугаар сар", "Арван нэгдүгээр сар", "Арван хоёрдугаар сар"},
 		daysAbbreviated:        []string{"Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"},
 		daysNarrow:             []string{"Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"},
 		daysShort:              []string{"Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"},
@@ -68,10 +68,10 @@ func New() locales.Translator {
 		periodsAbbreviated:     []string{"ҮӨ", "ҮХ"},
 		periodsNarrow:          []string{"үө", "үх"},
 		periodsWide:            []string{"ү.ө", "ү.х"},
-		erasAbbreviated:        []string{"м.э.ө", "м.э."},
+		erasAbbreviated:        []string{"МЭӨ", "МЭ"},
 		erasNarrow:             []string{"МЭӨ", "МЭ"},
 		erasWide:               []string{"манай эриний өмнөх", "манай эриний"},
-		timezones:              map[string]string{"HADT": "Хавай-Алеутын зуны цаг", "AST": "Атлантын стандарт цаг", "HNOG": "Баруун Гринландын стандарт цаг", "HNT": "Нью-Фаундлендын стандарт цаг", "CLT": "Чилийн стандарт цаг", "CLST": "Чилийн зуны цаг", "HAST": "Хавай-Алеутын стандарт цаг", "NZST": "Шинэ Зеландын стандарт цаг", "AKST": "Аляскийн стандарт цаг", "WEZ": "Баруун Европын стандарт цаг", "HEPM": "Сент-Пьер ба Микелоны зуны цаг", "UYST": "Уругвайн зуны цаг", "AEST": "Австралийн зүүн эргийн стандарт цаг", "HKST": "Хонг Конгийн зуны цаг", "MESZ": "Төв Европын зуны цаг", "HNNOMX": "Баруун хойд Мексикийн стандарт цаг", "IST": "Энэтхэгийн цаг", "UYT": "Уругвайн стандарт цаг", "AKDT": "Аляскийн зуны цаг", "CHADT": "Чатемын зуны цаг", "CDT": "Төв зуны цаг", "MST": "MST", "VET": "Венесуэлийн цаг", "AEDT": "Австралийн зүүн эргийн зуны цаг", "HKT": "Хонг Конгийн стандарт цаг", "EST": "Зүүн эргийн стандарт цаг", "LHDT": "Лорд Хоугийн зуны цаг", "WART": "Баруун Аргентины стандарт цаг", "ART": "Аргентины стандарт цаг", "HEEG": "Зүүн Гринландын зуны цаг", "ECT": "Эквадорын цаг", "CAT": "Төв Африкийн цаг", "ACWDT": "Австралийн төв баруун эргийн зуны цаг", "JST": "Японы стандарт цаг", "COST": "Колумбын зуны цаг", "MDT": "MDT", "WIT": "Зүүн Индонезийн цаг", "PST": "Номхон далайн стандарт цаг", "HECU": "Кубын зуны цаг", "BT": "Бутаны цаг", "ACWST": "Австралийн төв баруун эргийн стандарт цаг", "EAT": "Зүүн Африкийн цаг", "WAT": "Баруун Африкийн стандарт цаг", "SGT": "Сингапурын цаг", "HNPMX": "Мексикийн номхон далайн стандарт цаг", "AWST": "Австралийн баруун эргийн стандарт цаг", "ARST": "Аргентины зуны цаг", "HENOMX": "Баруун хойд Мексикийн зуны цаг", "LHST": "Лорд Хоугийн стандарт цаг", "WESZ": "Баруун Европын зуны цаг", "ChST": "Чаморрогийн цаг", "PDT": "Номхон далайн зуны цаг", "TMST": "Туркменистаны зуны цаг", "SAST": "Өмнөд Африкийн стандарт цаг", "ACDT": "Төв Австралийн зуны цаг", "GMT": "Гринвичийн үндсэн цаг", "JDT": "Японы зуны цаг", "OEZ": "Зүүн Европын стандарт цаг", "MYT": "Малайзын цаг", "MEZ": "Төв Европын стандарт цаг", "OESZ": "Зүүн Европын зуны цаг", "ADT": "Атлантын зуны цаг", "COT": "Колумбын стандарт цаг", "GYT": "Гуяанагийн цаг", "CST": "Төв стандарт цаг", "SRT": "Суринамын цаг", "WITA": "Төв Индонезийн цаг", "HEOG": "Баруун Гринландын зуны цаг", "WAST": "Баруун Африкийн зуны цаг", "GFT": "Францын Гияанагийн цаг", "HNPM": "Сент-Пьерре ба Микелоны стандарт цаг", "BOT": "Боливийн цаг", "AWDT": "Австралийн баруун эргийн зуны цаг", "NZDT": "Шинэ Зеландын зуны цаг", "TMT": "Туркменистаны стандарт цаг", "HNEG": "Зүүн Гринландын стандарт цаг", "ACST": "Төв Австралийн стандарт цаг", "∅∅∅": "Амазоны зуны цаг", "HEPMX": "Мексикийн номхон далайн зуны цаг", "HNCU": "Кубын стандарт цаг", "WARST": "Баруун Аргентины зуны цаг", "HAT": "Нью-Фаундлендын зуны цаг", "EDT": "Зүүн эргийн зуны цаг", "WIB": "Баруун Индонезийн цаг", "CHAST": "Чатемын стандарт цаг"},
+		timezones:              map[string]string{"CHADT": "Чатемын зуны цаг", "MEZ": "Төв Европын стандарт цаг", "LHDT": "Лорд Хоугийн зуны цаг", "HECU": "Кубын зуны цаг", "HEPM": "Сен-Пьер ба Микелоны зуны цаг", "TMT": "Туркменистаны стандарт цаг", "TMST": "Туркменистаны зуны цаг", "HAST": "Хавай-Алеутын стандарт цаг", "WART": "Баруун Аргентины стандарт цаг", "∅∅∅": "Амазоны зуны цаг", "SAST": "Өмнөд Африкийн стандарт цаг", "WEZ": "Баруун Европын стандарт цаг", "BT": "Бутаны цаг", "COST": "Колумбын зуны цаг", "UYT": "Уругвайн стандарт цаг", "ACWST": "Австралийн төв баруун эргийн стандарт цаг", "AEDT": "Австралийн зүүн эргийн зуны цаг", "WESZ": "Баруун Европын зуны цаг", "BOT": "Боливийн цаг", "HNNOMX": "Баруун хойд Мексикийн стандарт цаг", "CLT": "Чилийн стандарт цаг", "PDT": "Номхон далайн зуны цаг", "ACDT": "Төв Австралийн зуны цаг", "HNPM": "Сен-Пьер ба Микелоны стандарт цаг", "COT": "Колумбын стандарт цаг", "CHAST": "Чатемын стандарт цаг", "AWST": "Австралийн баруун эргийн стандарт цаг", "PST": "Номхон далайн стандарт цаг", "AEST": "Австралийн зүүн эргийн стандарт цаг", "JST": "Японы стандарт цаг", "AKDT": "Аляскийн зуны цаг", "MDT": "MDT", "OEZ": "Зүүн Европын стандарт цаг", "GYT": "Гайанагийн цаг", "ChST": "Чаморрогийн цаг", "ACST": "Төв Австралийн стандарт цаг", "HENOMX": "Баруун хойд Мексикийн зуны цаг", "ARST": "Аргентины зуны цаг", "NZDT": "Шинэ Зеландын зуны цаг", "EDT": "Зүүн эргийн зуны цаг", "WAST": "Баруун Африкийн зуны цаг", "SGT": "Сингапурын цаг", "HNEG": "Зүүн Гринландын стандарт цаг", "HNOG": "Баруун Гринландын стандарт цаг", "MST": "MST", "WIT": "Зүүн Индонезийн цаг", "ART": "Аргентины стандарт цаг", "AST": "Атлантын стандарт цаг", "MESZ": "Төв Европын зуны цаг", "CLST": "Чилийн зуны цаг", "WAT": "Баруун Африкийн стандарт цаг", "GFT": "Францын Гвианагийн цаг", "WARST": "Баруун Аргентины зуны цаг", "HNCU": "Кубын стандарт цаг", "CST": "Төв стандарт цаг", "NZST": "Шинэ Зеландын стандарт цаг", "AKST": "Аляскийн стандарт цаг", "HAT": "Нью-Фаундлендын зуны цаг", "VET": "Венесуэлийн цаг", "SRT": "Суринамын цаг", "EAT": "Зүүн Африкийн цаг", "HEOG": "Баруун Гринландын зуны цаг", "HKT": "Хонг Конгийн стандарт цаг", "IST": "Энэтхэгийн цаг", "CDT": "Төв зуны цаг", "HEPMX": "Мексик-Номхон далайн зуны цаг", "MYT": "Малайзын цаг", "JDT": "Японы зуны цаг", "HNT": "Нью-Фаундлендын стандарт цаг", "WITA": "Төв Индонезийн цаг", "HNPMX": "Мексик-Номхон далайн стандарт цаг", "WIB": "Баруун Индонезийн цаг", "ECT": "Эквадорын цаг", "EST": "Зүүн эргийн стандарт цаг", "HEEG": "Зүүн Гринландын зуны цаг", "HKST": "Хонг Конгийн зуны цаг", "HADT": "Хавай-Алеутын зуны цаг", "UYST": "Уругвайн зуны цаг", "AWDT": "Австралийн баруун эргийн зуны цаг", "ADT": "Атлантын зуны цаг", "LHST": "Лорд Хоугийн стандарт цаг", "CAT": "Төв Африкийн цаг", "OESZ": "Зүүн Европын зуны цаг", "GMT": "Гринвичийн цаг", "ACWDT": "Австралийн төв баруун эргийн зуны цаг"},
 	}
 }
 
@@ -431,7 +431,7 @@ func (mn *mn_MN) FmtDateShort(t time.Time) string {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
-	b = append(b, []byte{0x2d}...)
+	b = append(b, []byte{0x2e}...)
 
 	if t.Month() < 10 {
 		b = append(b, '0')
@@ -439,7 +439,7 @@ func (mn *mn_MN) FmtDateShort(t time.Time) string {
 
 	b = strconv.AppendInt(b, int64(t.Month()), 10)
 
-	b = append(b, []byte{0x2d}...)
+	b = append(b, []byte{0x2e}...)
 
 	if t.Day() < 10 {
 		b = append(b, '0')
@@ -461,9 +461,20 @@ func (mn *mn_MN) FmtDateMedium(t time.Time) string {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
-	b = append(b, []byte{0x20}...)
-	b = append(b, mn.monthsAbbreviated[t.Month()]...)
-	b = append(b, []byte{0x20}...)
+	b = append(b, []byte{0x2e}...)
+
+	if t.Month() < 10 {
+		b = append(b, '0')
+	}
+
+	b = strconv.AppendInt(b, int64(t.Month()), 10)
+
+	b = append(b, []byte{0x2e}...)
+
+	if t.Day() < 10 {
+		b = append(b, '0')
+	}
+
 	b = strconv.AppendInt(b, int64(t.Day()), 10)
 
 	return string(b)
@@ -480,13 +491,12 @@ func (mn *mn_MN) FmtDateLong(t time.Time) string {
 		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
-	b = append(b, []byte{0xd0, 0xbe, 0xd0, 0xbd, 0xd1, 0x8b}...)
+	b = append(b, []byte{0x20, 0xd0, 0xbe, 0xd0, 0xbd, 0xd1, 0x8b}...)
 	b = append(b, []byte{0x20}...)
-	b = append(b, mn.monthsWide[t.Month()]...)
-	b = append(b, []byte{0xd1, 0x81, 0xd0, 0xb0, 0xd1, 0x80, 0xd1, 0x8b, 0xd0, 0xbd}...)
+	b = append(b, mn.monthsAbbreviated[t.Month()]...)
+	b = append(b, []byte{0xd1, 0x8b, 0xd0, 0xbd}...)
 	b = append(b, []byte{0x20}...)
 	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0xd3, 0xa9, 0xd0, 0xb4, 0xd3, 0xa9, 0xd1, 0x80}...)
 
 	return string(b)
 }
@@ -496,9 +506,6 @@ func (mn *mn_MN) FmtDateFull(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
-	b = append(b, mn.daysWide[t.Weekday()]...)
-	b = append(b, []byte{0x2c, 0x20}...)
-
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
@@ -507,16 +514,14 @@ func (mn *mn_MN) FmtDateFull(t time.Time) string {
 
 	b = append(b, []byte{0x20, 0xd0, 0xbe, 0xd0, 0xbd, 0xd1, 0x8b}...)
 	b = append(b, []byte{0x20}...)
-
-	if t.Month() < 10 {
-		b = append(b, '0')
-	}
-
-	b = strconv.AppendInt(b, int64(t.Month()), 10)
-
-	b = append(b, []byte{0x20, 0xd1, 0x81, 0xd0, 0xb0, 0xd1, 0x80, 0xd1, 0x8b, 0xd0, 0xbd}...)
+	b = append(b, mn.monthsAbbreviated[t.Month()]...)
+	b = append(b, []byte{0xd1, 0x8b, 0xd0, 0xbd}...)
 	b = append(b, []byte{0x20}...)
 	b = strconv.AppendInt(b, int64(t.Day()), 10)
+	b = append(b, []byte{0x2e, 0x20}...)
+	b = append(b, mn.daysWide[t.Weekday()]...)
+	b = append(b, []byte{0x20, 0xd0, 0xb3, 0xd0, 0xb0, 0xd1, 0x80, 0xd0, 0xb0, 0xd0, 0xb3}...)
+	b = append(b, []byte{0x2e}...)
 
 	return string(b)
 }
@@ -594,10 +599,12 @@ func (mn *mn_MN) FmtTimeLong(t time.Time) string {
 	}
 
 	b = strconv.AppendInt(b, int64(t.Second()), 10)
-	b = append(b, []byte{0x20}...)
+	b = append(b, []byte{0x20, 0x28}...)
 
 	tz, _ := t.Zone()
 	b = append(b, tz...)
+
+	b = append(b, []byte{0x29}...)
 
 	return string(b)
 }
@@ -626,7 +633,7 @@ func (mn *mn_MN) FmtTimeFull(t time.Time) string {
 	}
 
 	b = strconv.AppendInt(b, int64(t.Second()), 10)
-	b = append(b, []byte{0x20}...)
+	b = append(b, []byte{0x20, 0x28}...)
 
 	tz, _ := t.Zone()
 
@@ -635,6 +642,8 @@ func (mn *mn_MN) FmtTimeFull(t time.Time) string {
 	} else {
 		b = append(b, tz...)
 	}
+
+	b = append(b, []byte{0x29}...)
 
 	return string(b)
 }
