@@ -777,6 +777,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("Should not have any unready or crashing pods right after deployment", func() {
+			if eng.HasWindowsAgents() {
+				By("Checking ready status of each pod in kube-system")
+				pods, err := pod.GetAll("kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(pods.Pods)).ToNot(BeZero())
+				for _, currentPod := range pods.Pods {
+					log.Printf("Checking %s", currentPod.Metadata.Name)
+					Expect(currentPod.Status.ContainerStatuses[0].Ready).To(BeTrue())
+					Expect(currentPod.Status.ContainerStatuses[0].RestartCount).To(BeNumerically("<", 3))
+				}
+			}
+		})
+
 		// Windows Bug 16598869
 		/*
 			It("should be able to reach hostport in an iis webserver", func() {
