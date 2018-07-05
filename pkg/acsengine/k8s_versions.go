@@ -25,7 +25,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.3.0",
-		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.11",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
