@@ -66,9 +66,18 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should have functional DNS", func() {
 			if !eng.HasWindowsAgents() {
 				if !eng.HasNetworkPolicy("calico") {
-					pod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
-					Expect(err).NotTo(HaveOccurred())
-					running, err := pod.WaitOnReady(5*time.Second, 2*time.Minute)
+					var err error
+					var p *pod.Pod
+					p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+					if cfg.SoakClusterName == "" {
+						Expect(err).NotTo(HaveOccurred())
+					} else {
+						if err != nil {
+							p, err = pod.Get("dns-liveness", "default")
+							Expect(err).NotTo(HaveOccurred())
+						}
+					}
+					running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(running).To(Equal(true))
 				}
@@ -656,9 +665,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				restarts := pod.Status.ContainerStatuses[0].RestartCount
-				err = pod.Delete()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(restarts).To(Equal(0))
+				if cfg.SoakClusterName == "" {
+					err = pod.Delete()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(restarts).To(Equal(0))
+				} else {
+					log.Printf("%d DNS livenessProbe restarts since this cluster was created...\n", restarts)
+				}
 			}
 		})
 	})
