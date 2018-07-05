@@ -45,24 +45,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newUpgradeCmd())
 	rootCmd.AddCommand(newScaleCmd())
 	rootCmd.AddCommand(newDcosUpgradeCmd())
-
-	var completionCmd = &cobra.Command{
-		Use:   "completion",
-		Short: "Generates bash completion scripts",
-		Long: `To load completion run
-
-	source <(acs-engine completion)
-
-	To configure your bash shell to load completions for each session, add this to your bashrc
-
-	# ~/.bashrc or ~/.profile
-	source <(acs-engine completion)
-	`,
-		Run: func(cmd *cobra.Command, args []string) {
-			rootCmd.GenBashCompletion(os.Stdout)
-		},
-	}
-	rootCmd.AddCommand(completionCmd)
+	rootCmd.AddCommand(getCompletionCmd(rootCmd))
 
 	return rootCmd
 }
@@ -143,4 +126,24 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	}
 	client.AddAcceptLanguages([]string{authArgs.language})
 	return client, nil
+}
+
+func getCompletionCmd(root *cobra.Command) *cobra.Command {
+	var completionCmd = &cobra.Command{
+		Use:   "completion",
+		Short: "Generates bash completion scripts",
+		Long: `To load completion run
+
+	source <(acs-engine completion)
+
+	To configure your bash shell to load completions for each session, add this to your bashrc
+
+	# ~/.bashrc or ~/.profile
+	source <(acs-engine completion)
+	`,
+		Run: func(cmd *cobra.Command, args []string) {
+			root.GenBashCompletion(os.Stdout)
+		},
+	}
+	return completionCmd
 }

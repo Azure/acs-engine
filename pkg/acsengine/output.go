@@ -114,6 +114,9 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 			return e
 		}
 		for i := 0; i < properties.MasterProfile.Count; i++ {
+			if len(properties.CertificateProfile.EtcdPeerPrivateKeys) <= i || len(properties.CertificateProfile.EtcdPeerCertificates) <= i {
+				return fmt.Errorf("missing etcd peer certificate/key pair")
+			}
 			k := "etcdpeer" + strconv.Itoa(i) + ".key"
 			if e := f.SaveFileString(artifactsDir, k, properties.CertificateProfile.EtcdPeerPrivateKeys[i]); e != nil {
 				return e
