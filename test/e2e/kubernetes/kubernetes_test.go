@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -163,30 +162,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(ready).To(Equal(true))
 			}
-		})
-
-		It("should be running the expected version", func() {
-			hasWindows := eng.HasWindowsAgents()
-			version, err := node.Version()
-			Expect(err).NotTo(HaveOccurred())
-
-			var expectedVersion string
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||
-				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
-				expectedVersion = common.RationalizeReleaseAndVersion(
-					common.Kubernetes,
-					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
-					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
-					hasWindows)
-			} else {
-				expectedVersion = common.RationalizeReleaseAndVersion(
-					common.Kubernetes,
-					eng.Config.OrchestratorRelease,
-					eng.Config.OrchestratorVersion,
-					hasWindows)
-			}
-			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
-			Expect(version).To(Equal("v" + expectedVersionRationalized))
 		})
 
 		It("should have kube-dns running", func() {
