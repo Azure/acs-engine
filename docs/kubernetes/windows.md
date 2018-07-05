@@ -302,6 +302,10 @@ TODO
 
 Windows support is still in active development with many changes each week. Read on for more info on known per-version issues and troubleshooting if you run into problems.
 
+### Finding logs
+
+To connect to a Windows node using Remote Desktop and get logs, please read over this topic in the main [troubleshooting](troubleshooting.md#how-to-debug-cse-errors-windows) page first.
+
 ### Checking versions
 
 Please be sure to include this info with any Windows bug reports.
@@ -312,12 +316,6 @@ Kubernetes
 `kubectl describe node <windows node>`
 -	“kernel version”
 -	Also note the IP Address for the next step, but you don't need to share it
-
-Windows config
-Connect to the Windows node with remote desktop. This is easiest forwarding a port through SSH from your Kubernetes management endpoint.
-
-1.	`ssh -L 5500:<internal ip>:3389 user@masterFQDN`
-2.	Once connected, run `mstsc.exe /v:localhost:5500` to connect. Log in with the username & password you set for the Windows agents.
 
 The Azure CNI plugin version and configuration is stored in `C:\k\azurecni\netconf\10-azure.conflist`. Get
 -	mode

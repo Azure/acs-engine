@@ -17,7 +17,7 @@ CSE stands for CustomScriptExtension, and is just a way of expressing: "a script
 
 To summarize, the way that acs-engine implements Kubernetes on Azure is a collection of (1) Azure VM configuration + (2) shell script execution. Both are implemented as a single operational unit, and when #2 fails, we consider the entire VM provisioning operation to be a failure; more importantly, if only one VM in the cluster deployment fails, we consider the entire cluster operation to be a failure.
 
-### How To Debug CSE errors
+### How To Debug CSE errors (Linux)
 
 In order to troubleshoot a cluster that failed in the above way(s), we need to grab the CSE logs from the host VM itself.
 
@@ -55,6 +55,51 @@ If after following the above you are still unable to troubleshoot your deploymen
 2. The output of `kubectl get nodes`
 
 3. The content of `/var/log/azure/cluster-provision.log` and `/var/log/cloud-init-output.log`
+
+
+### How To Debug CSE Errors (Windows)
+
+There are two symptoms where you may need to debug Custom Script Extension errors on Windows:
+
+- VMExtensionProvisioningError or VMExtensionProvisioningTimeout
+- `kubectl node` doesn't list the Windows node(s)
+
+To get more logs, you need to connect to the Windows nodes using Remote Desktop. Since the nodes are on a private IP range, you will need to use SSH local port forwarding from a master node.
+
+1. Get the IP of the Windows node with `az vm list` and `az vm show`
+
+    ```
+    $ az vm list --resource-group group1 -o table
+    Name                      ResourceGroup    Location
+    ------------------------  ---------------  ----------
+    29442k8s9000              group1           westus2
+    29442k8s9001              group1           westus2
+    k8s-linuxpool-29442807-0  group1           westus2
+    k8s-linuxpool-29442807-1  group1           westus2
+    k8s-master-29442807-0     group1           westus2
+
+    $ az vm show -g group1 -n 29442k8s9000 --show-details --query 'privateIps'
+    "10.240.0.4"
+    ```
+
+2. Forward a local port to the Windows port 3389, such as `ssh -L 5500:10.240.0.4:3389 <masternode>.<region>.cloudapp.azure.com`
+3. Run `mstsc.exe /v:localhost:5500`
+
+Once connected, check the following logs for errors:
+ 
+ - `c:\Azure\CustomDataSetupScript.log`
+
+
+## Windows kubelet & CNI errors
+
+If the node is not showing up in `kubectl get node` or fails to schedule pods, check for failures from the kubelet and CNI logs.
+
+Follow the same steps [above](#how-to-debug-cse-errors-windows) to connect to Remote Desktop to the node, then look for errors in these logs:
+
+ - `c:\k\kubelet.log`
+ - `c:\k\kubelet.err.log`
+ - `c:\k\azure-vnet*.log`
+
 
 
 # Misconfigured Service Principal
