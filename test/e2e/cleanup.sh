@@ -26,8 +26,6 @@ if [ -z "$EXPIRATION_IN_HOURS" ]; then
     EXPIRATION_IN_HOURS=2
 fi
 
-set -eu -o pipefail
-
 az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
 		--password "${SERVICE_PRINCIPAL_CLIENT_SECRET}" \
