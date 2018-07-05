@@ -1,0 +1,144 @@
+{
+    "apiVersion": "vlabs",
+    "properties": {
+      "orchestratorProfile": {
+        "orchestratorType": "Kubernetes",
+        "kubernetesConfig": {
+            "kubeletConfig": {
+                "--address": "0.0.0.0",
+                "--allow-privileged": "false",
+                "--read-only-port": "0",
+                "--streaming-connection-idle-timeout": "0",
+                "--protect-kernel-defaults": "false",
+                "--make-iptables-util-chains": "true",
+                "--anonymous-auth": "false",
+                "--authorization-mode": "Webhook",
+                "--azure-container-registry-config": "/etc/kubernetes/azure.json",
+                "--cadvisor-port": "0",
+                "--cgroups-per-qos": "true",
+                "--client-ca-file": "/etc/kubernetes/certs/ca.crt",
+                "--cloud-config": "/etc/kubernetes/azure.json",
+                "--cloud-provider": "azure",
+                "--cluster-dns": "10.0.0.10",
+                "--cluster-domain": "cluster.local",
+                "--enforce-node-allocatable": "pods",
+                "--event-qps": "0",
+                "--eviction-hard": "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%",
+                "--feature-gates": "",
+                "--image-gc-high-threshold": "85",
+                "--image-gc-low-threshold": "80",
+                "--image-pull-progress-deadline": "30m",
+                "--keep-terminated-pod-volumes": "false",
+                "--kubeconfig": "/var/lib/kubelet/kubeconfig",
+                "--max-pods": "30",
+                "--network-plugin": "cni",
+                "--node-status-update-frequency": "10s",
+                "--non-masquerade-cidr": "10.240.0.0/12",
+                "--pod-infra-container-image": "k8s-gcrio.azureedge.net/pause-amd64:3.1",
+                "--pod-manifest-path": "/etc/kubernetes/manifests"
+              },
+              "controllerManagerConfig": {
+                "--allocate-node-cidrs": "false",
+                "--cloud-config": "/etc/kubernetes/azure.json",
+                "--cloud-provider": "azure",
+                "--cluster-cidr": "10.240.0.0/12",
+                "--cluster-name": "francis-npm",
+                "--cluster-signing-cert-file": "/etc/kubernetes/certs/ca.crt",
+                "--cluster-signing-key-file": "/etc/kubernetes/certs/ca.key",
+                "--configure-cloud-routes": "false",
+                "--feature-gates": "",
+                "--kubeconfig": "/var/lib/kubelet/kubeconfig",
+                "--leader-elect": "true",
+                "--node-monitor-grace-period": "40s",
+                "--pod-eviction-timeout": "5m0s",
+                "--profiling": "false",
+                "--root-ca-file": "/etc/kubernetes/certs/ca.crt",
+                "--route-reconciliation-period": "10s",
+                "--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
+                "--terminated-pod-gc-threshold": "5000",
+                "--use-service-account-credentials": "true",
+                "--v": "2"
+              },
+              "cloudControllerManagerConfig": {
+                "--allocate-node-cidrs": "false",
+                "--cloud-config": "/etc/kubernetes/azure.json",
+                "--cloud-provider": "azure",
+                "--cluster-cidr": "10.240.0.0/12",
+                "--cluster-name": "francis-npm",
+                "--configure-cloud-routes": "false",
+                "--kubeconfig": "/var/lib/kubelet/kubeconfig",
+                "--leader-elect": "true",
+                "--route-reconciliation-period": "10s",
+                "--v": "2"
+              },
+              "apiServerConfig": {
+                "--admission-control": "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
+                "--advertise-address": "<kubernetesAPIServerIP>",
+                "--allow-privileged": "false",
+                "--anonymous-auth": "false",
+                "--audit-log-maxage": "30",
+                "--audit-log-maxbackup": "10",
+                "--audit-log-maxsize": "100",
+                "--audit-log-path": "/var/log/audit.log",
+                "--audit-policy-file": "/etc/kubernetes/manifests/audit-policy.yaml",
+                "--authorization-mode": "Node,RBAC",
+                "--bind-address": "0.0.0.0",
+                "--client-ca-file": "/etc/kubernetes/certs/ca.crt",
+                "--cloud-config": "/etc/kubernetes/azure.json",
+                "--cloud-provider": "azure",
+                "--etcd-cafile": "/etc/kubernetes/certs/ca.crt",
+                "--etcd-certfile": "/etc/kubernetes/certs/etcdclient.crt",
+                "--etcd-keyfile": "/etc/kubernetes/certs/etcdclient.key",
+                "--etcd-servers": "https://127.0.0.1:2379",
+                "--insecure-port": "8080",
+                "--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
+                "--kubelet-client-key": "/etc/kubernetes/certs/client.key",
+                "--profiling": "false",
+                "--repair-malformed-updates": "false",
+                "--secure-port": "443",
+                "--service-account-key-file": "/etc/kubernetes/certs/apiserver.key",
+                "--service-account-lookup": "true",
+                "--service-cluster-ip-range": "10.0.0.0/16",
+                "--storage-backend": "etcd3",
+                "--tls-cert-file": "/etc/kubernetes/certs/apiserver.crt",
+                "--tls-private-key-file": "/etc/kubernetes/certs/apiserver.key",
+                "--v": "4"
+              },
+              "schedulerConfig": {
+                "--kubeconfig": "/var/lib/kubelet/kubeconfig",
+                "--leader-elect": "true",
+                "--profiling": "false",
+                "--v": "2"
+              }
+        }
+      },
+      "masterProfile": {
+        "count": 1,
+        "dnsPrefix": "",
+        "vmSize": "Standard_D2_v2"
+      },
+      "agentPoolProfiles": [
+        {
+          "name": "agentpool1",
+          "count": 1,
+          "vmSize": "Standard_D2_v2",
+          "availabilityProfile": "AvailabilitySet"
+        }
+      ],
+      "linuxProfile": {
+        "adminUsername": "azureUser",
+        "ssh": {
+          "publicKeys": [
+            {
+              "keyData": ""
+            }
+          ]
+        }
+      },
+      "servicePrincipalProfile": {
+        "clientId": "",
+        "secret": ""
+      }
+    }
+  }
+  
