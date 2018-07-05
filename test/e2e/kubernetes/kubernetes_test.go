@@ -570,7 +570,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(len(loadTestPods)).To(Equal(numLoadTestPods))
 
 				By("Ensuring we have more than 1 apache-php pods due to hpa enforcement")
-				phpPods, err = phpApacheDeploy.WaitForReplicas(2, 5*time.Second, cfg.Timeout)
+				_, err = phpApacheDeploy.WaitForReplicas(2, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Cleaning up after ourselves")
