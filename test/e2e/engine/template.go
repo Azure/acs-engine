@@ -227,7 +227,7 @@ func (e *Engine) HasGPUNodes() bool {
 func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == name {
-			return *addon.Enabled, addon
+			return helpers.IsTrueBoolPointer(addon.Enabled), addon
 		}
 	}
 	return false, api.KubernetesAddon{}
