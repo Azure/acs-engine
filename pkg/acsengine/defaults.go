@@ -20,8 +20,8 @@ import (
 const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
-	// to https://acs-mirror.azureedge.net/cni/
-	AzureCniPluginVer = "v1.0.4"
+	// to https://acs-mirror.azureedge.net/cni
+	AzureCniPluginVer = "v1.0.7"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
@@ -572,7 +572,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
 		}
 		aN := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(a.OrchestratorProfile.IsAzureCNI()) {
+		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(api.DefaultAzureCNINetworkMonitoringAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[aN] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aN], DefaultAzureCNINetworkMonitorAddonsConfig)
 		}
 

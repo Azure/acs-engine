@@ -107,6 +107,8 @@ const (
 	DefaultNVIDIADevicePluginAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
 	DefaultContainerMonitoringAddonEnabled = false
+	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
+	DefaultAzureCNINetworkMonitoringAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
