@@ -296,6 +296,17 @@ func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
 }
 
+func convertV20180331AgentPoolOnlyCertificateProfile(vlabs *v20180331.CertificateProfile, api *CertificateProfile) {
+	api.CaCertificate = vlabs.CaCertificate
+	api.CaPrivateKey = vlabs.CaPrivateKey
+	api.APIServerCertificate = vlabs.APIServerCertificate
+	api.APIServerPrivateKey = vlabs.APIServerPrivateKey
+	api.ClientCertificate = vlabs.ClientCertificate
+	api.ClientPrivateKey = vlabs.ClientPrivateKey
+	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
+	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
+}
+
 func isAgentPoolOnlyClusterJSON(contents []byte) bool {
 	properties, propertiesPresent := propertiesAsMap(contents)
 	if !propertiesPresent {
@@ -360,6 +371,11 @@ func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Propert
 
 	if obj.AADProfile != nil {
 		properties.AADProfile = convertV20180331AgentPoolOnlyAADProfile(obj.AADProfile)
+	}
+
+	if obj.CertificateProfile != nil {
+		properties.CertificateProfile = &CertificateProfile{}
+		convertV20180331AgentPoolOnlyCertificateProfile(obj.CertificateProfile, properties.CertificateProfile)
 	}
 
 	return properties
