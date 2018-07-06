@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -178,4 +179,40 @@ func (d *Deployment) CreateDeploymentHPA(cpuPercent, min, max int) error {
 // Pods will return all pods related to a deployment
 func (d *Deployment) Pods() ([]pod.Pod, error) {
 	return pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
+}
+
+// WaitForReplicas waits for a minimum of n pod replicas
+func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]pod.Pod, error) {
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	var pods []pod.Pod
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
+			default:
+				pods, err := pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
+				if err != nil {
+					errCh <- err
+					return
+				}
+				if len(pods) >= n {
+					readyCh <- true
+				} else {
+					time.Sleep(sleep)
+				}
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return pods, err
+		case _ = <-readyCh:
+			return pods, nil
+		}
+	}
 }

@@ -553,15 +553,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(loadTestPods)).To(Equal(numLoadTestPods))
 
-				By("Waiting 3 minutes for load to take effect")
-				// Wait 3 minutes for autoscaler to respond to load
-				time.Sleep(3 * time.Minute)
-
 				By("Ensuring we have more than 1 apache-php pods due to hpa enforcement")
-				phpPods, err = phpApacheDeploy.Pods()
+				_, err = phpApacheDeploy.WaitForReplicas(2, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
-				// We should have > 1 pods after autoscale effects
-				Expect(len(phpPods) > 1).To(BeTrue())
 
 				By("Cleaning up after ourselves")
 				err = loadTestDeploy.Delete()
