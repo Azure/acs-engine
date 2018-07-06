@@ -486,6 +486,9 @@
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
      ,"apiVersionKeyVault": "2016-10-01",
-     "clusterKeyVaultName": "[take(concat(resourceGroup().location, '-' , uniqueString(concat(variables('masterFqdnPrefix'),'-',resourceGroup().location))), 20)]",
+     {{if not .HasStorageAccountDisks}}
+     "apiVersionStorage": "2015-06-15",
+     {{end}}
+     "clusterKeyVaultName": "[take(concat(variables('masterFqdnPrefix'), tolower(uniqueString(variables('masterFqdnPrefix')))), 20)]",
      "clusterKeyVaultSku" : "[parameters('clusterKeyVaultSku')]"
 {{end}}
