@@ -92,8 +92,8 @@ localmaster:
         config_base: /etc/origin/
         examples_content_version: "vSHORT_VER"
       master:
-        public_console_url: "https://{{ .ExternalMasterHostname }}:8443/console"
-        public_api_url: "https://{{ .ExternalMasterHostname }}:8443"
+        public_console_url: {{ print "https://" .ExternalMasterHostname ":8443/console" | quote }}
+        public_api_url: {{ print "https://" .ExternalMasterHostname ":8443" | quote }}
         etcd_urls: ["https://HOSTNAME:2379"] #FIXME: No longer needed as of openshift-ansible-3.9.22-1 but we're not on that version yet
       node:
         nodename: 'HOSTNAME'
