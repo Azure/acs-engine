@@ -28,6 +28,7 @@ ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
+ERR_APT_DIST_UPGRADE_TIMEOUT=100 # Timeout waiting for apt-get update to complete
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -153,10 +154,25 @@ function installEtcd() {
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
-function installDeps() {
+function updateApt() {
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
+}
+
+function upgradeOs() {
+    echo `date`,`hostname`, apt-get_dist-upgrade_begin>>/opt/m
+    apt_get_dist_upgrade 5 30 600 || exit $ERR_APT_DIST_UPGRADE_TIMEOUT
+    echo `date`,`hostname`, apt-get_dist-upgrade_end>>/opt/m
+
+    if [ -f /var/run/reboot-required ]; then
+        REBOOTREQUIRED=true
+    else
+        REBOOTREQUIRED=false
+    fi
+}
+
+function installDeps() {
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
@@ -165,12 +181,26 @@ function installDeps() {
     systemctlEnableAndStart rpc-statd
 }
 
-function installDocker() {
+function configureAptSources() {
+    # Docker
+    echo "Configuring APT for docker ..."
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
     echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
     printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+
+    # Add Clear Containers repository key
+    echo "Configuring APT for Clear Containers ..."
+    CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
+    CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+
+    # Add Clear Container repository
+    echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' | sudo tee /etc/apt/sources.list.d/cc-runtime.list
+}
+
+function installDocker() {
     apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
@@ -278,20 +308,9 @@ function configNetworkPlugin() {
 }
 
 function installClearContainersRuntime() {
-	# Add Clear Containers repository key
-	echo "Adding Clear Containers repository key..."
-    CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
-    CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-
-	# Add Clear Container repository
-	echo "Adding Clear Containers repository..."
-	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
 
 	# Install Clear Containers runtime
 	echo "Installing Clear Containers runtime..."
-    apt_get_update
     apt_get_install 20 30 120 cc-runtime
 
 	# Install the systemd service and socket files.
@@ -499,6 +518,9 @@ configAddons() {
 
 testOutboundConnection
 waitForCloudInit
+configureAptSources
+updateApt
+upgradeOs
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
