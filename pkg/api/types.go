@@ -368,6 +368,10 @@ type OpenShiftConfig struct {
 	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
 
 	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
+
+	PublicHostname         string
+	RoutingConfigSubdomain string
+	RoutingConfigFQDN      string
 }
 
 // MasterProfile represents the definition of the master cluster
