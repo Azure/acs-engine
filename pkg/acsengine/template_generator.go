@@ -1086,7 +1086,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"OpenShiftGetMasterSh": func() (string, error) {
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
-			t, err := template.New("master").Parse(string(tb))
+			t, err := template.New("master").Funcs(template.FuncMap{
+				"quote": strconv.Quote,
+				"shellQuote": func(s string) string {
+					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+				},
+			}).Parse(string(tb))
 			if err != nil {
 				return "", err
 			}
@@ -1109,7 +1114,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
 			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(nodeShAsset)
-			t, err := template.New("node").Parse(string(tb))
+			t, err := template.New("node").Funcs(template.FuncMap{
+				"quote": strconv.Quote,
+				"shellQuote": func(s string) string {
+					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+				},
+			}).Parse(string(tb))
 			if err != nil {
 				return "", err
 			}
@@ -1150,6 +1160,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsCustomVNET": func() bool {
 			return isCustomVNET(cs.Properties.AgentPoolProfiles)
+		},
+		"quote": strconv.Quote,
+		"shellQuote": func(s string) string {
+			return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
 		},
 	}
 }

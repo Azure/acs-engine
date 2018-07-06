@@ -80,7 +80,7 @@ mkdir -p /etc/origin/master
 
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
-( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
+( cd / && base64 -d <<< {{ .ConfigBundle | shellQuote }} | tar -xz)
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
@@ -102,7 +102,7 @@ set -x
 ###
 # retrieve the public ip via dns for the router public ip and sub it in for the routingConfig.subdomain
 ###
-routerLBHost="{{.RouterLBHostname}}"
+routerLBHost={{ .RouterLBHostname | shellQuote }}
 routerLBIP=$(dig +short $routerLBHost)
 
 # NOTE: The version of openshift-ansible for origin defaults the ansible var
@@ -172,7 +172,7 @@ metadata:
 provisioner: kubernetes.io/azure-disk
 parameters:
   skuName: Premium_LRS
-  location: {{ .Location }}
+  location: {{ .Location | quote }}
   kind: managed
 EOF
 

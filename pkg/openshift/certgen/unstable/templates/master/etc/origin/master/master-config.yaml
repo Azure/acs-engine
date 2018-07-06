@@ -60,13 +60,13 @@ controllers: '*'
 corsAllowedOrigins:
 - (?i)//127\.0\.0\.1(:|\z)
 - (?i)//localhost(:|\z)
-- (?i)//{{ QuoteMeta (index .Master.IPs 0).String }}(:|\z)
+- {{ print "(?i)//" (QuoteMeta (index .Master.IPs 0).String) "(:|\\z)" | quote }}
 - (?i)//kubernetes\.default(:|\z)
 - (?i)//kubernetes\.default\.svc\.cluster\.local(:|\z)
 - (?i)//kubernetes(:|\z)
-- (?i)//{{ QuoteMeta .ExternalMasterHostname }}(:|\z)
+- {{ print "(?i)//" (QuoteMeta .ExternalMasterHostname) "(:|\\z)" | quote }}
 - (?i)//openshift\.default(:|\z)
-- (?i)//{{ QuoteMeta .Master.Hostname }}(:|\z)
+- {{ print "(?i)//" (QuoteMeta .Master.Hostname) "(:|\\z)" | quote }}
 - (?i)//openshift\.default\.svc(:|\z)
 - (?i)//kubernetes\.default\.svc(:|\z)
 - (?i)//172\.30\.0\.1(:|\z)
@@ -80,7 +80,7 @@ etcdClientInfo:
   certFile: master.etcd-client.crt
   keyFile: master.etcd-client.key
   urls:
-  - https://{{ .Master.Hostname }}:2379
+  - {{ print "https://" .Master.Hostname ":2379" | quote }}
 etcdStorageConfig:
   kubernetesStoragePrefix: kubernetes.io
   kubernetesStorageVersion: v1
@@ -119,7 +119,7 @@ kubernetesMasterConfig:
     cloud-config:
     - "/etc/origin/cloudprovider/azure.conf"
   masterCount: 1
-  masterIP: {{ (index .Master.IPs 0).String }}
+  masterIP: {{ (index .Master.IPs 0).String | quote }}
   podEvictionTimeout: null
   proxyClientInfo:
     certFile: master.proxy-client.crt
@@ -142,7 +142,7 @@ masterClients:
     contentType: application/vnd.kubernetes.protobuf
     qps: 300
   openshiftLoopbackKubeConfig: openshift-master.kubeconfig
-masterPublicURL: https://{{ .ExternalMasterHostname }}:{{ .Master.Port }}
+masterPublicURL: {{ print "https://" .ExternalMasterHostname ":" .Master.Port | quote }}
 networkConfig:
   clusterNetworkCIDR: 10.128.0.0/14
   clusterNetworks:
@@ -154,7 +154,7 @@ networkConfig:
   networkPluginName: redhat/openshift-ovs-subnet
   serviceNetworkCIDR: 172.30.0.0/16
 oauthConfig:
-  assetPublicURL: https://{{ .ExternalMasterHostname }}:{{ .Master.Port }}/console/
+  assetPublicURL: {{ print "https://" .ExternalMasterHostname ":" .Master.Port "/console/" | quote }}
   grantConfig:
     method: auto
   identityProviders:
@@ -166,8 +166,8 @@ oauthConfig:
     provider:
       apiVersion: v1
       kind: OpenIDIdentityProvider
-      clientID: {{ .AzureConfig.AADClientID }}
-      clientSecret: {{ .AzureConfig.AADClientSecret }}
+      clientID: {{ .AzureConfig.AADClientID | quote }}
+      clientSecret: {{ .AzureConfig.AADClientSecret | quote }}
       claims:
         id:
         - sub
@@ -178,8 +178,8 @@ oauthConfig:
         email:
         - email
       urls:
-        authorize: https://login.microsoftonline.com/{{ .AzureConfig.TenantID }}/oauth2/authorize
-        token: https://login.microsoftonline.com/{{ .AzureConfig.TenantID }}/oauth2/token
+        authorize: {{ print "https://login.microsoftonline.com/" .AzureConfig.TenantID "/oauth2/authorize" | quote }}
+        token: {{ print "https://login.microsoftonline.com/" .AzureConfig.TenantID "/oauth2/token" | quote }}
 {{- end}}
   - name: Local password
     challenge: true
@@ -190,8 +190,8 @@ oauthConfig:
       file: /etc/origin/master/htpasswd
       kind: HTPasswdPasswordIdentityProvider
   masterCA: ca-bundle.crt
-  masterPublicURL: https://{{ .ExternalMasterHostname }}:{{ .Master.Port }}
-  masterURL: https://{{ .ExternalMasterHostname }}:{{ .Master.Port }}
+  masterPublicURL: {{ print "https://" .ExternalMasterHostname ":" .Master.Port | quote }}
+  masterURL: {{ print "https://" .ExternalMasterHostname ":" .Master.Port | quote }}
   sessionConfig:
     sessionMaxAgeSeconds: 3600
     sessionName: ssn
@@ -225,7 +225,7 @@ serviceAccountConfig:
   publicKeyFiles:
   - serviceaccounts.public.key
 servingInfo:
-  bindAddress: 0.0.0.0:{{ .Master.Port }}
+  bindAddress: {{ print "0.0.0.0:" .Master.Port | quote }}
   bindNetwork: tcp4
   certFile: master.server.crt
   clientCA: ca.crt

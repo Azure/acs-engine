@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -112,6 +113,10 @@ func (c *Config) WriteMasterFiles(fs filesystem.Writer) error {
 				h, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 				return string(h), err
 			},
+			"quote": strconv.Quote,
+			"shellQuote": func(s string) string {
+				return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+			},
 		}).Parse(string(tb))
 		if err != nil {
 			return err
@@ -146,6 +151,10 @@ func (c *Config) WriteNodeFiles(fs filesystem.Writer) error {
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
+			"quote":     strconv.Quote,
+			"shellQuote": func(s string) string {
+				return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+			},
 		}).Parse(string(tb))
 		if err != nil {
 			return err
