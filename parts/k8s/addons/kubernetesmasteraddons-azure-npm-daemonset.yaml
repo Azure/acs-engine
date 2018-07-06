@@ -75,7 +75,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
         - name: azure-npm
-          image: containernetworking/azure-npm:v0.0.3
+          image: containernetworking/azure-npm:v0.0.4
           securityContext:
             privileged: true
           env:
