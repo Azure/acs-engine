@@ -157,7 +157,7 @@ function installEtcd() {
 
 function installDeps() {
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 3 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
+    retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
