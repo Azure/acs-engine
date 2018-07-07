@@ -728,6 +728,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CloudProviderRateLimitBucket = api.CloudProviderRateLimitBucket
 	vlabs.CloudProviderRateLimitQPS = api.CloudProviderRateLimitQPS
 	vlabs.UseManagedIdentity = api.UseManagedIdentity
+	vlabs.UseAksExtension = api.UseAksExtension
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage

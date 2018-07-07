@@ -654,6 +654,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.UseAksExtension == nil {
+			a.OrchestratorProfile.KubernetesConfig.UseAksExtension = helpers.PointerToBool(api.DefaultUseAksExtension)
+		}
+
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager

@@ -97,6 +97,8 @@ const (
 	DefaultReschedulerAddonEnabled = false
 	// DefaultRBACEnabled determines the acs-engine provided default for enabling kubernetes RBAC
 	DefaultRBACEnabled = true
+	// DefaultUseAksExtension determines the acs-engine provided default for enabling the AKS billing extension
+	DefaultUseAksExtension = true
 	// DefaultUseInstanceMetadata determines the acs-engine provided default for enabling Azure cloudprovider instance metadata service
 	DefaultUseInstanceMetadata = true
 	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
