@@ -84,7 +84,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
 				addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", helpers.IsTrueBoolPointer(clusterAutoscalerAddon.Enabled))
 				addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
-				addValue(parametersMap, "kubernetesClusterAutoscalerUseAksExtension", helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.UseAksExtension))
 				if clusterAutoscalerAddon.Containers[c].Image != "" {
 					addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
 				} else {

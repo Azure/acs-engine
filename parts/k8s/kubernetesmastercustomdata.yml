@@ -238,7 +238,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesClusterAutoscalerMinNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMinNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerMaxNodes>|{{WrapAsVariable "kubernetesClusterAutoscalerMaxNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerUseManagedIdentity>|{{WrapAsVariable "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerUseAksExtension>|{{WrapAsVariable "kubernetesClusterAutoscalerUseAksExtension"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
