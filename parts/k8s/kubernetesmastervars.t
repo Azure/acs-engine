@@ -114,6 +114,7 @@
     "kubernetesACIConnectorCPULimit": "[parameters('kubernetesACIConnectorCPULimit')]",
     "kubernetesACIConnectorMemoryLimit": "[parameters('kubernetesACIConnectorMemoryLimit')]",
     "kubernetesClusterAutoscalerSpec": "[parameters('kubernetesClusterAutoscalerSpec')]",
+    "kubernetesClusterAutoscalerAzureCloud": "[parameters('kubernetesClusterAutoscalerAzureCloud')]",
     "kubernetesClusterAutoscalerCPULimit": "[parameters('kubernetesClusterAutoscalerCPULimit')]",
     "kubernetesClusterAutoscalerMemoryLimit": "[parameters('kubernetesClusterAutoscalerMemoryLimit')]",
     "kubernetesClusterAutoscalerCPURequests": "[parameters('kubernetesClusterAutoscalerCPURequests')]",

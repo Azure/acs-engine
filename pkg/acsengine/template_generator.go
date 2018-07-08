@@ -875,6 +875,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
 						}
 					}
+				case "kubernetesClusterAutoscalerAzureCloud":
+					if aS > -1 {
+						val = cloudSpecConfig.CloudName
+					} else {
+						val = ""
+					}
 				case "kubernetesClusterAutoscalerCPURequests":
 					if aS > -1 {
 						val = clusterAutoscalerAddon.Containers[aC].CPURequests
