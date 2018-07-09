@@ -649,6 +649,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"IsEnabledAcc": func(profile *api.AgentPoolProfile) bool {
+			if profile.IsEnabledAcc() {
+				return true
+			}
+			return false
+		},
 		"AnyAgentUsesVirtualMachineScaleSets": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
 				if agentProfile.IsVirtualMachineScaleSets() {

@@ -1,5 +1,5 @@
     {
-{{if .AcceleratedNetworkingEnabled}}
+{{if IsEnabledAcc .}}
       "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
 {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -32,7 +32,11 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
+{{if IsEnabledAcc .}}
+        "enableAcceleratedNetworking" : true,
+{{else}}
+        "enableAcceleratedNetworking" : false,
+{{end}}
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
