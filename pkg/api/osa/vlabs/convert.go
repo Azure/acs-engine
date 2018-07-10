@@ -38,18 +38,28 @@ func (oc *OpenShiftCluster) AsContainerService() *api.ContainerService {
 		}
 	}
 
-	cs.Properties.AgentPoolProfiles = make([]*api.AgentPoolProfile, 0, len(oc.Properties.AgentPoolProfiles))
-	for _, app := range oc.Properties.AgentPoolProfiles {
+	cs.Properties.AgentPoolProfiles = make([]*api.AgentPoolProfile, 0, len(oc.Properties.ComputePools)+1)
+	for _, app := range oc.Properties.ComputePools {
 		cs.Properties.AgentPoolProfiles = append(cs.Properties.AgentPoolProfiles,
 			&api.AgentPoolProfile{
 				Name:         app.Name,
-				Role:         api.AgentPoolProfileRole(app.Role),
+				Role:         api.AgentPoolProfileRole(AgentPoolProfileRoleEmpty),
 				Count:        app.Count,
 				VMSize:       app.VMSize,
 				VnetSubnetID: app.VnetSubnetID,
 			},
 		)
 	}
+
+	cs.Properties.AgentPoolProfiles = append(cs.Properties.AgentPoolProfiles,
+		&api.AgentPoolProfile{
+			Name:         oc.Properties.InfraPool.Name,
+			Role:         api.AgentPoolProfileRole(AgentPoolProfileRoleInfra),
+			Count:        oc.Properties.InfraPool.Count,
+			VMSize:       oc.Properties.InfraPool.VMSize,
+			VnetSubnetID: oc.Properties.InfraPool.VnetSubnetID,
+		},
+	)
 
 	return cs
 }

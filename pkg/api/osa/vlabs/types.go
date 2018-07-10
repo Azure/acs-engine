@@ -9,7 +9,7 @@ type OpenShiftCluster struct {
 	Plan       *ResourcePurchasePlan `json:"plan,omitempty"`
 	Tags       map[string]string     `json:"tags,omitempty"`
 	Type       string                `json:"type,omitempty"`
-	Properties Properties            `json:"properties,omitempty"`
+	Properties *Properties           `json:"properties,omitempty"`
 }
 
 // ResourcePurchasePlan defines the resource plan as required by ARM for billing
@@ -34,10 +34,9 @@ type Properties struct {
 	// TODO: need to clarify external API for RoutingConfigSubdomain.  Do we
 	// create one and return it if it's not provided?  Will this be transparent
 	// to the plugin?
-	RoutingConfigSubdomain string `json:"routingConfigSubdomain,omitempty"`
-	// TODO: need to clarify the external API for AgentPoolProfiles.  Will we
-	// allow users to specify an `infra` pool?
-	AgentPoolProfiles       AgentPoolProfiles       `json:"agentPoolProfiles,omitempty"`
+	RoutingConfigSubdomain  string                  `json:"routingConfigSubdomain,omitempty"`
+	ComputePools            AgentPoolProfiles       `json:"computePools,omitempty"`
+	InfraPool               *InfraPoolProfile       `json:"infraPool,omitempty"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 }
 
@@ -63,24 +62,36 @@ const (
 )
 
 // AgentPoolProfiles represents all the AgentPoolProfiles.
-type AgentPoolProfiles []AgentPoolProfile
+type AgentPoolProfiles []*AgentPoolProfile
 
 // AgentPoolProfile represents configuration of VMs running agent daemons that
 // register with the master and offer resources to host applications in
 // containers.
 type AgentPoolProfile struct {
-	Name         string               `json:"name,omitempty"`
-	Role         AgentPoolProfileRole `json:"role,omitempty"` // TODO: should we expose this?
-	Count        int                  `json:"count,omitempty"`
-	VMSize       string               `json:"vmSize,omitempty"`
-	VnetSubnetID string               `json:"vnetSubnetID,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Count        int    `json:"count,omitempty"`
+	VMSize       string `json:"vmSize,omitempty"`
+	VnetSubnetID string `json:"vnetSubnetID,omitempty"`
 	// OSDiskSizeGB int `json:"osDiskSizeGB,omitempty"` // TODO: do we need to add this?
 	// AvailabilityProfile string `json:"availabilityProfile,omitempty"` // TODO: do we need to add this?
 	// StorageProfile string `json:"storageProfile,omitempty"` // TODO: do we need to add this?
 	// OSType OSType `json:"osType,omitempty"` // TODO: do we need to add this?
 }
 
-// AgentPoolProfileRole representes the role of the AgentPoolProfile.
+// AgentPoolProfile represents configuration of VMs running agent daemons that
+// register with the master and offer resources to host infra applications in
+// containers.
+//
+// NOTE: right now this is just a copy of AgentPoolProfile.  It allows us to
+// control the settings in a way specific to infra nodes if we need to in the future.
+type InfraPoolProfile struct {
+	Name         string `json:"name,omitempty"`
+	Count        int    `json:"count,omitempty"`
+	VMSize       string `json:"vmSize,omitempty"`
+	VnetSubnetID string `json:"vnetSubnetID,omitempty"`
+}
+
+// AgentPoolProfileRole represents the role of the AgentPoolProfile.
 // TODO: should we expose this?
 type AgentPoolProfileRole string
 

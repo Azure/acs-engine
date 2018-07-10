@@ -3,6 +3,8 @@ package vlabs
 import (
 	"fmt"
 	"regexp"
+
+	"k8s.io/apimachinery/pkg/util/errors"
 )
 
 var regexRfc1123 = regexp.MustCompile(`(?i)` +
@@ -55,26 +57,67 @@ func (p *Properties) Validate() error {
 		return fmt.Errorf("invalid routingConfigSubdomain %q", p.RoutingConfigSubdomain)
 	}
 
-	if err := p.AgentPoolProfiles.Validate(); err != nil {
+	if err := ValidatePools(p.ComputePools, p.InfraPool); err != nil {
 		return err
 	}
 
 	return p.ServicePrincipalProfile.Validate()
 }
 
-// Validate validates an AgentPoolProfiles slice
-func (apps AgentPoolProfiles) Validate() error {
-	names := map[string]struct{}{}
+func ValidatePools(compute AgentPoolProfiles, infra *InfraPoolProfile) error {
+	if infra == nil || len(compute) == 0 {
+		return fmt.Errorf("both infra and compute pools are required")
+	}
 
-	for _, app := range apps {
+	errs := []error{}
+
+	if len(compute) > 1 {
+		errs = append(errs, fmt.Errorf("only one compute pool is currently supported"))
+	}
+
+	names := map[string]struct{}{}
+	names[infra.Name] = struct{}{}
+
+	for _, app := range compute {
 		if _, found := names[app.Name]; found {
-			return fmt.Errorf("duplicate name %q", app.Name)
+			errs = append(errs, fmt.Errorf("duplicate name %q", app.Name))
 		}
 		names[app.Name] = struct{}{}
 
 		if err := app.Validate(); err != nil {
-			return err
+			errs = append(errs, err)
 		}
+	}
+
+	if err := infra.Validate(); err != nil {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.NewAggregate(errs)
+	}
+
+	return nil
+}
+
+// Validate validates an InfraPoolProfile.
+func (infra *InfraPoolProfile) Validate() error {
+	errs := []error{}
+
+	if !regexAgentPoolName.MatchString(infra.Name) {
+		return fmt.Errorf("invalid name %q", infra.Name)
+	}
+
+	if infra.Count < 3 {
+		errs = append(errs, fmt.Errorf("must have at least 3 infra nodes"))
+	}
+
+	if infra.VMSize == "" {
+		return fmt.Errorf("vmSize must not be empty")
+	}
+
+	if len(errs) > 0 {
+		return errors.NewAggregate(errs)
 	}
 
 	return nil
@@ -84,12 +127,6 @@ func (apps AgentPoolProfiles) Validate() error {
 func (app *AgentPoolProfile) Validate() error {
 	if !regexAgentPoolName.MatchString(app.Name) {
 		return fmt.Errorf("invalid name %q", app.Name)
-	}
-
-	switch app.Role {
-	case AgentPoolProfileRoleEmpty, AgentPoolProfileRoleInfra:
-	default:
-		return fmt.Errorf("invalid role %q", app.Role)
 	}
 
 	if app.Count < 1 {
