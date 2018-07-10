@@ -168,9 +168,25 @@ function installDeps() {
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
+}
+
+function installFlexVolDrivers() {
+    PLUGIN_DIR=/etc/kubernetes/volumeplugins
+
+    # install blobfuse flexvolume driver
+    BLOBFUSE_DIR=$PLUGIN_DIR/azure~blobfuse
+    mkdir -p $BLOBFUSE_DIR
+    wget -O $BLOBFUSE_DIR/blobfuse https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/blobfuse/deployment/blobfuse-flexvol-installer/blobfuse
+    chmod a+x $BLOBFUSE_DIR/blobfuse
+
+    # install smb flexvolume driver
+    SMB_DIR=$PLUGIN_DIR/microsoft.com~smb
+    mkdir -p $SMB_DIR
+    wget -O $SMB_DIR/smb https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/smb/deployment/smb-flexvol-installer/smb
+    chmod a+x $SMB_DIR/smb
 }
 
 function installDocker() {
@@ -592,6 +608,7 @@ fi
 
 ensureKubelet
 ensureJournal
+installFlexVolDrivers
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
