@@ -781,7 +781,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		// Windows Bug 16598869
+		// Windows Bug 18213017: Kubernetes Hostport mappings don't work
 		/*
 			It("should be able to reach hostport in an iis webserver", func() {
 				if eng.HasWindowsAgents() {
