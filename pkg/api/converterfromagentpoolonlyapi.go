@@ -251,6 +251,9 @@ func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v
 			p.MaxPods = &agentPoolMaxPods
 		}
 	}
+	p.AutoscalePool = api.AutoscalePool
+	p.MaxCount = api.MaxCount
+	p.MinCount = api.MinCount
 }
 
 func convertServicePrincipalProfileToV20180331AgentPoolOnly(api *ServicePrincipalProfile, v20180331 *v20180331.ServicePrincipalProfile) {

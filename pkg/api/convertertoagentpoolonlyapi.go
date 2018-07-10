@@ -270,6 +270,9 @@ func convertVLabsAgentPoolOnlyAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, ap
 	api.AvailabilityProfile = vlabs.AvailabilityProfile
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
+	api.AutoscalePool = vlabs.AutoscalePool
+	api.MinCount = vlabs.MinCount
+	api.MaxCount = vlabs.MaxCount
 }
 
 func convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
@@ -502,6 +505,9 @@ func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.A
 	api.KubernetesConfig = kubernetesConfig
 	api.Subnet = agentPoolProfile.GetSubnet()
 	api.AvailabilityProfile = availabilityProfile
+	api.MaxCount = agentPoolProfile.MaxCount
+	api.MinCount = agentPoolProfile.MinCount
+	api.AutoscalePool = agentPoolProfile.AutoscalePool
 	return api
 }
 
