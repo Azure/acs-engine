@@ -30,12 +30,14 @@ func OpenShiftSetDefaultCerts(a *api.Properties, orchestratorName, clusterID str
 		ClusterPassword:         a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
 		EnableAADAuthentication: a.OrchestratorProfile.OpenShiftConfig.EnableAADAuthentication,
 		AzureConfig: AzureConfig{
-			TenantID:        a.AzProfile.TenantID,
-			SubscriptionID:  a.AzProfile.SubscriptionID,
-			AADClientID:     a.ServicePrincipalProfile.ClientID,
-			AADClientSecret: a.ServicePrincipalProfile.Secret,
-			ResourceGroup:   a.AzProfile.ResourceGroup,
-			Location:        a.AzProfile.Location,
+			TenantID:                   a.AzProfile.TenantID,
+			SubscriptionID:             a.AzProfile.SubscriptionID,
+			AADClientID:                a.ServicePrincipalProfile.ClientID,
+			AADClientSecret:            a.ServicePrincipalProfile.Secret,
+			ResourceGroup:              a.AzProfile.ResourceGroup,
+			Location:                   a.AzProfile.Location,
+			SecurityGroupName:          fmt.Sprintf("%s-master-%s-nsg", orchestratorName, clusterID),
+			PrimaryAvailabilitySetName: fmt.Sprintf("compute-availabilityset-%s", clusterID),
 		},
 	}
 

@@ -14,6 +14,7 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
+{{if .OrchestratorProfile.KubernetesConfig.RequiresDocker}}
 {{if not .MasterProfile.IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
@@ -46,6 +47,7 @@ write_files:
          "max-file": "5"
       }
     }
+{{end}}
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
@@ -261,12 +263,16 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPlugin "flannel"}}
+    # If Flannel is enabled then update Cluster Cidr
+    sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/flannel-daemonset.yaml"
+{{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
     # If Cilium Policy enabled then update the etcd certs and address
     sed -i "s|<ETCD_URL>|{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CA>|\"$(base64 -w 0 /etc/kubernetes/certs/ca.crt)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_KEY>|\"$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_CERT>|\"$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)\"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_CERT>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
 {{end}}
 {{if UseCloudControllerManager }}
     sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
@@ -288,15 +294,15 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
 {{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
-    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "dockerProviderVersion"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "kubernetesContainerMonitoringSpec"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceGuid>|{{WrapAsVariable "workspaceGuid"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<workspaceKey>|{{WrapAsVariable "workspaceKey"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentCPURequests>|{{WrapAsVariable "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsVariable "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsVariable "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
-    sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsVariable "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetesmasteraddons-omsagent-daemonset.yaml"
+    sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "omsAgentImage"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<workspaceGuid>|{{WrapAsVariable "omsAgentWorkspaceGuid"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<workspaceKey>|{{WrapAsVariable "omsAgentWorkspaceKey"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPURequests>|{{WrapAsVariable "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsVariable "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsVariable "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsVariable "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
@@ -376,7 +382,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     systemctl restart etcd-member
     retrycmd_if_failure 5 5 10 curl --retry 5 --retry-delay 10 --retry-max-time 10 --max-time 60 http://127.0.0.1:2379/v2/machines
     mkdir -p /etc/kubernetes/manifests
+
+    {{if .OrchestratorProfile.KubernetesConfig.RequiresDocker}}
     usermod -aG docker {{WrapAsVariable "username"}}
+    {{end}}
 
     {{if EnableAggregatedAPIs}}
     sudo bash /etc/kubernetes/generate-proxy-certs.sh

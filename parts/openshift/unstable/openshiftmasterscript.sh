@@ -56,6 +56,8 @@ if grep -q ^ResourceDisk.Filesystem=xfs /etc/waagent.conf; then
 fi
 
 systemctl stop docker.service
+# Also a bad image: the umount should also go away.
+umount /var/lib/docker || true
 mkfs.xfs -f /dev/sdb1
 echo '/dev/sdb1  /var/lib/docker  xfs  grpquota  0 0' >>/etc/fstab
 mount /var/lib/docker
@@ -78,7 +80,7 @@ mkdir -p /etc/origin/master
 
 oc adm create-bootstrap-policy-file --filename=/etc/origin/master/policy.json
 
-( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
+( cd / && base64 -d <<< {{ .ConfigBundle | shellQuote }} | tar -xz)
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
@@ -100,7 +102,7 @@ set -x
 ###
 # retrieve the public ip via dns for the router public ip and sub it in for the routingConfig.subdomain
 ###
-routerLBHost="{{.RouterLBHostname}}"
+routerLBHost={{ .RouterLBHostname | shellQuote }}
 routerLBIP=$(dig +short $routerLBHost)
 
 # NOTE: The version of openshift-ansible for origin defaults the ansible var
@@ -117,12 +119,18 @@ else
     sed -i "s|PROMETHEUS_EXPORTER_VERSION|${PROMETHEUS_EXPORTER_VERSION}|g;" /tmp/ansible/azure-local-master-inventory.yml
 fi
 
+MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE"
+if [[ -f /etc/origin/oreg_url ]]; then
+	MASTER_OREG_URL=$(cat /etc/origin/oreg_url)
+fi
+
 for i in /etc/origin/master/master-config.yaml /tmp/bootstrapconfigs/* /tmp/ansible/azure-local-master-inventory.yml; do
     sed -i "s/TEMPROUTERIP/${routerLBIP}/; s|IMAGE_PREFIX|$IMAGE_PREFIX|g; s|ANSIBLE_DEPLOY_TYPE|$ANSIBLE_DEPLOY_TYPE|g" $i
     sed -i "s|REGISTRY_STORAGE_AZURE_ACCOUNTNAME|${REGISTRY_STORAGE_AZURE_ACCOUNTNAME}|g; s|REGISTRY_STORAGE_AZURE_ACCOUNTKEY|${REGISTRY_STORAGE_AZURE_ACCOUNTKEY}|g" $i
     sed -i "s|COCKPIT_VERSION|${COCKPIT_VERSION}|g; s|COCKPIT_BASENAME|${COCKPIT_BASENAME}|g; s|COCKPIT_PREFIX|${COCKPIT_PREFIX}|g;" $i
     sed -i "s|VERSION|${VERSION}|g; s|SHORT_VER|${VERSION%.*}|g; s|SERVICE_TYPE|${SERVICE_TYPE}|g; s|IMAGE_TYPE|${IMAGE_TYPE}|g" $i
     sed -i "s|HOSTNAME|${HOSTNAME}|g;" $i
+    sed -i "s|MASTER_OREG_URL|${MASTER_OREG_URL}|g" $i
 done
 
 mkdir -p /root/.kube
@@ -164,7 +172,7 @@ metadata:
 provisioner: kubernetes.io/azure-disk
 parameters:
   skuName: Premium_LRS
-  location: {{ .Location }}
+  location: {{ .Location | quote }}
   kind: managed
 EOF
 

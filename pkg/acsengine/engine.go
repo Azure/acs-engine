@@ -22,6 +22,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/ghodss/yaml"
+	"github.com/pkg/errors"
 )
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
@@ -65,14 +66,14 @@ func GenerateClusterID(properties *api.Properties) string {
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
 func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
 	if properties == nil {
-		return "", fmt.Errorf("Properties nil in GenerateKubeConfig")
+		return "", errors.New("Properties nil in GenerateKubeConfig")
 	}
 	if properties.CertificateProfile == nil {
-		return "", fmt.Errorf("CertificateProfile property may not be nil in GenerateKubeConfig")
+		return "", errors.New("CertificateProfile property may not be nil in GenerateKubeConfig")
 	}
 	b, err := Asset(kubeConfigJSON)
 	if err != nil {
-		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeConfigJSON, err.Error())
+		return "", errors.Wrapf(err, "error reading kube config template file %s", kubeConfigJSON)
 	}
 	kubeconfig := string(b)
 	// variable replacement
@@ -85,7 +86,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
 			if firstMasterIP == nil {
-				return "", fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", properties.MasterProfile.FirstConsecutiveStaticIP)
+				return "", errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", properties.MasterProfile.FirstConsecutiveStaticIP)
 			}
 			lbIP := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)}
 			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", lbIP.String(), -1)
@@ -271,7 +272,7 @@ func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 func getStorageAccountType(sizeName string) (string, error) {
 	spl := strings.Split(sizeName, "_")
 	if len(spl) < 2 {
-		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)
+		return "", errors.Errorf("Invalid sizeName: %s", sizeName)
 	}
 	capability := spl[1]
 	if strings.Contains(strings.ToLower(capability), "s") {
@@ -1201,7 +1202,7 @@ func validateProfileOptedForExtension(extensionName string, profileExtensions []
 func getLinkedTemplateTextForURL(rootURL, orchestrator, extensionName, version, query string) (string, error) {
 	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version, query)
 	if !supportsExtension {
-		return "", fmt.Errorf("Extension not supported for orchestrator. Error: %s", err)
+		return "", errors.Wrap(err, "Extension not supported for orchestrator")
 	}
 
 	templateLinkBytes, err := getExtensionResource(rootURL, extensionName, version, "template-link.json", query)
@@ -1221,11 +1222,11 @@ func orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version
 	var supportedOrchestrators []string
 	err = json.Unmarshal(orchestratorBytes, &supportedOrchestrators)
 	if err != nil {
-		return false, fmt.Errorf("Unable to parse supported-orchestrators.json for Extension %s Version %s", extensionName, version)
+		return false, errors.Errorf("Unable to parse supported-orchestrators.json for Extension %s Version %s", extensionName, version)
 	}
 
 	if !stringInSlice(orchestrator, supportedOrchestrators) {
-		return false, fmt.Errorf("Orchestrator: %s not in list of supported orchestrators for Extension: %s Version %s", orchestrator, extensionName, version)
+		return false, errors.Errorf("Orchestrator: %s not in list of supported orchestrators for Extension: %s Version %s", orchestrator, extensionName, version)
 	}
 
 	return true, nil
@@ -1236,18 +1237,18 @@ func getExtensionResource(rootURL, extensionName, version, fileName, query strin
 
 	res, err := http.Get(requestURL)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+		return nil, errors.Wrapf(err, "Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s", extensionName, version, fileName, requestURL)
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s StatusCode: %s: Status: %s", extensionName, version, fileName, requestURL, strconv.Itoa(res.StatusCode), res.Status)
+		return nil, errors.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s StatusCode: %s: Status: %s", extensionName, version, fileName, requestURL, strconv.Itoa(res.StatusCode), res.Status)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s  with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+		return nil, errors.Wrapf(err, "Unable to GET extension resource for extension: %s with version %s  with filename %s at URL: %s", extensionName, version, fileName, requestURL)
 	}
 
 	return body, nil

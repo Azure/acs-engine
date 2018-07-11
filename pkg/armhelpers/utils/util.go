@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -53,7 +54,7 @@ func ResourceName(ID string) (string, error) {
 	parts := strings.Split(ID, "/")
 	name := parts[len(parts)-1]
 	if len(name) == 0 {
-		return "", fmt.Errorf("resource name was missing from identifier")
+		return "", errors.Errorf("resource name was missing from identifier")
 	}
 
 	return name, nil
@@ -79,13 +80,13 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 func K8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agentIndex int, err error) {
 	vmNameParts := vmnameLinuxRegexp.FindStringSubmatch(vmName)
 	if len(vmNameParts) != 4 {
-		return "", "", -1, fmt.Errorf("resource name was missing from identifier")
+		return "", "", -1, errors.Errorf("resource name was missing from identifier")
 	}
 
 	vmNum, err := strconv.Atoi(vmNameParts[k8sLinuxVMAgentIndexArrayIndex])
 
 	if err != nil {
-		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, errors.Wrap(err, "Error parsing VM Name")
 	}
 
 	return vmNameParts[k8sLinuxVMAgentPoolNameIndex], vmNameParts[k8sLinuxVMAgentClusterIDIndex], vmNum, nil
@@ -95,7 +96,7 @@ func K8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agen
 func VmssNameParts(vmssName string) (poolIdentifier, nameSuffix string, err error) {
 	vmssNameParts := vmssnameRegexp.FindStringSubmatch(vmssName)
 	if len(vmssNameParts) != 3 {
-		return "", "", fmt.Errorf("resource name was missing from identifier")
+		return "", "", errors.New("resource name was missing from identifier")
 	}
 
 	return vmssNameParts[vmssAgentPoolNameIndex], vmssNameParts[vmssClusterIDIndex], nil
@@ -105,7 +106,7 @@ func VmssNameParts(vmssName string) (poolIdentifier, nameSuffix string, err erro
 func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIndex int, agentIndex int, err error) {
 	vmNameParts := vmnameWindowsRegexp.FindStringSubmatch(vmName)
 	if len(vmNameParts) != 4 {
-		return "", "", -1, -1, fmt.Errorf("resource name was missing from identifier")
+		return "", "", -1, -1, errors.New("resource name was missing from identifier")
 	}
 
 	poolPrefix = vmNameParts[k8sWindowsVMAgentPoolPrefixIndex]
@@ -114,15 +115,11 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 
 	poolIndex, err = strconv.Atoi(poolInfo[:3])
 	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, -1, errors.Wrap(err, "Error parsing VM Name")
 	}
 	poolIndex -= 900
 	agentIndex, _ = strconv.Atoi(poolInfo[3:])
 	fmt.Printf("%d\n", agentIndex)
-
-	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
-	}
 
 	return poolPrefix, acsStr, poolIndex, agentIndex, nil
 }
@@ -131,7 +128,7 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 func WindowsVMSSNameParts(vmssName string) (poolPrefix string, acsStr string, poolIndex int, err error) {
 	vmssNameParts := vmssnameWindowsRegexp.FindStringSubmatch(vmssName)
 	if len(vmssNameParts) != 4 {
-		return "", "", -1, fmt.Errorf("resource name was missing from identifier")
+		return "", "", -1, errors.Errorf("resource name was missing from identifier")
 	}
 
 	poolPrefix = vmssNameParts[windowsVmssAgentPoolNameIndex]
@@ -140,7 +137,7 @@ func WindowsVMSSNameParts(vmssName string) (poolPrefix string, acsStr string, po
 
 	poolIndex, err = strconv.Atoi(poolInfo)
 	if err != nil {
-		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, errors.Wrap(err, "Error parsing VM Name")
 	}
 	poolIndex -= 900
 
@@ -180,5 +177,5 @@ func GetK8sVMName(osType api.OSType, isAKS bool, nameSuffix, agentPoolName strin
 	if osType == api.Windows {
 		return fmt.Sprintf("%s%s%d%d", nameSuffix[:5], prefix, 900+agentPoolIndex, agentIndex), nil
 	}
-	return "", fmt.Errorf("Failed to reconstruct VM Name")
+	return "", errors.Errorf("Failed to reconstruct VM Name")
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 	if vhd == nil && managedDisk == nil {
 		logger.Errorf("failed to get a valid os disk URI for VM: %s/%s", resourceGroup, name)
 
-		return fmt.Errorf("os disk does not have a VHD URI")
+		return errors.New("os disk does not have a VHD URI")
 	}
 
 	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name

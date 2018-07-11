@@ -946,7 +946,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	k := p.OrchestratorProfile.KubernetesConfig
 	o := p.OrchestratorProfile
 	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultNVIDIADevicePluginAddonName {
+		if k.Addons[i].Name == NVIDIADevicePluginAddonName {
 			nvidiaDevicePluginAddon = k.Addons[i]
 		}
 	}
@@ -980,4 +980,10 @@ func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
 		return true
 	}
 	return false
+}
+
+// RequiresDocker returns if the kubernetes settings require docker to be installed.
+func (k *KubernetesConfig) RequiresDocker() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "docker" || runtime == ""
 }

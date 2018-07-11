@@ -4,7 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "networkPlugin":"flannel",
+        "networkPlugin": "kubenet"
       }
     },
     "masterProfile": {
@@ -14,12 +14,17 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "linuxpool1",
-        "count": 3,
+        "name": "agentwin",
+        "count": 2,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {
@@ -33,7 +38,6 @@
     "servicePrincipalProfile": {
       "clientId": "",
       "secret": ""
-    },
-    "certificateProfile": {}
+    }
   }
 }

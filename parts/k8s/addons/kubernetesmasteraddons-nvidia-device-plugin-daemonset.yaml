@@ -1,26 +1,42 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
+    k8s-app: nvidia-device-plugin
     kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
   name: nvidia-device-plugin
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      k8s-app: nvidia-device-plugin
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
-      # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
-      # reserves resources for critical add-on pods so that they can be rescheduled after
-      # a failure.  This annotation works in tandem with the toleration below.
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        name: nvidia-device-plugin-ds
+        k8s-app: nvidia-device-plugin
     spec:
+      priorityClassName: system-node-critical
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: accelerator
+                operator: In
+                values:
+                - nvidia
       tolerations:
-      # Allow this pod to be rescheduled while the node is in "critical add-ons only" mode.
-      # This, along with the annotation above marks this pod as a critical add-on.
       - key: CriticalAddonsOnly
         operator: Exists
+      - key: nvidia.com/gpu
+        effect: NoSchedule
+        operator: Equal
+        value: "true"
       containers:
       - image: <kubernetesNVIDIADevicePluginSpec>
         name: nvidia-device-plugin-ctr
@@ -37,3 +53,4 @@ spec:
             path: /var/lib/kubelet/device-plugins
       nodeSelector:
         beta.kubernetes.io/os: linux
+        accelerator: nvidia

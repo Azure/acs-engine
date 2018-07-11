@@ -58,16 +58,19 @@ import:
   version: 0841753fc26e934b715ca7a83dced5bcb721245a
 - package: k8s.io/client-go
   version: ~7.0.0
-# This is the same version client-go is pinned to
 - package: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
 - package: github.com/Jeffail/gabs
-  version: 1.0
+  version: "1.0"
 - package: github.com/rjtsdl/conform
   version: 1.2.1
 - package: github.com/etgryphon/stringUp
+- package: golang.org/x/sync
+  subpackages:
+  - errgroup
+- package: github.com/pkg/errors
+  version: ~0.8.0
 testImport:
-# glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo
 - package: github.com/kelseyhightower/envconfig
@@ -77,4 +80,6 @@ testImport:
   version: ~7.0.0
 - package: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
-- package: github.com/influxdata/influxdb/client/v2
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - client/v2

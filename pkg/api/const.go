@@ -107,6 +107,8 @@ const (
 	DefaultNVIDIADevicePluginAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
 	DefaultContainerMonitoringAddonEnabled = false
+	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
+	DefaultAzureCNINetworkMonitoringAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
@@ -119,18 +121,20 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
-	// DefaultNVIDIADevicePluginAddonName is the name of the NVIDIA device plugin addon deployment
-	DefaultNVIDIADevicePluginAddonName = "nvidia-device-plugin"
+	// NVIDIADevicePluginAddonName is the name of the NVIDIA device plugin addon deployment
+	NVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
 	ContainerMonitoringAddonName = "container-monitoring"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
-	// NetworkPolicyAzure is the string expression for the deprecated NetworkPolicy usage pattern "azure"
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager
 	NetworkPolicyAzure = "azure"
 	// NetworkPolicyNone is the string expression for the deprecated NetworkPolicy usage pattern "none"
 	NetworkPolicyNone = "none"
 	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
 	NetworkPluginKubenet = "kubenet"
+	// NetworkPluginAzure is thee string expression for Azure CNI plugin.
+	NetworkPluginAzure = "azure"
 )
 
 const (

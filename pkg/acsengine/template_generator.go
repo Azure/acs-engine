@@ -3,7 +3,6 @@ package acsengine
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -15,6 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -80,7 +80,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		if r := recover(); r != nil {
 			s := debug.Stack()
-			err = fmt.Errorf("%v - %s", r, s)
+			err = errors.Errorf("%v - %s", r, s)
 
 			// invalidate the template and the parameters
 			templateRaw = ""
@@ -89,7 +89,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}()
 
 	if !validateDistro(containerService) {
-		return templateRaw, parametersRaw, certsGenerated, fmt.Errorf("Invalid distro")
+		return templateRaw, parametersRaw, certsGenerated, errors.New("Invalid distro")
 	}
 
 	var b bytes.Buffer
@@ -187,6 +187,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
+			}
+			if isNSeriesSKU(profile) {
+				accelerator := "nvidia"
+				buf.WriteString(fmt.Sprintf(",accelerator=%s", accelerator))
 			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
@@ -598,6 +602,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if e != nil {
 				return ""
 			}
+			preprovisionCmd := ""
+			if profile.PreprovisionExtension != nil {
+				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
+			}
+			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetMasterSwarmModeCustomData": func() string {
@@ -747,8 +756,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
-				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
-				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, DefaultNVIDIADevicePluginAddonName)
+				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
+				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -954,7 +963,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = nvidiaDevicePluginAddon.Containers[nC].Image
 						}
 					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][DefaultNVIDIADevicePluginAddonName]
+						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {
@@ -1077,7 +1086,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"OpenShiftGetMasterSh": func() (string, error) {
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
-			t, err := template.New("master").Parse(string(tb))
+			t, err := template.New("master").Funcs(template.FuncMap{
+				"quote": strconv.Quote,
+				"shellQuote": func(s string) string {
+					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+				},
+			}).Parse(string(tb))
 			if err != nil {
 				return "", err
 			}
@@ -1100,7 +1114,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"OpenShiftGetNodeSh": func(profile *api.AgentPoolProfile) (string, error) {
 			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(nodeShAsset)
-			t, err := template.New("node").Parse(string(tb))
+			t, err := template.New("node").Funcs(template.FuncMap{
+				"quote": strconv.Quote,
+				"shellQuote": func(s string) string {
+					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+				},
+			}).Parse(string(tb))
 			if err != nil {
 				return "", err
 			}
@@ -1141,6 +1160,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsCustomVNET": func() bool {
 			return isCustomVNET(cs.Properties.AgentPoolProfiles)
+		},
+		"quote": strconv.Quote,
+		"shellQuote": func(s string) string {
+			return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
 		},
 	}
 }

@@ -15,16 +15,17 @@ import (
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
-	// to https://acs-mirror.azureedge.net/cni/
-	AzureCniPluginVer = "v1.0.4"
+	// to https://acs-mirror.azureedge.net/cni
+	AzureCniPluginVer = "v1.0.7"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
-	CNIPluginVer = "v0.7.0"
+	CNIPluginVer = "v0.7.1"
 )
 
 var (
@@ -67,7 +68,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201806120",
+		ImageVersion:   "16.04.201806220",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -307,10 +308,10 @@ var (
 
 	// DefaultNVIDIADevicePluginAddonsConfig is the default NVIDIA Device Plugin Kubernetes addon Config
 	DefaultNVIDIADevicePluginAddonsConfig = api.KubernetesAddon{
-		Name: DefaultNVIDIADevicePluginAddonName,
+		Name: NVIDIADevicePluginAddonName,
 		Containers: []api.KubernetesContainerSpec{
 			{
-				Name: DefaultNVIDIADevicePluginAddonName,
+				Name: NVIDIADevicePluginAddonName,
 			},
 		},
 	}
@@ -326,7 +327,7 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "microsoft/oms:ciprod06072018",
+				Image:          "microsoft/oms:June21st",
 				CPURequests:    "50m",
 				MemoryRequests: "100Mi",
 				CPULimits:      "150m",
@@ -341,6 +342,16 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: AzureCNINetworkMonitoringAddonName,
+			},
+		},
+	}
+
+	// DefaultAzureNetworkPolicyAddonsConfig is the default Azure NetworkPolicy addon config
+	DefaultAzureNetworkPolicyAddonsConfig = api.KubernetesAddon{
+		Name: AzureNetworkPolicyAddonName,
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: AzureNetworkPolicyAddonName,
 			},
 		},
 	}
@@ -394,8 +405,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		// and set a default network policy enforcement configuration
 		switch o.KubernetesConfig.NetworkPolicy {
 		case NetworkPluginAzure:
-			o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				o.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		case NetworkPolicyNone:
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
@@ -417,6 +430,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultNVIDIADevicePluginAddonsConfig,
 				DefaultContainerMonitoringAddonsConfig,
 				DefaultAzureCNINetworkMonitorAddonsConfig,
+				DefaultAzureNetworkPolicyAddonsConfig,
 			}
 			enforceK8sAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
@@ -453,7 +467,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				m = getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 				o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 			}
-			n := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+			n := getAddonsIndexByName(o.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 			if n < 0 {
 				// Provide default acs-engine config for NVIDIA Device Plugin
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonsConfig)
@@ -467,6 +481,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if aN < 0 {
 				// Provide default acs-engine config for Azure CNI containernetworking Device Plugin
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureCNINetworkMonitorAddonsConfig)
+			}
+			aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+			if aNP < 0 {
+				// Provide default acs-engine config for Azure NetworkPolicy addon
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureNetworkPolicyAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -563,7 +582,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultMetricsServerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
-		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonName)
+		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[n].IsEnabled(api.DefaultNVIDIADevicePluginAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[n] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[n], DefaultNVIDIADevicePluginAddonsConfig)
 		}
@@ -572,8 +591,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
 		}
 		aN := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(a.OrchestratorProfile.IsAzureCNI()) {
+		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(api.DefaultAzureCNINetworkMonitoringAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[aN] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aN], DefaultAzureCNINetworkMonitorAddonsConfig)
+		}
+		aNP := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[aNP].IsEnabled(a.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[aNP] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aNP], DefaultAzureNetworkPolicyAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
@@ -861,7 +884,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
-		return false, fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
+		return false, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 	}
 
 	ips := []net.IP{firstMasterIP}
@@ -1105,6 +1128,8 @@ func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorP
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
+	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
+	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
@@ -1113,6 +1138,10 @@ func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 
 func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.IsAzureCNI())
+}
+
+func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
 }
 
 func generateEtcdEncryptionKey() string {

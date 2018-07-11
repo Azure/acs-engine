@@ -31,6 +31,8 @@ if grep -q ^ResourceDisk.Filesystem=xfs /etc/waagent.conf; then
 fi
 
 systemctl stop docker.service
+# Also a bad image: the umount should also go away.
+umount /var/lib/docker || true
 mkfs.xfs -f /dev/sdb1
 echo '/dev/sdb1  /var/lib/docker  xfs  grpquota  0 0' >>/etc/fstab
 mount /var/lib/docker
@@ -47,7 +49,7 @@ sed -i -e "s#DEBUG_LOGLEVEL=2#DEBUG_LOGLEVEL=4#" /etc/sysconfig/${SERVICE_TYPE}-
 
 rm -rf /etc/etcd/* /etc/origin/master/*
 
-( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
+( cd / && base64 -d <<< {{ .ConfigBundle | shellQuote }} | tar -xz)
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust

@@ -24,6 +24,8 @@ ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
+ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
@@ -154,13 +156,15 @@ function installEtcd() {
 }
 
 function installDeps() {
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
     echo `date`,`hostname`, apt-get_update_begin>>/opt/m
-    apt_get_update || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
     echo `date`,`hostname`, apt-get_update_end>>/opt/m
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
 }
@@ -337,6 +341,7 @@ function installContainerd() {
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
 	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
 	rm -f "$CONTAINERD_TGZ_TMP"
+	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
 
 	echo "Successfully installed cri-containerd..."
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
@@ -369,7 +374,7 @@ function extractHyperkube(){
     TMP_DIR=$(mktemp -d)
     retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
     chmod +x /usr/local/bin/img
-    retrycmd_if_failure 100 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     path=$(find /tmp/img -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
@@ -385,11 +390,11 @@ function extractHyperkube(){
 }
 
 function ensureJournal(){
-    systemctlEnableAndStart systemd-journald
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
+    systemctlEnableAndStart systemd-journald
 }
 
 function ensurePodSecurityPolicy() {
@@ -511,9 +516,14 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
 fi
 
 installDeps
-installDocker
+
+if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+    installDocker
+    ensureDocker
+fi
+
 configureK8s
-ensureDocker
+
 configNetworkPlugin
 
 if [[ ! -z "${MASTER_NODE}" ]]; then

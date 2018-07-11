@@ -19,6 +19,8 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       containers:
       - image: <kubernetesReschedulerSpec>
         name: rescheduler

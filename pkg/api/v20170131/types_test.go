@@ -44,7 +44,7 @@ func TestAgentPoolProfile(t *testing.T) {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.Count != 1 after unmarshal")
 	}
 
-	if ap.OSType != Linux {
+	if !ap.IsLinux() {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.OSType != Linux after unmarshal")
 	}
 }

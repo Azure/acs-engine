@@ -1,5 +1,5 @@
-hash: 6fa6f282ecddc833638528e7142991e81fbe33987514e2da1ece181a6470c568
-updated: 2018-06-08T11:35:55.674334-07:00
+hash: f9bc1ee5fe4bbff90c78d6851f3d91b617a0166b92137c3913d879c3cdb65876
+updated: 2018-07-02T13:50:41.754767835-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -129,6 +129,8 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rjtsdl/conform
   version: 7b97338c67692998bc62b2572e96c8ff09803dc3
 - name: github.com/satori/go.uuid
@@ -166,6 +168,10 @@ imports:
   - http2/hpack
   - idna
   - lex/httplex
+- name: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:

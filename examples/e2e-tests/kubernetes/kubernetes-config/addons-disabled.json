@@ -20,6 +20,14 @@
           {
             "name": "rescheduler",
             "enabled": false
+          },
+          {
+            "name": "nvidia-device-plugin",
+            "enabled": false
+          },
+          {
+            "name": "container-monitoring",
+            "enabled": false
           }
         ]
       }

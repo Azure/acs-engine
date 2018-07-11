@@ -623,6 +623,15 @@
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
      {
+       "type": "Microsoft.Storage/storageAccounts",
+       "name": "[variables('clusterKeyVaultName')]",
+       "apiVersion": "[variables('apiVersionStorage')]",
+       "location": "[variables('location')]",
+       "properties": {
+         "accountType": "Standard_LRS"
+       }
+     },
+     {
        "type": "Microsoft.KeyVault/vaults",
        "name": "[variables('clusterKeyVaultName')]",
        "apiVersion": "[variables('apiVersionKeyVault')]",
@@ -893,6 +902,27 @@
         {{else}}
           "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' MASTER_INDEX=',copyIndex(variables('masterOffset')),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
+        "name": "vmLoopNode"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.AKS",
+        "type": "Compute.AKS-Engine.Linux.Billing",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
         }
       }
     }{{WriteLinkedTemplatesForExtensions}}

@@ -17,7 +17,7 @@ sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-node
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 
-( cd / && base64 -d <<< {{ .ConfigBundle }} | tar -xz)
+( cd / && base64 -d <<< {{ .ConfigBundle | shellQuote }} | tar -xz)
 
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust

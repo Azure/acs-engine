@@ -26,8 +26,6 @@ if [ -z "$EXPIRATION_IN_HOURS" ]; then
     EXPIRATION_IN_HOURS=2
 fi
 
-set -eu -o pipefail
-
 az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
 		--password "${SERVICE_PRINCIPAL_CLIENT_SECRET}" \
@@ -42,7 +40,7 @@ az account set -s $SUBSCRIPTION_ID_TO_CLEANUP
 (( deadline=$(date +%s)-${expirationInSecs%.*} ))
 # find resource groups created before our deadline
 echo "Looking for resource groups created over ${EXPIRATION_IN_HOURS} hours ago..."
-for resourceGroup in `az group list | jq --arg dl $deadline '.[] | select(.id | contains("acse-test-infrastructure") | not) | select(.tags.now < $dl).name' | tr -d '\"' || ""`; do
+for resourceGroup in `az group list | jq --arg dl $deadline '.[] | select(.name | startswith("acse-") | not) | select(.tags.now < $dl).name' | tr -d '\"' || ""`; do
     for deployment in `az group deployment list -g $resourceGroup | jq '.[] | .name' | tr -d '\"' || ""`; do
         echo "Will delete deployment ${deployment} from resource group ${resourceGroup}..."
         az group deployment delete -n $deployment -g $resourceGroup || echo "unable to delete deployment ${deployment}, will continue..."

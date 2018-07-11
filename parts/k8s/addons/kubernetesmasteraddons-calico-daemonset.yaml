@@ -210,6 +210,8 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
