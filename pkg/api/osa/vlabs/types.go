@@ -73,12 +73,9 @@ type AgentPoolProfile struct {
 	VMSize       string `json:"vmSize,omitempty"`
 	VnetSubnetID string `json:"vnetSubnetID,omitempty"`
 	// OSDiskSizeGB int `json:"osDiskSizeGB,omitempty"` // TODO: do we need to add this?
-	// AvailabilityProfile string `json:"availabilityProfile,omitempty"` // TODO: do we need to add this?
-	// StorageProfile string `json:"storageProfile,omitempty"` // TODO: do we need to add this?
-	// OSType OSType `json:"osType,omitempty"` // TODO: do we need to add this?
 }
 
-// AgentPoolProfile represents configuration of VMs running agent daemons that
+// InfraPoolProfile represents configuration of VMs running agent daemons that
 // register with the master and offer resources to host infra applications in
 // containers.
 //

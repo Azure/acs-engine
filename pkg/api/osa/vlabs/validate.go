@@ -11,8 +11,16 @@ var regexRfc1123 = regexp.MustCompile(`(?i)` +
 	`^([a-z0-9]|[a-z0-9][-a-z0-9]{0,61}[a-z0-9])` +
 	`(\.([a-z0-9]|[a-z0-9][-a-z0-9]{0,61}[a-z0-9]))*$`)
 
-func isValidHostname(h string) bool {
-	return len(h) <= 255 && regexRfc1123.MatchString(h)
+func validateHostname(h string, f string) error {
+	if h == "" {
+		return fmt.Errorf("%s must not be empty", f)
+	}
+
+	if !(len(h) <= 255 && regexRfc1123.MatchString(h)) {
+		return fmt.Errorf("invalid %s %q", f, h)
+	}
+
+	return nil
 }
 
 var regexAgentPoolName = regexp.MustCompile(`^[a-z][a-z0-9]{0,11}$`)
@@ -41,20 +49,12 @@ func (p *Properties) Validate() error {
 		return fmt.Errorf("openShiftVersion must not be empty")
 	}
 
-	if p.PublicHostname == "" {
-		return fmt.Errorf("publicHostname must not be empty")
+	if err := validateHostname(p.PublicHostname, "publicHostname"); err != nil {
+		return err
 	}
 
-	if !isValidHostname(p.PublicHostname) {
-		return fmt.Errorf("invalid publicHostname %q", p.PublicHostname)
-	}
-
-	if p.RoutingConfigSubdomain == "" {
-		return fmt.Errorf("routingConfigSubdomain must not be empty")
-	}
-
-	if !isValidHostname(p.RoutingConfigSubdomain) {
-		return fmt.Errorf("invalid routingConfigSubdomain %q", p.RoutingConfigSubdomain)
+	if err := validateHostname(p.RoutingConfigSubdomain, "routingConfigSubdomain"); err != nil {
+		return err
 	}
 
 	if err := ValidatePools(p.ComputePools, p.InfraPool); err != nil {
@@ -64,12 +64,13 @@ func (p *Properties) Validate() error {
 	return p.ServicePrincipalProfile.Validate()
 }
 
+// ValidatePools validate pools validates infra and compute pools.
 func ValidatePools(compute AgentPoolProfiles, infra *InfraPoolProfile) error {
 	if infra == nil || len(compute) == 0 {
 		return fmt.Errorf("both infra and compute pools are required")
 	}
 
-	errs := []error{}
+	var errs []error
 
 	if len(compute) > 1 {
 		errs = append(errs, fmt.Errorf("only one compute pool is currently supported"))
@@ -93,19 +94,15 @@ func ValidatePools(compute AgentPoolProfiles, infra *InfraPoolProfile) error {
 		errs = append(errs, err)
 	}
 
-	if len(errs) > 0 {
-		return errors.NewAggregate(errs)
-	}
-
-	return nil
+	return errors.NewAggregate(errs)
 }
 
 // Validate validates an InfraPoolProfile.
 func (infra *InfraPoolProfile) Validate() error {
-	errs := []error{}
+	var errs []error
 
 	if !regexAgentPoolName.MatchString(infra.Name) {
-		return fmt.Errorf("invalid name %q", infra.Name)
+		errs = append(errs, fmt.Errorf("invalid name %q", infra.Name))
 	}
 
 	if infra.Count < 3 {
@@ -113,14 +110,10 @@ func (infra *InfraPoolProfile) Validate() error {
 	}
 
 	if infra.VMSize == "" {
-		return fmt.Errorf("vmSize must not be empty")
+		errs = append(errs, fmt.Errorf("vmSize must not be empty"))
 	}
 
-	if len(errs) > 0 {
-		return errors.NewAggregate(errs)
-	}
-
-	return nil
+	return errors.NewAggregate(errs)
 }
 
 // Validate validates an AgentPoolProfile struct
