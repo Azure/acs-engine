@@ -451,7 +451,7 @@ type AgentPoolProfile struct {
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 	MaxCount                     *int                 `json:"maxCount,omitempty"`
 	MinCount                     *int                 `json:"minCount,omitempty"`
-	AutoscalePool                bool                 `json:"autoscalePool,omitempty"`
+	AutoscalePool                *bool                `json:"autoscalePool,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role

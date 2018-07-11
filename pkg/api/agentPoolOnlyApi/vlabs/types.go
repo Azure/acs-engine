@@ -131,7 +131,7 @@ type AgentPoolProfile struct {
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	MaxCount            *int   `json:"maxCount,omitempty"`
 	MinCount            *int   `json:"minCount,omitempty"`
-	AutoscalePool       bool   `json:"autoscalePool,omitempty"`
+	AutoscalePool       *bool  `json:"autoscalePool,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
