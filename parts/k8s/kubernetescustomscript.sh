@@ -27,6 +27,9 @@ ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
+ERR_KATA_KEY_DOWNLOAD_TIMEOUT=60 # Timeout waiting to download kata repo key
+ERR_KATA_APT_KEY_TIMEOUT=61 # Timeout waiting for kata apt-key
+ERR_KATA_INSTALL_TIMEOUT=62 # Timeout waiting for kata install
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
@@ -281,6 +284,24 @@ function configNetworkPlugin() {
     fi
 }
 
+function installKataContainersRuntime() {
+    # Add Kata Containers repository key
+    echo "Adding Kata Containers repository key..."
+    KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
+    KATA_URL=http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/Release.key
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $KATA_URL > $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_KEY_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
+
+    # Add Kata Container repository
+    echo "Adding Kata Containers repository..."
+    echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/kata-containers.list
+
+    # Install Kata Containers runtime
+    echo "Installing Kata Containers runtime..."
+    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+    apt_get_install 20 30 120 kata-runtime || exit $ERR_KATA_INSTALL_TIMEOUT
+}
+
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
@@ -323,6 +344,8 @@ function setupContainerd() {
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+		echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
 	else
 		echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 	fi
@@ -344,13 +367,13 @@ function installContainerd() {
 	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
 
 	echo "Successfully installed cri-containerd..."
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
 		setupContainerd
 	fi
 }
 
 function ensureContainerd() {
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
 		# Enable and start cri-containerd service
 		# Make sure this is done after networking plugins are installed
 		echo "Enabling and starting cri-containerd service..."
@@ -546,6 +569,14 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		installClearContainersRuntime
 	fi
 fi
+
+if [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+	# Ensure we can nest virtualization
+	if grep -q vmx /proc/cpuinfo; then
+		installKataContainersRuntime
+	fi
+fi
+
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 
