@@ -430,6 +430,13 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerAzureCloud": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerAzureCloud"}}
+      "metadata": {
+        "description": "Name of the Azure cloud for the cluster autoscaler."
+      },
+      "type": "string"
+    },
     "kubernetesClusterAutoscalerCPULimit": {
       {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
       "metadata": {

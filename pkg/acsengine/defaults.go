@@ -105,6 +105,7 @@ var (
 
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
+		CloudName: azurePublicCloud,
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DefaultDockerSpecConfig,
 		//KubernetesSpecConfig is the default kubernetes container image url.
@@ -127,6 +128,7 @@ var (
 
 	//AzureGermanCloudSpec is the German cloud config.
 	AzureGermanCloudSpec = AzureEnvironmentSpecConfig{
+		CloudName:            azureGermanCloud,
 		DockerSpecConfig:     DefaultDockerSpecConfig,
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
 		DCOSSpecConfig:       DefaultDCOSSpecConfig,
@@ -147,6 +149,7 @@ var (
 
 	//AzureUSGovernmentCloud is the US government config.
 	AzureUSGovernmentCloud = AzureEnvironmentSpecConfig{
+		CloudName:            azureUSGovernmentCloud,
 		DockerSpecConfig:     DefaultDockerSpecConfig,
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
 		DCOSSpecConfig:       DefaultDCOSSpecConfig,
@@ -167,6 +170,7 @@ var (
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
+		CloudName: azureChinaCloud,
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DockerSpecConfig{
 			DockerEngineRepo:         "https://mirror.azure.cn/docker-engine/apt/repo/",

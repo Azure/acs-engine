@@ -171,6 +171,8 @@ spec:
         - --skip-nodes-with-local-storage=false
         - --nodes=<kubernetesClusterAutoscalerMinNodes>:<kubernetesClusterAutoscalerMaxNodes>:<kubernetesClusterAutoscalerVMSSName>
         env:
+        - name: ARM_CLOUD
+          value: "<kubernetesClusterAutoscalerAzureCloud>"
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
             secretKeyRef:
