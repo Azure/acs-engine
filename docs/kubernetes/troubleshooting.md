@@ -64,7 +64,17 @@ There are two symptoms where you may need to debug Custom Script Extension error
 - VMExtensionProvisioningError or VMExtensionProvisioningTimeout
 - `kubectl node` doesn't list the Windows node(s)
 
-To get more logs, you need to connect to the Windows nodes using Remote Desktop. Since the nodes are on a private IP range, you will need to use SSH local port forwarding from a master node.
+To get more logs, you need to connect to the Windows nodes using Remote Desktop - see [Connecting to Windows Nodes](#connecting-to-windows-nodes)
+
+Once connected, check the following logs for errors:
+ 
+ - `c:\Azure\CustomDataSetupScript.log`
+
+#### Connecting to Windows nodes
+
+Since the nodes are on a private IP range, you will need to use SSH local port forwarding from a master node to the Windows node to use remote.
+
+
 
 1. Get the IP of the Windows node with `az vm list` and `az vm show`
 
@@ -85,10 +95,35 @@ To get more logs, you need to connect to the Windows nodes using Remote Desktop.
 2. Forward a local port to the Windows port 3389, such as `ssh -L 5500:10.240.0.4:3389 <masternode>.<region>.cloudapp.azure.com`
 3. Run `mstsc.exe /v:localhost:5500`
 
-Once connected, check the following logs for errors:
- 
- - `c:\Azure\CustomDataSetupScript.log`
+Now, you can use the default CMD window or install other tools as needed with the GUI. If you would like to enable PowerShell remoting, continue on to step 4.
 
+4. Ansible uses PowerShell remoting over HTTPS, and has a convenient script to enable it. Run `PowerShell` on the Windows node, then these two steps to enable remoting.
+
+```
+Start-BitsTransfer https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1
+.\ConfigureRemotingForAnsible.ps1
+```
+
+5. Now, you're ready to connect from the Linux master to the Windows node:
+
+```
+$ docker run -it mcr.microsoft.com/powershell
+PowerShell v6.0.2
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/pscore6-docs
+Type 'help' to get help.
+
+PS /> $cred = Get-Credential
+
+PowerShell credential request
+Enter your credentials.
+User: azureuser
+Password for user azureuser: ************
+
+PS /> Enter-PSSession 20143k8s9000 -Credential $cred -Authentication Basic -UseSSL
+[20143k8s9000]: PS C:\Users\azureuser\Documents>
+```
 
 ## Windows kubelet & CNI errors
 
