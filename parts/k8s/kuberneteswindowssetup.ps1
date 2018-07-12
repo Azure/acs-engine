@@ -64,7 +64,6 @@ $global:KubeNetwork = "l2bridge"
 $global:KubeDnsSearchPath = "svc.cluster.local"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
-$global:UseAksExtension = "{{WrapAsVariable "UseAksExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
@@ -184,7 +183,6 @@ Write-AzureConfig()
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
-    "UseAksExtension": $global:UseAksExtension,
     "useInstanceMetadata": $global:UseInstanceMetadata
 }
 "@

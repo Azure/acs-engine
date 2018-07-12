@@ -61,8 +61,6 @@ Here are the valid values for the orchestrator types:
 | useInstanceMetadata             | no       | Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`                                                                                                                                                                                                                                                                                        |
 | useManagedIdentity              | no       | Includes and uses MSI identities for all interactions with the Azure Resource Manager (ARM) API. Instead of using a static service principal written to /etc/kubernetes/azure.json, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.9.1 or newer. (boolean - default == false) |
 
-| useAksExtension                 | no       | TBD. Default is `true` |
-
 #### addons
 
 `addons` describes various addons configuration. It is a child property of `kubernetesConfig`. Below is a list of currently available addons:

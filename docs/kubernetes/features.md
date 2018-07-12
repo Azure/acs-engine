@@ -26,10 +26,6 @@ Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 }
 ```
 
-<a name="feat-billing"></a>
-
-## AKS Billing Extension
-
 <a name="feat-managed-disks"></a>
 
 ## Optional: Disable Kubernetes Role-Based Access Control (RBAC)

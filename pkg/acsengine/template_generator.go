@@ -285,7 +285,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
 		"UseAksExtension": func() bool {
-			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseAksExtension)
+			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			return cloudSpecConfig.CloudName == azurePublicCloud
 		},
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
