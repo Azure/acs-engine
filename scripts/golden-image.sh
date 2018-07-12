@@ -13,6 +13,7 @@ DOCKER_REPO="https://apt.dockerproject.org/repo"
 DOCKER_ENGINE_VERSION="1.13.*"
 ADMINUSER="azureuser"
 VNET_CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz"
+CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz"
 HYPERKUBE_URL="k8s-gcrio.azureedge.net/hyperkube-amd64:v1.10.5"
 
 installDeps
