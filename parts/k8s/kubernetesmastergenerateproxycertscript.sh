@@ -52,7 +52,7 @@ if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
     etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})"
     sleep 5
     write_certs_to_disk_with_retry
-# If the etcdtl mk command failed, that means the key already exists
+# If the etcdctl mk command failed, that means the key already exists
 else
     sleep 5
     write_certs_to_disk_with_retry

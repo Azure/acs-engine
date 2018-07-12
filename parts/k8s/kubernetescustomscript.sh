@@ -61,6 +61,13 @@ else
     REBOOTREQUIRED=false
 fi
 
+if [ -f /var/log/azure/golden-image-install.complete ]; then
+    echo "detected golden image pre-install"
+    FULLINSTALL=true
+else
+    FULLINSTALL=false
+fi
+
 function testOutboundConnection() {
     retrycmd_if_failure 20 1 3 nc -v www.google.com 443 || retrycmd_if_failure 20 1 3 nc -v www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
 }
@@ -160,14 +167,15 @@ function installEtcd() {
     retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
+function holdWALinuxAgent() {
+    # make sure walinuxagent doesn't get updated in the middle of running this script
+    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+}
+
 function installDeps() {
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
-    echo `date`,`hostname`, apt-get_update_begin>>/opt/m
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    echo `date`,`hostname`, apt-get_update_end>>/opt/m
-    # make sure walinuxagent doesn't get updated in the middle of running this script
-    retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
     apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
@@ -335,8 +343,10 @@ function installClearContainersRuntime() {
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
+}
 
-	# Enable and start Clear Containers proxy service
+function ensureCCProxy() {
+    # Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy
 }
@@ -394,6 +404,8 @@ function ensureContainerd() {
 }
 
 function ensureDocker() {
+    echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+    usermod -aG docker ${ADMINUSER}
     wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
     retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
@@ -552,35 +564,41 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
     $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
-installDeps
+holdWALinuxAgent
+if $FULLINSTALL; then
+    installDeps
+fi
+ensureRpc
 
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
-    installDocker
+    if $FULLINSTALL; then
+        installDocker
+    fi
     ensureDocker
 fi
 
 configureK8s
 
-configNetworkPlugin
+if $FULLINSTALL; then
+    configNetworkPlugin
+fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    echo `date`,`hostname`, configAddonsStart>>/opt/m
     configAddons
-    echo `date`,`hostname`, configAddonsDone>>/opt/m
 fi
 
 # containerd needs to be installed before extractHyperkube
 # so runc is present.
-echo `date`,`hostname`, installContainerdStart>>/opt/m
-installContainerd
-echo `date`,`hostname`, extractHyperkubeStart>>/opt/m
-extractHyperkube
-echo `date`,`hostname`, extractHyperkubeDone>>/opt/m
+if $FULLINSTALL; then
+    installContainerd
+    extractHyperkube
+fi
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
 		installClearContainersRuntime
+        ensureCCProxy
 	fi
 fi
 
