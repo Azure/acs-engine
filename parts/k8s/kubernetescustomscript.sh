@@ -564,9 +564,6 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
     $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
-# TODO: remove
-FULLINSTALL=true
-
 holdWALinuxAgent
 if $FULLINSTALL; then
     installDeps
@@ -582,8 +579,10 @@ fi
 
 configureK8s
 
+configNetworkPlugin
+
 if $FULLINSTALL; then
-    configNetworkPlugin
+    #configNetworkPlugin
 fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
