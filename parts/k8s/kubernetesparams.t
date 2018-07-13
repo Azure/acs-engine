@@ -659,11 +659,12 @@
     "containerRuntime": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
       "metadata": {
-        "description": "The container runtime to use (docker|clear-containers|containerd)"
+        "description": "The container runtime to use (docker|clear-containers|kata-containers|containerd)"
       },
       "allowedValues": [
         "docker",
         "clear-containers",
+        "kata-containers",
         "containerd"
       ],
       "type": "string"

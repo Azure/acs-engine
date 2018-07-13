@@ -1083,6 +1083,18 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 		)
 	}
 
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "kata-containers"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on kata-containers for windows clusters",
+		)
+	}
+
 	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "containerd"
 	p.AgentPoolProfiles = []*AgentPoolProfile{
 		{
