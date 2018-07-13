@@ -28,6 +28,7 @@ import (
 
 const (
 	WorkloadDir = "workloads"
+	PolicyDir   = "workloads/policies"
 )
 
 var (
@@ -716,12 +717,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(pass).To(BeTrue())
 				}
 
-				var networkPolicyName string
+				var (
+					networkPolicyName string
+					namespace         string
+				)
+				AfterEach(func() {
+					By("Cleaning up after ourselves")
+					networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				})
 
 				Context("With a network policy to deny egress access", func() {
 					It("should deny egress connection from nginx pods", func() {
-						networkPolicyName = "default-deny-egress"
-						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "default-deny-egress-policy.yaml"), networkPolicyName, nsClient)
+						networkPolicyName, namespace = "default-deny-egress", nsClient
+						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-egress-policy.yaml"), networkPolicyName, namespace)
 						Expect(err).NotTo(HaveOccurred())
 
 						By("Ensuring we no longer have outbound internet access from the nginx pods")
@@ -733,8 +741,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					})
 				})
 
-				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, nsClient)
 				// TODO delete networkpolicy
 				// Expect(err).NotTo(HaveOccurred())
 				err = clientDeploy.Delete()
