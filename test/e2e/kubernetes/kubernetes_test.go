@@ -721,6 +721,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					networkPolicyName string
 					namespace         string
 				)
+
 				AfterEach(func() {
 					By("Cleaning up after ourselves")
 					networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
@@ -732,11 +733,28 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-egress-policy.yaml"), networkPolicyName, namespace)
 						Expect(err).NotTo(HaveOccurred())
 
-						By("Ensuring we no longer have outbound internet access from the nginx pods")
+						By("Ensuring we no longer have outbound internet access from the nginx client pods")
 						for _, clientPod := range clientPods {
 							pass, err := clientPod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
 							Expect(err).Should(HaveOccurred())
 							Expect(pass).To(BeFalse())
+						}
+					})
+				})
+
+				Context("With a network policy to deny ingress access", func() {
+					It("should deny ingress connection from nginx pods", func() {
+						networkPolicyName, namespace = "default-allow-egress", nsServer
+						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-ingress-policy.yaml"), networkPolicyName, namespace)
+						Expect(err).NotTo(HaveOccurred())
+
+						By("Ensuring we no longer have inbound internet access from the nginx server pods")
+						for _, clientPod := range clientPods {
+							for _, serverPod := range serverPods {
+								pass, err := clientPod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+								Expect(err).Should(HaveOccurred())
+								Expect(pass).To(BeFalse())
+							}
 						}
 					})
 				})
