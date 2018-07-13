@@ -63,12 +63,6 @@ func PointerToBool(b bool) *bool {
 	return &p
 }
 
-// PointerToInt returns a pointer to a int
-func PointerToInt(i int) *int {
-	p := i
-	return &p
-}
-
 // CreateSSH creates an SSH key pair.
 func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, publicKeyString string, err error) {
 	privateKey, err = rsa.GenerateKey(rg, SSHKeySize)
