@@ -22,4 +22,9 @@ configAzureCNI
 installContainerd
 extractHyperkube
 
+img unpack $HYPERKUBE_URL
+cp /home/azureuser/rootfs/hyperkube /usr/local/bin/kubelet
+cp /home/azureuser/rootfs/hyperkube /usr/local/bin/kubectl
+chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
+
 echo "Install complete successfully" > /var/log/azure/golden-image-install.complete
