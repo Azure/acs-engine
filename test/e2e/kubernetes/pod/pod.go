@@ -429,7 +429,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, master, sshKeyPath string) bool {
 	hostIP := p.Status.HostIP
 	if len(p.Spec.Containers) == 0 || len(p.Spec.Containers[0].Ports) == 0 {
-		log.Printf("Unexpectd POD container spec: %v. Should have hostPort.\n", p.Spec)
+		log.Printf("Unexpected POD container spec: %v. Should have hostPort.\n", p.Spec)
 		return false
 	}
 	hostPort := p.Spec.Containers[0].Ports[0].HostPort
@@ -439,8 +439,7 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 
 	for i := 0; i < attempts; i++ {
 		cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
-		util.PrintCommand(cmd)
-		out, err := cmd.CombinedOutput()
+		out, err := util.RunAndLogCommand(cmd)
 		if err == nil {
 			matched, _ := regexp.MatchString(check, string(out))
 			if matched {

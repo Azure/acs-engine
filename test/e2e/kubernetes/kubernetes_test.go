@@ -724,24 +724,30 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a windows agent pool", func() {
 		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
+				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+
+				By("Creating a deployment with 1 pod running IIS")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, -1)
+				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Waiting on pod to be Ready")
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
+				By("Exposing a LoadBalancer for the pod")
 				err = iisDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
-
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Verifying that the service is reachable and returns the default IIS start page")
 				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
+				By("Checking that each pod can reach http://www.bing.com")
 				iisPods, err := iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
@@ -751,6 +757,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(pass).To(BeTrue())
 				}
 
+				By("Verifying pods & services can be deleted")
 				err = iisDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()
@@ -774,14 +781,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		// Windows Bug 16598869
+		// Windows Bug 18213017: Kubernetes Hostport mappings don't work
 		/*
 			It("should be able to reach hostport in an iis webserver", func() {
 				if eng.HasWindowsAgents() {
 					r := rand.New(rand.NewSource(time.Now().UnixNano()))
 					hostport := 8123
 					deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-					iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, hostport)
+					iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, hostport)
 					Expect(err).NotTo(HaveOccurred())
 
 					running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
@@ -815,6 +822,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					// Failure in 1.11+ - https://github.com/kubernetes/kubernetes/issues/65845
 					Skip("Kubernetes 1.11 has a known issue creating Azure PersistentVolumeClaims")
 				} else if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
+					By("Creating an AzureFile storage class")
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())
@@ -822,6 +830,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
+					By("Creating a persistent volume claim")
 					pvcName := "pvc-azurefile" // should be the same as in pvc-azurefile.yaml
 					pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-azurefile.yaml"), pvcName, "default")
 					Expect(err).NotTo(HaveOccurred())
@@ -829,13 +838,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
-					podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
-					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default")
+					By("Launching an IIS pod using the volume claim")
+					podName := "iis-azurefile"                                                                                 // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default") // BUG: this should support OS versioning
 					Expect(err).NotTo(HaveOccurred())
 					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
+					By("Checking that the pod can access volume")
 					valid, err := iisPod.ValidateAzureFile("mnt\\azure", 10, 10*time.Second)
 					Expect(valid).To(BeTrue())
 					Expect(err).NotTo(HaveOccurred())
