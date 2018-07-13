@@ -239,7 +239,7 @@ func tryLoadCachedToken(cachePath string) (*adal.Token, error) {
 }
 
 func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthConfig, string, error) {
-	tenantID, err := acsengine.GetTenantID(env, subscriptionID)
+	tenantID, err := acsengine.GetTenantID(env.ResourceManagerEndpoint, subscriptionID)
 	if err != nil {
 		return nil, "", err
 	}

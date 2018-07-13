@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,10 +12,9 @@ import (
 // GetTenantID figures out the AAD tenant ID of the subscription by making an
 // unauthenticated request to the Get Subscription Details endpoint and parses
 // the value from WWW-Authenticate header.
-func GetTenantID(env azure.Environment, subscriptionID string) (string, error) {
+func GetTenantID(resourceManagerEndpoint string, subscriptionID string) (string, error) {
 	const hdrKey = "WWW-Authenticate"
-	c := subscriptions.NewGroupClient()
-	c.BaseURI = env.ResourceManagerEndpoint
+	c := subscriptions.NewGroupClientWithBaseURI(resourceManagerEndpoint)
 
 	log.Debugf("Resolving tenantID for subscriptionID: %s", subscriptionID)
 
