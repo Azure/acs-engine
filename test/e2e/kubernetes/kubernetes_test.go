@@ -675,24 +675,43 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with calico or azure network policy enabled", func() {
 		It("should apply various network policies and enforce access to nginx pod", func() {
 			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") {
-				nsDefault := "default"
-				By("Creating a nginx deployment")
+				nsClient, nsServer := "client", "server"
+				By("Creating client and server nginx deployments")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
-				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, nsDefault, "")
+				randInt := r.Intn(99999)
+				clientDeploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, randInt)
+				serverDeploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, randInt+100000)
+				clientDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", clientDeploymentName, nsClient, "")
+				Expect(err).NotTo(HaveOccurred())
+				serverDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", serverDeploymentName, nsServer, "")
 				Expect(err).NotTo(HaveOccurred())
 
-				By("Ensure there is a Running nginx pod")
-				running, err := pod.WaitOnReady(deploymentName, nsDefault, 3, 30*time.Second, cfg.Timeout)
+				By("Ensure there is a Running nginx client pod")
+				running, err := pod.WaitOnReady(clientDeploymentName, nsClient, 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
-				By("Ensuring we have outbound internet access from the nginx pods")
-				nginxPods, err := nginxDeploy.Pods()
+				By("Ensure there is a Running nginx server pod")
+				running, err = pod.WaitOnReady(serverDeploymentName, nsClient, 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(len(nginxPods)).ToNot(BeZero())
-				for _, nginxPod := range nginxPods {
-					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+				Expect(running).To(Equal(true))
+
+				By("Ensuring we have outbound internet access from the nginx client pods")
+				clientPods, err := clientDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(clientPods)).ToNot(BeZero())
+				for _, clientPod := range clientPods {
+					pass, err := clientPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Ensuring we have outbound internet access from the nginx server pods")
+				serverPods, err := serverDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(clientPods)).ToNot(BeZero())
+				for _, serverPod := range serverPods {
+					pass, err := serverPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
@@ -701,13 +720,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				Context("With a network policy to deny egress access", func() {
 					It("should deny egress connection from nginx pods", func() {
-						networkPolicyName := "default-deny-egress"
-						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "default-deny-egress-policy.yaml"), networkPolicyName, nsDefault)
+						networkPolicyName = "default-deny-egress"
+						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(WorkloadDir, "default-deny-egress-policy.yaml"), networkPolicyName, nsClient)
 						Expect(err).NotTo(HaveOccurred())
 
 						By("Ensuring we no longer have outbound internet access from the nginx pods")
-						for _, nginxPod := range nginxPods {
-							pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
+						for _, clientPod := range clientPods {
+							pass, err := clientPod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
 							Expect(err).Should(HaveOccurred())
 							Expect(pass).To(BeFalse())
 						}
@@ -715,10 +734,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				})
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, nsDefault)
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, nsClient)
 				// TODO delete networkpolicy
 				// Expect(err).NotTo(HaveOccurred())
-				err = nginxDeploy.Delete()
+				err = clientDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = serverDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("Calico or Azure network policy was not provisioned for this Cluster Definition")
