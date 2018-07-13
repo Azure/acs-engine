@@ -19,12 +19,13 @@ The cluster definition file enables you to customize your Docker enabled cluster
 
 ## User guides
 
-* [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom Docker enabled container clusters
+* [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom container clusters
 * [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
-* [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
-* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
-* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift enabled Docker cluster on Azure
-* [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
+* [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS cluster on Azure
+* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes cluster on Azure
+  * [Kubernetes Walkthrough (Windows)](docs/kubernetes/windows.md) - shows how to create a Kubernetes cluster on Azure for Windows containers
+* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift cluster on Azure
+* [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
