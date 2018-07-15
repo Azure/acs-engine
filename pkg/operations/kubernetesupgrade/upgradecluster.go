@@ -11,7 +11,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/blang/semver"
-	uuid "github.com/satori/go.uuid"
+	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -239,11 +240,11 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error {
 	arr := strings.Split(vmOrchestratorTypeAndVersion, ":")
 	if len(arr) != 2 {
-		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
+		return errors.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
 	}
 	currentVer, err := semver.Make(arr[1])
 	if err != nil {
-		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer.String())
+		return errors.Errorf("Unsupported orchestrator version format %s", currentVer.String())
 	}
 	csOrch := &api.OrchestratorProfile{
 		OrchestratorType:    api.Kubernetes,
@@ -258,7 +259,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 			return nil
 		}
 	}
-	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	return errors.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {

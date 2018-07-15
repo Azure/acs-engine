@@ -2,7 +2,7 @@ package vlabs
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -212,7 +212,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, OpenShift):
 		o.OrchestratorType = OpenShift
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }

@@ -2,7 +2,7 @@ package v20160330
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	neturl "net/url"
 	"strings"
 )
@@ -215,7 +215,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, Mesos):
 		o.OrchestratorType = Mesos
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }

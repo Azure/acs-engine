@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/pkg/errors"
 )
 
 type ContainerService struct {
@@ -162,5 +163,45 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 
 	if publicKey != expectedPublicKeyString {
 		t.Fatalf("Public Key did not match expected format/value")
+	}
+}
+
+func TestEqualError(t *testing.T) {
+	testcases := []struct {
+		errA     error
+		errB     error
+		expected bool
+	}{
+		{
+			errA:     nil,
+			errB:     nil,
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     nil,
+			expected: false,
+		},
+		{
+			errA:     nil,
+			errB:     errors.New("sample error"),
+			expected: false,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     errors.New("sample error"),
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error 1"),
+			errB:     errors.New("sample error 2"),
+			expected: false,
+		},
+	}
+
+	for _, test := range testcases {
+		if EqualError(test.errA, test.errB) != test.expected {
+			t.Errorf("expected EqualError to return %t for errors %s and %s", test.expected, test.errA, test.errB)
+		}
 	}
 }

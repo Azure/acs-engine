@@ -62,7 +62,7 @@ type MockKubernetesClient struct {
 //ListPods returns all Pods running on the passed in node
 func (mkc *MockKubernetesClient) ListPods(node *v1.Node) (*v1.PodList, error) {
 	if mkc.FailListPods {
-		return nil, fmt.Errorf("ListPods failed")
+		return nil, errors.New("ListPods failed")
 	}
 	if mkc.PodsList != nil {
 		return mkc.PodsList, nil
@@ -73,7 +73,7 @@ func (mkc *MockKubernetesClient) ListPods(node *v1.Node) (*v1.PodList, error) {
 //GetNode returns details about node with passed in name
 func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
 	if mkc.FailGetNode {
-		return nil, fmt.Errorf("GetNode failed")
+		return nil, errors.New("GetNode failed")
 	}
 	node := &v1.Node{}
 	node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{Type: v1.NodeReady, Status: v1.ConditionTrue})
@@ -86,7 +86,7 @@ func (mkc *MockKubernetesClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
 		return mkc.UpdateNodeFunc(node)
 	}
 	if mkc.FailUpdateNode {
-		return nil, fmt.Errorf("UpdateNode failed")
+		return nil, errors.New("UpdateNode failed")
 	}
 	return node, nil
 }
@@ -94,7 +94,7 @@ func (mkc *MockKubernetesClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
 //DeleteNode deregisters node in the api server
 func (mkc *MockKubernetesClient) DeleteNode(name string) error {
 	if mkc.FailDeleteNode {
-		return fmt.Errorf("DeleteNode failed")
+		return errors.New("DeleteNode failed")
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (mkc *MockKubernetesClient) DeleteNode(name string) error {
 //SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported
 func (mkc *MockKubernetesClient) SupportEviction() (string, error) {
 	if mkc.FailSupportEviction {
-		return "", fmt.Errorf("SupportEviction failed")
+		return "", errors.New("SupportEviction failed")
 	}
 	if mkc.ShouldSupportEviction {
 		return "version", nil
@@ -113,7 +113,7 @@ func (mkc *MockKubernetesClient) SupportEviction() (string, error) {
 //DeletePod deletes the passed in pod
 func (mkc *MockKubernetesClient) DeletePod(pod *v1.Pod) error {
 	if mkc.FailDeletePod {
-		return fmt.Errorf("DeletePod failed")
+		return errors.New("DeletePod failed")
 	}
 	return nil
 }
@@ -121,7 +121,7 @@ func (mkc *MockKubernetesClient) DeletePod(pod *v1.Pod) error {
 //EvictPod evicts the passed in pod using the passed in api version
 func (mkc *MockKubernetesClient) EvictPod(pod *v1.Pod, policyGroupVersion string) error {
 	if mkc.FailEvictPod {
-		return fmt.Errorf("EvictPod failed")
+		return errors.New("EvictPod failed")
 	}
 	return nil
 }
@@ -129,7 +129,7 @@ func (mkc *MockKubernetesClient) EvictPod(pod *v1.Pod, policyGroupVersion string
 //WaitForDelete waits until all pods are deleted. Returns all pods not deleted and an error on failure
 func (mkc *MockKubernetesClient) WaitForDelete(logger *log.Entry, pods []v1.Pod, usingEviction bool) ([]v1.Pod, error) {
 	if mkc.FailWaitForDelete {
-		return nil, fmt.Errorf("WaitForDelete failed")
+		return nil, errors.New("WaitForDelete failed")
 	}
 	return []v1.Pod{}, nil
 }
@@ -219,7 +219,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 //EnsureResourceGroup mock
 func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error) {
 	if mc.FailEnsureResourceGroup {
-		return nil, fmt.Errorf("EnsureResourceGroup failed")
+		return nil, errors.New("EnsureResourceGroup failed")
 	}
 
 	return nil, nil
@@ -228,7 +228,7 @@ func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location strin
 //ListVirtualMachines mock
 func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (compute.VirtualMachineListResult, error) {
 	if mc.FailListVirtualMachines {
-		return compute.VirtualMachineListResult{}, fmt.Errorf("ListVirtualMachines failed")
+		return compute.VirtualMachineListResult{}, errors.New("ListVirtualMachines failed")
 	}
 
 	vm1Name := "k8s-agentpool1-12345678-0"
@@ -279,7 +279,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 //ListVirtualMachineScaleSets mock
 func (mc *MockACSEngineClient) ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error) {
 	if mc.FailListVirtualMachineScaleSets {
-		return compute.VirtualMachineScaleSetListResult{}, fmt.Errorf("ListVirtualMachines failed")
+		return compute.VirtualMachineScaleSetListResult{}, errors.New("ListVirtualMachines failed")
 	}
 
 	return compute.VirtualMachineScaleSetListResult{}, nil
@@ -288,7 +288,7 @@ func (mc *MockACSEngineClient) ListVirtualMachineScaleSets(resourceGroup string)
 //GetVirtualMachine mock
 func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (compute.VirtualMachine, error) {
 	if mc.FailGetVirtualMachine {
-		return compute.VirtualMachine{}, fmt.Errorf("GetVirtualMachine failed")
+		return compute.VirtualMachine{}, errors.New("GetVirtualMachine failed")
 	}
 
 	vm1Name := "k8s-agentpool1-12345678-0"
@@ -351,7 +351,7 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 			defer func() {
 				close(respChan)
 			}()
-			errChan <- fmt.Errorf("DeleteVirtualMachine failed")
+			errChan <- errors.New("DeleteVirtualMachine failed")
 		}()
 		return respChan, errChan
 	}
@@ -383,7 +383,7 @@ func (mc *MockACSEngineClient) DeleteVirtualMachineScaleSetVM(resourceGroup, vir
 			defer func() {
 				close(respChan)
 			}()
-			errChan <- fmt.Errorf("DeleteVirtualMachineScaleSetVM failed")
+			errChan <- errors.New("DeleteVirtualMachineScaleSetVM failed")
 		}()
 		return respChan, errChan
 	}
@@ -415,7 +415,7 @@ func (mc *MockACSEngineClient) SetVirtualMachineScaleSetCapacity(resourceGroup, 
 			defer func() {
 				close(respChan)
 			}()
-			errChan <- fmt.Errorf("SetVirtualMachineScaleSetCapacity failed")
+			errChan <- errors.New("SetVirtualMachineScaleSetCapacity failed")
 		}()
 		return respChan, errChan
 	}
@@ -438,7 +438,7 @@ func (mc *MockACSEngineClient) SetVirtualMachineScaleSetCapacity(resourceGroup, 
 //ListVirtualMachineScaleSetVMs mock
 func (mc *MockACSEngineClient) ListVirtualMachineScaleSetVMs(resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResult, error) {
 	if mc.FailDeleteVirtualMachineScaleSetVM {
-		return compute.VirtualMachineScaleSetVMListResult{}, fmt.Errorf("DeleteVirtualMachineScaleSetVM failed")
+		return compute.VirtualMachineScaleSetVMListResult{}, errors.New("DeleteVirtualMachineScaleSetVM failed")
 	}
 
 	return compute.VirtualMachineScaleSetVMListResult{}, nil
@@ -447,7 +447,7 @@ func (mc *MockACSEngineClient) ListVirtualMachineScaleSetVMs(resourceGroup, virt
 //GetStorageClient mock
 func (mc *MockACSEngineClient) GetStorageClient(resourceGroup, accountName string) (ACSStorageClient, error) {
 	if mc.FailGetStorageClient {
-		return nil, fmt.Errorf("GetStorageClient failed")
+		return nil, errors.New("GetStorageClient failed")
 	}
 
 	return &MockStorageClient{}, nil
@@ -465,7 +465,7 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 			defer func() {
 				close(respChan)
 			}()
-			errChan <- fmt.Errorf("DeleteNetworkInterface failed")
+			errChan <- errors.New("DeleteNetworkInterface failed")
 		}()
 		return respChan, errChan
 	}
@@ -545,7 +545,7 @@ func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName
 //GetKubernetesClient mock
 func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error) {
 	if mc.FailGetKubernetesClient {
-		return nil, fmt.Errorf("GetKubernetesClient failed")
+		return nil, errors.New("GetKubernetesClient failed")
 	}
 
 	if mc.MockKubernetesClient == nil {
@@ -557,7 +557,7 @@ func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string,
 // ListProviders mock
 func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, error) {
 	if mc.FailListProviders {
-		return resources.ProviderListResult{}, fmt.Errorf("ListProviders failed")
+		return resources.ProviderListResult{}, errors.New("ListProviders failed")
 	}
 
 	return resources.ProviderListResult{}, nil
@@ -609,7 +609,7 @@ func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults r
 // DeleteRoleAssignmentByID deletes a roleAssignment via its unique identifier
 func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
 	if mc.FailDeleteRoleAssignment {
-		return authorization.RoleAssignment{}, fmt.Errorf("DeleteRoleAssignmentByID failed")
+		return authorization.RoleAssignment{}, errors.New("DeleteRoleAssignmentByID failed")
 	}
 
 	return authorization.RoleAssignment{}, nil

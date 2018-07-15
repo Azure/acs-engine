@@ -3,12 +3,12 @@ package persistentvolumeclaims
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os/exec"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // PersistentVolumeClaims is used to parse data from kubectl get pvc
@@ -80,7 +80,7 @@ func (pvc *PersistentVolumeClaims) WaitOnReady(namespace string, sleep, duration
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for PersistentVolumeClaims (%s) to become ready", duration.String(), pvc.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for PersistentVolumeClaims (%s) to become ready", duration.String(), pvc.Metadata.Name)
 			default:
 				query, _ := Get(pvc.Metadata.Name, namespace)
 				if query != nil && query.Status.Phase == "Bound" {

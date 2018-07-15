@@ -2,7 +2,7 @@ package v20170701
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -262,7 +262,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, DockerCE):
 		o.OrchestratorType = DockerCE
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }

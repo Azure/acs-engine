@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/remote"
+	"github.com/pkg/errors"
 )
 
 // Cluster holds information on how to communicate with the the dcos instances
@@ -159,7 +160,7 @@ func (c *Cluster) WaitForNodes(nodeCount int, sleep, duration time.Duration) boo
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for nodes to become ready", duration.String())
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for nodes to become ready", duration.String())
 			default:
 				nodes, err := c.GetNodes()
 				ready := true
@@ -289,7 +290,7 @@ func (c *Cluster) InstallMarathonApp(filepath string, sleep, duration time.Durat
 		}
 		ready := c.WaitOnReady(app.ID, sleep, duration)
 		if !ready {
-			return 0, fmt.Errorf("App %s was never installed", app.ID)
+			return 0, errors.Errorf("App %s was never installed", app.ID)
 		}
 	}
 	return port, nil
@@ -343,7 +344,7 @@ func (c *Cluster) WaitOnReady(path string, sleep, duration time.Duration) bool {
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for app (%s) to become ready", duration.String(), path)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for app (%s) to become ready", duration.String(), path)
 			default:
 				if c.AppExists(path) && c.AppHealthy(path) {
 					time.Sleep(sleep)

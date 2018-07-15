@@ -146,7 +146,7 @@ func (c *Connection) ExecuteWithRetries(cmd string, sleep, duration time.Duratio
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for command to not return an error: %s", duration.String(), cmd)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for command to not return an error: %s", duration.String(), cmd)
 			default:
 				out, err := c.Execute(cmd)
 				if err == nil {

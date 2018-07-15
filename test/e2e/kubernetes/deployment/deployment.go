@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // List holds a list of deployments returned from kubectl get deploy
@@ -192,7 +193,7 @@ func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]po
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
 			default:
 				pods, err := pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
 				if err != nil {

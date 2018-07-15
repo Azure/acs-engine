@@ -1,13 +1,12 @@
 package v20170701
 
 import (
-	"errors"
-	"fmt"
 	"net"
 	"regexp"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
-	validator "gopkg.in/go-playground/validator.v9"
+	"github.com/pkg/errors"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var (
@@ -37,16 +36,16 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 			case common.DCOSVersion1Dot8Dot8:
 			case "":
 			default:
-				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+				return errors.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 			}
 		case DockerCE:
 		case Kubernetes:
 			if k8sVersion := o.OrchestratorVersion; !common.AllKubernetesSupportedVersions[k8sVersion] && o.OrchestratorVersion != "" {
-				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+				return errors.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 			}
 
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+			return errors.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 		}
 	} else {
 		switch o.OrchestratorType {
@@ -54,7 +53,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, hasWindows)
 			// if there isn't a supported patch version for this version fail
 			if patchVersion == "" {
-				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+				return errors.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 			}
 		}
 	}
@@ -82,10 +81,10 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		a.DNSPrefix = ""
 		a.Ports = []int{}
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
-			return fmt.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
+			return errors.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
 		}
 		if e := validate.Var(a.Ports, "len=0"); e != nil {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
+			return errors.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
 		}
 	}
 	if a.DNSPrefix != "" {
@@ -101,7 +100,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	} else {
 		if e := validate.Var(a.Ports, "len=0"); e != nil {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
+			return errors.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
 		}
 	}
 	return nil
@@ -112,7 +111,7 @@ func (l *LinuxProfile) Validate() error {
 	// Don't need to call validate.Struct(l)
 	// It is handled by Properties.Validate()
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
-		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
+		return errors.New("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
 	return nil
 }
@@ -141,25 +140,25 @@ func (a *Properties) Validate(isUpdate bool) error {
 
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
 		if a.ServicePrincipalProfile == nil {
-			return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			return errors.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 		}
 		if e := validate.Var(a.ServicePrincipalProfile.ClientID, "required"); e != nil {
-			return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			return errors.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 		}
 		if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
 			(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
-			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			return errors.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 		}
 
 		if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {
 			if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID, "required"); e != nil {
-				return fmt.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				return errors.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 			if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
-				return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				return errors.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 			if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
-				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+				return errors.New("service principal client keyvault secret reference is of incorrect format")
 			}
 		}
 	}
@@ -171,21 +170,21 @@ func (a *Properties) Validate(isUpdate bool) error {
 
 		if agentPoolProfile.OSType == Windows {
 			if a.WindowsProfile == nil {
-				return fmt.Errorf("missing WindowsProfile")
+				return errors.New("missing WindowsProfile")
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Kubernetes:
 			default:
-				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
+				return errors.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
 			if a.WindowsProfile == nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return errors.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if len(a.WindowsProfile.AdminUsername) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return errors.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return errors.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 		}
 	}
@@ -204,7 +203,7 @@ func validatePoolName(poolName string) error {
 	}
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
-		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+		return errors.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
 	}
 	return nil
 }
@@ -213,7 +212,7 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
-			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
+			return errors.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
 	}
@@ -224,7 +223,7 @@ func validateUniquePorts(ports []int, name string) error {
 	portMap := make(map[int]bool)
 	for _, port := range ports {
 		if _, ok := portMap[port]; ok {
-			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
+			return errors.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
 		}
 		portMap[port] = true
 	}
@@ -235,7 +234,7 @@ func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
-			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
+			return errors.New("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
 		}
 	}
 	if isCustomVNET {
@@ -258,7 +257,7 @@ func validateVNET(a *Properties) error {
 
 		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
 		if masterFirstIP == nil {
-			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
+			return errors.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 	}
 	return nil
