@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/namespace"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/networkpolicy"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/persistentvolumeclaims"
@@ -677,6 +678,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should apply various network policies and enforce access to nginx pod", func() {
 			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") {
 				nsClientOne, nsClientTwo, nsServer := "client-one", "client-two", "server"
+				By("Creating namespaces")
+				_, err := namespace.Create(nsClientOne)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = namespace.Create(nsClientTwo)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = namespace.Create(nsServer)
+				Expect(err).NotTo(HaveOccurred())
 				By("Creating client and server nginx deployments")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				randInt := r.Intn(99999)
