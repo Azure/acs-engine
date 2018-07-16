@@ -73,7 +73,7 @@ function testOutboundConnection() {
 }
 
 function waitForCloudInit() {
-    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    wait_for_file 1200 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
 }
 
 function systemctlEnableAndStart() {
@@ -458,7 +458,7 @@ function ensureK8sControlPlane() {
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 600 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     ensurePodSecurityPolicy
 }
 
