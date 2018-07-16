@@ -50,7 +50,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 	} else {
 		switch o.OrchestratorType {
 		case DCOS, Kubernetes:
-			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, hasWindows)
+			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion, isUpdate, hasWindows)
 			// if there isn't a supported patch version for this version fail
 			if patchVersion == "" {
 				return errors.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)

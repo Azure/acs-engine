@@ -25,7 +25,7 @@ func init() {
 		OpenShift:  openShiftInfo,
 	}
 	versionsMap = map[string][]string{
-		Kubernetes: common.GetAllSupportedKubernetesVersions(),
+		Kubernetes: common.GetAllSupportedKubernetesVersions(true, false),
 		DCOS:       common.GetAllSupportedDCOSVersions(),
 		Swarm:      common.GetAllSupportedSwarmVersions(),
 		SwarmMode:  common.GetAllSupportedDockerCEVersions(),
@@ -142,7 +142,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
-		for _, ver := range common.GetAllSupportedKubernetesVersions() {
+		for _, ver := range common.GetAllSupportedKubernetesVersions(true, false) {
 			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorVersion: ver})
 			if err != nil {
 				return nil, err
@@ -153,7 +153,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 						OrchestratorType:    Kubernetes,
 						OrchestratorVersion: ver,
 					},
-					Default:  ver == common.GetDefaultKubernetesVersion(),
+					Default:  ver == common.GetDefaultKubernetesVersion(false),
 					Upgrades: upgrades,
 				})
 		}
@@ -172,7 +172,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 					OrchestratorType:    Kubernetes,
 					OrchestratorVersion: csOrch.OrchestratorVersion,
 				},
-				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(),
+				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(false),
 				Upgrades: upgrades,
 			})
 	}
@@ -187,7 +187,7 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 		return nil, err
 	}
 	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0"
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
+	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
 	for _, ver := range upgradeableVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,

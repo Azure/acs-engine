@@ -28,8 +28,8 @@ var _ = Describe("v20180331 test suite", func() {
 			Locale: locale,
 		},
 	}
-	k8sVersions := common.GetAllSupportedKubernetesVersions()
-	defaultK8sVersion := common.GetDefaultKubernetesVersion()
+	k8sVersions := common.GetAllSupportedKubernetesVersions(true, false)
+	defaultK8sVersion := common.GetDefaultKubernetesVersion(false)
 
 	Context("when networkprofile is nil, enable the addon profile", func() {
 		It("should merge fields properly", func() {
