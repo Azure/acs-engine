@@ -1133,8 +1133,8 @@ func validatePoolOSType(os OSType) error {
 }
 
 func validatePoolAcceleratedNetworking(VMSize string, AcceleratedNetworking bool) error {
-	if AcceleratedNetworking == true {
-		if helpers.AcceleratedNetworkingSupported(VMSize) != helpers.PointerToBool(AcceleratedNetworking) {
+	if AcceleratedNetworking {
+		if helpers.AcceleratedNetworkingSupported(VMSize) != AcceleratedNetworking {
 			return fmt.Errorf("The AgentPoolProfile.vmsize does not support AgentPoolProfile.acceleratedNetworking")
 		}
 	}
