@@ -2,6 +2,7 @@ package vlabs
 
 import (
 	"encoding/base64"
+	"fmt"
 	"net"
 	"net/url"
 	"reflect"
