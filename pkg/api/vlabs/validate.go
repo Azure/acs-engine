@@ -347,8 +347,9 @@ func (a *Properties) validateAgentPoolProfiles() error {
 		if e := validatePoolOSType(agentPoolProfile.OSType); e != nil {
 			return e
 		}
-		if agentPoolProfile.AcceleratedNetworkingEnabled != nil {
-			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize, *agentPoolProfile.AcceleratedNetworkingEnabled); e != nil {
+
+		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) {
+			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize); e != nil {
 				return e
 			}
 		}
@@ -1132,11 +1133,9 @@ func validatePoolOSType(os OSType) error {
 	return nil
 }
 
-func validatePoolAcceleratedNetworking(VMSize string, AcceleratedNetworking bool) error {
-	if AcceleratedNetworking {
-		if helpers.AcceleratedNetworkingSupported(VMSize) != AcceleratedNetworking {
-			return fmt.Errorf("The AgentPoolProfile.vmsize does not support AgentPoolProfile.acceleratedNetworking")
-		}
+func validatePoolAcceleratedNetworking(VMSize string) error {
+	if !helpers.AcceleratedNetworkingSupported(VMSize) {
+		return fmt.Errorf("The AgentPoolProfile.vmsize does not support AgentPoolProfile.acceleratedNetworking")
 	}
 	return nil
 }
