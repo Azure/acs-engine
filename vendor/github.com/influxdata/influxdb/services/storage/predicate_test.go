@@ -60,7 +60,6 @@ func TestNodeToExpr(t *testing.T) {
 	cases := []struct {
 		n string
 		r *storage.Node
-		m map[string]string
 		e string
 	}{
 		{
@@ -76,7 +75,7 @@ func TestNodeToExpr(t *testing.T) {
 			e: `host = 'host1'`,
 		},
 		{
-			n: "logical AND with regex",
+			n: "locical AND with regex",
 			r: &storage.Node{
 				NodeType: storage.NodeTypeLogicalExpression,
 				Value:    &storage.Node_Logical_{Logical: storage.LogicalAnd},
@@ -101,48 +100,11 @@ func TestNodeToExpr(t *testing.T) {
 			},
 			e: `host = 'host1' AND region =~ /^us-west/`,
 		},
-		{
-			n: "optimisable regex",
-			r: &storage.Node{
-				NodeType: storage.NodeTypeComparisonExpression,
-				Value:    &storage.Node_Comparison_{Comparison: storage.ComparisonRegex},
-				Children: []*storage.Node{
-					{NodeType: storage.NodeTypeTagRef, Value: &storage.Node_TagRefValue{TagRefValue: "region"}},
-					{NodeType: storage.NodeTypeLiteral, Value: &storage.Node_RegexValue{RegexValue: "^us-east$"}},
-				},
-			},
-			e: `region = 'us-east'`,
-		},
-		{
-			n: "optimisable regex with or",
-			r: &storage.Node{
-				NodeType: storage.NodeTypeComparisonExpression,
-				Value:    &storage.Node_Comparison_{Comparison: storage.ComparisonRegex},
-				Children: []*storage.Node{
-					{NodeType: storage.NodeTypeTagRef, Value: &storage.Node_TagRefValue{TagRefValue: "region"}},
-					{NodeType: storage.NodeTypeLiteral, Value: &storage.Node_RegexValue{RegexValue: "^(us-east|us-west)$"}},
-				},
-			},
-			e: `region = 'us-east' OR region = 'us-west'`,
-		},
-		{
-			n: "remap _measurement -> _name",
-			r: &storage.Node{
-				NodeType: storage.NodeTypeComparisonExpression,
-				Value:    &storage.Node_Comparison_{Comparison: storage.ComparisonEqual},
-				Children: []*storage.Node{
-					{NodeType: storage.NodeTypeTagRef, Value: &storage.Node_TagRefValue{TagRefValue: "_measurement"}},
-					{NodeType: storage.NodeTypeLiteral, Value: &storage.Node_StringValue{StringValue: "foo"}},
-				},
-			},
-			m: map[string]string{"_measurement": "_name"},
-			e: `_name = 'foo'`,
-		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.n, func(t *testing.T) {
-			expr, err := storage.NodeToExpr(tc.r, tc.m)
+			expr, err := storage.NodeToExpr(tc.r)
 			assert.NoError(t, err)
 			assert.Equal(t, expr.String(), tc.e)
 		})
@@ -181,7 +143,7 @@ func TestRewriteExprRemoveFieldKeyAndValue(t *testing.T) {
 		},
 	}
 
-	expr, err := storage.NodeToExpr(node, nil)
+	expr, err := storage.NodeToExpr(node)
 	assert.NoError(t, err, "NodeToExpr failed")
 	assert.Equal(t, expr.String(), `host = 'host1' AND _field =~ /^us-west/ AND "$" = 0.500`)
 

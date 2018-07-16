@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"runtime"
+	"syscall"
 
 	"golang.org/x/net/internal/socket"
 )
@@ -53,7 +54,7 @@ func (h *Header) String() string {
 // Marshal returns the binary encoding of h.
 func (h *Header) Marshal() ([]byte, error) {
 	if h == nil {
-		return nil, errInvalidConn
+		return nil, syscall.EINVAL
 	}
 	if h.Len < HeaderLen {
 		return nil, errHeaderTooShort
@@ -97,7 +98,7 @@ func (h *Header) Marshal() ([]byte, error) {
 	return b, nil
 }
 
-// Parse parses b as an IPv4 header and stores the result in h.
+// Parse parses b as an IPv4 header and sotres the result in h.
 func (h *Header) Parse(b []byte) error {
 	if h == nil || len(b) < HeaderLen {
 		return errHeaderTooShort

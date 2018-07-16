@@ -11,7 +11,7 @@ type readRequest struct {
 	ctx        context.Context
 	start, end int64
 	asc        bool
-	limit      int64
+	limit      uint64
 	aggregate  *Aggregate
 }
 
@@ -19,24 +19,14 @@ type ResultSet struct {
 	req readRequest
 	cur seriesCursor
 	row seriesRow
-	mb  *multiShardBatchCursors
 }
 
-// Close closes the result set. Close is idempotent.
 func (r *ResultSet) Close() {
-	if r == nil {
-		return // Nothing to do.
-	}
-	r.row.query = nil
+	r.row.shards = nil
 	r.cur.Close()
 }
 
-// Next returns true if there are more results available.
 func (r *ResultSet) Next() bool {
-	if r == nil {
-		return false
-	}
-
 	row := r.cur.Next()
 	if row == nil {
 		return false
@@ -48,7 +38,7 @@ func (r *ResultSet) Next() bool {
 }
 
 func (r *ResultSet) Cursor() tsdb.Cursor {
-	cur := r.mb.createCursor(r.row)
+	cur := newMultiShardBatchCursor(r.req.ctx, r.row, &r.req)
 	if r.req.aggregate != nil {
 		cur = newAggregateBatchCursor(r.req.ctx, r.req.aggregate, cur)
 	}

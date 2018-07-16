@@ -57,13 +57,9 @@ func (v *{{.Name}}Point) Clone() *{{.Name}}Point {
 
 // CopyTo makes a deep copy into the point.
 func (v *{{.Name}}Point) CopyTo(other *{{.Name}}Point) {
-	other.Name, other.Tags = v.Name, v.Tags
-	other.Time = v.Time
-	other.Value, other.Nil = v.Value, v.Nil
+	*other = *v
 	if v.Aux != nil {
-		if len(other.Aux) != len(v.Aux) {
-			other.Aux = make([]interface{}, len(v.Aux))
-		}
+		other.Aux = make([]interface{}, len(v.Aux))
 		copy(other.Aux, v.Aux)
 	}
 }

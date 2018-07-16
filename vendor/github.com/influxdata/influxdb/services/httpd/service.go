@@ -55,8 +55,6 @@ type Service struct {
 	err   chan error
 
 	unixSocket         bool
-	unixSocketPerm     uint32
-	unixSocketGroup    int
 	bindSocket         string
 	unixSocketListener net.Listener
 
@@ -68,23 +66,19 @@ type Service struct {
 // NewService returns a new instance of Service.
 func NewService(c Config) *Service {
 	s := &Service{
-		addr:           c.BindAddress,
-		https:          c.HTTPSEnabled,
-		cert:           c.HTTPSCertificate,
-		key:            c.HTTPSPrivateKey,
-		limit:          c.MaxConnectionLimit,
-		err:            make(chan error),
-		unixSocket:     c.UnixSocketEnabled,
-		unixSocketPerm: uint32(c.UnixSocketPermissions),
-		bindSocket:     c.BindSocket,
-		Handler:        NewHandler(c),
-		Logger:         zap.NewNop(),
+		addr:       c.BindAddress,
+		https:      c.HTTPSEnabled,
+		cert:       c.HTTPSCertificate,
+		key:        c.HTTPSPrivateKey,
+		limit:      c.MaxConnectionLimit,
+		err:        make(chan error),
+		unixSocket: c.UnixSocketEnabled,
+		bindSocket: c.BindSocket,
+		Handler:    NewHandler(c),
+		Logger:     zap.NewNop(),
 	}
 	if s.key == "" {
 		s.key = s.cert
-	}
-	if c.UnixSocketGroup != nil {
-		s.unixSocketGroup = int(*c.UnixSocketGroup)
 	}
 	s.Handler.Logger = s.Logger
 	return s
@@ -92,9 +86,8 @@ func NewService(c Config) *Service {
 
 // Open starts the service.
 func (s *Service) Open() error {
-	s.Logger.Info("Starting HTTP service", zap.Bool("authentication", s.Handler.Config.AuthEnabled))
-
-	s.Handler.Open()
+	s.Logger.Info("Starting HTTP service")
+	s.Logger.Info(fmt.Sprint("Authentication enabled:", s.Handler.Config.AuthEnabled))
 
 	// Open listener.
 	if s.https {
@@ -110,6 +103,7 @@ func (s *Service) Open() error {
 			return err
 		}
 
+		s.Logger.Info(fmt.Sprint("Listening on HTTPS:", listener.Addr().String()))
 		s.ln = listener
 	} else {
 		listener, err := net.Listen("tcp", s.addr)
@@ -117,11 +111,9 @@ func (s *Service) Open() error {
 			return err
 		}
 
+		s.Logger.Info(fmt.Sprint("Listening on HTTP:", listener.Addr().String()))
 		s.ln = listener
 	}
-	s.Logger.Info("Listening on HTTP",
-		zap.Stringer("addr", s.ln.Addr()),
-		zap.Bool("https", s.https))
 
 	// Open unix socket listener.
 	if s.unixSocket {
@@ -139,19 +131,8 @@ func (s *Service) Open() error {
 		if err != nil {
 			return err
 		}
-		if s.unixSocketPerm != 0 {
-			if err := os.Chmod(s.bindSocket, os.FileMode(s.unixSocketPerm)); err != nil {
-				return err
-			}
-		}
-		if s.unixSocketGroup != 0 {
-			if err := os.Chown(s.bindSocket, -1, s.unixSocketGroup); err != nil {
-				return err
-			}
-		}
 
-		s.Logger.Info("Listening on unix socket",
-			zap.Stringer("addr", listener.Addr()))
+		s.Logger.Info(fmt.Sprint("Listening on unix socket:", listener.Addr().String()))
 		s.unixSocketListener = listener
 
 		go s.serveUnixSocket()
@@ -182,8 +163,6 @@ func (s *Service) Open() error {
 
 // Close closes the underlying listener.
 func (s *Service) Close() error {
-	s.Handler.Close()
-
 	if s.ln != nil {
 		if err := s.ln.Close(); err != nil {
 			return err
@@ -201,7 +180,6 @@ func (s *Service) Close() error {
 func (s *Service) WithLogger(log *zap.Logger) {
 	s.Logger = log.With(zap.String("service", "httpd"))
 	s.Handler.Logger = s.Logger
-	s.Handler.Store.WithLogger(s.Logger)
 }
 
 // Err returns a channel for fatal errors that occur on the listener.

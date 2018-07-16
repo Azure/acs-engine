@@ -309,11 +309,7 @@ func (w *PointsWriter) WritePointsPrivileged(database, retentionPolicy string, c
 	ch := make(chan error, len(shardMappings.Points))
 	for shardID, points := range shardMappings.Points {
 		go func(shard *meta.ShardInfo, database, retentionPolicy string, points []models.Point) {
-			err := w.writeToShard(shard, database, retentionPolicy, points)
-			if err == tsdb.ErrShardDeletion {
-				err = tsdb.PartialWriteError{Reason: fmt.Sprintf("shard %d is pending deletion", shard.ID), Dropped: len(points)}
-			}
-			ch <- err
+			ch <- w.writeToShard(shard, database, retentionPolicy, points)
 		}(shardMappings.Shards[shardID], database, retentionPolicy, points)
 	}
 
@@ -384,7 +380,7 @@ func (w *PointsWriter) writeToShard(shard *meta.ShardInfo, database, retentionPo
 	if err == tsdb.ErrShardNotFound {
 		err = w.TSDBStore.CreateShard(database, retentionPolicy, shard.ID, true)
 		if err != nil {
-			w.Logger.Info("Write failed", zap.Uint64("shard", shard.ID), zap.Error(err))
+			w.Logger.Info(fmt.Sprintf("write failed for shard %d: %v", shard.ID, err))
 
 			atomic.AddInt64(&w.stats.WriteErr, 1)
 			return err
@@ -392,7 +388,7 @@ func (w *PointsWriter) writeToShard(shard *meta.ShardInfo, database, retentionPo
 	}
 	err = w.TSDBStore.WriteToShard(shard.ID, points)
 	if err != nil {
-		w.Logger.Info("Write failed", zap.Uint64("shard", shard.ID), zap.Error(err))
+		w.Logger.Info(fmt.Sprintf("write failed for shard %d: %v", shard.ID, err))
 		atomic.AddInt64(&w.stats.WriteErr, 1)
 		return err
 	}

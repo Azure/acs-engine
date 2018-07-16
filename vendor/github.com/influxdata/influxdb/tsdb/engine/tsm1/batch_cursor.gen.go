@@ -22,12 +22,28 @@ func (e *Engine) buildFloatCursor(ctx context.Context, measurement, seriesKey, f
 	return newFloatCursor(opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
 }
 
+// buildFloatBatchCursor creates a batch cursor for a float field.
+func (e *Engine) buildFloatBatchCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) tsdb.FloatBatchCursor {
+	key := SeriesFieldKeyBytes(seriesKey, field)
+	cacheValues := e.Cache.Values(key)
+	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
+	return newFloatBatchCursor(seriesKey, opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
+}
+
 // buildIntegerCursor creates a cursor for a integer field.
 func (e *Engine) buildIntegerCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) integerCursor {
 	key := SeriesFieldKeyBytes(seriesKey, field)
 	cacheValues := e.Cache.Values(key)
 	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
 	return newIntegerCursor(opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
+}
+
+// buildIntegerBatchCursor creates a batch cursor for a integer field.
+func (e *Engine) buildIntegerBatchCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) tsdb.IntegerBatchCursor {
+	key := SeriesFieldKeyBytes(seriesKey, field)
+	cacheValues := e.Cache.Values(key)
+	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
+	return newIntegerBatchCursor(seriesKey, opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
 }
 
 // buildUnsignedCursor creates a cursor for a unsigned field.
@@ -38,12 +54,28 @@ func (e *Engine) buildUnsignedCursor(ctx context.Context, measurement, seriesKey
 	return newUnsignedCursor(opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
 }
 
+// buildUnsignedBatchCursor creates a batch cursor for a unsigned field.
+func (e *Engine) buildUnsignedBatchCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) tsdb.UnsignedBatchCursor {
+	key := SeriesFieldKeyBytes(seriesKey, field)
+	cacheValues := e.Cache.Values(key)
+	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
+	return newUnsignedBatchCursor(seriesKey, opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
+}
+
 // buildStringCursor creates a cursor for a string field.
 func (e *Engine) buildStringCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) stringCursor {
 	key := SeriesFieldKeyBytes(seriesKey, field)
 	cacheValues := e.Cache.Values(key)
 	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
 	return newStringCursor(opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
+}
+
+// buildStringBatchCursor creates a batch cursor for a string field.
+func (e *Engine) buildStringBatchCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) tsdb.StringBatchCursor {
+	key := SeriesFieldKeyBytes(seriesKey, field)
+	cacheValues := e.Cache.Values(key)
+	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
+	return newStringBatchCursor(seriesKey, opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
 }
 
 // buildBooleanCursor creates a cursor for a boolean field.
@@ -54,7 +86,22 @@ func (e *Engine) buildBooleanCursor(ctx context.Context, measurement, seriesKey,
 	return newBooleanCursor(opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
 }
 
+// buildBooleanBatchCursor creates a batch cursor for a boolean field.
+func (e *Engine) buildBooleanBatchCursor(ctx context.Context, measurement, seriesKey, field string, opt query.IteratorOptions) tsdb.BooleanBatchCursor {
+	key := SeriesFieldKeyBytes(seriesKey, field)
+	cacheValues := e.Cache.Values(key)
+	keyCursor := e.KeyCursor(ctx, key, opt.SeekTime(), opt.Ascending)
+	return newBooleanBatchCursor(seriesKey, opt.SeekTime(), opt.Ascending, cacheValues, keyCursor)
+}
+
 // Cursors
+
+func newFloatBatchCursor(key string, seek int64, ascending bool, cacheValues Values, tsmKeyCursor *KeyCursor) tsdb.FloatBatchCursor {
+	if ascending {
+		return newFloatAscendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+	}
+	return newFloatDescendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+}
 
 type floatAscendingBatchCursor struct {
 	cache struct {
@@ -63,46 +110,43 @@ type floatAscendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []FloatValue
 		values    []FloatValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []float64
 }
 
-func newFloatAscendingBatchCursor() *floatAscendingBatchCursor {
-	return &floatAscendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]float64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newFloatAscendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *floatAscendingBatchCursor {
+	c := &floatAscendingBatchCursor{key: key}
 
-func (c *floatAscendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
 		return c.cache.values[i].UnixNano() >= seek
 	})
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]float64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *floatAscendingBatchCursor) Err() error { return nil }
+func (c *floatAscendingBatchCursor) Err() error        { return nil }
+func (c *floatAscendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *floatAscendingBatchCursor) Close() {
-	if c.tsm.keyCursor != nil {
-		c.tsm.keyCursor.Close()
-		c.tsm.keyCursor = nil
-	}
+	c.tsm.keyCursor.Close()
+	c.tsm.keyCursor = nil
 	c.cache.values = nil
 	c.tsm.values = nil
 }
@@ -154,14 +198,6 @@ func (c *floatAscendingBatchCursor) Next() ([]int64, []float64) {
 		c.v[pos] = tvalue
 	}
 
-	if pos > 0 && c.t[pos-1] > c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] > c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -193,7 +229,7 @@ func (c *floatAscendingBatchCursor) nextTSM() {
 	c.tsm.pos++
 	if c.tsm.pos >= len(c.tsm.values) {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.values)
 		c.tsm.pos = 0
 	}
 }
@@ -205,26 +241,19 @@ type floatDescendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []FloatValue
 		values    []FloatValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []float64
 }
 
-func newFloatDescendingBatchCursor() *floatDescendingBatchCursor {
-	return &floatDescendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]float64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newFloatDescendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *floatDescendingBatchCursor {
+	c := &floatDescendingBatchCursor{key: key}
 
-func (c *floatDescendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	if len(c.cache.values) > 0 {
 		c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
@@ -240,7 +269,7 @@ func (c *floatDescendingBatchCursor) reset(seek, end int64, cacheValues Values, 
 	}
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
@@ -253,9 +282,15 @@ func (c *floatDescendingBatchCursor) reset(seek, end int64, cacheValues Values, 
 	} else {
 		c.tsm.pos = -1
 	}
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]float64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *floatDescendingBatchCursor) Err() error { return nil }
+func (c *floatDescendingBatchCursor) Err() error        { return nil }
+func (c *floatDescendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *floatDescendingBatchCursor) Close() {
@@ -312,15 +347,6 @@ func (c *floatDescendingBatchCursor) Next() ([]int64, []float64) {
 		c.v[pos] = tvalue
 	}
 
-	// strip out remaining points
-	if pos > 0 && c.t[pos-1] < c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] < c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -352,9 +378,65 @@ func (c *floatDescendingBatchCursor) nextTSM() {
 	c.tsm.pos--
 	if c.tsm.pos < 0 {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadFloatBlock(&c.tsm.values)
 		c.tsm.pos = len(c.tsm.values) - 1
 	}
+}
+
+func newFloatRangeBatchCursor(time int64, asc bool, cur tsdb.FloatBatchCursor) tsdb.FloatBatchCursor {
+	if asc {
+		return &floatAscendingRangeBatchCursor{FloatBatchCursor: cur, t: time}
+	}
+	return &floatDescendingRangeBatchCursor{FloatBatchCursor: cur, t: time}
+}
+
+type floatAscendingRangeBatchCursor struct {
+	tsdb.FloatBatchCursor
+	t int64
+}
+
+func (l *floatAscendingRangeBatchCursor) Next() ([]int64, []float64) {
+	k, v := l.FloatBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] > l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] > l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+type floatDescendingRangeBatchCursor struct {
+	tsdb.FloatBatchCursor
+	t int64
+}
+
+func (l *floatDescendingRangeBatchCursor) Next() ([]int64, []float64) {
+	k, v := l.FloatBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] < l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] < l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+func newIntegerBatchCursor(key string, seek int64, ascending bool, cacheValues Values, tsmKeyCursor *KeyCursor) tsdb.IntegerBatchCursor {
+	if ascending {
+		return newIntegerAscendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+	}
+	return newIntegerDescendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
 }
 
 type integerAscendingBatchCursor struct {
@@ -364,46 +446,43 @@ type integerAscendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []IntegerValue
 		values    []IntegerValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []int64
 }
 
-func newIntegerAscendingBatchCursor() *integerAscendingBatchCursor {
-	return &integerAscendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newIntegerAscendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *integerAscendingBatchCursor {
+	c := &integerAscendingBatchCursor{key: key}
 
-func (c *integerAscendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
 		return c.cache.values[i].UnixNano() >= seek
 	})
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *integerAscendingBatchCursor) Err() error { return nil }
+func (c *integerAscendingBatchCursor) Err() error        { return nil }
+func (c *integerAscendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *integerAscendingBatchCursor) Close() {
-	if c.tsm.keyCursor != nil {
-		c.tsm.keyCursor.Close()
-		c.tsm.keyCursor = nil
-	}
+	c.tsm.keyCursor.Close()
+	c.tsm.keyCursor = nil
 	c.cache.values = nil
 	c.tsm.values = nil
 }
@@ -455,14 +534,6 @@ func (c *integerAscendingBatchCursor) Next() ([]int64, []int64) {
 		c.v[pos] = tvalue
 	}
 
-	if pos > 0 && c.t[pos-1] > c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] > c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -494,7 +565,7 @@ func (c *integerAscendingBatchCursor) nextTSM() {
 	c.tsm.pos++
 	if c.tsm.pos >= len(c.tsm.values) {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.values)
 		c.tsm.pos = 0
 	}
 }
@@ -506,26 +577,19 @@ type integerDescendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []IntegerValue
 		values    []IntegerValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []int64
 }
 
-func newIntegerDescendingBatchCursor() *integerDescendingBatchCursor {
-	return &integerDescendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newIntegerDescendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *integerDescendingBatchCursor {
+	c := &integerDescendingBatchCursor{key: key}
 
-func (c *integerDescendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	if len(c.cache.values) > 0 {
 		c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
@@ -541,7 +605,7 @@ func (c *integerDescendingBatchCursor) reset(seek, end int64, cacheValues Values
 	}
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
@@ -554,9 +618,15 @@ func (c *integerDescendingBatchCursor) reset(seek, end int64, cacheValues Values
 	} else {
 		c.tsm.pos = -1
 	}
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *integerDescendingBatchCursor) Err() error { return nil }
+func (c *integerDescendingBatchCursor) Err() error        { return nil }
+func (c *integerDescendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *integerDescendingBatchCursor) Close() {
@@ -613,15 +683,6 @@ func (c *integerDescendingBatchCursor) Next() ([]int64, []int64) {
 		c.v[pos] = tvalue
 	}
 
-	// strip out remaining points
-	if pos > 0 && c.t[pos-1] < c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] < c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -653,9 +714,65 @@ func (c *integerDescendingBatchCursor) nextTSM() {
 	c.tsm.pos--
 	if c.tsm.pos < 0 {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadIntegerBlock(&c.tsm.values)
 		c.tsm.pos = len(c.tsm.values) - 1
 	}
+}
+
+func newIntegerRangeBatchCursor(time int64, asc bool, cur tsdb.IntegerBatchCursor) tsdb.IntegerBatchCursor {
+	if asc {
+		return &integerAscendingRangeBatchCursor{IntegerBatchCursor: cur, t: time}
+	}
+	return &integerDescendingRangeBatchCursor{IntegerBatchCursor: cur, t: time}
+}
+
+type integerAscendingRangeBatchCursor struct {
+	tsdb.IntegerBatchCursor
+	t int64
+}
+
+func (l *integerAscendingRangeBatchCursor) Next() ([]int64, []int64) {
+	k, v := l.IntegerBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] > l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] > l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+type integerDescendingRangeBatchCursor struct {
+	tsdb.IntegerBatchCursor
+	t int64
+}
+
+func (l *integerDescendingRangeBatchCursor) Next() ([]int64, []int64) {
+	k, v := l.IntegerBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] < l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] < l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+func newUnsignedBatchCursor(key string, seek int64, ascending bool, cacheValues Values, tsmKeyCursor *KeyCursor) tsdb.UnsignedBatchCursor {
+	if ascending {
+		return newUnsignedAscendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+	}
+	return newUnsignedDescendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
 }
 
 type unsignedAscendingBatchCursor struct {
@@ -665,46 +782,43 @@ type unsignedAscendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []UnsignedValue
 		values    []UnsignedValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []uint64
 }
 
-func newUnsignedAscendingBatchCursor() *unsignedAscendingBatchCursor {
-	return &unsignedAscendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]uint64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newUnsignedAscendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *unsignedAscendingBatchCursor {
+	c := &unsignedAscendingBatchCursor{key: key}
 
-func (c *unsignedAscendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
 		return c.cache.values[i].UnixNano() >= seek
 	})
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]uint64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *unsignedAscendingBatchCursor) Err() error { return nil }
+func (c *unsignedAscendingBatchCursor) Err() error        { return nil }
+func (c *unsignedAscendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *unsignedAscendingBatchCursor) Close() {
-	if c.tsm.keyCursor != nil {
-		c.tsm.keyCursor.Close()
-		c.tsm.keyCursor = nil
-	}
+	c.tsm.keyCursor.Close()
+	c.tsm.keyCursor = nil
 	c.cache.values = nil
 	c.tsm.values = nil
 }
@@ -756,14 +870,6 @@ func (c *unsignedAscendingBatchCursor) Next() ([]int64, []uint64) {
 		c.v[pos] = tvalue
 	}
 
-	if pos > 0 && c.t[pos-1] > c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] > c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -795,7 +901,7 @@ func (c *unsignedAscendingBatchCursor) nextTSM() {
 	c.tsm.pos++
 	if c.tsm.pos >= len(c.tsm.values) {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.values)
 		c.tsm.pos = 0
 	}
 }
@@ -807,26 +913,19 @@ type unsignedDescendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []UnsignedValue
 		values    []UnsignedValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []uint64
 }
 
-func newUnsignedDescendingBatchCursor() *unsignedDescendingBatchCursor {
-	return &unsignedDescendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]uint64, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newUnsignedDescendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *unsignedDescendingBatchCursor {
+	c := &unsignedDescendingBatchCursor{key: key}
 
-func (c *unsignedDescendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	if len(c.cache.values) > 0 {
 		c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
@@ -842,7 +941,7 @@ func (c *unsignedDescendingBatchCursor) reset(seek, end int64, cacheValues Value
 	}
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
@@ -855,9 +954,15 @@ func (c *unsignedDescendingBatchCursor) reset(seek, end int64, cacheValues Value
 	} else {
 		c.tsm.pos = -1
 	}
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]uint64, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *unsignedDescendingBatchCursor) Err() error { return nil }
+func (c *unsignedDescendingBatchCursor) Err() error        { return nil }
+func (c *unsignedDescendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *unsignedDescendingBatchCursor) Close() {
@@ -914,15 +1019,6 @@ func (c *unsignedDescendingBatchCursor) Next() ([]int64, []uint64) {
 		c.v[pos] = tvalue
 	}
 
-	// strip out remaining points
-	if pos > 0 && c.t[pos-1] < c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] < c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -954,9 +1050,65 @@ func (c *unsignedDescendingBatchCursor) nextTSM() {
 	c.tsm.pos--
 	if c.tsm.pos < 0 {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadUnsignedBlock(&c.tsm.values)
 		c.tsm.pos = len(c.tsm.values) - 1
 	}
+}
+
+func newUnsignedRangeBatchCursor(time int64, asc bool, cur tsdb.UnsignedBatchCursor) tsdb.UnsignedBatchCursor {
+	if asc {
+		return &unsignedAscendingRangeBatchCursor{UnsignedBatchCursor: cur, t: time}
+	}
+	return &unsignedDescendingRangeBatchCursor{UnsignedBatchCursor: cur, t: time}
+}
+
+type unsignedAscendingRangeBatchCursor struct {
+	tsdb.UnsignedBatchCursor
+	t int64
+}
+
+func (l *unsignedAscendingRangeBatchCursor) Next() ([]int64, []uint64) {
+	k, v := l.UnsignedBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] > l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] > l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+type unsignedDescendingRangeBatchCursor struct {
+	tsdb.UnsignedBatchCursor
+	t int64
+}
+
+func (l *unsignedDescendingRangeBatchCursor) Next() ([]int64, []uint64) {
+	k, v := l.UnsignedBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] < l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] < l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+func newStringBatchCursor(key string, seek int64, ascending bool, cacheValues Values, tsmKeyCursor *KeyCursor) tsdb.StringBatchCursor {
+	if ascending {
+		return newStringAscendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+	}
+	return newStringDescendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
 }
 
 type stringAscendingBatchCursor struct {
@@ -966,46 +1118,43 @@ type stringAscendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []StringValue
 		values    []StringValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []string
 }
 
-func newStringAscendingBatchCursor() *stringAscendingBatchCursor {
-	return &stringAscendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]string, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newStringAscendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *stringAscendingBatchCursor {
+	c := &stringAscendingBatchCursor{key: key}
 
-func (c *stringAscendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
 		return c.cache.values[i].UnixNano() >= seek
 	})
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]string, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *stringAscendingBatchCursor) Err() error { return nil }
+func (c *stringAscendingBatchCursor) Err() error        { return nil }
+func (c *stringAscendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *stringAscendingBatchCursor) Close() {
-	if c.tsm.keyCursor != nil {
-		c.tsm.keyCursor.Close()
-		c.tsm.keyCursor = nil
-	}
+	c.tsm.keyCursor.Close()
+	c.tsm.keyCursor = nil
 	c.cache.values = nil
 	c.tsm.values = nil
 }
@@ -1057,14 +1206,6 @@ func (c *stringAscendingBatchCursor) Next() ([]int64, []string) {
 		c.v[pos] = tvalue
 	}
 
-	if pos > 0 && c.t[pos-1] > c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] > c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -1096,7 +1237,7 @@ func (c *stringAscendingBatchCursor) nextTSM() {
 	c.tsm.pos++
 	if c.tsm.pos >= len(c.tsm.values) {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.values)
 		c.tsm.pos = 0
 	}
 }
@@ -1108,26 +1249,19 @@ type stringDescendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []StringValue
 		values    []StringValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []string
 }
 
-func newStringDescendingBatchCursor() *stringDescendingBatchCursor {
-	return &stringDescendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]string, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newStringDescendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *stringDescendingBatchCursor {
+	c := &stringDescendingBatchCursor{key: key}
 
-func (c *stringDescendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	if len(c.cache.values) > 0 {
 		c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
@@ -1143,7 +1277,7 @@ func (c *stringDescendingBatchCursor) reset(seek, end int64, cacheValues Values,
 	}
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
@@ -1156,9 +1290,15 @@ func (c *stringDescendingBatchCursor) reset(seek, end int64, cacheValues Values,
 	} else {
 		c.tsm.pos = -1
 	}
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]string, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *stringDescendingBatchCursor) Err() error { return nil }
+func (c *stringDescendingBatchCursor) Err() error        { return nil }
+func (c *stringDescendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *stringDescendingBatchCursor) Close() {
@@ -1215,15 +1355,6 @@ func (c *stringDescendingBatchCursor) Next() ([]int64, []string) {
 		c.v[pos] = tvalue
 	}
 
-	// strip out remaining points
-	if pos > 0 && c.t[pos-1] < c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] < c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -1255,9 +1386,65 @@ func (c *stringDescendingBatchCursor) nextTSM() {
 	c.tsm.pos--
 	if c.tsm.pos < 0 {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadStringBlock(&c.tsm.values)
 		c.tsm.pos = len(c.tsm.values) - 1
 	}
+}
+
+func newStringRangeBatchCursor(time int64, asc bool, cur tsdb.StringBatchCursor) tsdb.StringBatchCursor {
+	if asc {
+		return &stringAscendingRangeBatchCursor{StringBatchCursor: cur, t: time}
+	}
+	return &stringDescendingRangeBatchCursor{StringBatchCursor: cur, t: time}
+}
+
+type stringAscendingRangeBatchCursor struct {
+	tsdb.StringBatchCursor
+	t int64
+}
+
+func (l *stringAscendingRangeBatchCursor) Next() ([]int64, []string) {
+	k, v := l.StringBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] > l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] > l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+type stringDescendingRangeBatchCursor struct {
+	tsdb.StringBatchCursor
+	t int64
+}
+
+func (l *stringDescendingRangeBatchCursor) Next() ([]int64, []string) {
+	k, v := l.StringBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] < l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] < l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+func newBooleanBatchCursor(key string, seek int64, ascending bool, cacheValues Values, tsmKeyCursor *KeyCursor) tsdb.BooleanBatchCursor {
+	if ascending {
+		return newBooleanAscendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
+	}
+	return newBooleanDescendingBatchCursor(key, seek, cacheValues, tsmKeyCursor)
 }
 
 type booleanAscendingBatchCursor struct {
@@ -1267,46 +1454,43 @@ type booleanAscendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []BooleanValue
 		values    []BooleanValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []bool
 }
 
-func newBooleanAscendingBatchCursor() *booleanAscendingBatchCursor {
-	return &booleanAscendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]bool, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newBooleanAscendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *booleanAscendingBatchCursor {
+	c := &booleanAscendingBatchCursor{key: key}
 
-func (c *booleanAscendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
 		return c.cache.values[i].UnixNano() >= seek
 	})
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]bool, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *booleanAscendingBatchCursor) Err() error { return nil }
+func (c *booleanAscendingBatchCursor) Err() error        { return nil }
+func (c *booleanAscendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *booleanAscendingBatchCursor) Close() {
-	if c.tsm.keyCursor != nil {
-		c.tsm.keyCursor.Close()
-		c.tsm.keyCursor = nil
-	}
+	c.tsm.keyCursor.Close()
+	c.tsm.keyCursor = nil
 	c.cache.values = nil
 	c.tsm.values = nil
 }
@@ -1358,14 +1542,6 @@ func (c *booleanAscendingBatchCursor) Next() ([]int64, []bool) {
 		c.v[pos] = tvalue
 	}
 
-	if pos > 0 && c.t[pos-1] > c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] > c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -1397,7 +1573,7 @@ func (c *booleanAscendingBatchCursor) nextTSM() {
 	c.tsm.pos++
 	if c.tsm.pos >= len(c.tsm.values) {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.values)
 		c.tsm.pos = 0
 	}
 }
@@ -1409,26 +1585,19 @@ type booleanDescendingBatchCursor struct {
 	}
 
 	tsm struct {
-		buf       []BooleanValue
 		values    []BooleanValue
 		pos       int
 		keyCursor *KeyCursor
 	}
 
-	end int64
+	key string
 	t   []int64
 	v   []bool
 }
 
-func newBooleanDescendingBatchCursor() *booleanDescendingBatchCursor {
-	return &booleanDescendingBatchCursor{
-		t: make([]int64, tsdb.DefaultMaxPointsPerBlock),
-		v: make([]bool, tsdb.DefaultMaxPointsPerBlock),
-	}
-}
+func newBooleanDescendingBatchCursor(key string, seek int64, cacheValues Values, tsmKeyCursor *KeyCursor) *booleanDescendingBatchCursor {
+	c := &booleanDescendingBatchCursor{key: key}
 
-func (c *booleanDescendingBatchCursor) reset(seek, end int64, cacheValues Values, tsmKeyCursor *KeyCursor) {
-	c.end = end
 	c.cache.values = cacheValues
 	if len(c.cache.values) > 0 {
 		c.cache.pos = sort.Search(len(c.cache.values), func(i int) bool {
@@ -1444,7 +1613,7 @@ func (c *booleanDescendingBatchCursor) reset(seek, end int64, cacheValues Values
 	}
 
 	c.tsm.keyCursor = tsmKeyCursor
-	c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.buf)
+	c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.values)
 	c.tsm.pos = sort.Search(len(c.tsm.values), func(i int) bool {
 		return c.tsm.values[i].UnixNano() >= seek
 	})
@@ -1457,9 +1626,15 @@ func (c *booleanDescendingBatchCursor) reset(seek, end int64, cacheValues Values
 	} else {
 		c.tsm.pos = -1
 	}
+
+	c.t = make([]int64, tsdb.DefaultMaxPointsPerBlock)
+	c.v = make([]bool, tsdb.DefaultMaxPointsPerBlock)
+
+	return c
 }
 
-func (c *booleanDescendingBatchCursor) Err() error { return nil }
+func (c *booleanDescendingBatchCursor) Err() error        { return nil }
+func (c *booleanDescendingBatchCursor) SeriesKey() string { return c.key }
 
 // close closes the cursor and any dependent cursors.
 func (c *booleanDescendingBatchCursor) Close() {
@@ -1516,15 +1691,6 @@ func (c *booleanDescendingBatchCursor) Next() ([]int64, []bool) {
 		c.v[pos] = tvalue
 	}
 
-	// strip out remaining points
-	if pos > 0 && c.t[pos-1] < c.end {
-		pos -= 2
-		for pos >= 0 && c.t[pos] < c.end {
-			pos--
-		}
-		pos++
-	}
-
 	return c.t[:pos], c.v[:pos]
 }
 
@@ -1556,7 +1722,56 @@ func (c *booleanDescendingBatchCursor) nextTSM() {
 	c.tsm.pos--
 	if c.tsm.pos < 0 {
 		c.tsm.keyCursor.Next()
-		c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.buf)
+		c.tsm.values, _ = c.tsm.keyCursor.ReadBooleanBlock(&c.tsm.values)
 		c.tsm.pos = len(c.tsm.values) - 1
 	}
+}
+
+func newBooleanRangeBatchCursor(time int64, asc bool, cur tsdb.BooleanBatchCursor) tsdb.BooleanBatchCursor {
+	if asc {
+		return &booleanAscendingRangeBatchCursor{BooleanBatchCursor: cur, t: time}
+	}
+	return &booleanDescendingRangeBatchCursor{BooleanBatchCursor: cur, t: time}
+}
+
+type booleanAscendingRangeBatchCursor struct {
+	tsdb.BooleanBatchCursor
+	t int64
+}
+
+func (l *booleanAscendingRangeBatchCursor) Next() ([]int64, []bool) {
+	k, v := l.BooleanBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] > l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] > l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
+}
+
+type booleanDescendingRangeBatchCursor struct {
+	tsdb.BooleanBatchCursor
+	t int64
+}
+
+func (l *booleanDescendingRangeBatchCursor) Next() ([]int64, []bool) {
+	k, v := l.BooleanBatchCursor.Next()
+
+	// strip out remaining time that is outside the range
+	if len(k) > 0 && k[len(k)-1] < l.t {
+		i := len(k) - 2
+		for i >= 0 && k[i] < l.t {
+			i--
+		}
+		k = k[:i+1]
+		v = v[:i+1]
+	}
+
+	return k, v
 }

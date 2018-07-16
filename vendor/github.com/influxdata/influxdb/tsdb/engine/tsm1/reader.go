@@ -13,8 +13,6 @@ import (
 	"sync/atomic"
 
 	"github.com/influxdata/influxdb/pkg/bytesutil"
-	"github.com/influxdata/influxdb/pkg/file"
-	"github.com/influxdata/influxdb/tsdb"
 )
 
 // ErrFileInUse is returned when attempting to remove or close a TSM file that is still being used.
@@ -27,8 +25,7 @@ var nilOffset = []byte{255, 255, 255, 255}
 // TSMReader is a reader for a TSM file.
 type TSMReader struct {
 	// refs is the count of active references to this reader.
-	refs   int64
-	refsWG sync.WaitGroup
+	refs int64
 
 	mu sync.RWMutex
 
@@ -246,18 +243,13 @@ func NewTSMReader(f *os.File) (*TSMReader, error) {
 	}
 
 	t.index = index
-	t.tombstoner = NewTombstoner(t.Path(), index.ContainsKey)
+	t.tombstoner = &Tombstoner{Path: t.Path(), FilterFn: index.ContainsKey}
 
 	if err := t.applyTombstones(); err != nil {
 		return nil, err
 	}
 
 	return t, nil
-}
-
-// WithObserver sets the observer for the TSM reader.
-func (t *TSMReader) WithObserver(obs tsdb.FileStoreObserver) {
-	t.tombstoner.WithObserver(obs)
 }
 
 func (t *TSMReader) applyTombstones() error {
@@ -406,10 +398,12 @@ func (t *TSMReader) Type(key []byte) (byte, error) {
 
 // Close closes the TSMReader.
 func (t *TSMReader) Close() error {
-	t.refsWG.Wait()
-
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	if t.InUse() {
+		return ErrFileInUse
+	}
 
 	if err := t.accessor.close(); err != nil {
 		return err
@@ -423,7 +417,6 @@ func (t *TSMReader) Close() error {
 // there are no more references.
 func (t *TSMReader) Ref() {
 	atomic.AddInt64(&t.refs, 1)
-	t.refsWG.Add(1)
 }
 
 // Unref removes a usage record of this TSMReader.  If the Reader was closed
@@ -431,7 +424,6 @@ func (t *TSMReader) Ref() {
 // be closed and remove
 func (t *TSMReader) Unref() {
 	atomic.AddInt64(&t.refs, -1)
-	t.refsWG.Done()
 }
 
 // InUse returns whether the TSMReader currently has any active references.
@@ -463,10 +455,7 @@ func (t *TSMReader) remove() error {
 	}
 
 	if path != "" {
-		err := os.RemoveAll(path)
-		if err != nil {
-			return err
-		}
+		os.RemoveAll(path)
 	}
 
 	if err := t.tombstoner.Delete(); err != nil {
@@ -846,10 +835,6 @@ func (d *indirectIndex) searchOffset(key []byte) int {
 // search returns the byte position of key in the index.  If key is not
 // in the index, len(index) is returned.
 func (d *indirectIndex) search(key []byte) int {
-	if !d.ContainsKey(key) {
-		return len(d.b)
-	}
-
 	// We use a binary search across our indirect offsets (pointers to all the keys
 	// in the index slice).
 	i := bytesutil.SearchBytesFixed(d.offsets, 4, func(x []byte) bool {
@@ -1447,7 +1432,7 @@ func (m *mmapAccessor) rename(path string) error {
 		return err
 	}
 
-	if err := file.RenameFile(m.f.Name(), path); err != nil {
+	if err := renameFile(m.f.Name(), path); err != nil {
 		return err
 	}
 
@@ -1466,7 +1451,11 @@ func (m *mmapAccessor) rename(path string) error {
 	}
 
 	m.b, err = mmap(m.f, 0, int(stat.Size()))
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *mmapAccessor) read(key []byte, timestamp int64) ([]Value, error) {

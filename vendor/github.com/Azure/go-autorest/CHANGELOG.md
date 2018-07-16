@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v9.10.0
+- Fix the Service Bus suffix in Azure public env
+- Add Service Bus Endpoint (AAD ResourceURI) for use in [Azure Service Bus RBAC Preview](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-role-based-access-control)
+
 ## v9.9.0
 
 ### New Features

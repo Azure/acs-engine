@@ -8,16 +8,15 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
-	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/rhh"
 	"go.uber.org/zap"
 )
 
 var (
-	ErrSeriesPartitionClosed              = errors.New("tsdb: series partition closed")
-	ErrSeriesPartitionCompactionCancelled = errors.New("tsdb: series partition compaction cancelled")
+	ErrSeriesPartitionClosed = errors.New("tsdb: series partition closed")
 )
 
 // DefaultSeriesPartitionCompactThreshold is the number of series IDs to hold in the in-memory
@@ -26,21 +25,17 @@ const DefaultSeriesPartitionCompactThreshold = 1 << 17 // 128K
 
 // SeriesPartition represents a subset of series file data.
 type SeriesPartition struct {
-	mu   sync.RWMutex
-	wg   sync.WaitGroup
-	id   int
-	path string
-
-	closed  bool
-	closing chan struct{}
-	once    sync.Once
+	mu     sync.RWMutex
+	wg     sync.WaitGroup
+	id     int
+	path   string
+	closed bool
 
 	segments []*SeriesSegment
 	index    *SeriesIndex
 	seq      uint64 // series id sequence
 
-	compacting          bool
-	compactionsDisabled int
+	compacting bool
 
 	CompactThreshold int
 
@@ -52,10 +47,8 @@ func NewSeriesPartition(id int, path string) *SeriesPartition {
 	return &SeriesPartition{
 		id:               id,
 		path:             path,
-		closing:          make(chan struct{}),
 		CompactThreshold: DefaultSeriesPartitionCompactThreshold,
 		Logger:           zap.NewNop(),
-		seq:              uint64(id) + 1,
 	}
 }
 
@@ -118,9 +111,7 @@ func (p *SeriesPartition) openSegments() error {
 
 	// Find max series id by searching segments in reverse order.
 	for i := len(p.segments) - 1; i >= 0; i-- {
-		if seq := p.segments[i].MaxSeriesID(); seq >= p.seq {
-			// Reset our sequence num to the next one to assign
-			p.seq = seq + SeriesFilePartitionN
+		if p.seq = p.segments[i].MaxSeriesID(); p.seq > 0 {
 			break
 		}
 	}
@@ -139,7 +130,6 @@ func (p *SeriesPartition) openSegments() error {
 
 // Close unmaps the data files.
 func (p *SeriesPartition) Close() (err error) {
-	p.once.Do(func() { close(p.closing) })
 	p.wg.Wait()
 
 	p.mu.Lock()
@@ -174,7 +164,7 @@ func (p *SeriesPartition) Path() string { return p.path }
 func (p *SeriesPartition) IndexPath() string { return filepath.Join(p.path, "index") }
 
 // CreateSeriesListIfNotExists creates a list of series in bulk if they don't exist.
-// The ids parameter is modified to contain series IDs for all keys belonging to this partition.
+// The returned ids list returns values for new series and zero for existing series.
 func (p *SeriesPartition) CreateSeriesListIfNotExists(keys [][]byte, keyPartitionIDs []int, ids []uint64) error {
 	var writeRequired bool
 	p.mu.RLock()
@@ -256,21 +246,21 @@ func (p *SeriesPartition) CreateSeriesListIfNotExists(keys [][]byte, keyPartitio
 	}
 
 	// Check if we've crossed the compaction threshold.
-	if p.compactionsEnabled() && !p.compacting && p.CompactThreshold != 0 && p.index.InMemCount() >= uint64(p.CompactThreshold) {
+	if !p.compacting && p.CompactThreshold != 0 && p.index.InMemCount() >= uint64(p.CompactThreshold) {
 		p.compacting = true
-		log, logEnd := logger.NewOperation(p.Logger, "Series partition compaction", "series_partition_compaction", zap.String("path", p.path))
+		logger := p.Logger.With(zap.String("path", p.path))
+		logger.Info("beginning series partition compaction")
 
+		startTime := time.Now()
 		p.wg.Add(1)
 		go func() {
 			defer p.wg.Done()
 
-			compactor := NewSeriesPartitionCompactor()
-			compactor.cancel = p.closing
-			if err := compactor.Compact(p); err != nil {
-				log.Error("series partition compaction failed", zap.Error(err))
+			if err := NewSeriesPartitionCompactor().Compact(p); err != nil {
+				logger.With(zap.Error(err)).Error("series partition compaction failed")
 			}
 
-			logEnd()
+			logger.With(zap.Duration("elapsed", time.Since(startTime))).Info("completed series partition compaction")
 
 			// Clear compaction flag.
 			p.mu.Lock()
@@ -280,13 +270,6 @@ func (p *SeriesPartition) CreateSeriesListIfNotExists(keys [][]byte, keyPartitio
 	}
 
 	return nil
-}
-
-// Compacting returns if the SeriesPartition is currently compacting.
-func (p *SeriesPartition) Compacting() bool {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	return p.compacting
 }
 
 // DeleteSeriesID flags a series as permanently deleted.
@@ -376,26 +359,6 @@ func (p *SeriesPartition) SeriesCount() uint64 {
 	return n
 }
 
-func (p *SeriesPartition) DisableCompactions() {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.compactionsDisabled++
-}
-
-func (p *SeriesPartition) EnableCompactions() {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if p.compactionsEnabled() {
-		return
-	}
-	p.compactionsDisabled++
-}
-
-func (p *SeriesPartition) compactionsEnabled() bool {
-	return p.compactionsDisabled == 0
-}
-
 // AppendSeriesIDs returns a list of all series ids.
 func (p *SeriesPartition) AppendSeriesIDs(a []uint64) []uint64 {
 	for _, segment := range p.segments {
@@ -413,13 +376,16 @@ func (p *SeriesPartition) activeSegment() *SeriesSegment {
 }
 
 func (p *SeriesPartition) insert(key []byte) (id uint64, offset int64, err error) {
-	id = p.seq
+	// ID is built using a autoincrement sequence joined to the partition id.
+	// Format: <seq(7b)><partition(1b)>
+	id = ((p.seq + 1) << 8) | uint64(p.id)
+
 	offset, err = p.writeLogEntry(AppendSeriesEntry(nil, SeriesEntryInsertFlag, id, key))
 	if err != nil {
 		return 0, 0, err
 	}
 
-	p.seq += SeriesFilePartitionN
+	p.seq++
 	return id, offset, nil
 }
 
@@ -485,9 +451,7 @@ func (p *SeriesPartition) seriesKeyByOffset(offset int64) []byte {
 }
 
 // SeriesPartitionCompactor represents an object reindexes a series partition and optionally compacts segments.
-type SeriesPartitionCompactor struct {
-	cancel <-chan struct{}
-}
+type SeriesPartitionCompactor struct{}
 
 // NewSeriesPartitionCompactor returns a new instance of SeriesPartitionCompactor.
 func NewSeriesPartitionCompactor() *SeriesPartitionCompactor {
@@ -545,7 +509,6 @@ func (c *SeriesPartitionCompactor) compactIndexTo(index *SeriesIndex, seriesN ui
 	idOffsetMap := make([]byte, (hdr.Capacity * SeriesIndexElemSize))
 
 	// Reindex all partitions.
-	var entryN int
 	for _, segment := range segments {
 		errDone := errors.New("done")
 
@@ -553,15 +516,6 @@ func (c *SeriesPartitionCompactor) compactIndexTo(index *SeriesIndex, seriesN ui
 			// Make sure we don't go past the offset where the compaction began.
 			if offset >= index.maxOffset {
 				return errDone
-			}
-
-			// Check for cancellation periodically.
-			if entryN++; entryN%1000 == 0 {
-				select {
-				case <-c.cancel:
-					return ErrSeriesPartitionCompactionCancelled
-				default:
-				}
 			}
 
 			// Only process insert entries.

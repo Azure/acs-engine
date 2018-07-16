@@ -19,7 +19,7 @@ import (
 // testing, a value above the number of cores on the machine does not provide
 // any additional benefit. For now we'll set it to the number of cores on the
 // largest box we could imagine running influx.
-const ringShards = 16
+const ringShards = 4096
 
 var (
 	// ErrSnapshotInProgress is returned if a snapshot is attempted while one is already running.
@@ -197,9 +197,8 @@ type Cache struct {
 	// This number is the number of pending or failed WriteSnaphot attempts since the last successful one.
 	snapshotAttempts int
 
-	stats         *CacheStatistics
-	lastSnapshot  time.Time
-	lastWriteTime time.Time
+	stats        *CacheStatistics
+	lastSnapshot time.Time
 
 	// A one time synchronization used to initial the cache with a store.  Since the store can allocate a
 	// a large amount memory across shards, we lazily create it.
@@ -209,7 +208,7 @@ type Cache struct {
 
 // NewCache returns an instance of a cache which will use a maximum of maxSize bytes of memory.
 // Only used for engine caches, never for snapshots.
-func NewCache(maxSize uint64) *Cache {
+func NewCache(maxSize uint64, path string) *Cache {
 	c := &Cache{
 		maxSize:      maxSize,
 		store:        emptyStore{},
@@ -364,10 +363,6 @@ func (c *Cache) WriteMulti(values map[string][]Value) error {
 	c.updateMemSize(int64(addedSize))
 	atomic.AddInt64(&c.stats.WriteOK, 1)
 
-	c.mu.Lock()
-	c.lastWriteTime = time.Now()
-	c.mu.Unlock()
-
 	return werr
 }
 
@@ -519,36 +514,13 @@ func (c *Cache) Split(n int) []*Cache {
 	return caches
 }
 
-// Type returns the series type for a key.
-func (c *Cache) Type(key []byte) (models.FieldType, error) {
+// unsortedKeys returns a slice of all keys under management by the cache. The
+// keys are not sorted.
+func (c *Cache) unsortedKeys() [][]byte {
 	c.mu.RLock()
-	e := c.store.entry(key)
-	if e == nil && c.snapshot != nil {
-		e = c.snapshot.store.entry(key)
-	}
+	store := c.store
 	c.mu.RUnlock()
-
-	if e != nil {
-		typ, err := e.InfluxQLType()
-		if err != nil {
-			return models.Empty, tsdb.ErrUnknownFieldType
-		}
-
-		switch typ {
-		case influxql.Float:
-			return models.Float, nil
-		case influxql.Integer:
-			return models.Integer, nil
-		case influxql.Unsigned:
-			return models.Unsigned, nil
-		case influxql.Boolean:
-			return models.Boolean, nil
-		case influxql.String:
-			return models.String, nil
-		}
-	}
-
-	return models.Empty, tsdb.ErrUnknownFieldType
+	return store.keys(false)
 }
 
 // Values returns a copy of all values, deduped and sorted, for the given key.
@@ -717,7 +689,7 @@ func (cl *CacheLoader) Load(cache *Cache) error {
 			if err != nil {
 				return err
 			}
-			cl.Logger.Info("Reading file", zap.String("path", f.Name()), zap.Int64("size", stat.Size()))
+			cl.Logger.Info(fmt.Sprintf("reading file %s, size %d", f.Name(), stat.Size()))
 
 			// Nothing to read, skip it
 			if stat.Size() == 0 {
@@ -735,7 +707,7 @@ func (cl *CacheLoader) Load(cache *Cache) error {
 				entry, err := r.Read()
 				if err != nil {
 					n := r.Count()
-					cl.Logger.Info("File corrupt", zap.Error(err), zap.String("path", f.Name()), zap.Int64("pos", n))
+					cl.Logger.Info(fmt.Sprintf("file %s corrupt at position %d, truncating", f.Name(), n))
 					if err := f.Truncate(n); err != nil {
 						return err
 					}
@@ -765,12 +737,6 @@ func (cl *CacheLoader) Load(cache *Cache) error {
 // WithLogger sets the logger on the CacheLoader.
 func (cl *CacheLoader) WithLogger(log *zap.Logger) {
 	cl.Logger = log.With(zap.String("service", "cacheloader"))
-}
-
-func (c *Cache) LastWriteTime() time.Time {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.lastWriteTime
 }
 
 // UpdateAge updates the age statistic based on the current time.
