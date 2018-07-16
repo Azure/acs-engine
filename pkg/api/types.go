@@ -452,43 +452,43 @@ type AgentPoolProfile struct {
 }
 
 // IsEnabledAcc returns if the AcceleratedNetworkingEnabled is explicitly enabled, or the user-provided default if non explicitly enabled
-func (a *AgentPoolProfile) IsEnabledAcc() bool {
-	if a.AcceleratedNetworkingEnabled == nil {
-		// Accelerated Networking is supported on most general purpose and compute-optimized instance sizes with 2 or more vCPUs.
-		// These supported series are: D/DSv2 and F/Fs // All the others are not supported
-		// On instances that support hyperthreading, Accelerated Networking is supported on VM instances with 4 or more vCPUs.
-		// Supported series are: D/DSv3, E/ESv3, Fsv2, and Ms/Mms.
-		if strings.Contains(a.VMSize, "Standard_A") {
-			return false
-		}
-		if strings.Contains(a.VMSize, "Standard_B") {
-			return false
-		}
-		if strings.Contains(a.VMSize, "Standard_G") {
-			return false
-		}
-		if strings.Contains(a.VMSize, "Standard_H") {
-			return false
-		}
-		if strings.Contains(a.VMSize, "Standard_L") {
-			return false
-		}
-		if strings.Contains(a.VMSize, "Standard_N") {
-			return false
-		}
-		if strings.EqualFold(a.VMSize, "Standard_D1") || strings.Contains(a.VMSize, "Standard_D1_") {
-			return false
-		}
-		if strings.EqualFold(a.VMSize, "Standard_DS1") || strings.Contains(a.VMSize, "Standard_DS1_") {
-			return false
-		}
-		if strings.EqualFold(a.VMSize, "Standard_F1") || strings.EqualFold(a.VMSize, "Standard_F1s") {
-			return false
-		}
-		return true
-	}
-	return *a.AcceleratedNetworkingEnabled
-}
+// func (a *AgentPoolProfile) IsEnabledAcc() bool {
+// 	if a.AcceleratedNetworkingEnabled == nil {
+// 		// Accelerated Networking is supported on most general purpose and compute-optimized instance sizes with 2 or more vCPUs.
+// 		// These supported series are: D/DSv2 and F/Fs // All the others are not supported
+// 		// On instances that support hyperthreading, Accelerated Networking is supported on VM instances with 4 or more vCPUs.
+// 		// Supported series are: D/DSv3, E/ESv3, Fsv2, and Ms/Mms.
+// 		if strings.Contains(a.VMSize, "Standard_A") {
+// 			return false
+// 		}
+// 		if strings.Contains(a.VMSize, "Standard_B") {
+// 			return false
+// 		}
+// 		if strings.Contains(a.VMSize, "Standard_G") {
+// 			return false
+// 		}
+// 		if strings.Contains(a.VMSize, "Standard_H") {
+// 			return false
+// 		}
+// 		if strings.Contains(a.VMSize, "Standard_L") {
+// 			return false
+// 		}
+// 		if strings.Contains(a.VMSize, "Standard_N") {
+// 			return false
+// 		}
+// 		if strings.EqualFold(a.VMSize, "Standard_D1") || strings.Contains(a.VMSize, "Standard_D1_") {
+// 			return false
+// 		}
+// 		if strings.EqualFold(a.VMSize, "Standard_DS1") || strings.Contains(a.VMSize, "Standard_DS1_") {
+// 			return false
+// 		}
+// 		if strings.EqualFold(a.VMSize, "Standard_F1") || strings.EqualFold(a.VMSize, "Standard_F1s") {
+// 			return false
+// 		}
+// 		return true
+// 	}
+// 	return *a.AcceleratedNetworkingEnabled
+// }
 
 // AgentPoolProfileRole represents an agent role
 type AgentPoolProfileRole string

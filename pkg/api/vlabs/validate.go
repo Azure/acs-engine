@@ -347,6 +347,11 @@ func (a *Properties) validateAgentPoolProfiles() error {
 		if e := validatePoolOSType(agentPoolProfile.OSType); e != nil {
 			return e
 		}
+		if agentPoolProfile.AcceleratedNetworkingEnabled != nil {
+			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize, *agentPoolProfile.AcceleratedNetworkingEnabled); e != nil {
+				return e
+			}
+		}
 
 		if e := agentPoolProfile.validateOrchestratorSpecificProperties(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
@@ -1123,6 +1128,15 @@ func validatePoolName(poolName string) error {
 func validatePoolOSType(os OSType) error {
 	if os != Linux && os != Windows && os != "" {
 		return fmt.Errorf("AgentPoolProfile.osType must be either Linux or Windows")
+	}
+	return nil
+}
+
+func validatePoolAcceleratedNetworking(VMSize string, AcceleratedNetworking bool) error {
+	if AcceleratedNetworking == true {
+		if helpers.AcceleratedNetworkingSupported(VMSize) != helpers.PointerToBool(AcceleratedNetworking) {
+			return fmt.Errorf("The AgentPoolProfile.vmsize does not support AgentPoolProfile.acceleratedNetworking")
+		}
 	}
 	return nil
 }
