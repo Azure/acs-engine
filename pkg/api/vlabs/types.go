@@ -441,7 +441,7 @@ type AgentPoolProfile struct {
 	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	// subnet is internal
 	subnet string

@@ -442,7 +442,7 @@ type AgentPoolProfile struct {
 	IPAddressCount               int                  `json:"ipAddressCount,omitempty"`
 	Distro                       Distro               `json:"distro,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 	FQDN                         string               `json:"fqdn,omitempty"`
 	CustomNodeLabels             map[string]string    `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension        *Extension           `json:"preProvisionExtension"`

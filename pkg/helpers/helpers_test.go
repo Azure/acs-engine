@@ -166,6 +166,61 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 	}
 }
 
+func TestAcceleratedNetworkingSupported(t *testing.T) {
+	cases := []struct {
+		input          string
+		expectedResult bool
+	}{
+		{
+			input:          "Standard_A1",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_B3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D1_v2",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_L3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_NC6",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "Standard_DS2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "",
+			expectedResult: true,
+		},
+	}
+
+	for _, c := range cases {
+		result := AcceleratedNetworkingSupported(c.input)
+		if c.expectedResult != result {
+			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result: expected %t but got %t", c.expectedResult, result)
+		}
+	}
+}
+
 func TestEqualError(t *testing.T) {
 	testcases := []struct {
 		errA     error
