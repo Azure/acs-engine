@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"

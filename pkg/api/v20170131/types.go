@@ -2,9 +2,10 @@ package v20170131
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	neturl "net/url"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM

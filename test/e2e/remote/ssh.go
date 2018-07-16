@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )

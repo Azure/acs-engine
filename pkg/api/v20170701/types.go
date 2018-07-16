@@ -2,8 +2,9 @@ package v20170701
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // The validate tag is used for validation

@@ -2,8 +2,9 @@ package vlabs
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM

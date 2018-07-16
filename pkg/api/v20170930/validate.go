@@ -1,8 +1,9 @@
 package v20170930
 
 import (
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Validate implements APIObject
