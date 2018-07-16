@@ -80,3 +80,35 @@ func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, pu
 
 	return privateKey, authorizedKey, nil
 }
+
+// AcceleratedNetworkingSupported check if the VmSKU support the Accelerated Networking
+func AcceleratedNetworkingSupported(sku string) bool {
+	if strings.Contains(sku, "Standard_A") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_B") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_G") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_H") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_L") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_N") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_D1") || strings.Contains(sku, "Standard_D1_") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_DS1") || strings.Contains(sku, "Standard_DS1_") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_F1") || strings.EqualFold(sku, "Standard_F1s") {
+		return false
+	}
+	return true
+}
