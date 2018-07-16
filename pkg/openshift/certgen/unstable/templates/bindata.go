@@ -13,6 +13,8 @@
 // master/tmp/bootstrapconfigs/master-config.yaml
 // node/etc/origin/cloudprovider/azure.conf
 // node/etc/origin/node/resolv.conf
+// DO NOT EDIT!
+
 package templates
 
 import (
