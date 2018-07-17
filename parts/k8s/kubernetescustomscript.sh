@@ -26,6 +26,7 @@ ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
+ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT=44 # Failed to add repo pkg file
 ERR_MODPROBE_FAIL=49 # Unable to load a kernel module using modprobe
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_KATA_KEY_DOWNLOAD_TIMEOUT=60 # Timeout waiting to download kata repo key
@@ -175,17 +176,15 @@ function installDeps() {
 
 function installFlexVolDrivers() {
     PLUGIN_DIR=/etc/kubernetes/volumeplugins
-
     # install blobfuse flexvolume driver
     BLOBFUSE_DIR=$PLUGIN_DIR/azure~blobfuse
     mkdir -p $BLOBFUSE_DIR
-    wget -O $BLOBFUSE_DIR/blobfuse https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/blobfuse/deployment/blobfuse-flexvol-installer/blobfuse
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/blobfuse/deployment/blobfuse-flexvol-installer/blobfuse > $BLOBFUSE_DIR/blobfuse || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
     chmod a+x $BLOBFUSE_DIR/blobfuse
-
     # install smb flexvolume driver
     SMB_DIR=$PLUGIN_DIR/microsoft.com~smb
     mkdir -p $SMB_DIR
-    wget -O $SMB_DIR/smb https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/smb/deployment/smb-flexvol-installer/smb
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/smb/deployment/smb-flexvol-installer/smb > $SMB_DIR/smb || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
     chmod a+x $SMB_DIR/smb
 }
 
