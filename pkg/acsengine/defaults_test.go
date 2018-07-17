@@ -548,7 +548,7 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 		mockAPI := getMockAPIProperties("1.0.0")
 		mockAPI.OrchestratorProfile = &test.orchestratorProfile
 		setMasterNetworkDefaults(&mockAPI, false)
-		setAgentNetworkDefaults(&mockAPI, false)
+		setAgentNetworkDefaults(&mockAPI, false, false)
 		if mockAPI.MasterProfile.Distro != test.expectedDistro {
 			t.Fatalf("setMasterNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, mockAPI.MasterProfile.Distro, test.expectedDistro)
 		}
