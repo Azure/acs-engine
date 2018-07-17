@@ -179,12 +179,12 @@ function installFlexVolDrivers() {
     # install blobfuse flexvolume driver
     BLOBFUSE_DIR=$PLUGIN_DIR/azure~blobfuse
     mkdir -p $BLOBFUSE_DIR
-    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/blobfuse/deployment/blobfuse-flexvol-installer/blobfuse > $BLOBFUSE_DIR/blobfuse || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/blobfuse-v0.1 > $BLOBFUSE_DIR/blobfuse || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
     chmod a+x $BLOBFUSE_DIR/blobfuse
     # install smb flexvolume driver
     SMB_DIR=$PLUGIN_DIR/microsoft.com~smb
     mkdir -p $SMB_DIR
-    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://raw.githubusercontent.com/Azure/kubernetes-volume-drivers/v0.1/flexvolume/smb/deployment/smb-flexvol-installer/smb > $SMB_DIR/smb || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/smb-v0.1 > $SMB_DIR/smb || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
     chmod a+x $SMB_DIR/smb
 }
 
