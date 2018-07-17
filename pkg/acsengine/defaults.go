@@ -362,7 +362,7 @@ var (
 )
 
 // setPropertiesDefaults for the container Properties, returns true if certs are generated
-func setPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, error) {
+func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (bool, error) {
 	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
@@ -371,7 +371,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, erro
 
 	setHostedMasterNetworkDefaults(properties)
 
-	setAgentNetworkDefaults(properties, isUpgrade)
+	setAgentNetworkDefaults(properties, isUpgrade, isScale)
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
@@ -792,7 +792,7 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 }
 
 // SetAgentNetworkDefaults for agents
-func setAgentNetworkDefaults(a *api.Properties, isUpgrade bool) {
+func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 	// configure the subnets if not in custom VNET
 	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
@@ -819,7 +819,7 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade bool) {
 		// On instances that support hyperthreading, Accelerated Networking is supported on VM instances with 4 or more vCPUs.
 		// Supported series are: D/DSv3, E/ESv3, Fsv2, and Ms/Mms.
 		if profile.AcceleratedNetworkingEnabled == nil {
-			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && helpers.AcceleratedNetworkingSupported(profile.VMSize))
+			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
 		// don't default Distro for OpenShift

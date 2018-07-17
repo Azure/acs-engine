@@ -460,7 +460,7 @@ func TestStorageProfile(t *testing.T) {
 		Enabled:        helpers.PointerToBool(true),
 		JumpboxProfile: &api.PrivateJumpboxProfile{},
 	}
-	setPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.MasterProfile.StorageProfile != api.ManagedDisks {
 		t.Fatalf("MasterProfile.StorageProfile did not have the expected configuration, got %s, expected %s",
 			properties.MasterProfile.StorageProfile, api.ManagedDisks)
@@ -489,7 +489,7 @@ func TestStorageProfile(t *testing.T) {
 	mockCS = getMockBaseContainerService("1.10.2")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
-	setPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false, false)
 	if !properties.AgentPoolProfiles[0].IsVirtualMachineScaleSets() {
 		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].AvailabilityProfile, api.VirtualMachineScaleSets)
@@ -502,7 +502,7 @@ func TestAgentPoolProfile(t *testing.T) {
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
-	setPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.AgentPoolProfiles[0].ScaleSetPriority != "" {
 		t.Fatalf("AgentPoolProfiles[0].ScaleSetPriority did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].ScaleSetPriority, "")
@@ -512,7 +512,7 @@ func TestAgentPoolProfile(t *testing.T) {
 			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, "")
 	}
 	properties.AgentPoolProfiles[0].ScaleSetPriority = api.ScaleSetPriorityLow
-	setPropertiesDefaults(&mockCS, false)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy != api.ScaleSetEvictionPolicyDelete {
 		t.Fatalf("AgentPoolProfile[0].ScaleSetEvictionPolicy did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].ScaleSetEvictionPolicy, api.ScaleSetEvictionPolicyDelete)
@@ -548,7 +548,7 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 		mockAPI := getMockAPIProperties("1.0.0")
 		mockAPI.OrchestratorProfile = &test.orchestratorProfile
 		setMasterNetworkDefaults(&mockAPI, false)
-		setAgentNetworkDefaults(&mockAPI, false)
+		setAgentNetworkDefaults(&mockAPI, false, false)
 		if mockAPI.MasterProfile.Distro != test.expectedDistro {
 			t.Fatalf("setMasterNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, mockAPI.MasterProfile.Distro, test.expectedDistro)
 		}
