@@ -24,6 +24,7 @@ ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
+ERR_MODPROBE_FAIL=49 # Unable to load a kernel module using modprobe
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
@@ -252,7 +253,7 @@ function installCNI() {
     chmod -R 755 $CNI_BIN_DIR
     # Turn on br_netfilter (needed for the iptables rules to work on bridges)
     # and permanently enable it
-    modprobe br_netfilter
+    retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     # /etc/modules-load.d is the location used by systemd to load modules
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
 }
