@@ -250,6 +250,11 @@ function installCNI() {
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
+    # Turn on br_netfilter (needed for the iptables rules to work on bridges)
+    # and permanently enable it
+    modprobe br_netfilter
+    # /etc/modules-load.d is the location used by systemd to load modules
+    echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
 }
 
 function configAzureCNI() {
