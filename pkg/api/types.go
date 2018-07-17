@@ -916,6 +916,17 @@ func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
 	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
 }
 
+// IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
+func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
+	var kvFlexVolumeAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultKeyVaultFlexVolumeAddonName {
+			kvFlexVolumeAddon = k.Addons[i]
+		}
+	}
+	return kvFlexVolumeAddon.IsEnabled(DefaultKeyVaultFlexVolumeAddonEnabled)
+}
+
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
 func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	var dashboardAddon KubernetesAddon

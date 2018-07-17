@@ -122,6 +122,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"audit-policy.yaml",
 			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
 		},
+		{
+			"kubernetesmasteraddons-keyvault-flexvolume-installer.yaml",
+			"keyvault-flexvolume-installer.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled(),
+		},
 	}
 }
 
