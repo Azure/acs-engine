@@ -1,12 +1,12 @@
 package operations
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +29,7 @@ var _ = Describe("Safely Drain node operation tests", func() {
 		mockClient.MockKubernetesClient.UpdateNodeFunc = func(node *v1.Node) (*v1.Node, error) {
 			if i > 0 {
 				i--
-				return node, fmt.Errorf(kubernetesOptimisticLockErrorMsg)
+				return node, errors.New(kubernetesOptimisticLockErrorMsg)
 			}
 			return node, nil
 		}

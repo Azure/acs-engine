@@ -1,11 +1,10 @@
 package v20160330
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/pkg/errors"
 )
 
 // Validate implements APIObject
@@ -15,7 +14,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case Mesos:
 	case Swarm:
 	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		return errors.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
 	return nil
@@ -24,7 +23,7 @@ func (o *OrchestratorProfile) Validate() error {
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
 	if m.Count != 1 && m.Count != 3 && m.Count != 5 {
-		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
+		return errors.New("MasterProfile count needs to be 1, 3, or 5")
 	}
 	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
 		return e
@@ -41,7 +40,7 @@ func (a *AgentPoolProfile) Validate() error {
 		return e
 	}
 	if a.Count < MinAgentCount || a.Count > MaxAgentCount {
-		return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
+		return errors.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
 	}
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
@@ -68,13 +67,13 @@ func (l *LinuxProfile) Validate() error {
 // Validate implements APIObject
 func (a *Properties) Validate() error {
 	if a.OrchestratorProfile == nil {
-		return fmt.Errorf("missing OrchestratorProfile")
+		return errors.New("missing OrchestratorProfile")
 	}
 	if a.MasterProfile == nil {
-		return fmt.Errorf("missing MasterProfile")
+		return errors.New("missing MasterProfile")
 	}
 	if a.LinuxProfile == nil {
-		return fmt.Errorf("missing LinuxProfile")
+		return errors.New("missing LinuxProfile")
 	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
@@ -92,18 +91,18 @@ func (a *Properties) Validate() error {
 		}
 		if agentPoolProfile.OSType == Windows {
 			if a.WindowsProfile == nil {
-				return fmt.Errorf("missing WindowsProfile")
+				return errors.New("missing WindowsProfile")
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
 			default:
-				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
+				return errors.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
 			if len(a.WindowsProfile.AdminUsername) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return errors.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return errors.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 		}
 	}
@@ -112,7 +111,7 @@ func (a *Properties) Validate() error {
 
 func validateName(name string, label string) error {
 	if name == "" {
-		return fmt.Errorf("%s must be a non-empty value", label)
+		return errors.Errorf("%s must be a non-empty value", label)
 	}
 	return nil
 }
@@ -126,7 +125,7 @@ func validatePoolName(poolName string) error {
 	}
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
-		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+		return errors.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
 	}
 	return nil
 }
@@ -135,7 +134,7 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
-			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
+			return errors.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
 	}

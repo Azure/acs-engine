@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 )
@@ -111,7 +112,7 @@ func TestValidate(t *testing.T) {
 				caPrivateKeyPath:  "test",
 			},
 			args:        []string{},
-			expectedErr: fmt.Errorf("--api-model was not supplied, nor was one specified as a positional argument"),
+			expectedErr: errors.New("--api-model was not supplied, nor was one specified as a positional argument"),
 		},
 		{
 			dc: &deployCmd{
@@ -122,7 +123,7 @@ func TestValidate(t *testing.T) {
 				caPrivateKeyPath:  "test",
 			},
 			args:        []string{"wrong/path"},
-			expectedErr: fmt.Errorf("specified api model does not exist (wrong/path)"),
+			expectedErr: errors.New("specified api model does not exist (wrong/path)"),
 		},
 		{
 			dc: &deployCmd{
@@ -133,7 +134,7 @@ func TestValidate(t *testing.T) {
 				caPrivateKeyPath:  "test",
 			},
 			args:        []string{"test/apimodel.json", "some_random_stuff"},
-			expectedErr: fmt.Errorf("too many arguments were provided to 'deploy'"),
+			expectedErr: errors.New("too many arguments were provided to 'deploy'"),
 		},
 		{
 			dc: &deployCmd{
@@ -144,7 +145,7 @@ func TestValidate(t *testing.T) {
 				caPrivateKeyPath:  "test",
 			},
 			args:        []string{apimodelPath},
-			expectedErr: fmt.Errorf("--location must be specified"),
+			expectedErr: errors.New("--location must be specified"),
 		},
 		{
 			dc: &deployCmd{

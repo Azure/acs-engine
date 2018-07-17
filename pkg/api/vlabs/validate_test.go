@@ -1,15 +1,14 @@
 package vlabs
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -780,7 +779,7 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 		p := getK8sDefaultProperties(true)
 		p.ExtensionProfiles = test.extensionProfiles
 		err := p.Validate(true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
+		if !helpers.EqualError(err, test.expectedErr) {
 			t.Errorf("expected error with message : %s, but got %s", test.expectedErr.Error(), err.Error())
 		}
 	}
@@ -1272,7 +1271,7 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 			},
 		}
 		gotErr := p.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(gotErr, test.expectedErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("scenario %q", test.name)
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
 		}
@@ -1666,7 +1665,7 @@ func TestOpenshiftValidate(t *testing.T) {
 
 	for _, test := range tests {
 		gotErr := test.properties.Validate(test.isUpgrade)
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("running scenario %q", test.name)
 			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
@@ -1782,7 +1781,7 @@ func TestValidateAgentPoolProfiles(t *testing.T) {
 
 	for _, test := range tests {
 		gotErr := test.properties.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("running scenario %q", test.name)
 			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
@@ -1853,7 +1852,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 
 	for _, test := range tests {
 		err := validateKeyVaultSecrets(test.secrets, true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
+		if err.Error() != test.expectedErr.Error() {
 			t.Errorf("expected error to be thrown with msg : %s", test.expectedErr.Error())
 		}
 	}

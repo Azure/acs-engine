@@ -1,7 +1,7 @@
 package v20170831
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 )
 
 // Merge existing ManagedCluster attribute into mc
@@ -9,13 +9,13 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 
 	// Merge properties.dnsPrefix
 	if emc.Properties.DNSPrefix == "" {
-		return fmt.Errorf("existing ManagedCluster expect properties.dnsPrefix not to be empty")
+		return errors.New("existing ManagedCluster expect properties.dnsPrefix not to be empty")
 	}
 
 	if mc.Properties.DNSPrefix == "" {
 		mc.Properties.DNSPrefix = emc.Properties.DNSPrefix
 	} else if mc.Properties.DNSPrefix != emc.Properties.DNSPrefix {
-		return fmt.Errorf("change dnsPrefix from %s to %s is not supported",
+		return errors.Errorf("change dnsPrefix from %s to %s is not supported",
 			emc.Properties.DNSPrefix,
 			mc.Properties.DNSPrefix)
 	}

@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -45,7 +45,7 @@ var _ = Describe("the upgrade command", func() {
 						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
 					},
 				},
-				expectedErr: fmt.Errorf("--resource-group must be specified"),
+				expectedErr: errors.New("--resource-group must be specified"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -58,7 +58,7 @@ var _ = Describe("the upgrade command", func() {
 						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
 					},
 				},
-				expectedErr: fmt.Errorf("--location must be specified"),
+				expectedErr: errors.New("--location must be specified"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -71,7 +71,7 @@ var _ = Describe("the upgrade command", func() {
 						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
 					},
 				},
-				expectedErr: fmt.Errorf("--upgrade-version must be specified"),
+				expectedErr: errors.New("--upgrade-version must be specified"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -84,7 +84,7 @@ var _ = Describe("the upgrade command", func() {
 						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
 					},
 				},
-				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
+				expectedErr: errors.New("--deployment-dir must be specified"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -97,7 +97,7 @@ var _ = Describe("the upgrade command", func() {
 						rawSubscriptionID: "99999999-0000-0000-0000-000000000000",
 					},
 				},
-				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
+				expectedErr: errors.New("--deployment-dir must be specified"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -108,7 +108,7 @@ var _ = Describe("the upgrade command", func() {
 					sshPrivateKeyPath:   privKey.Name(),
 					authArgs:            authArgs{},
 				},
-				expectedErr: fmt.Errorf("--subscription-id is required (and must be a valid UUID)"),
+				expectedErr: errors.New("--subscription-id is required (and must be a valid UUID)"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -118,7 +118,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "southcentralus",
 					authArgs:            authArgs{},
 				},
-				expectedErr: fmt.Errorf("ssh-private-key-path must be specified: open _output/mydir/id_rsa: no such file or directory"),
+				expectedErr: errors.New("ssh-private-key-path must be specified: open _output/mydir/id_rsa: no such file or directory"),
 			},
 			{
 				uc: &dcosUpgradeCmd{
