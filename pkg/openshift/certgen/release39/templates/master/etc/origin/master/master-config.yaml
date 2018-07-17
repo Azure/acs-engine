@@ -87,7 +87,7 @@ etcdStorageConfig:
   openShiftStoragePrefix: openshift.io
   openShiftStorageVersion: v1
 imageConfig:
-  format: MASTER_OREG_URL-${component}:${version}
+  format: MASTER_OREG_URL
   latest: false
 imagePolicyConfig:
   internalRegistryHostname: docker-registry.default.svc:5000

@@ -119,7 +119,7 @@ else
     sed -i "s|PROMETHEUS_EXPORTER_VERSION|${PROMETHEUS_EXPORTER_VERSION}|g;" /tmp/ansible/azure-local-master-inventory.yml
 fi
 
-MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE"
+MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE-\${component}:\${version}"
 if [[ -f /etc/origin/oreg_url ]]; then
 	MASTER_OREG_URL=$(cat /etc/origin/oreg_url)
 fi
