@@ -26,6 +26,7 @@ ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
+ERR_MODPROBE_FAIL=49 # Unable to load a kernel module using modprobe
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_KATA_KEY_DOWNLOAD_TIMEOUT=60 # Timeout waiting to download kata repo key
 ERR_KATA_APT_KEY_TIMEOUT=61 # Timeout waiting for kata apt-key
@@ -259,7 +260,7 @@ function installCNI() {
     chmod -R 755 $CNI_BIN_DIR
     # Turn on br_netfilter (needed for the iptables rules to work on bridges)
     # and permanently enable it
-    modprobe br_netfilter
+    retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     # /etc/modules-load.d is the location used by systemd to load modules
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
 }
