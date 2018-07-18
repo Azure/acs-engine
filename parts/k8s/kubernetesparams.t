@@ -311,6 +311,34 @@
       },
       "type": "string"
     },
+    "kubernetesNVIDIADevicePluginCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPURequests"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryRequests"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPULimit"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryLimit"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin Memory Limit"
+      },
+      "type": "string"
+    },
     "kubernetesTillerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {
