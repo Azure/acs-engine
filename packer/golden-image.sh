@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-source provision-source.sh
+source kubernetesprovisionsource.sh
 source kubernetescustomscript.sh
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
@@ -22,6 +22,7 @@ configAzureCNI
 installContainerd
 extractHyperkube
 
+# workaround to unpack hyperkube
 img unpack $HYPERKUBE_URL
 cp /home/azureuser/rootfs/hyperkube /usr/local/bin/kubelet
 cp /home/azureuser/rootfs/hyperkube /usr/local/bin/kubectl
