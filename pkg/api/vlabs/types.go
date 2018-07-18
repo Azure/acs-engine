@@ -363,26 +363,45 @@ type OpenShiftConfig struct {
 	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
+// NetworkAccessProfile describes inbound traffic rules for network access.
+type NetworkAccessProfile struct {
+	SourceAddressPrefix        string   `json:"sourceAddressPrefix"`
+	SourceAddressPrefixes      []string `json:"sourceAddressPrefixes"`
+	SourcePortRange            string   `json:"sourcePortRange"`
+	SourcePortRanges           []string `json:"sourcePortRanges"`
+	DestinationAddressPrefix   string   `json:"destinationAddressPrefix"`
+	DestinationAddressPrefixes []string `json:"destinationAddressPrefixes"`
+	DestinationPortRange       string   `json:"destinationPortRange"`
+	DestinationPortRanges      []string `json:"destinationPortRanges"`
+}
+
+// MasterNetworkAccessProfile describes the inbound network configuration for access the master nodes.
+type MasterNetworkAccessProfile struct {
+	TLS *NetworkAccessProfile `json:"tls,omitempty"`
+	SSH *NetworkAccessProfile `json:"ssh,omitempty"`
+}
+
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int               `json:"count" validate:"required,eq=1|eq=3|eq=5"`
-	DNSPrefix                string            `json:"dnsPrefix" validate:"required"`
-	SubjectAltNames          []string          `json:"subjectAltNames"`
-	VMSize                   string            `json:"vmSize" validate:"required"`
-	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string            `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	StorageProfile           string            `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool              `json:"oauthEnabled"`
-	PreProvisionExtension    *Extension        `json:"preProvisionExtension"`
-	Extensions               []Extension       `json:"extensions"`
-	Distro                   Distro            `json:"distro,omitempty"`
-	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
-	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	Count                    int                         `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string                      `json:"dnsPrefix" validate:"required"`
+	SubjectAltNames          []string                    `json:"subjectAltNames"`
+	VMSize                   string                      `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int                         `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	VnetSubnetID             string                      `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string                      `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string                      `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int                         `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	StorageProfile           string                      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	HTTPSourceAddressPrefix  string                      `json:"HTTPSourceAddressPrefix,omitempty"`
+	NetworkAccessProfile     *MasterNetworkAccessProfile `json:"networkAccessProfile,omitEmpty"`
+	OAuthEnabled             bool                        `json:"oauthEnabled"`
+	PreProvisionExtension    *Extension                  `json:"preProvisionExtension"`
+	Extensions               []Extension                 `json:"extensions"`
+	Distro                   Distro                      `json:"distro,omitempty"`
+	KubernetesConfig         *KubernetesConfig           `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference             `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile               `json:"customFiles,omitempty"`
 
 	// subnet is internal
 	subnet string

@@ -295,7 +295,7 @@
      },
      {{end}}
      {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "2017-12-01",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"

@@ -370,27 +370,46 @@ type OpenShiftConfig struct {
 	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 }
 
+// NetworkAccessProfile describes inbound traffic rules for network access.
+type NetworkAccessProfile struct {
+	SourceAddressPrefix        string   `json:"sourceAddressPrefix"`
+	SourceAddressPrefixes      []string `json:"sourceAddressPrefixes"`
+	SourcePortRange            string   `json:"sourcePortRange"`
+	SourcePortRanges           []string `json:"sourcePortRanges"`
+	DestinationAddressPrefix   string   `json:"destinationAddressPrefix"`
+	DestinationAddressPrefixes []string `json:"destinationAddressPrefixes"`
+	DestinationPortRange       string   `json:"destinationPortRange"`
+	DestinationPortRanges      []string `json:"destinationPortRanges"`
+}
+
+// MasterNetworkAccessProfile describes the inbound network configuration for access the master nodes.
+type MasterNetworkAccessProfile struct {
+	TLS *NetworkAccessProfile `json:"tls,omitempty"`
+	SSH *NetworkAccessProfile `json:"ssh,omitempty"`
+}
+
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int               `json:"count"`
-	DNSPrefix                string            `json:"dnsPrefix"`
-	SubjectAltNames          []string          `json:"subjectAltNames"`
-	VMSize                   string            `json:"vmSize"`
-	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string            `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string            `json:"subnet"`
-	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
-	StorageProfile           string            `json:"storageProfile,omitempty"`
-	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool              `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension        `json:"preProvisionExtension"`
-	Extensions               []Extension       `json:"extensions"`
-	Distro                   Distro            `json:"distro,omitempty"`
-	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
-	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	Count                    int                         `json:"count"`
+	DNSPrefix                string                      `json:"dnsPrefix"`
+	SubjectAltNames          []string                    `json:"subjectAltNames"`
+	VMSize                   string                      `json:"vmSize"`
+	OSDiskSizeGB             int                         `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string                      `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string                      `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string                      `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string                      `json:"subnet"`
+	IPAddressCount           int                         `json:"ipAddressCount,omitempty"`
+	StorageProfile           string                      `json:"storageProfile,omitempty"`
+	HTTPSourceAddressPrefix  string                      `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool                        `json:"oauthEnabled"`
+	NetworkAccessProfile     *MasterNetworkAccessProfile `json:"networkAccessProfile,omitEmpty"`
+	PreprovisionExtension    *Extension                  `json:"preProvisionExtension"`
+	Extensions               []Extension                 `json:"extensions"`
+	Distro                   Distro                      `json:"distro,omitempty"`
+	KubernetesConfig         *KubernetesConfig           `json:"kubernetesConfig,omitempty"`
+	ImageRef                 *ImageReference             `json:"imageReference,omitempty"`
+	CustomFiles              *[]CustomFile               `json:"customFiles,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376

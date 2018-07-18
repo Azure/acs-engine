@@ -892,6 +892,37 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.StorageProfile = vlabs.StorageProfile
 	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
 	api.OAuthEnabled = vlabs.OAuthEnabled
+
+	if vlabs.NetworkAccessProfile != nil {
+		api.NetworkAccessProfile = &MasterNetworkAccessProfile{}
+
+		if vlabs.NetworkAccessProfile.TLS != nil {
+			api.NetworkAccessProfile.TLS = &NetworkAccessProfile{
+				SourceAddressPrefix:        vlabs.NetworkAccessProfile.TLS.SourceAddressPrefix,
+				SourceAddressPrefixes:      vlabs.NetworkAccessProfile.TLS.SourceAddressPrefixes,
+				SourcePortRange:            vlabs.NetworkAccessProfile.TLS.SourcePortRange,
+				SourcePortRanges:           vlabs.NetworkAccessProfile.TLS.SourcePortRanges,
+				DestinationAddressPrefix:   vlabs.NetworkAccessProfile.TLS.DestinationAddressPrefix,
+				DestinationAddressPrefixes: vlabs.NetworkAccessProfile.TLS.DestinationAddressPrefixes,
+				DestinationPortRange:       vlabs.NetworkAccessProfile.TLS.DestinationPortRange,
+				DestinationPortRanges:      vlabs.NetworkAccessProfile.TLS.DestinationPortRanges,
+			}
+		}
+
+		if vlabs.NetworkAccessProfile.SSH != nil {
+			api.NetworkAccessProfile.SSH = &NetworkAccessProfile{
+				SourceAddressPrefix:        vlabs.NetworkAccessProfile.SSH.SourceAddressPrefix,
+				SourceAddressPrefixes:      vlabs.NetworkAccessProfile.SSH.SourceAddressPrefixes,
+				SourcePortRange:            vlabs.NetworkAccessProfile.SSH.SourcePortRange,
+				SourcePortRanges:           vlabs.NetworkAccessProfile.SSH.SourcePortRanges,
+				DestinationAddressPrefix:   vlabs.NetworkAccessProfile.SSH.DestinationAddressPrefix,
+				DestinationAddressPrefixes: vlabs.NetworkAccessProfile.SSH.DestinationAddressPrefixes,
+				DestinationPortRange:       vlabs.NetworkAccessProfile.SSH.DestinationPortRange,
+				DestinationPortRanges:      vlabs.NetworkAccessProfile.SSH.DestinationPortRanges,
+			}
+		}
+	}
+
 	// by default vlabs will use managed disks as it has encryption at rest
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
