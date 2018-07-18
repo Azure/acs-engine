@@ -269,6 +269,12 @@ var (
 		},
 	}
 
+	// DefaultKeyVaultFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
+	DefaultKeyVaultFlexVolumeAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultKeyVaultFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
+	}
+
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
@@ -433,6 +439,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultTillerAddonsConfig,
 				DefaultACIConnectorAddonsConfig,
 				DefaultClusterAutoscalerAddonsConfig,
+				DefaultKeyVaultFlexVolumeAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
@@ -495,6 +502,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if aNP < 0 {
 				// Provide default acs-engine config for Azure NetworkPolicy addon
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureNetworkPolicyAddonsConfig)
+			}
+			kv := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
+			if kv < 0 {
+				// Provide default acs-engine config for KeyVault FlexVolume
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -606,6 +618,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		aNP := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[aNP].IsEnabled(a.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[aNP] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aNP], DefaultAzureNetworkPolicyAddonsConfig)
+		}
+		kv := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[kv].IsEnabled(api.DefaultKeyVaultFlexVolumeAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[kv] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[kv], DefaultKeyVaultFlexVolumeAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {

@@ -108,6 +108,8 @@ const (
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultClusterAutoscalerAddonName is the name of the autoscaler addon deployment
 	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
+	// DefaultKeyVaultFlexVolumeAddonName is the name of the keyvault flexvolume addon deployment
+	DefaultKeyVaultFlexVolumeAddonName = "keyvault-flexvolume"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
