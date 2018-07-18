@@ -278,7 +278,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					for _, node := range nodeList.Nodes {
 						success := false
 						for i := 0; i < 60; i++ {
-							dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+							address := node.Status.GetAddressByType("InternalIP")
+							if address == nil {
+								log.Printf("One of our nodes does not have an InternalIP value!: %s\n", node.Metadata.Name)
+							}
+							Expect(address).NotTo(Equal(nil))
+							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 							cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
 							util.PrintCommand(cmd)
