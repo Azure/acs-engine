@@ -9,7 +9,7 @@
                 "--allow-privileged": "false",
                 "--read-only-port": "0",
                 "--streaming-connection-idle-timeout": "0",
-                "--protect-kernel-defaults": "false",
+                "--protect-kernel-defaults": "true",
                 "--make-iptables-util-chains": "true",
                 "--anonymous-auth": "false",
                 "--authorization-mode": "Webhook",
