@@ -975,6 +975,30 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					} else {
 						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
 					}
+				case "kubernetesNVIDIADevicePluginCPURequests":
+					if aC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginMemoryRequests":
+					if aC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginCPULimit":
+					if aC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginMemoryLimit":
+					if aC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {
 						if reschedulerAddon.Containers[rC].Image != "" {

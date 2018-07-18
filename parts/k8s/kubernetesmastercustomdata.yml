@@ -254,6 +254,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 {{if IsNVIDIADevicePluginEnabled}}
     sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginCPURequests>|{{WrapAsVariable "kubernetesNVIDIADevicePluginCPURequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginMemoryRequests>|{{WrapAsVariable "kubernetesNVIDIADevicePluginMemoryRequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginCPULimit>|{{WrapAsVariable "kubernetesNVIDIADevicePluginCPULimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginMemoryLimit>|{{WrapAsVariable "kubernetesNVIDIADevicePluginMemoryLimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}

@@ -128,6 +128,10 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 			c = getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
 			if c > -1 {
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginCPURequests", nvidiaDevicePluginAddon.Containers[c].CPURequests)
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginCPULimit", nvidiaDevicePluginAddon.Containers[c].CPULimits)
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryRequests", nvidiaDevicePluginAddon.Containers[c].MemoryRequests)
+				addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryLimit", nvidiaDevicePluginAddon.Containers[c].MemoryLimits)
 				if nvidiaDevicePluginAddon.Containers[c].Image != "" {
 					addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
 				} else {

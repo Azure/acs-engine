@@ -316,6 +316,11 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name: NVIDIADevicePluginAddonName,
+				// from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/device-plugins/nvidia-gpu/daemonset.yaml#L44
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
 			},
 		},
 	}
