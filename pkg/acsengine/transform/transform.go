@@ -155,6 +155,11 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
+	return RemoveNSGs(t, logger, templateMap)
+}
+
+// RemoveNSGs removes the NSG from the templateMap
+func RemoveNSGs(t *Transformer, logger *logrus.Entry, templateMap map[string]interface{}) error {
 	rtIndex := -1
 	nsgIndex := -1
 	vnetIndex := -1
