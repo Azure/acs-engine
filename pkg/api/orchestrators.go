@@ -25,7 +25,7 @@ func init() {
 		OpenShift:  openShiftInfo,
 	}
 	versionsMap = map[string][]string{
-		Kubernetes: common.GetAllSupportedKubernetesVersions(false, false),
+		Kubernetes: common.GetAllSupportedKubernetesVersions(true, false),
 		DCOS:       common.GetAllSupportedDCOSVersions(),
 		Swarm:      common.GetAllSupportedSwarmVersions(),
 		SwarmMode:  common.GetAllSupportedDockerCEVersions(),
