@@ -271,22 +271,25 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
@@ -319,22 +322,25 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
