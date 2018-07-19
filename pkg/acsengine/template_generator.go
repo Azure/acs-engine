@@ -762,6 +762,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
 				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
+				kvFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
+				kC := getAddonContainersIndexByName(kvFlexVolumeAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -916,6 +918,30 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						} else {
 							val = "false"
 						}
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerCPURequests":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerCPULimit":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].MemoryLimits
+					} else {
+						val = ""
 					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {

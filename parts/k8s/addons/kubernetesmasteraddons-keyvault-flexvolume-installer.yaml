@@ -10,24 +10,31 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   labels:
-    app: kv-flexvol-installer
+    app: keyvault-flexvolume
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "EnsureExists"
-  name: kv-flexvol-installer
+  name: keyvault-flexvolume
   namespace: kv
 spec:
   template:
     metadata:
       labels:
-        app: kv-flexvol-installer
+        app: keyvault-flexvolume
         kubernetes.io/cluster-service: "true"
         addonmanager.kubernetes.io/mode: "EnsureExists"
     spec:
       tolerations:
       containers:
-      - name: flexvol-driver-installer
+      - name: keyvault-flexvolume
         image: "ritazh/kv-flexvol-installer:v0.0.3"
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: <kubernetesKeyVaultFlexVolumeInstallerCPURequests>
+            memory: <kubernetesKeyVaultFlexVolumeInstallerMemoryRequests>
+          limits:
+            cpu: <kubernetesKeyVaultFlexVolumeInstallerCPULimit>
+            memory: <kubernetesKeyVaultFlexVolumeInstallerMemoryLimit>
         env:
         - name: TARGET_DIR
           value: "/etc/kubernetes/volumeplugins"

@@ -273,6 +273,15 @@ var (
 	DefaultKeyVaultFlexVolumeAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultKeyVaultFlexVolumeAddonName,
 		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: DefaultKeyVaultFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
 	}
 
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config

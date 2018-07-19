@@ -60,12 +60,36 @@ You should see the keyvault flexvolume installer pods running on each agent node
 ```bash
 kubectl get pods -n kv
 
-kv-flexvol-installer-f7bx8   1/1       Running   0          3m
-kv-flexvol-installer-rcxbl   1/1       Running   0          3m
-kv-flexvol-installer-z6jm6   1/1       Running   0          3m
+keyvault-flexvolume-f7bx8   1/1       Running   0          3m
+keyvault-flexvolume-rcxbl   1/1       Running   0          3m
+keyvault-flexvolume-z6jm6   1/1       Running   0          3m
 ```
 
 Follow the README at https://github.com/Azure/kubernetes-keyvault-flexvol for get started steps.
+
+## 
+To update resources:
+
+```json
+"kubernetesConfig": {
+        "addons": [
+          {
+            "name": "keyvault-flexvolume",
+            "enabled": true,
+            "containers": [
+                {
+                    "name": "keyvault-flexvolume",
+                    "image": "ritazh/kv-flexvol-installer:v0.0.3",
+                    "cpuRequests": "100m",
+                    "memoryRequests": "300Mi",
+                    "cpuLimits": "100m",
+                    "memoryLimits": "300Mi"
+                }
+            ]
+          }
+        ]
+      }
+```
 
 ## Supported Orchestrators
 
