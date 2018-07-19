@@ -275,7 +275,7 @@ var (
 		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
-				Name: DefaultKeyVaultFlexVolumeAddonName,
+				Name:           DefaultKeyVaultFlexVolumeAddonName,
 				CPURequests:    "50m",
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
