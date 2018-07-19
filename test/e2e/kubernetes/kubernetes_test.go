@@ -352,11 +352,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have keyvault-flexvolume running", func() {
 			if hasKeyVaultFlexVolume, KeyVaultFlexVolumeAddon := eng.HasAddon("keyvault-flexvolume"); hasKeyVaultFlexVolume {
-				running, err := pod.WaitOnReady("keyvault-flexvolume-", "kv", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
-				pods, err := pod.GetAllByPrefix("keyvault-flexvolume-", "kv")
+				pods, err := pod.GetAllByPrefix("keyvault-flexvolume", "kv")
 				Expect(err).NotTo(HaveOccurred())
 				for i, c := range KeyVaultFlexVolumeAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
