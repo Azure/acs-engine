@@ -130,7 +130,7 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 		}
 		// has to be exactly one element per specified orchestrator/version
 		if len(arr) != 1 {
-			return nil, errors.New("Umbiguous Orchestrator Versions")
+			return nil, errors.New("Ambiguous Orchestrator Versions")
 		}
 		return arr[0], nil
 	default:
