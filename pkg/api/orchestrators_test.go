@@ -52,7 +52,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	RegisterTestingT(t)
 	// 1.6.9 is upgradable to 1.6.x and 1.7.x
 	deployedVersion := "1.6.9"
-	nextNextMinorVersion := "1.8.0"
+	nextNextMinorVersion := "1.8.0-alpha.0"
 	csOrch := &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
@@ -64,7 +64,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 
 	// 1.7.0 is upgradable to 1.7.x and 1.8.x
 	deployedVersion = "1.7.0"
-	nextNextMinorVersion = "1.9.0"
+	nextNextMinorVersion = "1.9.0-alpha.0"
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
@@ -76,7 +76,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 
 	// 1.7.15 is upgradable to 1.8.x
 	deployedVersion = "1.7.15"
-	nextNextMinorVersion = "1.9.0"
+	nextNextMinorVersion = "1.9.0-alpha.0"
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
@@ -88,7 +88,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 
 	// 1.8.4 is upgradable to 1.8.x and 1.9.x
 	deployedVersion = "1.8.4"
-	nextNextMinorVersion = "1.10.0"
+	nextNextMinorVersion = "1.10.0-alpha.0"
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
@@ -100,7 +100,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 
 	// 1.9.6 is upgradable to 1.10.x
 	deployedVersion = "1.9.6"
-	nextNextMinorVersion = "1.11.0"
+	nextNextMinorVersion = "1.11.0-alpha.0"
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
@@ -112,7 +112,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 
 	// 1.10.0-beta.2 is upgradable to newer pre-release versions in 1.10.n release channel and official 1.10.n releases
 	deployedVersion = "1.10.0-beta.2"
-	nextNextMinorVersion = "1.12.0"
+	nextNextMinorVersion = "1.12.0-alpha.0"
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,

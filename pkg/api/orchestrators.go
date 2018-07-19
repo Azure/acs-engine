@@ -186,7 +186,7 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	if err != nil {
 		return nil, err
 	}
-	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0"
+	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
 	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
 	for _, ver := range upgradeableVersions {
 		ret = append(ret, &OrchestratorProfile{
