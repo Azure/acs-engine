@@ -9,7 +9,7 @@ import (
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of all supported Kubernetes version strings
-// To deprecate a version but keep support for upgrade and scale from that version, set the value for that version to false
+// The bool value indicates if creating new clusters with this version is allowed
 var AllKubernetesSupportedVersions = map[string]bool{
 	"1.6.6":          true,
 	"1.6.9":          true,
