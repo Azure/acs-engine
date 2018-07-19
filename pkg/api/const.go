@@ -91,6 +91,8 @@ const (
 	DefaultACIConnectorAddonEnabled = false
 	// DefaultClusterAutoscalerAddonEnabled determines the acs-engine provided default for enabling cluster autoscaler addon
 	DefaultClusterAutoscalerAddonEnabled = false
+	// DefaultKeyVaultFlexVolumeAddonEnabled determines the acs-engine provided default for enabling key vault flexvolume addon
+	DefaultKeyVaultFlexVolumeAddonEnabled = false
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
 	DefaultDashboardAddonEnabled = true
 	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon
@@ -115,6 +117,8 @@ const (
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultClusterAutoscalerAddonName is the name of the cluster autoscaler addon deployment
 	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
+	// DefaultKeyVaultFlexVolumeAddonName is the name of the key vault flexvolume addon deployment
+	DefaultKeyVaultFlexVolumeAddonName = "keyvault-flexvolume"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
