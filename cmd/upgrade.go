@@ -155,7 +155,7 @@ func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 	}
 
 	// get available upgrades for container service
-	orchestratorInfo, err := api.GetOrchestratorVersionProfile(uc.containerService.Properties.OrchestratorProfile)
+	orchestratorInfo, err := api.GetOrchestratorVersionProfile(uc.containerService.Properties.OrchestratorProfile, uc.containerService.Properties.HasWindows())
 	if err != nil {
 		return errors.Wrap(err, "error getting list of available upgrades")
 	}
@@ -175,7 +175,7 @@ func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 		}
 	}
 	if !found {
-		return errors.Errorf("Upgrading to version %s is not supported. Please choose one of the following upgrade versions: %v", uc.upgradeVersion, orchestratorInfo.Upgrades)
+		return errors.Errorf("Upgrading to version %s is not supported. To see a list of available upgrades, use \'acs-engine orchestrators --orchestrator kubernetes --version %s\`", uc.upgradeVersion, uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
 	// Read name suffix to identify nodes in the resource group that belong
