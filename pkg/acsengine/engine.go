@@ -508,7 +508,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
 - echo "%s" > /etc/ld.so.conf.d/nvidia.conf
 - sudo ldconfig
-- umount /usr/lib/x86_64-linux-gnu
+- umount -l /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
 - sudo ldconfig
