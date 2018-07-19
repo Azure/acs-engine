@@ -245,6 +245,17 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 							minVersion.String(), version)
 					}
 				}
+
+				if o.KubernetesConfig.LoadBalancerSku == "Standard" {
+					minVersion, err := semver.Make("1.11.0")
+					if err != nil {
+						return errors.Errorf("could not validate version")
+					}
+					if sv.LT(minVersion) {
+						return errors.Errorf("loadBalancerSku is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							minVersion.String(), o.OrchestratorVersion)
+					}
+				}
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic

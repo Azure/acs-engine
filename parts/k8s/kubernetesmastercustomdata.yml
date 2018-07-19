@@ -274,6 +274,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesClusterAutoscalerUseManagedIdentity>|{{WrapAsParameter "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 {{end}}
 
+{{if eq .OrchestratorProfile.KubernetesConfig.LoadBalancerSku "Standard"}}
+    sed -i "s|<kuberneteselbsvcname>|{{WrapAsParameter "kuberneteselbsvcname"}}|g" "/etc/kubernetes/addons/elb-svc.yaml"
+{{end}}
+
 {{if .OrchestratorProfile.KubernetesConfig.IsBlobfuseFlexVolumeEnabled}}
     sed -i "s|<kubernetesBlobfuseFlexVolumeInstallerCPURequests>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
     sed -i "s|<kubernetesBlobfuseFlexVolumeInstallerMemoryRequests>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
