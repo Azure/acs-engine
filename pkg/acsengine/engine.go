@@ -472,6 +472,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - mkdir -p %s
+- wait_for_file 900 1 /var/log/azure/docker-install.complete
 - cd %s`, dest, dest)
 
 	/*
