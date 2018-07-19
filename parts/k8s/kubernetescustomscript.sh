@@ -607,7 +607,7 @@ fi
 
 ensureKubelet
 ensureJournal
-installFlexVolDrivers
+#installFlexVolDrivers
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
