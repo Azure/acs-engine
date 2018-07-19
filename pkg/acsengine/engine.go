@@ -479,14 +479,14 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	*/
 	installScript += fmt.Sprintf(`
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
-- cat /tmp/aptnvidia.gpg | apt-key add -
+- cat /tmp/aptnvidia.gpg | apt-key add - > /var/log/azure/nvidia-install
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
-- cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-- apt_get_update
-- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
-- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
-- sudo pkill -SIGHUP dockerd
-- mkdir -p %s
+- cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list >> /var/log/azure/nvidia-install
+- apt_get_update >> /var/log/azure/nvidia-install
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make >> /var/log/azure/nvidia-install
+- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s >> /var/log/azure/nvidia-install
+- sudo pkill -SIGHUP dockerd >> /var/log/azure/nvidia-install
+- mkdir -p %s >> /var/log/azure/nvidia-install
 - cd %s`, nvidiaDockerVersion, dockerVersion, nvidiaContainerRuntimeVersion, dockerVersion, dest, dest)
 
 	/*
@@ -495,23 +495,23 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
 	installScript += fmt.Sprintf(`
-- retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
-- mkdir -p lib64 overlay-workdir
-- mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
+- retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s >> /var/log/azure/nvidia-install
+- mkdir -p lib64 overlay-workdir >> /var/log/azure/nvidia-install
+- mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu >> /var/log/azure/nvidia-install`, dv, dv, dv)
 
 	/*
 		Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
 		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
 	*/
 	installScript += fmt.Sprintf(`
-- sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
-- echo "%s" > /etc/ld.so.conf.d/nvidia.conf
-- sudo ldconfig
-- umount /usr/lib/x86_64-linux-gnu
-- nvidia-modprobe -u -c0
-- %s/bin/nvidia-smi
-- sudo ldconfig
-- retrycmd_if_failure 5 10 60 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s" >> /var/log/azure/nvidia-install
+- echo "%s" > /etc/ld.so.conf.d/nvidia.conf >> /var/log/azure/nvidia-install
+- sudo ldconfig >> /var/log/azure/nvidia-install
+- umount /usr/lib/x86_64-linux-gnu >> /var/log/azure/nvidia-install
+- nvidia-modprobe -u -c0 >> /var/log/azure/nvidia-install
+- %s/bin/nvidia-smi >> /var/log/azure/nvidia-install
+- sudo ldconfig >> /var/log/azure/nvidia-install
+- retrycmd_if_failure 5 10 60 systemctl restart kubelet >> /var/log/azure/nvidia-install`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
