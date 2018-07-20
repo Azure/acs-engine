@@ -89,9 +89,7 @@ func (client DefaultSecurityRulesClient) GetPreparer(resourceGroupName string, n
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client DefaultSecurityRulesClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -157,9 +155,7 @@ func (client DefaultSecurityRulesClient) ListPreparer(resourceGroupName string, 
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client DefaultSecurityRulesClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always

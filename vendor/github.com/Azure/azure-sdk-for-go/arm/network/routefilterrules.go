@@ -122,7 +122,6 @@ func (client RouteFilterRulesClient) CreateOrUpdatePreparer(resourceGroupName st
 func (client RouteFilterRulesClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -207,7 +206,6 @@ func (client RouteFilterRulesClient) DeletePreparer(resourceGroupName string, ro
 func (client RouteFilterRulesClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -274,9 +272,7 @@ func (client RouteFilterRulesClient) GetPreparer(resourceGroupName string, route
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client RouteFilterRulesClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -341,9 +337,7 @@ func (client RouteFilterRulesClient) ListByRouteFilterPreparer(resourceGroupName
 // ListByRouteFilterSender sends the ListByRouteFilter request. The method will close the
 // http.Response Body if it receives an error.
 func (client RouteFilterRulesClient) ListByRouteFilterSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListByRouteFilterResponder handles the response to the ListByRouteFilter request. The method always
@@ -499,7 +493,6 @@ func (client RouteFilterRulesClient) UpdatePreparer(resourceGroupName string, ro
 func (client RouteFilterRulesClient) UpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 

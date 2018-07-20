@@ -97,9 +97,7 @@ func (client GroupsClient) AddMemberPreparer(groupObjectID string, parameters Gr
 // AddMemberSender sends the AddMember request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) AddMemberSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // AddMemberResponder handles the response to the AddMember request. The method always
@@ -172,9 +170,7 @@ func (client GroupsClient) CreatePreparer(parameters GroupCreateParameters) (*ht
 // CreateSender sends the Create request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) CreateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // CreateResponder handles the response to the Create request. The method always
@@ -238,9 +234,7 @@ func (client GroupsClient) DeletePreparer(groupObjectID string) (*http.Request, 
 // DeleteSender sends the Delete request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) DeleteSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // DeleteResponder handles the response to the Delete request. The method always
@@ -303,9 +297,7 @@ func (client GroupsClient) GetPreparer(objectID string) (*http.Request, error) {
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -369,9 +361,7 @@ func (client GroupsClient) GetGroupMembersPreparer(objectID string) (*http.Reque
 // GetGroupMembersSender sends the GetGroupMembers request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) GetGroupMembersSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetGroupMembersResponder handles the response to the GetGroupMembers request. The method always
@@ -480,9 +470,7 @@ func (client GroupsClient) GetGroupMembersNextPreparer(nextLink string) (*http.R
 // GetGroupMembersNextSender sends the GetGroupMembersNext request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) GetGroupMembersNextSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetGroupMembersNextResponder handles the response to the GetGroupMembersNext request. The method always
@@ -554,9 +542,7 @@ func (client GroupsClient) GetMemberGroupsPreparer(objectID string, parameters G
 // GetMemberGroupsSender sends the GetMemberGroups request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) GetMemberGroupsSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetMemberGroupsResponder handles the response to the GetMemberGroups request. The method always
@@ -629,9 +615,7 @@ func (client GroupsClient) IsMemberOfPreparer(parameters CheckGroupMembershipPar
 // IsMemberOfSender sends the IsMemberOf request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) IsMemberOfSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // IsMemberOfResponder handles the response to the IsMemberOf request. The method always
@@ -697,9 +681,7 @@ func (client GroupsClient) ListPreparer(filter string) (*http.Request, error) {
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -808,9 +790,7 @@ func (client GroupsClient) ListNextPreparer(nextLink string) (*http.Request, err
 // ListNextSender sends the ListNext request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) ListNextSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListNextResponder handles the response to the ListNext request. The method always
@@ -875,9 +855,7 @@ func (client GroupsClient) RemoveMemberPreparer(groupObjectID string, memberObje
 // RemoveMemberSender sends the RemoveMember request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupsClient) RemoveMemberSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // RemoveMemberResponder handles the response to the RemoveMember request. The method always

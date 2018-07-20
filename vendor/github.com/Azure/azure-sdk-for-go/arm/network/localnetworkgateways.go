@@ -119,7 +119,6 @@ func (client LocalNetworkGatewaysClient) CreateOrUpdatePreparer(resourceGroupNam
 func (client LocalNetworkGatewaysClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -211,7 +210,6 @@ func (client LocalNetworkGatewaysClient) DeletePreparer(resourceGroupName string
 func (client LocalNetworkGatewaysClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -283,9 +281,7 @@ func (client LocalNetworkGatewaysClient) GetPreparer(resourceGroupName string, l
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client LocalNetworkGatewaysClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -349,9 +345,7 @@ func (client LocalNetworkGatewaysClient) ListPreparer(resourceGroupName string) 
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client LocalNetworkGatewaysClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always

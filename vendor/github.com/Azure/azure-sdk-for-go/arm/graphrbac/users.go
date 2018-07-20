@@ -99,9 +99,7 @@ func (client UsersClient) CreatePreparer(parameters UserCreateParameters) (*http
 // CreateSender sends the Create request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) CreateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // CreateResponder handles the response to the Create request. The method always
@@ -165,9 +163,7 @@ func (client UsersClient) DeletePreparer(upnOrObjectID string) (*http.Request, e
 // DeleteSender sends the Delete request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) DeleteSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // DeleteResponder handles the response to the Delete request. The method always
@@ -230,9 +226,7 @@ func (client UsersClient) GetPreparer(upnOrObjectID string) (*http.Request, erro
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -304,9 +298,7 @@ func (client UsersClient) GetMemberGroupsPreparer(objectID string, parameters Us
 // GetMemberGroupsSender sends the GetMemberGroups request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) GetMemberGroupsSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetMemberGroupsResponder handles the response to the GetMemberGroups request. The method always
@@ -372,9 +364,7 @@ func (client UsersClient) ListPreparer(filter string) (*http.Request, error) {
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -483,9 +473,7 @@ func (client UsersClient) ListNextPreparer(nextLink string) (*http.Request, erro
 // ListNextSender sends the ListNext request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) ListNextSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListNextResponder handles the response to the ListNext request. The method always
@@ -552,9 +540,7 @@ func (client UsersClient) UpdatePreparer(upnOrObjectID string, parameters UserUp
 // UpdateSender sends the Update request. The method will close the
 // http.Response Body if it receives an error.
 func (client UsersClient) UpdateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // UpdateResponder handles the response to the Update request. The method always

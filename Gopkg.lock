@@ -14,8 +14,8 @@
     "arm/storage",
     "storage"
   ]
-  revision = "f111fc2fa3861c5fdced76cae4c9c71821969577"
-  version = "v12.4.0-beta"
+  revision = "2592daf71ab6b95dcfc7f7437ecc1afb9ddb7360"
+  version = "v11.0.0-beta"
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
@@ -27,8 +27,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "fc3b03a2d2d1f43fad3007038bd16f044f870722"
-  version = "v9.10.0"
+  revision = "f6be1abbb5abd0517522f850dd785990d373da7e"
+  version = "v9.0.0"
 
 [[projects]]
   name = "github.com/Jeffail/gabs"
@@ -162,11 +162,6 @@
   version = "v1.2.3"
 
 [[projects]]
-  name = "github.com/marstr/guid"
-  packages = ["."]
-  revision = "8bdf7d1a087ccc975cf37dd6507da50698fd19ca"
-
-[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
@@ -243,6 +238,12 @@
 
 [[projects]]
   name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/satori/uuid"
   packages = ["."]
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
   version = "v1.2.0"
@@ -498,6 +499,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2979ff810edd3ff0b5850c1ff5a0db6836cb1a6e292d4d2522be7113a00d59f3"
+  inputs-digest = "ed976789d188ff142f62fec938073d53f6942ec07892a6b27cd58711b38eff85"
   solver-name = "gps-cdcl"
   solver-version = 1

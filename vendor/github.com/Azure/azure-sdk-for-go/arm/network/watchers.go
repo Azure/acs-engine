@@ -120,7 +120,6 @@ func (client WatchersClient) CheckConnectivityPreparer(resourceGroupName string,
 func (client WatchersClient) CheckConnectivitySender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -189,9 +188,7 @@ func (client WatchersClient) CreateOrUpdatePreparer(resourceGroupName string, ne
 // CreateOrUpdateSender sends the CreateOrUpdate request. The method will close the
 // http.Response Body if it receives an error.
 func (client WatchersClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // CreateOrUpdateResponder handles the response to the CreateOrUpdate request. The method always
@@ -273,7 +270,6 @@ func (client WatchersClient) DeletePreparer(resourceGroupName string, networkWat
 func (client WatchersClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -338,9 +334,7 @@ func (client WatchersClient) GetPreparer(resourceGroupName string, networkWatche
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client WatchersClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -437,7 +431,6 @@ func (client WatchersClient) GetAzureReachabilityReportPreparer(resourceGroupNam
 func (client WatchersClient) GetAzureReachabilityReportSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -532,7 +525,6 @@ func (client WatchersClient) GetFlowLogStatusPreparer(resourceGroupName string, 
 func (client WatchersClient) GetFlowLogStatusSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -628,7 +620,6 @@ func (client WatchersClient) GetNextHopPreparer(resourceGroupName string, networ
 func (client WatchersClient) GetNextHopSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -703,9 +694,7 @@ func (client WatchersClient) GetTopologyPreparer(resourceGroupName string, netwo
 // GetTopologySender sends the GetTopology request. The method will close the
 // http.Response Body if it receives an error.
 func (client WatchersClient) GetTopologySender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetTopologyResponder handles the response to the GetTopology request. The method always
@@ -803,7 +792,6 @@ func (client WatchersClient) GetTroubleshootingPreparer(resourceGroupName string
 func (client WatchersClient) GetTroubleshootingSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -898,7 +886,6 @@ func (client WatchersClient) GetTroubleshootingResultPreparer(resourceGroupName 
 func (client WatchersClient) GetTroubleshootingResultSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -993,7 +980,6 @@ func (client WatchersClient) GetVMSecurityRulesPreparer(resourceGroupName string
 func (client WatchersClient) GetVMSecurityRulesSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -1058,9 +1044,7 @@ func (client WatchersClient) ListPreparer(resourceGroupName string) (*http.Reque
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client WatchersClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -1121,9 +1105,7 @@ func (client WatchersClient) ListAllPreparer() (*http.Request, error) {
 // ListAllSender sends the ListAll request. The method will close the
 // http.Response Body if it receives an error.
 func (client WatchersClient) ListAllSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListAllResponder handles the response to the ListAll request. The method always
@@ -1208,7 +1190,6 @@ func (client WatchersClient) ListAvailableProvidersPreparer(resourceGroupName st
 func (client WatchersClient) ListAvailableProvidersSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -1307,7 +1288,6 @@ func (client WatchersClient) SetFlowLogConfigurationPreparer(resourceGroupName s
 func (client WatchersClient) SetFlowLogConfigurationSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -1406,7 +1386,6 @@ func (client WatchersClient) VerifyIPFlowPreparer(resourceGroupName string, netw
 func (client WatchersClient) VerifyIPFlowSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 

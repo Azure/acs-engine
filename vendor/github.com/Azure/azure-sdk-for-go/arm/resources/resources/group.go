@@ -102,9 +102,7 @@ func (client GroupClient) CheckExistencePreparer(resourceGroupName string, resou
 // CheckExistenceSender sends the CheckExistence request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) CheckExistenceSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // CheckExistenceResponder handles the response to the CheckExistence request. The method always
@@ -167,9 +165,7 @@ func (client GroupClient) CheckExistenceByIDPreparer(resourceID string) (*http.R
 // CheckExistenceByIDSender sends the CheckExistenceByID request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) CheckExistenceByIDSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // CheckExistenceByIDResponder handles the response to the CheckExistenceByID request. The method always
@@ -271,7 +267,6 @@ func (client GroupClient) CreateOrUpdatePreparer(resourceGroupName string, resou
 func (client GroupClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -365,7 +360,6 @@ func (client GroupClient) CreateOrUpdateByIDPreparer(resourceID string, paramete
 func (client GroupClient) CreateOrUpdateByIDSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -463,7 +457,6 @@ func (client GroupClient) DeletePreparer(resourceGroupName string, resourceProvi
 func (client GroupClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -543,7 +536,6 @@ func (client GroupClient) DeleteByIDPreparer(resourceID string, cancel <-chan st
 func (client GroupClient) DeleteByIDSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -621,9 +613,7 @@ func (client GroupClient) GetPreparer(resourceGroupName string, resourceProvider
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -687,9 +677,7 @@ func (client GroupClient) GetByIDPreparer(resourceID string) (*http.Request, err
 // GetByIDSender sends the GetByID request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) GetByIDSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetByIDResponder handles the response to the GetByID request. The method always
@@ -762,9 +750,7 @@ func (client GroupClient) ListPreparer(filter string, expand string, top *int32)
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -916,9 +902,7 @@ func (client GroupClient) ListByResourceGroupPreparer(resourceGroupName string, 
 // ListByResourceGroupSender sends the ListByResourceGroup request. The method will close the
 // http.Response Body if it receives an error.
 func (client GroupClient) ListByResourceGroupSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListByResourceGroupResponder handles the response to the ListByResourceGroup request. The method always
@@ -1084,7 +1068,6 @@ func (client GroupClient) MoveResourcesPreparer(sourceResourceGroupName string, 
 func (client GroupClient) MoveResourcesSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -1182,7 +1165,6 @@ func (client GroupClient) ValidateMoveResourcesPreparer(sourceResourceGroupName 
 func (client GroupClient) ValidateMoveResourcesSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 

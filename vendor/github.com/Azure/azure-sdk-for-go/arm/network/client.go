@@ -1,8 +1,6 @@
 // Package network implements the Azure ARM Network service API version .
 //
 // Network Client
-//
-// Deprecated: Please instead use github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network
 package network
 
 // Copyright (c) Microsoft and contributors.  All rights reserved.
@@ -104,9 +102,7 @@ func (client ManagementClient) CheckDNSNameAvailabilityPreparer(location string,
 // CheckDNSNameAvailabilitySender sends the CheckDNSNameAvailability request. The method will close the
 // http.Response Body if it receives an error.
 func (client ManagementClient) CheckDNSNameAvailabilitySender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // CheckDNSNameAvailabilityResponder handles the response to the CheckDNSNameAvailability request. The method always

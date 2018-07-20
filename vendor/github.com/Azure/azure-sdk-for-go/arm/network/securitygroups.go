@@ -107,7 +107,6 @@ func (client SecurityGroupsClient) CreateOrUpdatePreparer(resourceGroupName stri
 func (client SecurityGroupsClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -190,7 +189,6 @@ func (client SecurityGroupsClient) DeletePreparer(resourceGroupName string, netw
 func (client SecurityGroupsClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -259,9 +257,7 @@ func (client SecurityGroupsClient) GetPreparer(resourceGroupName string, network
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client SecurityGroupsClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -325,9 +321,7 @@ func (client SecurityGroupsClient) ListPreparer(resourceGroupName string) (*http
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client SecurityGroupsClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -457,9 +451,7 @@ func (client SecurityGroupsClient) ListAllPreparer() (*http.Request, error) {
 // ListAllSender sends the ListAll request. The method will close the
 // http.Response Body if it receives an error.
 func (client SecurityGroupsClient) ListAllSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListAllResponder handles the response to the ListAll request. The method always

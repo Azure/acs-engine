@@ -131,7 +131,6 @@ func (client SnapshotsClient) CreateOrUpdatePreparer(resourceGroupName string, s
 func (client SnapshotsClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -214,7 +213,6 @@ func (client SnapshotsClient) DeletePreparer(resourceGroupName string, snapshotN
 func (client SnapshotsClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -281,9 +279,7 @@ func (client SnapshotsClient) GetPreparer(resourceGroupName string, snapshotName
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client SnapshotsClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -377,7 +373,6 @@ func (client SnapshotsClient) GrantAccessPreparer(resourceGroupName string, snap
 func (client SnapshotsClient) GrantAccessSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -439,9 +434,7 @@ func (client SnapshotsClient) ListPreparer() (*http.Request, error) {
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client SnapshotsClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
@@ -574,9 +567,7 @@ func (client SnapshotsClient) ListByResourceGroupPreparer(resourceGroupName stri
 // ListByResourceGroupSender sends the ListByResourceGroup request. The method will close the
 // http.Response Body if it receives an error.
 func (client SnapshotsClient) ListByResourceGroupSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListByResourceGroupResponder handles the response to the ListByResourceGroup request. The method always
@@ -727,7 +718,6 @@ func (client SnapshotsClient) RevokeAccessPreparer(resourceGroupName string, sna
 func (client SnapshotsClient) RevokeAccessSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -812,7 +802,6 @@ func (client SnapshotsClient) UpdatePreparer(resourceGroupName string, snapshotN
 func (client SnapshotsClient) UpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 

@@ -132,7 +132,6 @@ func (client InboundNatRulesClient) CreateOrUpdatePreparer(resourceGroupName str
 func (client InboundNatRulesClient) CreateOrUpdateSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -217,7 +216,6 @@ func (client InboundNatRulesClient) DeletePreparer(resourceGroupName string, loa
 func (client InboundNatRulesClient) DeleteSender(req *http.Request) (*http.Response, error) {
 	return autorest.SendWithSender(client,
 		req,
-		azure.DoRetryWithRegistration(client.Client),
 		azure.DoPollForAsynchronous(client.PollingDelay))
 }
 
@@ -287,9 +285,7 @@ func (client InboundNatRulesClient) GetPreparer(resourceGroupName string, loadBa
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client InboundNatRulesClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -354,9 +350,7 @@ func (client InboundNatRulesClient) ListPreparer(resourceGroupName string, loadB
 // ListSender sends the List request. The method will close the
 // http.Response Body if it receives an error.
 func (client InboundNatRulesClient) ListSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client,
-		req,
-		azure.DoRetryWithRegistration(client.Client))
+	return autorest.SendWithSender(client, req)
 }
 
 // ListResponder handles the response to the List request. The method always
