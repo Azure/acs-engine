@@ -50,7 +50,7 @@ validate-generated: bootstrap
 
 .PHONY: generate
 generate: bootstrap
-	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
+	go generate $(GOFLAGS) -v `go list ./...`
 
 .PHONY: generate-azure-constants
 generate-azure-constants:
@@ -111,7 +111,7 @@ test-style:
 test-e2e:
 	@test/e2e.sh
 
-HAS_GLIDE := $(shell command -v glide;)
+HAS_DEP := $(shell command -v dep;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
 HAS_GOBINDATA := $(shell command -v go-bindata;)
@@ -120,8 +120,8 @@ HAS_GINKGO := $(shell command -v ginkgo;)
 
 .PHONY: bootstrap
 bootstrap:
-ifndef HAS_GLIDE
-	go get -u github.com/Masterminds/glide
+ifndef HAS_DEP
+	go get -u github.com/golang/dep/cmd/dep
 endif
 ifndef HAS_GOX
 	go get -u github.com/mitchellh/gox
@@ -141,7 +141,7 @@ ifndef HAS_GINKGO
 endif
 
 build-vendor:
-	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force --strip-vendor
+	${DEV_ENV_CMD} dep ensure
 	rm -rf vendor/github.com/docker/distribution/contrib/docker-integration/generated_certs.d
 
 ci: bootstrap test-style build test lint
