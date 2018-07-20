@@ -175,7 +175,7 @@ func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 		}
 	}
 	if !found {
-		return errors.Errorf("Upgrading to version %s is not supported. To see a list of available upgrades, use \'acs-engine orchestrators --orchestrator kubernetes --version %s\`", uc.upgradeVersion, uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion)
+		return errors.Errorf("Upgrading to version %s is not supported. To see a list of available upgrades, use 'acs-engine orchestrators --orchestrator kubernetes --version %s'", uc.upgradeVersion, uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
 	// Read name suffix to identify nodes in the resource group that belong
