@@ -87,6 +87,8 @@ const publicAgentPoolSuffix = "-public"
 const (
 	// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
 	DefaultTillerAddonEnabled = true
+	// DefaultAADPodIdentityAddonEnabled determines the acs-engine provided default for enabling aad-pod-identity addon
+	DefaultAADPodIdentityAddonEnabled = false
 	// DefaultACIConnectorAddonEnabled determines the acs-engine provided default for enabling aci connector addon
 	DefaultACIConnectorAddonEnabled = false
 	// DefaultClusterAutoscalerAddonEnabled determines the acs-engine provided default for enabling cluster autoscaler addon
@@ -113,7 +115,9 @@ const (
 	DefaultAzureCNINetworkMonitoringAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
-	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
+	// DefaultAADPodIdentityAddonName is the name of the aad-pod-identity addon deployment
+	DefaultAADPodIdentityAddonName = "aad-pod-identity"
+	// DefaultACIConnectorAddonName is the name of the aci-connector addon deployment
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultClusterAutoscalerAddonName is the name of the cluster autoscaler addon deployment
 	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"

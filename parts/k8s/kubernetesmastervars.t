@@ -107,6 +107,7 @@
     "kubernetesTillerCPULimit": "[parameters('kubernetesTillerCPULimit')]",
     "kubernetesTillerMemoryLimit": "[parameters('kubernetesTillerMemoryLimit')]",
     "kubernetesTillerMaxHistory": "[parameters('kubernetesTillerMaxHistory')]",
+    "kubernetesAADPodIdentityEnabled": "[parameters('kubernetesAADPodIdentityEnabled')]",
     "kubernetesACIConnectorEnabled": "[parameters('kubernetesACIConnectorEnabled')]",
     "kubernetesACIConnectorSpec": "[parameters('kubernetesACIConnectorSpec')]",
     "kubernetesACIConnectorNodeName": "[parameters('kubernetesACIConnectorNodeName')]",

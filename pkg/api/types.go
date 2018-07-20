@@ -894,6 +894,17 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
 }
 
+// IsAADPodIdentityEnabled checks if the tiller addon is enabled
+func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
+	var aadPodIdentityAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultAADPodIdentityAddonName {
+			aadPodIdentityAddon = k.Addons[i]
+		}
+	}
+	return aadPodIdentityAddon.IsEnabled(DefaultAADPodIdentityAddonEnabled)
+}
+
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 	var aciConnectorAddon KubernetesAddon
