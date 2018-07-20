@@ -14,6 +14,8 @@
 // node/etc/azure/azure.conf
 // node/etc/origin/node/node-dnsmasq.conf
 // node/etc/origin/node/resolv.conf
+// DO NOT EDIT!
+
 package templates
 
 import (
