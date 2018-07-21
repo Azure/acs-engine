@@ -47,6 +47,20 @@ write_files:
          "max-file": "5"
       }
     }
+
+- path: "/etc/systemd/system/docker-health-prope.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=runs a script that checks docker health restart if needed
+    After=docker.service
+    [Service]
+    ExecStart=/bin/bash -c "source /opt/azure/containers/provision_source.sh && docker_health_prope"
+    Restart=always
+    [Install]
+    WantedBy=multi-user.target
+
 {{end}}
 
 - path: "/etc/kubernetes/certs/ca.crt"
@@ -422,5 +436,8 @@ runcmd:
 - set -x
 - timeout 10 apt-mark hold walinuxagent{{GetKubernetesMasterPreprovisionYaml}}
 - timeout 10 apt-mark unhold walinuxagent
+# enable docker health prope
+- systemctl enable docker-health-prope
+- systemctl start docker-health-prope
 - mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
 {{end}}
