@@ -24,6 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
+required = ["github.com/go-bindata/go-bindata/go-bindata"]
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
@@ -76,6 +77,10 @@
 [[constraint]]
   name = "github.com/spf13/pflag"
   version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/go-bindata/go-bindata"
+  revision = "d266f3a456685e7541abc9f010d46fff146c7858"
 
 [[constraint]]
   branch = "master"

@@ -25,7 +25,7 @@ GITTAG := $(VERSION_SHORT)
 endif
 
 REPO_PATH := github.com/Azure/acs-engine
-DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.10.0
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.13.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -114,7 +114,6 @@ test-e2e:
 HAS_DEP := $(shell command -v dep;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
-HAS_GOBINDATA := $(shell command -v go-bindata;)
 HAS_GOMETALINTER := $(shell command -v gometalinter;)
 HAS_GINKGO := $(shell command -v ginkgo;)
 
@@ -126,9 +125,7 @@ endif
 ifndef HAS_GOX
 	go get -u github.com/mitchellh/gox
 endif
-ifndef HAS_GOBINDATA
-	go get github.com/go-bindata/go-bindata/...
-endif
+	go install ./vendor/github.com/go-bindata/go-bindata/...
 ifndef HAS_GIT
 	$(error You must install Git)
 endif
