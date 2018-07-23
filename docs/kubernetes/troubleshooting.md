@@ -17,7 +17,7 @@ CSE stands for CustomScriptExtension, and is just a way of expressing: "a script
 
 To summarize, the way that acs-engine implements Kubernetes on Azure is a collection of (1) Azure VM configuration + (2) shell script execution. Both are implemented as a single operational unit, and when #2 fails, we consider the entire VM provisioning operation to be a failure; more importantly, if only one VM in the cluster deployment fails, we consider the entire cluster operation to be a failure.
 
-### How To Debug CSE errors
+### How To Debug CSE errors (Linux)
 
 In order to troubleshoot a cluster that failed in the above way(s), we need to grab the CSE logs from the host VM itself.
 
@@ -55,6 +55,86 @@ If after following the above you are still unable to troubleshoot your deploymen
 2. The output of `kubectl get nodes`
 
 3. The content of `/var/log/azure/cluster-provision.log` and `/var/log/cloud-init-output.log`
+
+
+### How To Debug CSE Errors (Windows)
+
+There are two symptoms where you may need to debug Custom Script Extension errors on Windows:
+
+- VMExtensionProvisioningError or VMExtensionProvisioningTimeout
+- `kubectl node` doesn't list the Windows node(s)
+
+To get more logs, you need to connect to the Windows nodes using Remote Desktop - see [Connecting to Windows Nodes](#connecting-to-windows-nodes)
+
+Once connected, check the following logs for errors:
+ 
+ - `c:\Azure\CustomDataSetupScript.log`
+
+#### Connecting to Windows nodes
+
+Since the nodes are on a private IP range, you will need to use SSH local port forwarding from a master node to the Windows node to use remote.
+
+
+
+1. Get the IP of the Windows node with `az vm list` and `az vm show`
+
+    ```
+    $ az vm list --resource-group group1 -o table
+    Name                      ResourceGroup    Location
+    ------------------------  ---------------  ----------
+    29442k8s9000              group1           westus2
+    29442k8s9001              group1           westus2
+    k8s-linuxpool-29442807-0  group1           westus2
+    k8s-linuxpool-29442807-1  group1           westus2
+    k8s-master-29442807-0     group1           westus2
+
+    $ az vm show -g group1 -n 29442k8s9000 --show-details --query 'privateIps'
+    "10.240.0.4"
+    ```
+
+2. Forward a local port to the Windows port 3389, such as `ssh -L 5500:10.240.0.4:3389 <masternode>.<region>.cloudapp.azure.com`
+3. Run `mstsc.exe /v:localhost:5500`
+
+Now, you can use the default CMD window or install other tools as needed with the GUI. If you would like to enable PowerShell remoting, continue on to step 4.
+
+4. Ansible uses PowerShell remoting over HTTPS, and has a convenient script to enable it. Run `PowerShell` on the Windows node, then these two steps to enable remoting.
+
+```
+Start-BitsTransfer https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1
+.\ConfigureRemotingForAnsible.ps1
+```
+
+5. Now, you're ready to connect from the Linux master to the Windows node:
+
+```
+$ docker run -it mcr.microsoft.com/powershell
+PowerShell v6.0.2
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/pscore6-docs
+Type 'help' to get help.
+
+PS /> $cred = Get-Credential
+
+PowerShell credential request
+Enter your credentials.
+User: azureuser
+Password for user azureuser: ************
+
+PS /> Enter-PSSession 20143k8s9000 -Credential $cred -Authentication Basic -UseSSL
+[20143k8s9000]: PS C:\Users\azureuser\Documents>
+```
+
+## Windows kubelet & CNI errors
+
+If the node is not showing up in `kubectl get node` or fails to schedule pods, check for failures from the kubelet and CNI logs.
+
+Follow the same steps [above](#how-to-debug-cse-errors-windows) to connect to Remote Desktop to the node, then look for errors in these logs:
+
+ - `c:\k\kubelet.log`
+ - `c:\k\kubelet.err.log`
+ - `c:\k\azure-vnet*.log`
+
 
 
 # Misconfigured Service Principal

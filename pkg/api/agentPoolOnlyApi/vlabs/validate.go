@@ -1,11 +1,11 @@
 package vlabs
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/pkg/errors"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -27,7 +27,7 @@ func (l *LinuxProfile) Validate() error {
 	// Don't need to call validate.Struct(l)
 	// It is handled by Properties.Validate()
 	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
-		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
+		return errors.New("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
 	return nil
 }
@@ -40,24 +40,24 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 	case "Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
 		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
 		"Properties.WindowsProfile.AdminPassword":
-		return fmt.Errorf("missing %s", ns)
+		return errors.Errorf("missing %s", ns)
 	default:
 		if strings.HasPrefix(ns, "Properties.AgentPoolProfiles") {
 			switch {
 			case strings.HasSuffix(ns, ".Name") || strings.HasSuffix(ns, "VMSize"):
-				return fmt.Errorf("missing %s", ns)
+				return errors.Errorf("missing %s", ns)
 			case strings.HasSuffix(ns, ".Count"):
-				return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
+				return errors.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
 			case strings.HasSuffix(ns, ".OSDiskSizeGB"):
-				return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
+				return errors.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
 			case strings.HasSuffix(ns, ".StorageProfile"):
-				return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
+				return errors.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
 			default:
 				break
 			}
 		}
 	}
-	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+	return errors.Errorf("Namespace %s is not caught, %+v", ns, e)
 }
 
 // Validate implements APIObject
@@ -91,7 +91,7 @@ func validatePoolName(poolName string) error {
 	}
 	submatches := re.FindStringSubmatch(poolName)
 	if len(submatches) != 2 {
-		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+		return errors.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
-			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
+			return errors.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
 	}
@@ -118,7 +118,7 @@ func validateVNET(a *Properties) error {
 	}
 
 	if !(customVNETCount == 0 || customVNETCount == len(a.AgentPoolProfiles)) {
-		return fmt.Errorf("Multiple VNET Subnet configurations specified.  Each agent pool profile must all specify a custom VNET Subnet, or none at all")
+		return errors.New("Multiple VNET Subnet configurations specified.  Each agent pool profile must all specify a custom VNET Subnet, or none at all")
 	}
 
 	subIDMap := make(map[string]int)

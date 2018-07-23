@@ -76,6 +76,7 @@ type AzureOSImageConfig struct {
 
 //AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
 type AzureEnvironmentSpecConfig struct {
+	CloudName            string
 	DockerSpecConfig     DockerSpecConfig
 	KubernetesSpecConfig KubernetesSpecConfig
 	DCOSSpecConfig       DCOSSpecConfig

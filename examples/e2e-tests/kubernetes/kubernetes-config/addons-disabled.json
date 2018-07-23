@@ -14,11 +14,23 @@
             "enabled": false
           },
           {
+            "name": "keyvault-flexvolume",
+            "enabled": false
+          },
+          {
             "name": "kubernetes-dashboard",
             "enabled": false
           },
           {
             "name": "rescheduler",
+            "enabled": false
+          },
+          {
+            "name": "nvidia-device-plugin",
+            "enabled": false
+          },
+          {
+            "name": "container-monitoring",
             "enabled": false
           }
         ]

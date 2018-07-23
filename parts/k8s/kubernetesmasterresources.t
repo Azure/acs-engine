@@ -623,6 +623,15 @@
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
      {
+       "type": "Microsoft.Storage/storageAccounts",
+       "name": "[variables('clusterKeyVaultName')]",
+       "apiVersion": "[variables('apiVersionStorage')]",
+       "location": "[variables('location')]",
+       "properties": {
+         "accountType": "Standard_LRS"
+       }
+     },
+     {
        "type": "Microsoft.KeyVault/vaults",
        "name": "[variables('clusterKeyVaultName')]",
        "apiVersion": "[variables('apiVersionKeyVault')]",
@@ -895,4 +904,28 @@
         {{end}}
         }
       }
-    }{{WriteLinkedTemplatesForExtensions}}
+    }
+    {{if UseAksExtension}}
+    ,{
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
+        "name": "vmLoopNode"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.AKS",
+        "type": "Compute.AKS-Engine.Linux.Billing",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+        }
+      }
+    }
+    {{end}}
+    {{WriteLinkedTemplatesForExtensions}}

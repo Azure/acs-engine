@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/pkg/errors"
 )
 
 // Config represents the configuration values of a template stored as env vars
@@ -227,7 +228,7 @@ func (e *Engine) HasGPUNodes() bool {
 func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == name {
-			return *addon.Enabled, addon
+			return helpers.IsTrueBoolPointer(addon.Enabled), addon
 		}
 	}
 	return false, api.KubernetesAddon{}
@@ -276,7 +277,7 @@ func ParseInput(path string) (*api.VlabsARMContainerService, error) {
 func ParseOutput(path string) (*api.ContainerService, error) {
 	locale, err := i18n.LoadTranslations()
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+		return nil, errors.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
 	}
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{

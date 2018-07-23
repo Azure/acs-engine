@@ -3,7 +3,6 @@ package node
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os/exec"
 	"regexp"
@@ -11,11 +10,12 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 const (
 	//ServerVersion is used to parse out the version of the API running
-	ServerVersion = `(Server Version:\s)+(v\d+.\d+.\d+)+`
+	ServerVersion = `(Server Version:\s)+(.*)`
 )
 
 // Node represents the kubernetes Node Resource
@@ -94,7 +94,7 @@ func WaitOnReady(nodeCount int, sleep, duration time.Duration) bool {
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Nodes to become ready", duration.String())
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Nodes to become ready", duration.String())
 			default:
 				if AreAllReady(nodeCount) {
 					readyCh <- true

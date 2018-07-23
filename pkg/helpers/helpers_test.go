@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/pkg/errors"
 )
 
 type ContainerService struct {
@@ -30,7 +31,7 @@ func TestJSONMarshal(t *testing.T) {
 	}
 }
 
-func TestNormalizaAzureRegion(t *testing.T) {
+func TestNormalizeAzureRegion(t *testing.T) {
 	cases := []struct {
 		input          string
 		expectedResult string
@@ -162,5 +163,100 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 
 	if publicKey != expectedPublicKeyString {
 		t.Fatalf("Public Key did not match expected format/value")
+	}
+}
+
+func TestAcceleratedNetworkingSupported(t *testing.T) {
+	cases := []struct {
+		input          string
+		expectedResult bool
+	}{
+		{
+			input:          "Standard_A1",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_B3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D1_v2",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_L3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_NC6",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "Standard_DS2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "",
+			expectedResult: true,
+		},
+	}
+
+	for _, c := range cases {
+		result := AcceleratedNetworkingSupported(c.input)
+		if c.expectedResult != result {
+			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result: expected %t but got %t", c.expectedResult, result)
+		}
+	}
+}
+
+func TestEqualError(t *testing.T) {
+	testcases := []struct {
+		errA     error
+		errB     error
+		expected bool
+	}{
+		{
+			errA:     nil,
+			errB:     nil,
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     nil,
+			expected: false,
+		},
+		{
+			errA:     nil,
+			errB:     errors.New("sample error"),
+			expected: false,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     errors.New("sample error"),
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error 1"),
+			errB:     errors.New("sample error 2"),
+			expected: false,
+		},
+	}
+
+	for _, test := range testcases {
+		if EqualError(test.errA, test.errB) != test.expected {
+			t.Errorf("expected EqualError to return %t for errors %s and %s", test.expected, test.errA, test.errB)
+		}
 	}
 }

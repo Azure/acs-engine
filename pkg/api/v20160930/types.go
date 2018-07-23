@@ -2,9 +2,10 @@ package v20160930
 
 import (
 	"encoding/json"
-	"fmt"
 	neturl "net/url"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -176,7 +177,7 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// JumpboxProfile dscribes properties of the jumpbox setup
+// JumpboxProfile describes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
 	OSType    OSType `json:"osType,omitempty"`
@@ -231,7 +232,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, Mesos):
 		o.OrchestratorType = Mesos
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }

@@ -53,6 +53,10 @@
             }
           },
           {
+            "name": "keyvault-flexvolume",
+            "enabled": true
+          },
+          {
             "name": "rescheduler",
             "enabled": false,
             "containers": [

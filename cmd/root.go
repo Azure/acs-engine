@@ -1,14 +1,18 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
+	ini "gopkg.in/ini.v1"
 )
 
 const (
@@ -44,6 +48,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newUpgradeCmd())
 	rootCmd.AddCommand(newScaleCmd())
 	rootCmd.AddCommand(newDcosUpgradeCmd())
+	rootCmd.AddCommand(getCompletionCmd(rootCmd))
 
 	return rootCmd
 }
@@ -79,24 +84,68 @@ func (authArgs *authArgs) validateAuthArgs() error {
 
 	if authArgs.AuthMethod == "client_secret" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.ClientSecret == "" {
-			return fmt.Errorf(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
+			return errors.New(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
 		}
 		// try parse the UUID
 	} else if authArgs.AuthMethod == "client_certificate" {
 		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.CertificatePath == "" || authArgs.PrivateKeyPath == "" {
-			return fmt.Errorf(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
+			return errors.New(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
 		}
 	}
 
 	if authArgs.SubscriptionID.String() == "00000000-0000-0000-0000-000000000000" {
-		return fmt.Errorf("--subscription-id is required (and must be a valid UUID)")
+		subID, err := getSubFromAzDir(filepath.Join(helpers.GetHomeDir(), ".azure"))
+		if err != nil || subID.String() == "00000000-0000-0000-0000-000000000000" {
+			return errors.New("--subscription-id is required (and must be a valid UUID)")
+		}
+		log.Infoln("No subscription provided, using selected subscription from azure CLI:", subID.String())
+		authArgs.SubscriptionID = subID
 	}
 
 	_, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {
-		return fmt.Errorf("failed to parse --azure-env as a valid target Azure cloud environment")
+		return errors.New("failed to parse --azure-env as a valid target Azure cloud environment")
 	}
 	return nil
+}
+
+func getSubFromAzDir(root string) (uuid.UUID, error) {
+	subConfig, err := ini.Load(filepath.Join(root, "clouds.config"))
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error decoding cloud subscription config")
+	}
+
+	cloudConfig, err := ini.Load(filepath.Join(root, "config"))
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error decoding cloud config")
+	}
+
+	cloud := getSelectedCloudFromAzConfig(cloudConfig)
+	return getCloudSubFromAzConfig(cloud, subConfig)
+}
+
+func getSelectedCloudFromAzConfig(f *ini.File) string {
+	selectedCloud := "AzureCloud"
+	if cloud, err := f.GetSection("cloud"); err == nil {
+		if name, err := cloud.GetKey("name"); err == nil {
+			if s := name.String(); s != "" {
+				selectedCloud = s
+			}
+		}
+	}
+	return selectedCloud
+}
+
+func getCloudSubFromAzConfig(cloud string, f *ini.File) (uuid.UUID, error) {
+	cfg, err := f.GetSection(cloud)
+	if err != nil {
+		return uuid.UUID{}, errors.New("could not find user defined subscription id")
+	}
+	sub, err := cfg.GetKey("subscription")
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error reading subscription id from cloud config")
+	}
+	return uuid.FromString(sub.String())
 }
 
 func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
@@ -113,7 +162,7 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	case "client_certificate":
 		client, err = armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
 	default:
-		return nil, fmt.Errorf("--auth-method: ERROR: method unsupported. method=%q", authArgs.AuthMethod)
+		return nil, errors.Errorf("--auth-method: ERROR: method unsupported. method=%q", authArgs.AuthMethod)
 	}
 	if err != nil {
 		return nil, err
@@ -124,4 +173,24 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	}
 	client.AddAcceptLanguages([]string{authArgs.language})
 	return client, nil
+}
+
+func getCompletionCmd(root *cobra.Command) *cobra.Command {
+	var completionCmd = &cobra.Command{
+		Use:   "completion",
+		Short: "Generates bash completion scripts",
+		Long: `To load completion run
+
+	source <(acs-engine completion)
+
+	To configure your bash shell to load completions for each session, add this to your bashrc
+
+	# ~/.bashrc or ~/.profile
+	source <(acs-engine completion)
+	`,
+		Run: func(cmd *cobra.Command, args []string) {
+			root.GenBashCompletion(os.Stdout)
+		},
+	}
+	return completionCmd
 }

@@ -346,6 +346,7 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
 `$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
 `$global:CNIPath = "$global:CNIPath"
 `$global:NetworkMode = "$global:NetworkMode"
+`$global:ExternalNetwork = "ext"
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
@@ -360,6 +361,38 @@ Write-Host "NetworkPlugin azure, starting kubelet."
 
 # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
 netsh advfirewall set allprofiles state off
+# startup the service
+
+# Find if the primary external switch network exists. If not create one.
+# This is done only once in the lifetime of the node
+`$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:ExternalNetwork
+if (!`$hnsNetwork)
+{
+    Write-Host "Creating a new hns Network"
+    ipmo `$global:HNSModule
+    # Fixme : use a smallest range possible, that will not collide with any pod space
+    New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix "192.168.255.0/30" -Gateway "192.168.255.1" -Name `$global:ExternalNetwork -Verbose
+}
+
+# Find if network created by CNI exists, if yes, remove it
+# This is required to keep the network non-persistent behavior
+# Going forward, this would be done by HNS automatically during restart of the node
+
+`$hnsNetwork = Get-HnsNetwork | ? Name -EQ $global:KubeNetwork
+if (`$hnsNetwork)
+{
+    # Cleanup all containers
+    docker ps -q | foreach {docker rm `$_ -f}
+
+    Write-Host "Cleaning up old HNS network found"
+    Remove-HnsNetwork `$hnsNetwork
+    Start-Sleep 10
+    `$cnijson = "$global:KubeDir" + "\azure-vnet*"
+    remove-item `$cnijson  -ErrorAction SilentlyContinue
+}
+
+# Restart Kubeproxy, which would wait, until the network is created
+Restart-Service Kubeproxy
 
 $KubeletCommandLine
 
@@ -510,11 +543,12 @@ catch
 `$env:KUBE_NETWORK = "$global:KubeNetwork"
 `$global:NetworkMode = "$global:NetworkMode"
 `$global:HNSModule = "$global:HNSModule"
-`$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
+`$hnsNetwork = Get-HnsNetwork | ? Name -EQ $global:KubeNetwork
 while (!`$hnsNetwork)
 {
+    Write-Host "Waiting for Network [$global:KubeNetwork] to be created . . ."
     Start-Sleep 10
-    `$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ $global:KubeNetwork
 }
 
 #
@@ -623,6 +657,9 @@ try
 
         Write-Log "Set Internet Explorer"
         Set-Explorer
+
+        Write-Log "Start preProvisioning script"
+        PREPROVISION_EXTENSION
 
         Write-Log "Setup Complete, reboot computer"
         Restart-Computer

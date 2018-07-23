@@ -442,7 +442,7 @@ type AgentPoolProfile struct {
 	IPAddressCount               int                  `json:"ipAddressCount,omitempty"`
 	Distro                       Distro               `json:"distro,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 	FQDN                         string               `json:"fqdn,omitempty"`
 	CustomNodeLabels             map[string]string    `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension        *Extension           `json:"preProvisionExtension"`
@@ -894,6 +894,17 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
 }
 
+// IsAADPodIdentityEnabled checks if the tiller addon is enabled
+func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
+	var aadPodIdentityAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultAADPodIdentityAddonName {
+			aadPodIdentityAddon = k.Addons[i]
+		}
+	}
+	return aadPodIdentityAddon.IsEnabled(DefaultAADPodIdentityAddonEnabled)
+}
+
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 	var aciConnectorAddon KubernetesAddon
@@ -914,6 +925,17 @@ func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
 		}
 	}
 	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
+}
+
+// IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
+func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
+	var kvFlexVolumeAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultKeyVaultFlexVolumeAddonName {
+			kvFlexVolumeAddon = k.Addons[i]
+		}
+	}
+	return kvFlexVolumeAddon.IsEnabled(DefaultKeyVaultFlexVolumeAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
@@ -943,7 +965,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	k := p.OrchestratorProfile.KubernetesConfig
 	o := p.OrchestratorProfile
 	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultNVIDIADevicePluginAddonName {
+		if k.Addons[i].Name == NVIDIADevicePluginAddonName {
 			nvidiaDevicePluginAddon = k.Addons[i]
 		}
 	}
@@ -977,4 +999,10 @@ func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
 		return true
 	}
 	return false
+}
+
+// RequiresDocker returns if the kubernetes settings require docker to be installed.
+func (k *KubernetesConfig) RequiresDocker() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "docker" || runtime == ""
 }

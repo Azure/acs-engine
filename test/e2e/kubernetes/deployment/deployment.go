@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // List holds a list of deployments returned from kubectl get deploy
@@ -66,8 +68,7 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 	} else {
 		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides)
 	}
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -85,8 +86,7 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -103,8 +103,7 @@ func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Depl
 func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -120,8 +119,7 @@ func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) 
 // Get returns a deployment from a name and namespace
 func Get(name, namespace string) (*Deployment, error) {
 	cmd := exec.Command("kubectl", "get", "deploy", "-o", "json", "-n", namespace, name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error while trying to fetch deployment %s in namespace %s:%s\n", name, namespace, string(out))
 		return nil, err
@@ -138,8 +136,7 @@ func Get(name, namespace string) (*Deployment, error) {
 // Delete will delete a deployment in a given namespace
 func (d *Deployment) Delete() error {
 	cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
 		return err
@@ -147,8 +144,7 @@ func (d *Deployment) Delete() error {
 	// Delete any associated HPAs
 	if d.Metadata.HasHPA {
 		cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
-		util.PrintCommand(cmd)
-		out, err := cmd.CombinedOutput()
+		out, err := util.RunAndLogCommand(cmd)
 		if err != nil {
 			log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
 			return err
@@ -160,8 +156,7 @@ func (d *Deployment) Delete() error {
 // Expose will create a load balancer and expose the deployment on a given port
 func (d *Deployment) Expose(svcType string, targetPort, exposedPort int) error {
 	cmd := exec.Command("kubectl", "expose", "deployment", d.Metadata.Name, "--type", svcType, "-n", d.Metadata.Namespace, "--target-port", strconv.Itoa(targetPort), "--port", strconv.Itoa(exposedPort))
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error while trying to expose (%s) target port (%v) for deployment %s in namespace %s on port %v:%s\n", svcType, targetPort, d.Metadata.Name, d.Metadata.Namespace, exposedPort, string(out))
 		return err
@@ -173,8 +168,7 @@ func (d *Deployment) Expose(svcType string, targetPort, exposedPort int) error {
 func (d *Deployment) CreateDeploymentHPA(cpuPercent, min, max int) error {
 	cmd := exec.Command("kubectl", "autoscale", "deployment", d.Metadata.Name, fmt.Sprintf("--cpu-percent=%d", cpuPercent),
 		fmt.Sprintf("--min=%d", min), fmt.Sprintf("--max=%d", max))
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error while configuring autoscale against deployment %s:%s\n", d.Metadata.Name, string(out))
 		return err
@@ -186,4 +180,40 @@ func (d *Deployment) CreateDeploymentHPA(cpuPercent, min, max int) error {
 // Pods will return all pods related to a deployment
 func (d *Deployment) Pods() ([]pod.Pod, error) {
 	return pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
+}
+
+// WaitForReplicas waits for a minimum of n pod replicas
+func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]pod.Pod, error) {
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	var pods []pod.Pod
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
+			default:
+				pods, err := pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
+				if err != nil {
+					errCh <- err
+					return
+				}
+				if len(pods) >= n {
+					readyCh <- true
+				} else {
+					time.Sleep(sleep)
+				}
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return pods, err
+		case _ = <-readyCh:
+			return pods, nil
+		}
+	}
 }

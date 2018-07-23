@@ -13,18 +13,19 @@ var k8sComponentVersions = map[string]map[string]string{
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.8.3",
 		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
-		"heapster":                         "heapster-amd64:v1.5.1",
+		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
-		"kube-dns":                         "k8s-dns-kube-dns-amd64:1.14.8",
+		"kube-dns":                         "k8s-dns-kube-dns-amd64:1.14.10",
 		"addon-manager":                    "kube-addon-manager-amd64:v8.6",
-		"dnsmasq":                          "k8s-dns-dnsmasq-nanny-amd64:1.14.8",
+		"dnsmasq":                          "k8s-dns-dnsmasq-nanny-amd64:1.14.10",
 		"pause":                            "pause-amd64:3.1",
 		"tiller":                           "tiller:v2.8.1",
-		"rescheduler":                      "rescheduler:v0.3.1",
+		"rescheduler":                      "rescheduler:v0.4.0",
 		"aci-connector":                    "virtual-kubelet:latest",
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.3.0",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.11",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -55,7 +56,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		ContainerMonitoringAddonName:       "oms:ciprod05082018",
 		AzureCNINetworkMonitoringAddonName: "networkmonitor:v0.0.4",
 		"cluster-autoscaler":               "cluster-autoscaler:v1.2.2",
-		"nvidia-device-plugin":             "k8s-device-plugin:1.10",
+		NVIDIADevicePluginAddonName:        "k8s-device-plugin:1.10",
 		"nodestatusfreq":                   DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -277,6 +278,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"ratelimitbucket":                  k8sComponentVersions["1.11"]["ratelimitbucket"],
 			"gchighthreshold":                  k8sComponentVersions["1.11"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.11"]["gclowthreshold"],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.11"][NVIDIADevicePluginAddonName],
 		}
 	case "1.10":
 		ret = map[string]string{
@@ -311,7 +313,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"gchighthreshold":                  k8sComponentVersions["1.10"]["gchighthreshold"],
 			"gclowthreshold":                   k8sComponentVersions["1.10"]["gclowthreshold"],
 			DefaultClusterAutoscalerAddonName:  k8sComponentVersions["1.10"]["cluster-autoscaler"],
-			DefaultNVIDIADevicePluginAddonName: k8sComponentVersions["1.10"]["nvidia-device-plugin"],
+			NVIDIADevicePluginAddonName:        k8sComponentVersions["1.10"][NVIDIADevicePluginAddonName],
 		}
 	case "1.9":
 		ret = map[string]string{

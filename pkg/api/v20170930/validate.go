@@ -1,8 +1,9 @@
 package v20170930
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Validate implements APIObject
@@ -17,7 +18,7 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	case strings.EqualFold(o.OrchestratorType, DockerCE):
 		o.OrchestratorType = DockerCE
 	default:
-		return fmt.Errorf("Unsupported orchestrator '%s'", o.OrchestratorType)
+		return errors.Errorf("Unsupported orchestrator '%s'", o.OrchestratorType)
 	}
 	return nil
 }
@@ -26,13 +27,13 @@ func (o *OrchestratorVersionProfile) Validate() error {
 func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	switch o.OrchestratorType {
 	case DCOS, DockerCE, Swarm:
-		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
+		return errors.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case "1.6.13":
 		case "1.7.14":
 		default:
-			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorVersion)
+			return errors.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorVersion)
 		}
 	}
 	return nil

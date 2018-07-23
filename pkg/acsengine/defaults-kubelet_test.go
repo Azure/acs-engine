@@ -8,7 +8,7 @@ import (
 )
 
 func TestKubeletConfigDefaults(t *testing.T) {
-	cs := createContainerService("testcluster", "1.8.6", 3, 2)
+	cs := CreateMockContainerService("testcluster", "1.8.6", 3, 2, false)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	// TODO test all default config values
@@ -22,7 +22,7 @@ func TestKubeletConfigDefaults(t *testing.T) {
 		}
 	}
 
-	cs = createContainerService("testcluster", "1.8.6", 3, 2)
+	cs = CreateMockContainerService("testcluster", "1.8.6", 3, 2, false)
 	// TODO test all default overrides
 	overrideVal := "/etc/override"
 	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig = map[string]string{
@@ -40,7 +40,7 @@ func TestKubeletConfigDefaults(t *testing.T) {
 
 func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = true
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(true)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -50,7 +50,7 @@ func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 	}
 
 	// Test UseCloudControllerManager = false
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(false)
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -63,7 +63,7 @@ func TestKubeletConfigUseCloudControllerManager(t *testing.T) {
 
 func TestKubeletConfigCloudConfig(t *testing.T) {
 	// Test default value and custom value for --cloud-config
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--cloud-config"] != "/etc/kubernetes/azure.json" {
@@ -71,7 +71,7 @@ func TestKubeletConfigCloudConfig(t *testing.T) {
 			k["--cloud-config"])
 	}
 
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--cloud-config"] = "custom.json"
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -83,7 +83,7 @@ func TestKubeletConfigCloudConfig(t *testing.T) {
 
 func TestKubeletConfigAzureContainerRegistryCofig(t *testing.T) {
 	// Test default value and custom value for --azure-container-registry-config
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 	if k["--azure-container-registry-config"] != "/etc/kubernetes/azure.json" {
@@ -91,7 +91,7 @@ func TestKubeletConfigAzureContainerRegistryCofig(t *testing.T) {
 			k["--azure-container-registry-config"])
 	}
 
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--azure-container-registry-config"] = "custom.json"
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -103,7 +103,7 @@ func TestKubeletConfigAzureContainerRegistryCofig(t *testing.T) {
 
 func TestKubeletConfigNetworkPlugin(t *testing.T) {
 	// Test NetworkPlugin = "kubenet"
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -113,7 +113,7 @@ func TestKubeletConfigNetworkPlugin(t *testing.T) {
 	}
 
 	// Test NetworkPlugin = "azure"
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -126,7 +126,7 @@ func TestKubeletConfigNetworkPlugin(t *testing.T) {
 
 func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(true)
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -144,7 +144,7 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	}
 
 	// Test EnableSecureKubelet = false
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(false)
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -158,7 +158,7 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 }
 
 func TestKubeletMaxPods(t *testing.T) {
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -167,7 +167,7 @@ func TestKubeletMaxPods(t *testing.T) {
 			NetworkPluginAzure, k["--max-pods"])
 	}
 
-	cs = createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
@@ -178,7 +178,7 @@ func TestKubeletMaxPods(t *testing.T) {
 }
 
 func TestKubeletCalico(t *testing.T) {
-	cs := createContainerService("testcluster", defaultTestClusterVer, 3, 2)
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = NetworkPolicyCalico
 	setKubeletConfig(cs)
 	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig

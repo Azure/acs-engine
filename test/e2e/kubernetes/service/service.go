@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // Service represents a kubernetes service
@@ -104,7 +105,7 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded while waiting for External IP to be provisioned")
+				errCh <- errors.New("Timeout exceeded while waiting for External IP to be provisioned")
 			default:
 				svc, _ := Get(s.Metadata.Name, s.Metadata.Namespace)
 				if svc != nil && svc.Status.LoadBalancer.Ingress != nil {

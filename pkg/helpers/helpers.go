@@ -6,6 +6,8 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"io"
+	"os"
+	"runtime"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -63,6 +65,12 @@ func PointerToBool(b bool) *bool {
 	return &p
 }
 
+// EqualError is a ni;-safe method which reports whether errors a and b are considered equal.
+// They're equal if both are nil, or both are not nil and a.Error() == b.Error().
+func EqualError(a, b error) bool {
+	return a == nil && b == nil || a != nil && b != nil && a.Error() == b.Error()
+}
+
 // CreateSSH creates an SSH key pair.
 func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, publicKeyString string, err error) {
 	privateKey, err = rsa.GenerateKey(rg, SSHKeySize)
@@ -79,4 +87,48 @@ func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, pu
 	authorizedKey := string(authorizedKeyBytes)
 
 	return privateKey, authorizedKey, nil
+}
+
+// AcceleratedNetworkingSupported check if the VmSKU support the Accelerated Networking
+func AcceleratedNetworkingSupported(sku string) bool {
+	if strings.Contains(sku, "Standard_A") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_B") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_G") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_H") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_L") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_N") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_D1") || strings.Contains(sku, "Standard_D1_") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_DS1") || strings.Contains(sku, "Standard_DS1_") {
+		return false
+	}
+	if strings.EqualFold(sku, "Standard_F1") || strings.EqualFold(sku, "Standard_F1s") {
+		return false
+	}
+	return true
+}
+
+// GetHomeDir attempts to get the home dir from env
+func GetHomeDir() string {
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }
