@@ -356,6 +356,12 @@
   version = "v0.9.0"
 
 [[projects]]
+  name = "gopkg.in/ini.v1"
+  packages = ["."]
+  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
+  version = "v1.38.1"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
@@ -498,6 +504,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2979ff810edd3ff0b5850c1ff5a0db6836cb1a6e292d4d2522be7113a00d59f3"
+  inputs-digest = "b92fe6aec522b5617b81031c76bf9794596cd677ad2cdfe2144406ac0f6b0464"
   solver-name = "gps-cdcl"
   solver-version = 1

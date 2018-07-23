@@ -2,14 +2,17 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
+	ini "gopkg.in/ini.v1"
 )
 
 const (
@@ -91,7 +94,12 @@ func (authArgs *authArgs) validateAuthArgs() error {
 	}
 
 	if authArgs.SubscriptionID.String() == "00000000-0000-0000-0000-000000000000" {
-		return errors.New("--subscription-id is required (and must be a valid UUID)")
+		subID, err := getSubFromAzDir(filepath.Join(helpers.GetHomeDir(), ".azure"))
+		if err != nil || subID.String() == "00000000-0000-0000-0000-000000000000" {
+			return errors.New("--subscription-id is required (and must be a valid UUID)")
+		}
+		log.Infoln("No subscription provided, using selected subscription from azure CLI:", subID.String())
+		authArgs.SubscriptionID = subID
 	}
 
 	_, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
@@ -99,6 +107,45 @@ func (authArgs *authArgs) validateAuthArgs() error {
 		return errors.New("failed to parse --azure-env as a valid target Azure cloud environment")
 	}
 	return nil
+}
+
+func getSubFromAzDir(root string) (uuid.UUID, error) {
+	subConfig, err := ini.Load(filepath.Join(root, "clouds.config"))
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error decoding cloud subscription config")
+	}
+
+	cloudConfig, err := ini.Load(filepath.Join(root, "config"))
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error decoding cloud config")
+	}
+
+	cloud := getSelectedCloudFromAzConfig(cloudConfig)
+	return getCloudSubFromAzConfig(cloud, subConfig)
+}
+
+func getSelectedCloudFromAzConfig(f *ini.File) string {
+	selectedCloud := "AzureCloud"
+	if cloud, err := f.GetSection("cloud"); err == nil {
+		if name, err := cloud.GetKey("name"); err == nil {
+			if s := name.String(); s != "" {
+				selectedCloud = s
+			}
+		}
+	}
+	return selectedCloud
+}
+
+func getCloudSubFromAzConfig(cloud string, f *ini.File) (uuid.UUID, error) {
+	cfg, err := f.GetSection(cloud)
+	if err != nil {
+		return uuid.UUID{}, errors.New("could not find user defined subscription id")
+	}
+	sub, err := cfg.GetKey("subscription")
+	if err != nil {
+		return uuid.UUID{}, errors.Wrap(err, "error reading subscription id from cloud config")
+	}
+	return uuid.FromString(sub.String())
 }
 
 func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
