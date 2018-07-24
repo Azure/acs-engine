@@ -28,42 +28,52 @@ func MapValues(m map[string]APIModelValue, values []string) {
 		return
 	}
 
+	// regex to find multiple key/value pairs in the same string like key1=value1,key2="value2",key3=42
+	valueRegex := regexp.MustCompile(`((?:"[^"]*"|[^=,])*)=((?:"[^"]*"|[^=,])*)`)
+
+	// regex to find array[index].property pattern in the key, like linuxProfile.ssh.publicKeys[0].keyData
+	re := regexp.MustCompile(`(.*?)\[(.*?)\]\.(.*?)$`)
+
 	for _, value := range values {
-		splittedValues := strings.Split(value, ",")
-		if len(splittedValues) > 1 {
-			MapValues(m, splittedValues)
-		} else {
-			keyValueSplitted := strings.Split(value, "=")
-			key := keyValueSplitted[0]
-			stringValue := keyValueSplitted[1]
+		valueMatches := valueRegex.FindAllStringSubmatch(value, -1)
+		if valueMatches != nil {
+			for _, match := range valueMatches {
+				// match should be formatted like [hello="world" hello "world"]
+				if len(match) == 3 {
+					flagValue := APIModelValue{}
+					key := match[1]
+					// remove starting/ending " delimiter if any
+					keyValueAsString := strings.Trim(match[2], "\"")
 
-			flagValue := APIModelValue{}
+					// try to parse the value as integer or fallback to string
+					if keyValueAsInteger, err := strconv.ParseInt(keyValueAsString, 10, 64); err == nil {
+						flagValue.intValue = keyValueAsInteger
+					} else {
+						flagValue.stringValue = keyValueAsString
+					}
 
-			if asInteger, err := strconv.ParseInt(stringValue, 10, 64); err == nil {
-				flagValue.intValue = asInteger
-			} else {
-				flagValue.stringValue = stringValue
-			}
+					// check if the key is an array property
+					keyArrayMatch := re.FindStringSubmatch(key)
 
-			// use regex to find array[index].property pattern in the key
-			re := regexp.MustCompile(`(.*?)\[(.*?)\]\.(.*?)$`)
-			match := re.FindStringSubmatch(key)
-
-			// it's an array
-			if len(match) != 0 {
-				i, err := strconv.ParseInt(match[2], 10, 32)
-				if err != nil {
-					log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
+					// it's an array
+					if keyArrayMatch != nil {
+						i, err := strconv.ParseInt(keyArrayMatch[2], 10, 32)
+						if err != nil {
+							log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
+						} else {
+							arrayIndex := int(i)
+							flagValue.arrayValue = true
+							flagValue.arrayName = keyArrayMatch[1]
+							flagValue.arrayIndex = arrayIndex
+							flagValue.arrayProperty = keyArrayMatch[3]
+							m[key] = flagValue
+						}
+					} else {
+						m[key] = flagValue
+					}
 				} else {
-					arrayIndex := int(i)
-					flagValue.arrayValue = true
-					flagValue.arrayName = match[1]
-					flagValue.arrayIndex = arrayIndex
-					flagValue.arrayProperty = match[3]
-					m[key] = flagValue
+					log.Warnln(fmt.Sprintf("malformatted value has been ignored: %s", match))
 				}
-			} else {
-				m[key] = flagValue
 			}
 		}
 	}
