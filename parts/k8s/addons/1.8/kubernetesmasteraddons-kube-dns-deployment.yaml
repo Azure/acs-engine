@@ -87,8 +87,8 @@ spec:
         livenessProbe:
           failureThreshold: 5
           httpGet:
-            path: "/healthcheck/kubedns"
-            port: 10054
+            path: "/healthz-kubedns"
+            port: 8080
             scheme: HTTP
           initialDelaySeconds: 60
           successThreshold: 1
@@ -146,23 +146,18 @@ spec:
         - mountPath: /kube-dns-config
           name: kube-dns-config
       - args:
-        - "-v=2"
-        - "-restartDnsmasq=true"
-        - "--cmd=for d in $PROBE_DOMAINS; do nslookup $d 127.0.0.1 >/dev/null || exit 1; done"
+        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1 >/dev/null"
         - "--url=/healthz-dnsmasq"
-        - "--cmd=for d in $PROBE_DOMAINS; do nslookup $d 127.0.0.1:10053 >/dev/null || exit 1; done"
+        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1:10053 >/dev/null"
         - "--url=/healthz-kubedns"
         - "--port=8080"
         - "--quiet"
-        env:
-        - name: PROBE_DOMAINS
-          value: bing.com kubernetes.default.svc.<kubernetesKubeletClusterDomain>
         image: <kubernetesExecHealthzSpec>
         livenessProbe:
           failureThreshold: 5
           httpGet:
-            path: "/healthcheck/dnsmasq"
-            port: 10054
+            path: "/healthz-dnsmasq"
+            port: 8080
             scheme: HTTP
           initialDelaySeconds: 60
           successThreshold: 1
@@ -177,32 +172,6 @@ spec:
           requests:
             cpu: 10m
             memory: 50Mi
-      - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.10
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: 10054
-            scheme: HTTP
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 5
-        args:
-        - --v=2
-        - --logtostderr
-        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.<kubernetesKubeletClusterDomain>,5,SRV
-        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.<kubernetesKubeletClusterDomain>,5,SRV
-        ports:
-        - containerPort: 10054
-          name: metrics
-          protocol: TCP
-        resources:
-          requests:
-            memory: 20Mi
-            cpu: 10m
-      dnsPolicy: Default  # Don't use cluster DNS.
-      serviceAccountName: kube-dns
       dnsPolicy: Default
       serviceAccountName: kube-dns
       nodeSelector:
