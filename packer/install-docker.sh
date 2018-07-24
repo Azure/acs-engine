@@ -12,4 +12,4 @@ echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/
 printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
 
 apt-get update -q
-apt-get install docker-engine
+apt-get install "${apt_flags[@]}" docker-engine
