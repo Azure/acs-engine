@@ -10,18 +10,18 @@
     "builders": [
       {
         "type": "azure-arm",
-  
+
         "client_id": "{{user `client_id`}}",
         "client_secret": "{{user `client_secret`}}",
         "tenant_id": "{{user `tenant_id`}}",
         "subscription_id": "{{user `subscription_id`}}",
-  
+
         "resource_group_name":
           "{{user `resource_group_name`}}",
         "capture_container_name": "acsengine-vhds",
         "capture_name_prefix": "acsengine-{{timestamp}}",
         "storage_account": "{{user `storage_account_name`}}",
-  
+
         "os_type": "Linux",
         "image_publisher": "Canonical",
         "image_offer": "UbuntuServer",
@@ -30,7 +30,7 @@
         "azure_tags": {
           "dept": "Azure Container Service"
         },
-  
+
         "location": "{{user `location`}}",
         "vm_size": "{{user `vm_size`}}"
       }
@@ -50,23 +50,37 @@
       },
       {
         "type": "file",
-        "source": "./golden-image.sh",
-        "destination": "/home/packer/golden-image.sh"
+        "source": "./install-core-packages.sh",
+        "destination": "/home/packer/install-core-packages.sh"
       },
       {
         "type": "file",
-        "source": "../parts/k8s/kubernetesprovisionsource.sh",
-        "destination": "/home/packer/kubernetesprovisionsource.sh"
+        "source": "./install-docker.sh",
+        "destination": "/home/packer/install-docker.sh"
       },
       {
         "type": "file",
-        "source": "../parts/k8s/kubernetescustomscript.sh",
-        "destination": "/home/packer/kubernetescustomscript.sh"
+        "source": "./install-cni.sh",
+        "destination": "/home/packer/install-cni.sh"
+      },
+      {
+        "type": "file",
+        "source": "./install-containerd.sh",
+        "destination": "/home/packer/install-containerd.sh"
+      },
+      {
+        "type": "file",
+        "source": "./extract-kubelet.sh",
+        "destination": "/home/packer/extract-kubelet.sh"
       },
       {
         "type": "shell",
         "inline": [
-          "sudo /bin/bash -eux /home/packer/golden-image.sh",
+          "sudo /bin/bash -eux /home/packer/install-core-packages.sh",
+          "sudo /bin/bash -eux /home/packer/install-docker.sh",
+          "sudo /bin/bash -eux /home/packer/install-cni.sh",
+          "sudo /bin/bash -eux /home/packer/install-containerd.sh",
+          "sudo /bin/bash -eux /home/packer/extract-kubelet.sh",
           "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
           "rm /home/packer/*.sh"
         ]
