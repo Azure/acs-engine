@@ -16,7 +16,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--allow-privileged":           "true",
 		"--anonymous-auth":             "false",
 		"--audit-log-path":             "/var/log/kubeaudit/audit.log",
-		"--insecure-port":              "8080",
+		"--insecure-port":              "0",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
 		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
