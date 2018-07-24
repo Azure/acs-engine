@@ -52,7 +52,7 @@ jobs:
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
       - run:
           name: ginkgo dcos e2e tests
-          command: make build-binary test-dcos
+          command: make test-dcos
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
