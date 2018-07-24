@@ -38,29 +38,6 @@ jobs:
           command: make coverage
       - store_test_results:
           path: test/junit
-  swarm-e2e:
-    <<: *defaults
-    steps:
-      - checkout
-      - run: |
-          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-          echo 'export BUILD_NUM=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
-          echo 'export SKIP_METRICS=y' >> $BASH_ENV
-          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARM}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARM}' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/e2e/swarm-deployments.json' >> $BASH_ENV
-      - run:
-          name: Swarm feature validation tests
-          command: make bootstrap build test-e2e
-          no_output_timeout: "30m"
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs
   dcos-e2e:
     <<: *defaults
     steps:
@@ -81,29 +58,6 @@ jobs:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
-  swarmmode-e2e:
-    <<: *defaults
-    steps:
-      - checkout
-      - run: |
-          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-          echo 'export BUILD_NUM=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
-          echo 'export SKIP_METRICS=y' >> $BASH_ENV
-          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/e2e/swarmmode-deployments.json' >> $BASH_ENV
-      - run:
-          name: Swarm Mode feature validation tests
-          command: make bootstrap build test-e2e
-          no_output_timeout: "30m"
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs
   k8s-1.7-release-e2e:
     <<: *defaults
     steps:
@@ -510,18 +464,6 @@ workflows:
             branches:
               ignore: master
       - openshift-3.9-centos-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - swarm-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - swarmmode-e2e:
           requires:
             - pr-e2e-hold
           filters:
