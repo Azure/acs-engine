@@ -51,6 +51,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--image-pull-progress-deadline":    "30m",
 	}
 
+	// Apply Azure CNI-specific --max-pods value
+	if o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure {
+		defaultKubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated)
+	}
+
 	// If no user-configurable kubelet config values exists, use the defaults
 	setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
 	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
@@ -65,11 +70,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		if o.KubernetesConfig.NetworkPolicy != NetworkPolicyCalico {
 			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		}
-	}
-
-	// Apply Azure CNI-specific --max-pods value
-	if o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure {
-		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated)
 	}
 
 	// We don't support user-configurable values for the following,
