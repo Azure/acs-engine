@@ -533,7 +533,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s-gcrio.azureedge.net/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
+				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
 				if err != nil {
 					fmt.Println(err)
 				}

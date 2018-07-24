@@ -77,7 +77,7 @@ Follow the README at https://github.com/kubernetes/autoscaler/tree/master/cluste
 | minNodes       | no       | minimum node count                | 1                                                          |
 | maxNodes       | no       | maximum node count                | 5                                                          |
 | name           | no       | container name                    | "cluster-autoscaler"                                       |
-| image          | no       | image                             | "gcrio.azureedge.net/google-containers/cluster-autoscaler" |
+| image          | no       | image                             | "gcr.io/google-containers/cluster-autoscaler" |
 | cpuRequests    | no       | cpu requests for the container    | "100m"                                                     |
 | memoryRequests | no       | memory requests for the container | "300Mi"                                                    |
 | cpuLimits      | no       | cpu limits for the container      | "100m"                                                     |
