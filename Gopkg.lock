@@ -84,6 +84,16 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:6bbc3c7b7368bf0f4ecfcf32cdbbae6763bb09bc91d345f7f80b714e346d8f4d"
+  name = "github.com/go-bindata/go-bindata"
+  packages = [
+    ".",
+    "go-bindata",
+  ]
+  pruneopts = "UT"
+  revision = "d266f3a456685e7541abc9f010d46fff146c7858"
+
+[[projects]]
   digest = "1:1b366864f171c4be168ce8426fda376bd444501280bee032b8354170d740f56a"
   name = "github.com/go-playground/locales"
   packages = [
@@ -443,6 +453,14 @@
   version = "v0.9.0"
 
 [[projects]]
+  digest = "1:fe8a03a8222d5b913f256972933d26d24ad7c8286692a42943bc01633cc8fce3"
+  name = "gopkg.in/ini.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
+  version = "v1.38.1"
+
+[[projects]]
   digest = "1:73e6fda93622790d2371344759df06ff5ff2fac64a6b6e8832b792e7402956e7"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -613,6 +631,7 @@
     "github.com/blang/semver",
     "github.com/davecgh/go-spew/spew",
     "github.com/ghodss/yaml",
+    "github.com/go-bindata/go-bindata/go-bindata",
     "github.com/imdario/mergo",
     "github.com/influxdata/influxdb/client/v2",
     "github.com/kelseyhightower/envconfig",
@@ -632,6 +651,7 @@
     "golang.org/x/crypto/ssh/agent",
     "golang.org/x/sync/errgroup",
     "gopkg.in/go-playground/validator.v9",
+    "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/core/v1",
     "k8s.io/api/policy/v1beta1",
