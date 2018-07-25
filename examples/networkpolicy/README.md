@@ -3,7 +3,7 @@
 There are 2 different Network Policy options :
 
 - Calico
-- Cilium
+- Cilium (docs are //TODO)
 
 ## Calico
 
@@ -58,39 +58,3 @@ acs-engine releases starting with 0.17.0 now produce an addon manifest for calic
     ```
 
 If you have any customized calico resource manifests, you must also follow the [conversion guide](https://docs.projectcalico.org/v3.0/getting-started/kubernetes/upgrade/convert) for these.
-
-## Cilium
-
-The kubernetes-cilium deployment template enables Cilium networking and policies for the ACS-engine cluster via `"networkPolicy": "cilium"` or `"networkPlugin": "cilium"` being present inside the `kubernetesConfig`.
-
-```json
-  "properties": {
-    "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "kubernetesConfig": {
-        "networkPolicy": "cilium"
-      }
-```
-
-> Note:  To execute the `cilium` command that is running inside of the pods, you will need remove the `DenyEscalatingExec` when specifying the Admission Control Values.  If running Kubernetes with the `orchestratorRelease` newer than 1.9 use `--enable-admission-plugins` instead of `--admission-control` as illustrated below:
-
-```json
-{
-  "apiVersion": "vlabs",
-  "properties": {
-    "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.10",
-      "kubernetesConfig": {
-        "networkPlugin": "cilium",
-        "networkPolicy": "cilium",
-        "apiServerConfig": {
-           "--enable-admission-plugins": "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,AlwaysPullImages"
-        },
-```
-
-### Post installation
-
-Once the template has been successfully deployed, following the [deploy the demo application](http://cilium.readthedocs.io/en/latest/gettingstarted/minikube/#step-2-deploy-the-demo-application) tutorial will provide a good foundation for how to do L3/4 policy as well as more advanced Layer 7 inspection and routing. If you have [Istio](https://istio.io) you can try this [tutorial](http://cilium.readthedocs.io/en/latest/gettingstarted/istio/) where cilium is used to side by side with Istio to enforce security policies in a Kubernetes deployment. 
-
-For the latest documentation on Cilium (including BPF and XDP reference guides), please refer to [this](http://cilium.readthedocs.io/en/latest/)
