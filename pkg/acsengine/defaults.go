@@ -1168,8 +1168,9 @@ func mapToString(valueMap map[string]string) string {
 func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
 	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
-	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
+	// Uncomment the below lines if we want to re-enable Azure CNI network monitor by default w/ Azure CNI plugin
+	// aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	// o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
 }
