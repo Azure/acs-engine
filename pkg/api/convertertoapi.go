@@ -734,16 +734,7 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 		if vp.HasWindows() {
 			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPluginWindows
 		} else {
-			switch api.KubernetesConfig.NetworkPolicy {
-			// Calico supports NetworkPluginKubenet or none
-			case NetworkPolicyCalico:
-				api.KubernetesConfig.NetworkPlugin = ""
-			// Cilium can be either a NetworkPlugin, NetworkPolicy or both
-			case NetworkPolicyCilium:
-				api.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
-			default:
-				api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPlugin
-			}
+			api.KubernetesConfig.NetworkPlugin = vlabs.DefaultNetworkPlugin
 		}
 	}
 }
