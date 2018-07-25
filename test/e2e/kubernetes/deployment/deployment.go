@@ -102,7 +102,7 @@ func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Depl
 // CreateWindowsDeploy will crete a deployment for a given image with a name in a namespace
 func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides)
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", "--image-pull-policy=IfNotPresent", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides)
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
