@@ -63,9 +63,9 @@ fi
 
 if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
-    FULLINSTALL=true
-else
     FULLINSTALL=false
+else
+    FULLINSTALL=true
 fi
 
 function testOutboundConnection() {
@@ -579,11 +579,8 @@ fi
 
 configureK8s
 
-configNetworkPlugin
-
 if $FULLINSTALL; then
-    echo "skipping configNetworkPlugin"
-    #configNetworkPlugin
+    configNetworkPlugin
 fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
