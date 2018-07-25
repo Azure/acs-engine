@@ -58,6 +58,21 @@ var _ = BeforeSuite(func() {
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
 	Describe("regardless of agent pool type", func() {
+		It("should display the installed Ubuntu version on the master node", func() {
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting Ubuntu image version: %s\n", out)
+			}
+		})
 
 		It("should have have the appropriate node count", func() {
 			nodeList, err := node.Get()
