@@ -1,12 +1,13 @@
 package armhelpers
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/authorization"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/satori/go.uuid"
@@ -23,33 +24,33 @@ const (
 )
 
 // CreateGraphApplication creates an application via the graphrbac client
-func (az *AzureClient) CreateGraphApplication(applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
-	return az.applicationsClient.Create(applicationCreateParameters)
+func (az *AzureClient) CreateGraphApplication(ctx context.Context, applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
+	return az.applicationsClient.Create(ctx, applicationCreateParameters)
 }
 
 // CreateGraphPrincipal creates a service principal via the graphrbac client
-func (az *AzureClient) CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error) {
-	return az.servicePrincipalsClient.Create(servicePrincipalCreateParameters)
+func (az *AzureClient) CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error) {
+	return az.servicePrincipalsClient.Create(ctx, servicePrincipalCreateParameters)
 }
 
 // CreateRoleAssignment creates a role assignment via the authorization client
-func (az *AzureClient) CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error) {
-	return az.authorizationClient.Create(scope, roleAssignmentName, parameters)
+func (az *AzureClient) CreateRoleAssignment(ctx context.Context, scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error) {
+	return az.authorizationClient.Create(ctx, scope, roleAssignmentName, parameters)
 }
 
 // DeleteRoleAssignmentByID deletes a roleAssignment via its unique identifier
-func (az *AzureClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
-	return az.authorizationClient.DeleteByID(roleAssignmentID)
+func (az *AzureClient) DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentID string) (authorization.RoleAssignment, error) {
+	return az.authorizationClient.DeleteByID(ctx, roleAssignmentID)
 }
 
 // ListRoleAssignmentsForPrincipal (e.g. a VM) via the scope and the unique identifier of the principal
-func (az *AzureClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
-	filter := fmt.Sprintf("principalId eq '%s'", principalID)
-	return az.authorizationClient.ListForScope(scope, filter)
+func (az *AzureClient) ListRoleAssignmentsForPrincipal(ctx context.Context, scope string, principalID string) (RoleAssignmentListResultPage, error) {
+	page, err := az.authorizationClient.ListForScope(ctx, scope, fmt.Sprintf("principalId eq '%s'", principalID))
+	return &page, err
 }
 
 // CreateApp is a simpler method for creating an application
-func (az *AzureClient) CreateApp(appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
+func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
 	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
@@ -75,7 +76,7 @@ func (az *AzureClient) CreateApp(appName, appURL string, replyURLs *[]string, re
 		},
 		RequiredResourceAccess: requiredResourceAccess,
 	}
-	applicationResp, err := az.CreateGraphApplication(applicationReq)
+	applicationResp, err := az.CreateGraphApplication(ctx, applicationReq)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -87,7 +88,7 @@ func (az *AzureClient) CreateApp(appName, appURL string, replyURLs *[]string, re
 		AppID:          applicationResp.AppID,
 		AccountEnabled: to.BoolPtr(true),
 	}
-	servicePrincipalResp, err := az.servicePrincipalsClient.Create(servicePrincipalReq)
+	servicePrincipalResp, err := az.servicePrincipalsClient.Create(ctx, servicePrincipalReq)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -98,7 +99,7 @@ func (az *AzureClient) CreateApp(appName, appURL string, replyURLs *[]string, re
 }
 
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
-func (az *AzureClient) CreateRoleAssignmentSimple(resourceGroup, servicePrincipalObjectID string) error {
+func (az *AzureClient) CreateRoleAssignmentSimple(ctx context.Context, resourceGroup, servicePrincipalObjectID string) error {
 	roleAssignmentName := uuid.NewV4().String()
 
 	roleDefinitionID := fmt.Sprintf(AADRoleReferenceTemplate, az.subscriptionID, AADContributorRoleID)
@@ -114,6 +115,7 @@ func (az *AzureClient) CreateRoleAssignmentSimple(resourceGroup, servicePrincipa
 	re := regexp.MustCompile("(?i)status=(\\d+)")
 	for {
 		_, err := az.CreateRoleAssignment(
+			ctx,
 			scope,
 			roleAssignmentName,
 			roleAssignmentParameters,

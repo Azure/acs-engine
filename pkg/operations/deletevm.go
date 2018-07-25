@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
@@ -16,8 +17,9 @@ const (
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
 func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID, resourceGroup, name string) error {
+	ctx := context.Background()
 	logger.Infof("fetching VM: %s/%s", resourceGroup, name)
-	vm, err := az.GetVirtualMachine(resourceGroup, name)
+	vm, err := az.GetVirtualMachine(ctx, resourceGroup, name)
 	if err != nil {
 		logger.Errorf("failed to get VM: %s/%s: %s", resourceGroup, name, err.Error())
 		return err
@@ -45,20 +47,16 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		logger.Infof("found nic name for VM (%s/%s): %s", resourceGroup, name, nicName)
 	}
 	logger.Infof("deleting VM: %s/%s", resourceGroup, name)
-	_, deleteErrChan := az.DeleteVirtualMachine(resourceGroup, name, nil)
-
 	logger.Infof("waiting for vm deletion: %s/%s", resourceGroup, name)
-	if err := <-deleteErrChan; err != nil {
+	if err = az.DeleteVirtualMachine(ctx, resourceGroup, name); err != nil {
 		return err
 	}
 
 	if len(nicName) > 0 {
 		logger.Infof("deleting nic: %s/%s", resourceGroup, nicName)
-		_, nicErrChan := az.DeleteNetworkInterface(resourceGroup, nicName, nil)
-
 		logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
-		if nicErr := <-nicErrChan; nicErr != nil {
-			return nicErr
+		if err := az.DeleteNetworkInterface(ctx, resourceGroup, nicName); err != nil {
+			return err
 		}
 	}
 
@@ -70,7 +68,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 
 		logger.Infof("found os disk storage reference: %s %s %s", accountName, vhdContainer, vhdBlob)
 
-		as, err := az.GetStorageClient(resourceGroup, accountName)
+		as, err := az.GetStorageClient(ctx, resourceGroup, accountName)
 		if err != nil {
 			return err
 		}
@@ -84,9 +82,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 			logger.Warnf("osDisk is not set for VM %s/%s", resourceGroup, name)
 		} else {
 			logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
-			_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
-
-			if err := <-diskErrChan; err != nil {
+			if err = az.DeleteManagedDisk(ctx, resourceGroup, *osDiskName); err != nil {
 				return err
 			}
 		}
@@ -98,18 +94,19 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		// but always cleaning them up is easier than adding rule based logic here and there.
 		scope := fmt.Sprintf(AADRoleResourceGroupScopeTemplate, subscriptionID, resourceGroup)
 		logger.Infof("fetching roleAssignments: %s with principal %s", scope, *vm.Identity.PrincipalID)
-		vmRoleAssignments, listRoleAssingmentsError := az.ListRoleAssignmentsForPrincipal(scope, *vm.Identity.PrincipalID)
-		if listRoleAssingmentsError != nil {
-			logger.Errorf("failed to list role assignments: %s/%s: %s", scope, *vm.Identity.PrincipalID, listRoleAssingmentsError.Error())
-			return listRoleAssingmentsError
-		}
+		for vmRoleAssignmentsPage, err := az.ListRoleAssignmentsForPrincipal(ctx, scope, *vm.Identity.PrincipalID); vmRoleAssignmentsPage.NotDone(); err = vmRoleAssignmentsPage.Next() {
+			if err != nil {
+				logger.Errorf("failed to list role assignments: %s/%s: %s", scope, *vm.Identity.PrincipalID, err)
+				return err
+			}
 
-		for _, roleAssignment := range *vmRoleAssignments.Value {
-			logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
-			_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(*roleAssignment.ID)
-			if deleteRoleAssignmentErr != nil {
-				logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
-				return deleteRoleAssignmentErr
+			for _, roleAssignment := range vmRoleAssignmentsPage.Values() {
+				logger.Infof("deleting role assignment: %s", *roleAssignment.ID)
+				_, deleteRoleAssignmentErr := az.DeleteRoleAssignmentByID(ctx, *roleAssignment.ID)
+				if deleteRoleAssignmentErr != nil {
+					logger.Errorf("failed to delete role assignment: %s: %s", *roleAssignment.ID, deleteRoleAssignmentErr.Error())
+					return deleteRoleAssignmentErr
+				}
 			}
 		}
 	}

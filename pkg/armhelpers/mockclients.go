@@ -2,17 +2,17 @@ package armhelpers
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/authorization"
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/azure-sdk-for-go/arm/disk"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -57,6 +57,111 @@ type MockKubernetesClient struct {
 	FailWaitForDelete     bool
 	ShouldSupportEviction bool
 	PodsList              *v1.PodList
+}
+
+// MockVirtualMachineListResultPage contains a page of VirtualMachine values.
+type MockVirtualMachineListResultPage struct {
+	Fn   func(compute.VirtualMachineListResult) (compute.VirtualMachineListResult, error)
+	Vmlr compute.VirtualMachineListResult
+}
+
+// Next advances to the next page of values.  If there was an error making
+// the request the page does not advance and the error is returned.
+func (page *MockVirtualMachineListResultPage) Next() error {
+	next, err := page.Fn(page.Vmlr)
+	if err != nil {
+		return err
+	}
+	page.Vmlr = next
+	return nil
+}
+
+// NotDone returns true if the page enumeration should be started or is not yet complete.
+func (page MockVirtualMachineListResultPage) NotDone() bool {
+	return !page.Vmlr.IsEmpty()
+}
+
+// Response returns the raw server response from the last page request.
+func (page MockVirtualMachineListResultPage) Response() compute.VirtualMachineListResult {
+	return page.Vmlr
+}
+
+// Values returns the slice of values for the current page or nil if there are no values.
+func (page MockVirtualMachineListResultPage) Values() []compute.VirtualMachine {
+	if page.Vmlr.IsEmpty() {
+		return nil
+	}
+	return *page.Vmlr.Value
+}
+
+// MockDeploymentOperationsListResultPage contains a page of DeploymentOperation values.
+type MockDeploymentOperationsListResultPage struct {
+	Fn   func(resources.DeploymentOperationsListResult) (resources.DeploymentOperationsListResult, error)
+	Dolr resources.DeploymentOperationsListResult
+}
+
+// Next advances to the next page of values.  If there was an error making
+// the request the page does not advance and the error is returned.
+func (page *MockDeploymentOperationsListResultPage) Next() error {
+	next, err := page.Fn(page.Dolr)
+	if err != nil {
+		return err
+	}
+	page.Dolr = next
+	return nil
+}
+
+// NotDone returns true if the page enumeration should be started or is not yet complete.
+func (page MockDeploymentOperationsListResultPage) NotDone() bool {
+	return !page.Dolr.IsEmpty()
+}
+
+// Response returns the raw server response from the last page request.
+func (page MockDeploymentOperationsListResultPage) Response() resources.DeploymentOperationsListResult {
+	return page.Dolr
+}
+
+// Values returns the slice of values for the current page or nil if there are no values.
+func (page MockDeploymentOperationsListResultPage) Values() []resources.DeploymentOperation {
+	if page.Dolr.IsEmpty() {
+		return nil
+	}
+	return *page.Dolr.Value
+}
+
+// MockRoleAssignmentListResultPage contains a page of RoleAssignment values.
+type MockRoleAssignmentListResultPage struct {
+	Fn   func(authorization.RoleAssignmentListResult) (authorization.RoleAssignmentListResult, error)
+	Ralr authorization.RoleAssignmentListResult
+}
+
+// Next advances to the next page of values.  If there was an error making
+// the request the page does not advance and the error is returned.
+func (page *MockRoleAssignmentListResultPage) Next() error {
+	next, err := page.Fn(page.Ralr)
+	if err != nil {
+		return err
+	}
+	page.Ralr = next
+	return nil
+}
+
+// NotDone returns true if the page enumeration should be started or is not yet complete.
+func (page MockRoleAssignmentListResultPage) NotDone() bool {
+	return !page.Ralr.IsEmpty()
+}
+
+// Response returns the raw server response from the last page request.
+func (page MockRoleAssignmentListResultPage) Response() authorization.RoleAssignmentListResult {
+	return page.Ralr
+}
+
+// Values returns the slice of values for the current page or nil if there are no values.
+func (page MockRoleAssignmentListResultPage) Values() []authorization.RoleAssignment {
+	if page.Ralr.IsEmpty() {
+		return nil
+	}
+	return *page.Ralr.Value
 }
 
 //ListPods returns all Pods running on the passed in node
@@ -143,10 +248,10 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {}
 
 //DeployTemplate mock
-func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error) {
+func (mc *MockACSEngineClient) DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (de resources.DeploymentExtended, err error) {
 	switch {
 	case mc.FailDeployTemplate:
-		return nil, errors.New("DeployTemplate failed")
+		return de, errors.New("DeployTemplate failed")
 
 	case mc.FailDeployTemplateQuota:
 		errmsg := `resources.DeploymentsClient#CreateOrUpdate: Failure responding to request: StatusCode=400 -- Original Error: autorest/azure: Service returned an error.`
@@ -159,7 +264,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 		"message":"Operation results in exceeding quota limits of Core. Maximum allowed: 10, Current in use: 10, Additional requested: 2. Please read more about quota increase at http://aka.ms/corequotaincrease."
 }]}}`
 
-		return &resources.DeploymentExtended{
+		return resources.DeploymentExtended{
 				Response: autorest.Response{
 					Response: &http.Response{
 						Status:     "400 Bad Request",
@@ -179,7 +284,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 		"code":"Conflict",
 		"message":"{\r\n  \"error\": {\r\n    \"code\": \"PropertyChangeNotAllowed\",\r\n    \"target\": \"dataDisk.createOption\",\r\n    \"message\": \"Changing property 'dataDisk.createOption' is not allowed.\"\r\n  }\r\n}"
 }]}}`
-		return &resources.DeploymentExtended{
+		return resources.DeploymentExtended{
 				Response: autorest.Response{
 					Response: &http.Response{
 						Status:     "200 OK",
@@ -200,7 +305,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 		"message":"{\r\n  \"error\": {\r\n    \"code\": \"PropertyChangeNotAllowed\",\r\n    \"target\": \"dataDisk.createOption\",\r\n    \"message\": \"Changing property 'dataDisk.createOption' is not allowed.\"\r\n  }\r\n}"
 }]}}`
 		provisioningState := "Failed"
-		return &resources.DeploymentExtended{
+		return resources.DeploymentExtended{
 				Response: autorest.Response{
 					Response: &http.Response{
 						Status:     "200 OK",
@@ -212,12 +317,12 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 				}},
 			errors.New(errmsg)
 	default:
-		return nil, nil
+		return de, nil
 	}
 }
 
 //EnsureResourceGroup mock
-func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error) {
+func (mc *MockACSEngineClient) EnsureResourceGroup(ctx context.Context, resourceGroup, location string, managedBy *string) (*resources.Group, error) {
 	if mc.FailEnsureResourceGroup {
 		return nil, errors.New("EnsureResourceGroup failed")
 	}
@@ -226,9 +331,13 @@ func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location strin
 }
 
 //ListVirtualMachines mock
-func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (compute.VirtualMachineListResult, error) {
+func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resourceGroup string) (VirtualMachineListResultPage, error) {
 	if mc.FailListVirtualMachines {
-		return compute.VirtualMachineListResult{}, errors.New("ListVirtualMachines failed")
+		return &MockVirtualMachineListResultPage{
+			Vmlr: compute.VirtualMachineListResult{
+				Value: &[]compute.VirtualMachine{compute.VirtualMachine{}},
+			},
+		}, errors.New("ListVirtualMachines failed")
 	}
 
 	vm1Name := "k8s-agentpool1-12345678-0"
@@ -252,7 +361,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 
 	vm1 := compute.VirtualMachine{
 		Name: &vm1Name,
-		Tags: &tags,
+		Tags: tags,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			StorageProfile: &compute.StorageProfile{
 				OsDisk: &compute.OSDisk{
@@ -273,20 +382,25 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 	vmr := compute.VirtualMachineListResult{}
 	vmr.Value = &[]compute.VirtualMachine{vm1}
 
-	return vmr, nil
+	return &MockVirtualMachineListResultPage{
+		Fn: func(lastResults compute.VirtualMachineListResult) (compute.VirtualMachineListResult, error) {
+			return compute.VirtualMachineListResult{}, nil
+		},
+		Vmlr: vmr,
+	}, nil
 }
 
 //ListVirtualMachineScaleSets mock
-func (mc *MockACSEngineClient) ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error) {
+func (mc *MockACSEngineClient) ListVirtualMachineScaleSets(ctx context.Context, resourceGroup string) (compute.VirtualMachineScaleSetListResultPage, error) {
 	if mc.FailListVirtualMachineScaleSets {
-		return compute.VirtualMachineScaleSetListResult{}, errors.New("ListVirtualMachines failed")
+		return compute.VirtualMachineScaleSetListResultPage{}, errors.New("ListVirtualMachines failed")
 	}
 
-	return compute.VirtualMachineScaleSetListResult{}, nil
+	return compute.VirtualMachineScaleSetListResultPage{}, nil
 }
 
 //GetVirtualMachine mock
-func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (compute.VirtualMachine, error) {
+func (mc *MockACSEngineClient) GetVirtualMachine(ctx context.Context, resourceGroup, name string) (compute.VirtualMachine, error) {
 	if mc.FailGetVirtualMachine {
 		return compute.VirtualMachine{}, errors.New("GetVirtualMachine failed")
 	}
@@ -319,7 +433,7 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 
 	return compute.VirtualMachine{
 		Name:     &vm1Name,
-		Tags:     &tags,
+		Tags:     tags,
 		Identity: vmIdentity,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			StorageProfile: &compute.StorageProfile{
@@ -340,112 +454,43 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 }
 
 //DeleteVirtualMachine mock
-func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
+func (mc *MockACSEngineClient) DeleteVirtualMachine(ctx context.Context, resourceGroup, name string) error {
 	if mc.FailDeleteVirtualMachine {
-		errChan := make(chan error)
-		respChan := make(chan compute.OperationStatusResponse)
-		go func() {
-			defer func() {
-				close(errChan)
-			}()
-			defer func() {
-				close(respChan)
-			}()
-			errChan <- errors.New("DeleteVirtualMachine failed")
-		}()
-		return respChan, errChan
+		return errors.New("DeleteVirtualMachine failed")
 	}
 
-	errChan := make(chan error)
-	respChan := make(chan compute.OperationStatusResponse)
-	go func() {
-		defer func() {
-			close(errChan)
-		}()
-		defer func() {
-			close(respChan)
-		}()
-		errChan <- nil
-		respChan <- compute.OperationStatusResponse{}
-	}()
-	return respChan, errChan
+	return nil
 }
 
 //DeleteVirtualMachineScaleSetVM mock
-func (mc *MockACSEngineClient) DeleteVirtualMachineScaleSetVM(resourceGroup, virtualMachineScaleSet, instanceID string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
+func (mc *MockACSEngineClient) DeleteVirtualMachineScaleSetVM(ctx context.Context, resourceGroup, virtualMachineScaleSet, instanceID string) error {
 	if mc.FailDeleteVirtualMachineScaleSetVM {
-		errChan := make(chan error)
-		respChan := make(chan compute.OperationStatusResponse)
-		go func() {
-			defer func() {
-				close(errChan)
-			}()
-			defer func() {
-				close(respChan)
-			}()
-			errChan <- errors.New("DeleteVirtualMachineScaleSetVM failed")
-		}()
-		return respChan, errChan
+		return errors.New("DeleteVirtualMachineScaleSetVM failed")
 	}
 
-	errChan := make(chan error)
-	respChan := make(chan compute.OperationStatusResponse)
-	go func() {
-		defer func() {
-			close(errChan)
-		}()
-		defer func() {
-			close(respChan)
-		}()
-		errChan <- nil
-		respChan <- compute.OperationStatusResponse{}
-	}()
-	return respChan, errChan
+	return nil
 }
 
 //SetVirtualMachineScaleSetCapacity mock
-func (mc *MockACSEngineClient) SetVirtualMachineScaleSetCapacity(resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
+func (mc *MockACSEngineClient) SetVirtualMachineScaleSetCapacity(ctx context.Context, resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string) error {
 	if mc.FailSetVirtualMachineScaleSetCapacity {
-		errChan := make(chan error)
-		respChan := make(chan compute.VirtualMachineScaleSet)
-		go func() {
-			defer func() {
-				close(errChan)
-			}()
-			defer func() {
-				close(respChan)
-			}()
-			errChan <- errors.New("SetVirtualMachineScaleSetCapacity failed")
-		}()
-		return respChan, errChan
+		return errors.New("SetVirtualMachineScaleSetCapacity failed")
 	}
 
-	errChan := make(chan error)
-	respChan := make(chan compute.VirtualMachineScaleSet)
-	go func() {
-		defer func() {
-			close(errChan)
-		}()
-		defer func() {
-			close(respChan)
-		}()
-		errChan <- nil
-		respChan <- compute.VirtualMachineScaleSet{}
-	}()
-	return respChan, errChan
+	return nil
 }
 
 //ListVirtualMachineScaleSetVMs mock
-func (mc *MockACSEngineClient) ListVirtualMachineScaleSetVMs(resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResult, error) {
+func (mc *MockACSEngineClient) ListVirtualMachineScaleSetVMs(ctx context.Context, resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResultPage, error) {
 	if mc.FailDeleteVirtualMachineScaleSetVM {
-		return compute.VirtualMachineScaleSetVMListResult{}, errors.New("DeleteVirtualMachineScaleSetVM failed")
+		return compute.VirtualMachineScaleSetVMListResultPage{}, errors.New("DeleteVirtualMachineScaleSetVM failed")
 	}
 
-	return compute.VirtualMachineScaleSetVMListResult{}, nil
+	return compute.VirtualMachineScaleSetVMListResultPage{}, nil
 }
 
 //GetStorageClient mock
-func (mc *MockACSEngineClient) GetStorageClient(resourceGroup, accountName string) (ACSStorageClient, error) {
+func (mc *MockACSEngineClient) GetStorageClient(ctx context.Context, resourceGroup, accountName string) (ACSStorageClient, error) {
 	if mc.FailGetStorageClient {
 		return nil, errors.New("GetStorageClient failed")
 	}
@@ -454,35 +499,12 @@ func (mc *MockACSEngineClient) GetStorageClient(resourceGroup, accountName strin
 }
 
 //DeleteNetworkInterface mock
-func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error) {
+func (mc *MockACSEngineClient) DeleteNetworkInterface(ctx context.Context, resourceGroup, nicName string) error {
 	if mc.FailDeleteNetworkInterface {
-		errChan := make(chan error)
-		respChan := make(chan autorest.Response)
-		go func() {
-			defer func() {
-				close(errChan)
-			}()
-			defer func() {
-				close(respChan)
-			}()
-			errChan <- errors.New("DeleteNetworkInterface failed")
-		}()
-		return respChan, errChan
+		return errors.New("DeleteNetworkInterface failed")
 	}
 
-	errChan := make(chan error)
-	respChan := make(chan autorest.Response)
-	go func() {
-		defer func() {
-			close(errChan)
-		}()
-		defer func() {
-			close(respChan)
-		}()
-		errChan <- nil
-		respChan <- autorest.Response{}
-	}()
-	return respChan, errChan
+	return nil
 }
 
 var validOSDiskResourceName = "https://00k71r4u927seqiagnt0.blob.core.windows.net/osdisk/k8s-agentpool1-12345678-0-osdisk.vhd"
@@ -494,52 +516,40 @@ var validNicResourceName = "/subscriptions/DEC923E3-1EF1-4745-9516-37906D56DEC4/
 // Graph Mocks
 
 // CreateGraphApplication creates an application via the graphrbac client
-func (mc *MockACSEngineClient) CreateGraphApplication(applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
+func (mc *MockACSEngineClient) CreateGraphApplication(ctx context.Context, applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
 	return graphrbac.Application{}, nil
 }
 
 // CreateGraphPrincipal creates a service principal via the graphrbac client
-func (mc *MockACSEngineClient) CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error) {
+func (mc *MockACSEngineClient) CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error) {
 	return graphrbac.ServicePrincipal{}, nil
 }
 
 // CreateApp is a simpler method for creating an application
-func (mc *MockACSEngineClient) CreateApp(applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
+func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
 	return "app-id", "client-id", "client-secret", nil
 }
 
 // RBAC Mocks
 
 // CreateRoleAssignment creates a role assignment via the authorization client
-func (mc *MockACSEngineClient) CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error) {
+func (mc *MockACSEngineClient) CreateRoleAssignment(ctx context.Context, scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error) {
 	return authorization.RoleAssignment{}, nil
 }
 
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
-func (mc *MockACSEngineClient) CreateRoleAssignmentSimple(applicationID, roleID string) error {
+func (mc *MockACSEngineClient) CreateRoleAssignmentSimple(ctx context.Context, applicationID, roleID string) error {
 	return nil
 }
 
 // DeleteManagedDisk is a wrapper around disksClient.Delete
-func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
-	errChan := make(chan error)
-	respChan := make(chan disk.OperationStatusResponse)
-	go func() {
-		defer func() {
-			close(errChan)
-		}()
-		defer func() {
-			close(respChan)
-		}()
-		errChan <- nil
-		respChan <- disk.OperationStatusResponse{}
-	}()
-	return respChan, errChan
+func (mc *MockACSEngineClient) DeleteManagedDisk(ctx context.Context, resourceGroupName string, diskName string) error {
+	return nil
 }
 
 // ListManagedDisksByResourceGroup is a wrapper around disksClient.ListManagedDisksByResourceGroup
-func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error) {
-	return disk.ListType{}, nil
+func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(ctx context.Context, resourceGroupName string) (result compute.DiskListPage, err error) {
+	return compute.DiskListPage{}, nil
 }
 
 //GetKubernetesClient mock
@@ -555,49 +565,74 @@ func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string,
 }
 
 // ListProviders mock
-func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, error) {
+func (mc *MockACSEngineClient) ListProviders(ctx context.Context) (resources.ProviderListResultPage, error) {
 	if mc.FailListProviders {
-		return resources.ProviderListResult{}, errors.New("ListProviders failed")
+		return resources.ProviderListResultPage{}, errors.New("ListProviders failed")
 	}
 
-	return resources.ProviderListResult{}, nil
+	return resources.ProviderListResultPage{}, nil
 }
 
 // ListDeploymentOperations gets all deployments operations for a deployment.
-func (mc *MockACSEngineClient) ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error) {
+func (mc *MockACSEngineClient) ListDeploymentOperations(ctx context.Context, resourceGroupName string, deploymentName string, top *int32) (result DeploymentOperationsListResultPage, err error) {
 	resp := `{
- "properties": {
-   "provisioningState":"Failed",
-   "correlationId":"d5062e45-6e9f-4fd3-a0a0-6b2c56b15757",
-   "error":{
-     "code":"DeploymentFailed","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see http://aka.ms/arm-debug for usage details.",
-     "details":[{"code":"Conflict","message":"{\r\n  \"error\": {\r\n    \"message\": \"Conflict\",\r\n    \"code\": \"Conflict\"\r\n  }\r\n}"}]
-   }  
- }
-}`
+	"properties": {
+	"provisioningState":"Failed",
+	"correlationId":"d5062e45-6e9f-4fd3-a0a0-6b2c56b15757",
+	"error":{
+	"code":"DeploymentFailed","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see http://aka.ms/arm-debug for usage details.",
+	"details":[{"code":"Conflict","message":"{\r\n  \"error\": {\r\n    \"message\": \"Conflict\",\r\n    \"code\": \"Conflict\"\r\n  }\r\n}"}]
+	}
+	}
+	}`
 
 	provisioningState := "Failed"
 	id := "00000000"
 	operationID := "d5062e45-6e9f-4fd3-a0a0-6b2c56b15757"
 	nextLink := fmt.Sprintf("https://management.azure.com/subscriptions/11111/resourcegroups/%s/deployments/%s/operations?$top=%s&api-version=2018-02-01", resourceGroupName, deploymentName, "5")
-	return resources.DeploymentOperationsListResult{
-		Response: autorest.Response{
-			Response: &http.Response{
-				Status:     "200 OK",
-				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
-			},
+	return &MockDeploymentOperationsListResultPage{
+		Fn: func(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error) {
+			if lastResults.NextLink != nil {
+				return resources.DeploymentOperationsListResult{
+					Response: autorest.Response{
+						Response: &http.Response{
+							Status:     "200 OK",
+							StatusCode: 200,
+							Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
+						},
+					},
+					Value: &[]resources.DeploymentOperation{
+						{
+							ID:          &id,
+							OperationID: &operationID,
+							Properties: &resources.DeploymentOperationProperties{
+								ProvisioningState: &provisioningState,
+							},
+						},
+					},
+				}, nil
+			}
+			return resources.DeploymentOperationsListResult{}, nil
 		},
-		Value: &[]resources.DeploymentOperation{
-			{
-				ID:          &id,
-				OperationID: &operationID,
-				Properties: &resources.DeploymentOperationProperties{
-					ProvisioningState: &provisioningState,
+		Dolr: resources.DeploymentOperationsListResult{
+			Response: autorest.Response{
+				Response: &http.Response{
+					Status:     "200 OK",
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
 				},
 			},
+			Value: &[]resources.DeploymentOperation{
+				{
+					ID:          &id,
+					OperationID: &operationID,
+					Properties: &resources.DeploymentOperationProperties{
+						ProvisioningState: &provisioningState,
+					},
+				},
+			},
+			NextLink: &nextLink,
 		},
-		NextLink: &nextLink,
 	}, nil
 }
 
@@ -607,7 +642,7 @@ func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults r
 }
 
 // DeleteRoleAssignmentByID deletes a roleAssignment via its unique identifier
-func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string) (authorization.RoleAssignment, error) {
+func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentID string) (authorization.RoleAssignment, error) {
 	if mc.FailDeleteRoleAssignment {
 		return authorization.RoleAssignment{}, errors.New("DeleteRoleAssignmentByID failed")
 	}
@@ -616,7 +651,7 @@ func (mc *MockACSEngineClient) DeleteRoleAssignmentByID(roleAssignmentID string)
 }
 
 // ListRoleAssignmentsForPrincipal (e.g. a VM) via the scope and the unique identifier of the principal
-func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error) {
+func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(ctx context.Context, scope string, principalID string) (RoleAssignmentListResultPage, error) {
 	roleAssignments := []authorization.RoleAssignment{}
 
 	if mc.ShouldSupportVMIdentity {
@@ -626,6 +661,9 @@ func (mc *MockACSEngineClient) ListRoleAssignmentsForPrincipal(scope string, pri
 		roleAssignments = append(roleAssignments, assignment)
 	}
 
-	return authorization.RoleAssignmentListResult{
-		Value: &roleAssignments}, nil
+	return &MockRoleAssignmentListResultPage{
+		Ralr: authorization.RoleAssignmentListResult{
+			Value: &roleAssignments,
+		},
+	}, nil
 }
