@@ -1,7 +1,9 @@
 package armhelpers
 
 import (
-	"github.com/Azure/azure-sdk-for-go/arm/storage"
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest/to"
 )
@@ -12,8 +14,8 @@ type AzureStorageClient struct {
 }
 
 // GetStorageClient returns an authenticated client for the specified account.
-func (az *AzureClient) GetStorageClient(resourceGroup, accountName string) (ACSStorageClient, error) {
-	keys, err := az.getStorageKeys(resourceGroup, accountName)
+func (az *AzureClient) GetStorageClient(ctx context.Context, resourceGroup, accountName string) (ACSStorageClient, error) {
+	keys, err := az.getStorageKeys(ctx, resourceGroup, accountName)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +30,8 @@ func (az *AzureClient) GetStorageClient(resourceGroup, accountName string) (ACSS
 	}, nil
 }
 
-func (az *AzureClient) getStorageKeys(resourceGroup, accountName string) ([]storage.AccountKey, error) {
-	storageKeysResult, err := az.storageAccountsClient.ListKeys(resourceGroup, accountName)
+func (az *AzureClient) getStorageKeys(ctx context.Context, resourceGroup, accountName string) ([]storage.AccountKey, error) {
+	storageKeysResult, err := az.storageAccountsClient.ListKeys(ctx, resourceGroup, accountName)
 	if err != nil {
 		return nil, err
 	}

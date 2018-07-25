@@ -6,7 +6,7 @@ import (
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	. "github.com/onsi/ginkgo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
