@@ -35,7 +35,7 @@ The cluster definition file enables you to customize your Docker enabled cluster
 
 Follow the [developers guide](docs/developers.md) to set up your environment.
 
-To build acs-engine, run `make build`. If you are developing with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` first to start a Docker container and run `make build` inside the container.
+To build acs-engine, run `make build`. If you are developing with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` (or `makedev.ps1` on Windows) first to start a Docker container and run `make build` inside the container.
 
 Please follow these instructions before submitting a PR:
 
