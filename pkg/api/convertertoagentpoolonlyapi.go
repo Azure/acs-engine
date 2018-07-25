@@ -487,7 +487,7 @@ func convertV20180331AgentPoolOnlyAgentPoolProfile(agentPoolProfile *v20180331.A
 	var maxPods string
 	// agentPoolProfile.MaxPods is 0 if maxPods field is not provided in API model
 	if agentPoolProfile.MaxPods == nil {
-		if networkProfile.NetworkPlugin == v20180331.Azure {
+		if networkProfile != nil && networkProfile.NetworkPlugin == v20180331.Azure {
 			maxPods = DefaultKubernetesMaxPodsAzureCNI
 		} else {
 			maxPods = DefaultKubernetesMaxPodsKubenet
