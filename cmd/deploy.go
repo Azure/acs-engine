@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -21,7 +22,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 )
@@ -285,7 +286,8 @@ func autofillApimodel(dc *deployCmd) error {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
+	ctx := context.Background()
+	_, err = dc.client.EnsureResourceGroup(ctx, dc.resourceGroup, dc.location, nil)
 	if err != nil {
 		return err
 	}
@@ -319,7 +321,7 @@ func autofillApimodel(dc *deployCmd) error {
 					},
 				}
 			}
-			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(ctx, appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
 				return errors.Wrap(err, "apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials")
 			}
@@ -327,7 +329,7 @@ func autofillApimodel(dc *deployCmd) error {
 
 			log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
 
-			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+			err = dc.client.CreateRoleAssignmentSimple(ctx, dc.resourceGroup, servicePrincipalObjectID)
 			if err != nil {
 				return errors.Wrap(err, "apimodel: could not create or assign ServicePrincipal")
 
@@ -414,12 +416,13 @@ func (dc *deployCmd) run() error {
 	deploymentSuffix := dc.random.Int31()
 
 	if res, err := dc.client.DeployTemplate(
+		context.Background(),
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),
 		templateJSON,
 		parametersJSON,
-		nil); err != nil {
-		if res != nil && res.Response.Response != nil && res.Body != nil {
+	); err != nil {
+		if res.Response.Response != nil && res.Body != nil {
 			defer res.Body.Close()
 			body, _ := ioutil.ReadAll(res.Body)
 			log.Errorf(string(body))

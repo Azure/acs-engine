@@ -1,6 +1,7 @@
 package kubernetesupgrade
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -39,7 +40,7 @@ func (kmn *UpgradeMasterNode) DeleteNode(vmName *string, drain bool) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
+func (kmn *UpgradeMasterNode) CreateNode(ctx context.Context, poolName string, masterNo int) error {
 	templateVariables := kmn.TemplateMap["variables"].(map[string]interface{})
 
 	templateVariables["masterOffset"] = masterNo
@@ -58,11 +59,11 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	deploymentName := fmt.Sprintf("master-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
 
 	_, err := kmn.Client.DeployTemplate(
+		ctx,
 		kmn.ResourceGroup,
 		deploymentName,
 		kmn.TemplateMap,
-		kmn.ParametersMap,
-		nil)
+		kmn.ParametersMap)
 	return err
 }
 
