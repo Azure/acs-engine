@@ -1006,3 +1006,9 @@ func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == ""
 }
+
+// RequiresMoby returns if the kubernetes settings require Moby to be installed.
+func (k *KubernetesConfig) RequiresMoby() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "moby" || runtime == ""
+}

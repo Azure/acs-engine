@@ -264,7 +264,7 @@ EOF
 }
 
 function setKubeletOpts () {
-	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
+    sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
 function installCNI() {
@@ -300,8 +300,8 @@ function configNetworkPlugin() {
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         configAzureCNI
     elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
-		installCNI
-	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
+        installCNI
+    elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
     fi
 }
@@ -325,24 +325,24 @@ function installKataContainersRuntime() {
 }
 
 function installClearContainersRuntime() {
-	# Add Clear Containers repository key
-	echo "Adding Clear Containers repository key..."
+    # Add Clear Containers repository key
+    echo "Adding Clear Containers repository key..."
     CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
     CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
     retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
 
-	# Add Clear Container repository
-	echo "Adding Clear Containers repository..."
-	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
+    # Add Clear Container repository
+    echo "Adding Clear Containers repository..."
+    echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
 
-	# Install Clear Containers runtime
-	echo "Installing Clear Containers runtime..."
+    # Install Clear Containers runtime
+    echo "Installing Clear Containers runtime..."
     apt_get_update
     apt_get_install 20 30 120 cc-runtime
 
-	# Install the systemd service and socket files.
-	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
+    # Install the systemd service and socket files.
+    local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
     CC_SERVICE_IN_TMP=/tmp/cc-proxy.service.in
     CC_SOCKET_IN_TMP=/tmp/cc-proxy.socket.in
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
@@ -350,57 +350,71 @@ function installClearContainersRuntime() {
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
 
-	# Enable and start Clear Containers proxy service
-	echo "Enabling and starting Clear Containers proxy service..."
-	systemctlEnableAndStart cc-proxy
+    # Enable and start Clear Containers proxy service
+    echo "Enabling and starting Clear Containers proxy service..."
+    systemctlEnableAndStart cc-proxy
+}
+
+function installMoby() {
+    MOBY_VERSION="moby-v1.0.0"
+    MOBY_DOWNLOAD_URL="https://github.com/Azure/moby/releases/download/${MOBY_VERSION}/${MOBY_VERSION}.tar.gz"
+
+    MOBY_TGZ_TMP=/tmp/moby.tar.gz
+    retrycmd_get_tarball 60 5 "${MOBY_TGZ_TMP}" "${MOBY_DOWNLOAD_URL}"
+    tar -xzf "${MOBY_TGZ_TMP}" -C /tmp
+    files=$(find /tmp/${MOBY_VERSION} -executable -type f)
+    cp ${files} /usr/local/bin
+	rm -rf /tmp/${MOBY_VERSION}
+
+    echo "Successfully installed Moby..."
 }
 
 function setupContainerd() {
-	echo "Configuring cri-containerd..."
+    echo "Configuring cri-containerd..."
 
-	mkdir -p "/etc/containerd"
-	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
-	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
-	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
-	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-		echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
-	elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
-		echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
-	else
-		echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
-	fi
-	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+    mkdir -p "/etc/containerd"
+    CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
+    echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
+    echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+    echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+    if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+        echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+    elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+        echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+    else
+        echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+    fi
+    echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 
-	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+    setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
 function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+    CRI_CONTAINERD_VERSION="1.1.0"
+    CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
+    tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+    rm -f "$CONTAINERD_TGZ_TMP"
+    sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
 
-	echo "Successfully installed cri-containerd..."
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
-		setupContainerd
-	fi
+    echo "Successfully installed cri-containerd..."
+    if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+        setupContainerd
+    fi
 }
 
 function ensureContainerd() {
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
-		# Enable and start cri-containerd service
-		# Make sure this is done after networking plugins are installed
-		echo "Enabling and starting cri-containerd service..."
-		systemctlEnableAndStart containerd
-	fi
+    if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+        # Enable and start cri-containerd service
+        # Make sure this is done after networking plugins are installed
+        echo "Enabling and starting cri-containerd service..."
+        systemctlEnableAndStart containerd
+    fi
 }
 
 function ensureDocker() {
@@ -586,17 +600,24 @@ extractHyperkube
 echo `date`,`hostname`, extractHyperkubeDone>>/opt/m
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	# Ensure we can nest virtualization
-	if grep -q vmx /proc/cpuinfo; then
-		installClearContainersRuntime
-	fi
+    # Ensure we can nest virtualization
+    if grep -q vmx /proc/cpuinfo; then
+        installClearContainersRuntime
+    fi
 fi
 
 if [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
-	# Ensure we can nest virtualization
-	if grep -q vmx /proc/cpuinfo; then
-		installKataContainersRuntime
-	fi
+    # Ensure we can nest virtualization
+    if grep -q vmx /proc/cpuinfo; then
+        installKataContainersRuntime
+    fi
+fi
+
+if [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
+    # Ensure we can nest virtualization
+    if grep -q vmx /proc/cpuinfo; then
+        installMoby
+    fi
 fi
 
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m

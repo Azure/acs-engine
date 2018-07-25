@@ -1098,7 +1098,7 @@ func (a *Properties) validateContainerRuntime() error {
 	}
 
 	// Make sure we don't use clear containers on windows.
-	if (containerRuntime == "clear-containers" || containerRuntime == "kata-containers" || containerRuntime == "containerd") && a.HasWindows() {
+	if (containerRuntime == "clear-containers" || containerRuntime == "kata-containers" || containerRuntime == "containerd" || containerRuntime == "moby") && a.HasWindows() {
 		return errors.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
