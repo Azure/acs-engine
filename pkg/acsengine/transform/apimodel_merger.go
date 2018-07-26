@@ -6,7 +6,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/Jeffail/gabs"
 	log "github.com/sirupsen/logrus"
@@ -23,57 +22,43 @@ type APIModelValue struct {
 }
 
 // MapValues converts an arraw of rwa ApiModel values (like ["masterProfile.count=4","linuxProfile.adminUsername=admin"]) to a map
-func MapValues(m map[string]APIModelValue, values []string) {
-	if values == nil || len(values) == 0 {
+func MapValues(m map[string]APIModelValue, setFlagValues []string) {
+	if setFlagValues == nil || len(setFlagValues) == 0 {
 		return
 	}
-
-	// regex to find multiple key/value pairs in the same string like key1=value1,key2="value2",key3=42
-	valueRegex := regexp.MustCompile(`((?:"[^"]*"|[^=,])*)=((?:"[^"]*"|[^=,])*)`)
 
 	// regex to find array[index].property pattern in the key, like linuxProfile.ssh.publicKeys[0].keyData
 	re := regexp.MustCompile(`(.*?)\[(.*?)\]\.(.*?)$`)
 
-	for _, value := range values {
-		valueMatches := valueRegex.FindAllStringSubmatch(value, -1)
-		if valueMatches != nil {
-			for _, match := range valueMatches {
-				// match should be formatted like [hello="world" hello "world"]
-				if len(match) == 3 {
-					flagValue := APIModelValue{}
-					key := match[1]
-					// remove starting/ending " delimiter if any
-					keyValueAsString := strings.Trim(match[2], "\"")
+	for _, setFlagValue := range setFlagValues {
+		kvpMap := parseKeyValuePairs(setFlagValue)
+		for key, keyValue := range kvpMap {
+			flagValue := APIModelValue{}
+			// try to parse the value as integer or fallback to string
+			if keyValueAsInteger, err := strconv.ParseInt(keyValue, 10, 64); err == nil {
+				flagValue.intValue = keyValueAsInteger
+			} else {
+				flagValue.stringValue = keyValue
+			}
 
-					// try to parse the value as integer or fallback to string
-					if keyValueAsInteger, err := strconv.ParseInt(keyValueAsString, 10, 64); err == nil {
-						flagValue.intValue = keyValueAsInteger
-					} else {
-						flagValue.stringValue = keyValueAsString
-					}
+			// check if the key is an array property
+			keyArrayMatch := re.FindStringSubmatch(key)
 
-					// check if the key is an array property
-					keyArrayMatch := re.FindStringSubmatch(key)
-
-					// it's an array
-					if keyArrayMatch != nil {
-						i, err := strconv.ParseInt(keyArrayMatch[2], 10, 32)
-						if err != nil {
-							log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
-						} else {
-							arrayIndex := int(i)
-							flagValue.arrayValue = true
-							flagValue.arrayName = keyArrayMatch[1]
-							flagValue.arrayIndex = arrayIndex
-							flagValue.arrayProperty = keyArrayMatch[3]
-							m[key] = flagValue
-						}
-					} else {
-						m[key] = flagValue
-					}
+			// it's an array
+			if keyArrayMatch != nil {
+				i, err := strconv.ParseInt(keyArrayMatch[2], 10, 32)
+				if err != nil {
+					log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
 				} else {
-					log.Warnln(fmt.Sprintf("malformatted value has been ignored: %s", match))
+					arrayIndex := int(i)
+					flagValue.arrayValue = true
+					flagValue.arrayName = keyArrayMatch[1]
+					flagValue.arrayIndex = arrayIndex
+					flagValue.arrayProperty = keyArrayMatch[3]
+					m[key] = flagValue
 				}
+			} else {
+				m[key] = flagValue
 			}
 		}
 	}
@@ -97,7 +82,7 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	for key, flagValue := range m {
 		// working on an array
 		if flagValue.arrayValue {
-			log.Infoln(fmt.Sprintf("--set flag array value detected. Name: %s, Index: %b, PropertyName: %s", flagValue.arrayName, flagValue.arrayIndex, flagValue.arrayProperty))
+			log.Debugln(fmt.Sprintf("--set flag array value detected. Name: %s, Index: %b, PropertyName: %s", flagValue.arrayName, flagValue.arrayIndex, flagValue.arrayProperty))
 			arrayValue := jsonObj.Path(fmt.Sprint("properties.", flagValue.arrayName))
 			if flagValue.stringValue != "" {
 				arrayValue.Index(flagValue.arrayIndex).SetP(flagValue.stringValue, flagValue.arrayProperty)
@@ -126,4 +111,66 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	}
 
 	return tmpFileName, nil
+}
+
+func parseKeyValuePairs(value string) map[string]string {
+	log.Debugln(fmt.Sprintf("parsing --set flag key/value pairs from %s", value))
+	inQuoteLiteral := false
+	inDblQuoteLiteral := false
+	inKey := true
+	kvpMap := map[string]string{}
+
+	currentKey := ""
+	currentValue := ""
+
+	// "linuxProfile.ssh.publicKeys[0].keyData=\"ssh-rsa AAAAB3NO8b9== azur'euser@cluster.local\",answer=42,hello='wo,rldyou\"ho=u'"
+	for _, char := range value {
+		if char == '\'' { // if we hit a ' char
+			if !inQuoteLiteral && !inDblQuoteLiteral { // and we are not already in a literal
+				inQuoteLiteral = true // start a new ' delimited literal value
+				inKey = false
+			} else if inQuoteLiteral { // we already are in a ' delimited literal value
+				inQuoteLiteral = false // stop it
+				inKey = true
+			}
+		} else if char == '"' { // if we hit a " char
+			if !inDblQuoteLiteral && !inQuoteLiteral { // and we are not already in a literal
+				inDblQuoteLiteral = true // start a new " delimited literal value
+				inKey = false
+			} else if inDblQuoteLiteral { // we already are in a " delimited literal value
+				inDblQuoteLiteral = false // stop it
+				inKey = true
+			}
+		} else if char == ',' { // if we hit a , char
+			if inQuoteLiteral || inDblQuoteLiteral { // we are in a literal
+				currentValue += string(char)
+			} else {
+				log.Debugln(fmt.Sprintf("new key/value parsed: %s = %s", currentKey, currentValue))
+				kvpMap[currentKey] = currentValue
+				currentKey = ""
+				currentValue = ""
+				inKey = true
+			}
+		} else if char == '=' { // if we hit a = char
+			if inQuoteLiteral || inDblQuoteLiteral { // we are in a literal
+				currentValue += string(char)
+			} else {
+				inKey = false
+			}
+		} else { // we hit any other char
+			if inKey {
+				currentKey += string(char)
+			} else {
+				currentValue += string(char)
+			}
+		}
+	}
+
+	// push latest literal
+	if currentKey != "" {
+		log.Debugln(fmt.Sprintf("new key/value parsed: %s = %s", currentKey, currentValue))
+		kvpMap[currentKey] = currentValue
+	}
+
+	return kvpMap
 }

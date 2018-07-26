@@ -104,10 +104,11 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 func (gc *generateCmd) mergeAPIModel() error {
 	var err error
-
+	log.Debugln("mergeAPIModel")
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
 		m := make(map[string]transform.APIModelValue)
+		log.Debugln("mapping --set flag values from command line")
 		transform.MapValues(m, gc.set)
 
 		// overrides the api model and generates a new file

@@ -85,7 +85,16 @@ func TestGenerateCmdMergeAPIModel(t *testing.T) {
 	// test with an ssh key that contains == sign
 	g = &generateCmd{}
 	g.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
-	g.set = []string{"linuxProfile.ssh.publicKeys[0].keyData=\"ssh-rsa AAAAB3NO8b9== azureuser@cluster.local\""}
+	g.set = []string{"linuxProfile.ssh.publicKeys[0].keyData=\"ssh-rsa AAAAB3NO8b9== azureuser@cluster.local\",servicePrincipalProfile.clientId=\"123a4321-c6eb-4b61-9d6f-7db123e14a7a\",servicePrincipalProfile.secret=\"=#msRock5!t=\""}
+	err = g.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())
+	}
+
+	// test with simple quote
+	g = &generateCmd{}
+	g.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	g.set = []string{"servicePrincipalProfile.secret='=MsR0ck5!t='"}
 	err = g.mergeAPIModel()
 	if err != nil {
 		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())
