@@ -130,7 +130,7 @@ spec:
         - "--cache-size=1000"
         - "--no-resolv"
         - "--no-negcache"
-        - "--server=127.0.0.1#10053"
+        - "--server=/<kubernetesKubeletClusterDomain>/127.0.0.1#10053"
         - "--server=/in-addr.arpa/127.0.0.1#10053"
         - "--server=/ip6.arpa/127.0.0.1#10053"
         - "--log-facility=-"
