@@ -61,6 +61,12 @@ else
     REBOOTREQUIRED=false
 fi
 
+function runKConfig() {
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://raw.githubusercontent.com/jessfraz/dotfiles/master/bin/check-kconfig > /tmp/check-kconfig
+    chmod a+x /tmp/check-kconfig
+    /tmp/check-kconfig > /var/log/azure/check-kconfig.log
+}
+
 function testOutboundConnection() {
     retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
 }
@@ -546,6 +552,7 @@ configAddons() {
     fi
 }
 
+runKConfig
 testOutboundConnection
 waitForCloudInit
 
