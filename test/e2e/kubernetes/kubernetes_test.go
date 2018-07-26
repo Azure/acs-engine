@@ -748,45 +748,37 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					namespace         string
 				)
 
-				AfterEach(func() {
-					By("Cleaning up after ourselves")
-					networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
-				})
+				By("Applying a network policy to deny egress access")
+				networkPolicyName, namespace = "default-deny-egress", nsClientOne
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-egress-policy.yaml"), networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
-				Context("With a network policy to deny egress access", func() {
-					It("should deny egress connection from nginx pods", func() {
-						networkPolicyName, namespace = "default-deny-egress", nsClientOne
-						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-egress-policy.yaml"), networkPolicyName, namespace)
-						Expect(err).NotTo(HaveOccurred())
+				By("Ensuring we no longer have outbound internet access from the nginx client pods")
+				for _, clientOnePod := range clientOnePods {
+					pass, err := clientOnePod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
+					Expect(err).Should(HaveOccurred())
+					Expect(pass).To(BeFalse())
+				}
 
-						By("Ensuring we no longer have outbound internet access from the nginx client pods")
-						for _, clientOnePod := range clientOnePods {
-							pass, err := clientOnePod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
-							Expect(err).Should(HaveOccurred())
-							Expect(pass).To(BeFalse())
-						}
-					})
-				})
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 
-				Context("With a network policy to deny ingress access", func() {
-					It("should deny ingress connection from nginx pods", func() {
-						networkPolicyName, namespace = "default-allow-egress", nsServer
-						err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-ingress-policy.yaml"), networkPolicyName, namespace)
-						Expect(err).NotTo(HaveOccurred())
+				By("Applying a network policy to deny ingress access")
+				networkPolicyName, namespace = "default-allow-egress", nsServer
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-ingress-policy.yaml"), networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
-						By("Ensuring we no longer have inbound internet access from the nginx server pods")
-						for _, clientOnePod := range clientOnePods {
-							for _, serverPod := range serverPods {
-								pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
-								Expect(err).Should(HaveOccurred())
-								Expect(pass).To(BeFalse())
-							}
-						}
-					})
-				})
+				By("Ensuring we no longer have inbound internet access from the nginx server pods")
+				for _, clientOnePod := range clientOnePods {
+					for _, serverPod := range serverPods {
+						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).Should(HaveOccurred())
+						Expect(pass).To(BeFalse())
+					}
+				}
 
-				// TODO delete networkpolicy
-				// Expect(err).NotTo(HaveOccurred())
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 				err = clientOneDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = clientTwoDeploy.Delete()
