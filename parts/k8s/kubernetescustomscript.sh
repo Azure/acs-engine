@@ -62,7 +62,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 curl -I https://www.google.com || retrycmd_if_failure 20 1 3 curl -I https://www.1688.com || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
