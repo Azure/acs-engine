@@ -764,7 +764,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 
 				By("Applying a network policy to deny ingress access")
-				networkPolicyName, namespace = "default-allow-egress", nsServer
+				networkPolicyName, namespace = "default-deny-ingress", nsServer
 				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-ingress-policy.yaml"), networkPolicyName, namespace)
 				Expect(err).NotTo(HaveOccurred())
 
