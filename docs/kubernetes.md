@@ -2,7 +2,7 @@
 
 * Create a Kubernetes Cluster
   * [Linux](kubernetes/deploy.md) - Create your first Linux Kubernetes cluster
-  * [Windows](docs/kubernetes/windows.md) - Create your first Windows Kubernetes cluster
+  * [Windows](kubernetes/windows.md) - Create your first Windows Kubernetes cluster
 * [Kubernetes Next Steps](kubernetes/walkthrough.md) - You have successfully deployed a Kubernetes cluster, now what?
 * [Troubleshooting](kubernetes/troubleshooting.md) - Running into issues? Start here to troubleshoot Kubernetes.
 * [Features](kubernetes/features.md) - Guide to alpha, beta, and stable functionality in acs-engine.
