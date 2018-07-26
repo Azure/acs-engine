@@ -30,9 +30,7 @@ func ConvertVLabsOpenShiftClusterToContainerService(oc *vlabs.OpenShiftCluster) 
 			OrchestratorProfile: &OrchestratorProfile{
 				OrchestratorVersion: oc.Properties.OpenShiftVersion,
 				OpenShiftConfig: &OpenShiftConfig{
-					PublicHostname:         oc.Properties.PublicHostname,
-					RoutingConfigSubdomain: oc.Properties.RoutingConfigSubdomain,
-					RoutingConfigFQDN:      oc.Properties.RoutingConfigFQDN,
+					PublicHostname: oc.Properties.PublicHostname,
 				},
 			},
 			MasterProfile: &MasterProfile{
@@ -44,18 +42,25 @@ func ConvertVLabsOpenShiftClusterToContainerService(oc *vlabs.OpenShiftCluster) 
 			},
 		}
 
-		cs.Properties.AgentPoolProfiles = make([]*AgentPoolProfile, 0, len(oc.Properties.AgentPoolProfiles))
-		for _, app := range oc.Properties.AgentPoolProfiles {
-			cs.Properties.AgentPoolProfiles = append(cs.Properties.AgentPoolProfiles,
-				&AgentPoolProfile{
-					Name:         app.Name,
-					Count:        app.Count,
-					VMSize:       app.VMSize,
-					OSType:       OSType(app.OSType),
-					VnetSubnetID: app.VnetSubnetID,
-					Role:         AgentPoolProfileRole(app.Role),
-				},
-			)
+		cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterProfiles = make([]OpenShiftRouterProfile, len(oc.Properties.RouterProfiles))
+		for i, rp := range oc.Properties.RouterProfiles {
+			cs.Properties.OrchestratorProfile.OpenShiftConfig.RouterProfiles[i] = OpenShiftRouterProfile{
+				Name:            rp.Name,
+				PublicSubdomain: rp.PublicSubdomain,
+				FQDN:            rp.FQDN,
+			}
+		}
+
+		cs.Properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(oc.Properties.AgentPoolProfiles))
+		for i, app := range oc.Properties.AgentPoolProfiles {
+			cs.Properties.AgentPoolProfiles[i] = &AgentPoolProfile{
+				Name:         app.Name,
+				Count:        app.Count,
+				VMSize:       app.VMSize,
+				OSType:       OSType(app.OSType),
+				VnetSubnetID: app.VnetSubnetID,
+				Role:         AgentPoolProfileRole(app.Role),
+			}
 		}
 	}
 

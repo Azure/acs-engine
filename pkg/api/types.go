@@ -369,9 +369,15 @@ type OpenShiftConfig struct {
 
 	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
 
-	PublicHostname         string
-	RoutingConfigSubdomain string
-	RoutingConfigFQDN      string
+	PublicHostname string
+	RouterProfiles []OpenShiftRouterProfile
+}
+
+// OpenShiftRouterProfile represents an OpenShift router.
+type OpenShiftRouterProfile struct {
+	Name            string
+	PublicSubdomain string
+	FQDN            string
 }
 
 // MasterProfile represents the definition of the master cluster

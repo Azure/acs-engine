@@ -30,10 +30,6 @@ type Properties struct {
 	// `v3.10`.
 	OpenShiftVersion string `json:"openShiftVersion,omitempty"`
 
-	// TODO: the following DNS-related fields are basically workable but don't
-	// feel very elegant or future-proof (e.g. multiple routers, non-wildcard
-	// setups).
-
 	// PublicHostname (in,optional): Optional user-specified FQDN for OpenShift
 	// API server.  If specified, after OSA cluster creation, user must create a
 	// PublicHostname CNAME record forwarding to the returned FQDN value.
@@ -42,20 +38,11 @@ type Properties struct {
 	// FQDN (out): Auto-allocated FQDN for OpenShift API server.
 	FQDN string `json:"fqdn,omitempty"`
 
-	// RoutingConfigSubdomain (in,optional/out): DNS subdomain for OpenShift
-	// router.  If specified, after OSA cluster creation, user must create a
-	// (wildcard) *.RoutingConfigSubdomain CNAME record forwarding to the
-	// returned RoutingConfigFQDN value.  If not specified, OSA will
-	// auto-allocate and setup a RoutingConfigSubdomain and return it.
-	RoutingConfigSubdomain string `json:"routingConfigSubdomain,omitempty"`
+	// RouterProfiles (in,optional/out): Configuration for OpenShift router(s).
+	RouterProfiles []RouterProfile `json:"routerProfiles,omitempty"`
 
-	// RoutingConfigFQDN (out): Auto-allocated FQDN for the OpenShift router.
-	RoutingConfigFQDN string `json:"routingConfigFqdn,omitempty"`
-
-	// TODO: need to clarify the external API for AgentPoolProfiles.  Will we
-	// allow users to specify any aspects of non-`compute` pools?
 	// AgentPoolProfiles (in): configuration of OpenShift cluster VMs.
-	AgentPoolProfiles AgentPoolProfiles `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles []AgentPoolProfile `json:"agentPoolProfiles,omitempty"`
 
 	// TODO: is this compatible with MSI?
 	// ServicePrincipalProfile (in): Service principal for OpenShift cluster.
@@ -83,8 +70,21 @@ const (
 	Upgrading ProvisioningState = "Upgrading"
 )
 
-// AgentPoolProfiles represents all the AgentPoolProfiles.
-type AgentPoolProfiles []AgentPoolProfile
+// RouterProfile represents an OpenShift router.
+type RouterProfile struct {
+	Name string `json:"name,omitempty"`
+
+	// PublicSubdomain (in,optional/out): DNS subdomain for OpenShift router. If
+	// specified, after OSA cluster creation, user must create a (wildcard)
+	// *.PublicSubdomain CNAME record forwarding to the returned FQDN value.  If
+	// not specified, OSA will auto-allocate and setup a PublicSubdomain and
+	// return it.  The OpenShift master is configured with the PublicSubdomain
+	// of the "default" RouterProfile.
+	PublicSubdomain string `json:"publicSubdomain,omitempty"`
+
+	// FQDN (out): Auto-allocated FQDN for the OpenShift router.
+	FQDN string `json:"fqdn,omitempty"`
+}
 
 // AgentPoolProfile represents configuration of OpenShift cluster VMs.
 type AgentPoolProfile struct {
