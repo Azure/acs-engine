@@ -66,6 +66,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/go-bindata/go-bindata"
+  packages = [
+    ".",
+    "go-bindata"
+  ]
+  revision = "d266f3a456685e7541abc9f010d46fff146c7858"
+
+[[projects]]
   name = "github.com/go-playground/locales"
   packages = [
     ".",
@@ -376,12 +384,6 @@
   version = "v0.9.0"
 
 [[projects]]
-  name = "gopkg.in/ini.v1"
-  packages = ["."]
-  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
-  version = "v1.38.1"
-
-[[projects]]
   branch = "v1"
   name = "gopkg.in/tomb.v1"
   packages = ["."]
@@ -530,6 +532,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "882df521080b91b83e0d79bd03fdb53fcf6b04c3c32414390075f3e7d902f529"
+  inputs-digest = "1c1558db0b09f432a3d40f84d86adc10908019becbc5194d322d8937f0fea1a5"
   solver-name = "gps-cdcl"
   solver-version = 1
