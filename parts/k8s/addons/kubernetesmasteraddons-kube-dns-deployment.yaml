@@ -146,12 +146,15 @@ spec:
         - mountPath: /kube-dns-config
           name: kube-dns-config
       - args:
-        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1 >/dev/null"
+        - "--cmd=for d in $PROBE_DOMAINS; do nslookup $d 127.0.0.1 >/dev/null || exit 1; done"
         - "--url=/healthz-dnsmasq"
-        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1:10053 >/dev/null"
+        - "--cmd=for d in $PROBE_DOMAINS; do nslookup $d 127.0.0.1:10053 >/dev/null || exit 1; done"
         - "--url=/healthz-kubedns"
         - "--port=8080"
         - "--quiet"
+        env:
+        - name: PROBE_DOMAINS
+          value: bing.com kubernetes.default.svc.<kubernetesKubeletClusterDomain>
         image: <kubernetesExecHealthzSpec>
         livenessProbe:
           failureThreshold: 5

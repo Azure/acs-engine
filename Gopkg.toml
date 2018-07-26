@@ -24,7 +24,11 @@
 #   go-tests = true
 #   unused-packages = true
 
-required = ["github.com/go-bindata/go-bindata/go-bindata"]
+required = [
+  "github.com/go-bindata/go-bindata/go-bindata",
+  # Apply workaround from https://github.com/golang/dep/issues/1799
+  "gopkg.in/fsnotify.v1"
+]
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
@@ -105,6 +109,15 @@ required = ["github.com/go-bindata/go-bindata/go-bindata"]
 [[constraint]]
   name = "k8s.io/client-go"
   version = "~7.0.0"
+
+[[constraint]]
+  name = "github.com/onsi/ginkgo"
+  version = "v1.6.0"
+
+# Apply workaround from https://github.com/golang/dep/issues/1799
+[[constraint]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
 
 [prune]
   go-tests = true

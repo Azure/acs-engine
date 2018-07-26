@@ -169,6 +169,20 @@
   revision = "bf9dde6d0d2c004a008c27aaee91170c786f6db8"
 
 [[projects]]
+  digest = "1:da7a0665d373e11bbc9d5f2015ce01cc8aa610ebf38de553e056f8b65c87243a"
+  name = "github.com/hpcloud/tail"
+  packages = [
+    ".",
+    "ratelimiter",
+    "util",
+    "watch",
+    "winfile",
+  ]
+  pruneopts = "UT"
+  revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:3e260afa138eab6492b531a3b3d10ab4cb70512d423faa78b8949dec76e66a21"
   name = "github.com/imdario/mergo"
   packages = ["."]
@@ -261,7 +275,7 @@
   revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
 
 [[projects]]
-  digest = "1:b84c6d16c0a4e05c58655dde79e0818435f866e340ff6618c6eecc0dbc1f4ddf"
+  digest = "1:b1fc68069736db92aefa48adf2dcb7e16d23d13425c8ae80ca600281f7d711b3"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -284,7 +298,8 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "11459a886d9cd66b319dac7ef1e917ee221372c9"
+  revision = "3774a09d95489ccaa16032e0770d08ea77ba6184"
+  version = "v1.6.0"
 
 [[projects]]
   digest = "1:e7a2ed7c8749b6537e695f835a9c03a588ce5b458a6d9eec47515d6a7bc9a7d3"
@@ -437,6 +452,15 @@
   revision = "f51c12702a4d776e4c1fa9b0fabab841babae631"
 
 [[projects]]
+  digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
+  name = "gopkg.in/fsnotify.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
+  source = "https://github.com/fsnotify/fsnotify.git"
+  version = "v1.4.7"
+
+[[projects]]
   digest = "1:090964cce6d9d87e77c889afb714bb93e9f2dc79a1e1d54f794220cc1f33ccfd"
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
@@ -459,6 +483,14 @@
   pruneopts = "UT"
   revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
   version = "v1.38.1"
+
+[[projects]]
+  branch = "v1"
+  digest = "1:0caa92e17bc0b65a98c63e5bc76a9e844cd5e56493f8fdbb28fad101a16254d9"
+  name = "gopkg.in/tomb.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
 
 [[projects]]
   digest = "1:73e6fda93622790d2371344759df06ff5ff2fac64a6b6e8832b792e7402956e7"
@@ -650,6 +682,7 @@
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",
     "golang.org/x/sync/errgroup",
+    "gopkg.in/fsnotify.v1",
     "gopkg.in/go-playground/validator.v9",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",

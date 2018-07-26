@@ -64,9 +64,9 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 	var cmd *exec.Cmd
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	if miscOpts != "" {
-		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, miscOpts)
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--overrides", overrides, miscOpts)
 	} else {
-		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides)
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--overrides", overrides)
 	}
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
@@ -85,7 +85,7 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
