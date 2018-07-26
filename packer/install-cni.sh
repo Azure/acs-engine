@@ -16,7 +16,30 @@ mkdir -p \
 # install Azure CNI
 curl -fsSL $VNET_CNI_PLUGINS_URL -o $AZURE_CNI_TGZ_TMP
 tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/10-azure.conflist
+
+cat << EOF > $CNI_CONFIG_DIR/10-azure.conflist
+{
+   "cniVersion":"0.3.0",
+   "name":"azure",
+   "plugins":[
+      {
+         "type":"azure-vnet",
+         "mode":"bridge",
+         "bridge":"azure0",
+         "ipam":{
+            "type":"azure-vnet-ipam"
+         }
+      },
+      {
+         "type":"portmap",
+         "capabilities":{
+            "portMappings":true
+         },
+         "snat":true
+      }
+   ]
+}
+EOF
 
 # install CNI plugins
 curl -fsSL ${CNI_PLUGINS_URL} -o ${CONTAINERNETWORKING_CNI_TGZ_TMP}
