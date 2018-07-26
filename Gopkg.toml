@@ -83,6 +83,10 @@ required = [
   version = "1.0.0"
 
 [[constraint]]
+  name = "github.com/go-bindata/go-bindata"
+  revision = "d266f3a456685e7541abc9f010d46fff146c7858"
+
+[[constraint]]
   branch = "master"
   name = "golang.org/x/sync"
 
@@ -118,3 +122,7 @@ required = [
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "gopkg.in/ini.v1"
+  version = "1.38.1"
