@@ -129,6 +129,35 @@ func TestValidateVNET(t *testing.T) {
 		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorInvalidNetworkProfile, err.Error())
 	}
 
+	// network profile has NetworkPlugin set to azure and PodCidr set, should fail
+	n = &NetworkProfile{
+		NetworkPlugin: NetworkPlugin("azure"),
+		PodCidr:       "a.b.c.d",
+	}
+
+	p = []*AgentPoolProfile{
+		{
+			VnetSubnetID: vnetSubnetID1,
+			MaxPods:      &maxPods1,
+		},
+		{
+			VnetSubnetID: vnetSubnetID2,
+			MaxPods:      &maxPods2,
+		},
+	}
+
+	a = &Properties{
+		NetworkProfile:    n,
+		AgentPoolProfiles: p,
+	}
+
+	if err := validateVNET(a); err != ErrorPodCidrNotSetableInAzureCNI {
+		if err == nil {
+			t.Errorf("Failed to test validate VNET: expected %s but got no error", ErrorPodCidrNotSetableInAzureCNI)
+		}
+		t.Errorf("Failed to test validate VNET: expected %s but got %s", ErrorPodCidrNotSetableInAzureCNI, err.Error())
+	}
+
 	// NetworkPlugin is not azure or kubenet
 	n = &NetworkProfile{
 		NetworkPlugin:    NetworkPlugin("none"),

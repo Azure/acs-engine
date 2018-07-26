@@ -211,6 +211,11 @@ func validateVNET(a *Properties) error {
 			} else {
 				return ErrorInvalidNetworkProfile
 			}
+
+			// PodCidr should not be set for Azure CNI
+			if n.NetworkPlugin == Azure && n.PodCidr != "" {
+				return ErrorPodCidrNotSetableInAzureCNI
+			}
 		default:
 			return ErrorInvalidNetworkPlugin
 		}
