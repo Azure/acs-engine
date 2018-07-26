@@ -335,7 +335,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resource
 	if mc.FailListVirtualMachines {
 		return &MockVirtualMachineListResultPage{
 			Vmlr: compute.VirtualMachineListResult{
-				Value: &[]compute.VirtualMachine{compute.VirtualMachine{}},
+				Value: &[]compute.VirtualMachine{{}},
 			},
 		}, errors.New("ListVirtualMachines failed")
 	}

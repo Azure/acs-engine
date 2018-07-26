@@ -12,6 +12,7 @@ import (
 	"k8s.io/api/core/v1"
 )
 
+// VirtualMachineListResultPage is an interface for compute.VirtualMachineListResultPage to aid in mocking
 type VirtualMachineListResultPage interface {
 	Next() error
 	NotDone() bool
@@ -19,6 +20,7 @@ type VirtualMachineListResultPage interface {
 	Values() []compute.VirtualMachine
 }
 
+// DeploymentOperationsListResultPage is an interface for resources.DeploymentOperationsListResultPage to aid in mocking
 type DeploymentOperationsListResultPage interface {
 	Next() error
 	NotDone() bool
@@ -26,6 +28,7 @@ type DeploymentOperationsListResultPage interface {
 	Values() []resources.DeploymentOperation
 }
 
+// RoleAssignmentListResultPage is an interface for authorization.RoleAssignmentListResultPage to aid in mocking
 type RoleAssignmentListResultPage interface {
 	Next() error
 	NotDone() bool
