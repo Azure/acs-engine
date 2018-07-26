@@ -7,13 +7,15 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+			"vmSize": "Standard_D2_v2",
+			"distro": "aks"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 2,
-        "vmSize": "Standard_D2_v2"
+        "vmSize": "Standard_D2_v2",
+				"distro": "aks"
       }
     ],
     "linuxProfile": {
