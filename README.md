@@ -17,13 +17,13 @@ The cluster definition file enables you to customize your Docker enabled cluster
 * Custom VNET
 * Extensions
 
+More info, including a thorough walkthrough is [here(docs/acsengine.md)].
+
 ## User guides
 
 These guides show how to create your first deployment for each orchestrator:
-* [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom container clusters
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS cluster on Azure
-* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes cluster on Azure
-  * [Kubernetes Walkthrough (Windows)](docs/kubernetes/windows.md) - shows how to create a Kubernetes cluster on Azure for Windows containers
+* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Linux or Windows Kubernetes cluster on Azure
 * [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a [Docker Swarm Mode](https://docs.docker.com/engine/swarm/) cluster on Azure
 * [Standalone Swarm Walkthrough](docs/swarm.md) - shows how to create a [Docker Standalone Swarm](https://docs.docker.com/swarm/) cluster on Azure
