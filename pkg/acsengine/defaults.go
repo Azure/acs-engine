@@ -107,9 +107,9 @@ var (
 	// DefaultAKSOSImageConfig is the AKS image based on Ubuntu 16.04.
 	DefaultAKSOSImageConfig = AzureOSImageConfig{
 		ImageOffer:     "aks",
-		ImageSku:       "aks",
+		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.0.1",
+		ImageVersion:   "0.0.2",
 	}
 
 	//AzureCloudSpec is the default configurations for global azure.
