@@ -22,7 +22,7 @@ const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVer = "v1.0.7"
+	AzureCniPluginVer = "v1.0.10"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
@@ -31,8 +31,8 @@ const (
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
-		KubernetesImageBase:              "k8s-gcrio.azureedge.net/",
-		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		KubernetesImageBase:              "k8s.gcr.io/",
+		TillerImageBase:                  "gcr.io/kubernetes-helm/",
 		ACIConnectorImageBase:            "microsoft/",
 		NVIDIAImageBase:                  "nvidia/",
 		AzureCNIImageBase:                "containernetworking/",
@@ -538,7 +538,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
-				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				// When Azure CNI is enabled, all masters, agents and pods share the same large subnet.
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
@@ -1168,18 +1168,12 @@ func mapToString(valueMap map[string]string) string {
 func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
 	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
-	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
-}
-
-func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return helpers.PointerToBool(o.IsAzureCNI())
 }
 
 func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {

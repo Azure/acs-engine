@@ -161,21 +161,23 @@ func (cli *CLIProvisioner) provision() error {
 		return errors.Wrap(err, "Error while trying to create deployment")
 	}
 
-	// Store the hosts for future introspection
-	hosts, err := cli.Account.GetHosts(cli.Config.Name)
-	if err != nil {
-		return err
-	}
-	var masters, agents []azure.VM
-	for _, host := range hosts {
-		if strings.Contains(host.Name, "master") {
-			masters = append(masters, host)
-		} else if strings.Contains(host.Name, "agent") {
-			agents = append(agents, host)
+	if cli.Config.IsKubernetes() {
+		// Store the hosts for future introspection
+		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+		if err != nil {
+			return err
 		}
+		var masters, agents []azure.VM
+		for _, host := range hosts {
+			if strings.Contains(host.Name, "master") {
+				masters = append(masters, host)
+			} else if strings.Contains(host.Name, "agent") {
+				agents = append(agents, host)
+			}
+		}
+		cli.Masters = masters
+		cli.Agents = agents
 	}
-	cli.Masters = masters
-	cli.Agents = agents
 
 	return nil
 }

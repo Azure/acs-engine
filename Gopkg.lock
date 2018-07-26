@@ -133,6 +133,18 @@
   revision = "bf9dde6d0d2c004a008c27aaee91170c786f6db8"
 
 [[projects]]
+  name = "github.com/hpcloud/tail"
+  packages = [
+    ".",
+    "ratelimiter",
+    "util",
+    "watch",
+    "winfile"
+  ]
+  revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
   revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
@@ -223,7 +235,8 @@
     "reporters/stenographer/support/go-isatty",
     "types"
   ]
-  revision = "11459a886d9cd66b319dac7ef1e917ee221372c9"
+  revision = "3774a09d95489ccaa16032e0770d08ea77ba6184"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/onsi/gomega"
@@ -352,6 +365,13 @@
   revision = "f51c12702a4d776e4c1fa9b0fabab841babae631"
 
 [[projects]]
+  name = "gopkg.in/fsnotify.v1"
+  packages = ["."]
+  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
+  source = "https://github.com/fsnotify/fsnotify.git"
+  version = "v1.4.7"
+
+[[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
   revision = "fb68f39656d7ebf8aa339ad4917aa0c260ecc237"
@@ -368,6 +388,12 @@
   packages = ["."]
   revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
   version = "v1.38.1"
+
+[[projects]]
+  branch = "v1"
+  name = "gopkg.in/tomb.v1"
+  packages = ["."]
+  revision = "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -512,6 +538,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "035fe12a4f1ad8dad15158b86cd034915558b521831eeb338ddca86bda3ee651"
+  inputs-digest = "882df521080b91b83e0d79bd03fdb53fcf6b04c3c32414390075f3e7d902f529"
   solver-name = "gps-cdcl"
   solver-version = 1

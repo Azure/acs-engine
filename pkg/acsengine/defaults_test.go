@@ -581,7 +581,6 @@ func TestIsAzureCNINetworkmonitorAddon(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
-	properties.OrchestratorProfile.KubernetesConfig.Addons = []api.KubernetesAddon{}
 	setOrchestratorDefaults(&mockCS)
 
 	i = getAddonsIndexByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)

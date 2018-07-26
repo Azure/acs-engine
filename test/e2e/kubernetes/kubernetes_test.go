@@ -58,6 +58,21 @@ var _ = BeforeSuite(func() {
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
 	Describe("regardless of agent pool type", func() {
+		It("should display the installed Ubuntu version on the master node", func() {
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting Ubuntu image version: %s\n", out)
+			}
+		})
 
 		It("should have have the appropriate node count", func() {
 			nodeList, err := node.Get()
@@ -533,7 +548,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s-gcrio.azureedge.net/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
+				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -841,10 +856,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.11") {
-					// Failure in 1.11+ - https://github.com/kubernetes/kubernetes/issues/65845
-					Skip("Kubernetes 1.11 has a known issue creating Azure PersistentVolumeClaims")
-				} else if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
+				if eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion == "1.11.0" {
+					// Failure in 1.11.0 - https://github.com/kubernetes/kubernetes/issues/65845, fixed in 1.11.1
+					Skip("Kubernetes 1.11.0 has a known issue creating Azure PersistentVolumeClaims")
+				} else if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.8.0") {
 					By("Creating an AzureFile storage class")
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
