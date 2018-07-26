@@ -729,6 +729,9 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 			api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin
 			api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 		}
+		if vp.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy == nil {
+			api.KubernetesConfig.EnablePodSecurityPolicy = helpers.PointerToBool(true)
+		}
 	}
 	if api.KubernetesConfig.NetworkPlugin == "" {
 		if vp.HasWindows() {
