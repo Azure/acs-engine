@@ -63,9 +63,9 @@ fi
 
 if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
-    FULLINSTALL=false
+    FULL_INSTALL_REQUIRED=false
 else
-    FULLINSTALL=true
+    FULL_INSTALL_REQUIRED=true
 fi
 
 function testOutboundConnection() {
@@ -173,25 +173,33 @@ function holdWALinuxAgent() {
 }
 
 function installDeps() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
-    systemctlEnableAndStart rpcbind
-    systemctlEnableAndStart rpc-statd
+	if $FULL_INSTALL_REQUIRED; then
+		retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
+		retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
+		apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+		# See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
+		apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
+	else
+		echo "Golden image present, skipping installation of deps"
+	fi
+	systemctlEnableAndStart rpcbind
+	systemctlEnableAndStart rpc-statd
 }
 
 function installDocker() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
-    echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-    printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
-    echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-    usermod -aG docker ${ADMINUSER}
-    touch /var/log/azure/docker-install.complete
+	if $FULL_INSTALL_REQUIRED; then
+		retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
+		retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
+		echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+		printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+		apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+		apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+		echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+		usermod -aG docker ${ADMINUSER}
+	else
+		echo "Golden image; skipping Docker install"
+	fi
+	touch /var/log/azure/docker-install.complete
 }
 
 function runAptDaily() {
@@ -262,32 +270,40 @@ function setKubeletOpts () {
 }
 
 function installCNI() {
-    mkdir -p $CNI_BIN_DIR
-    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
-    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    chown -R root:root $CNI_BIN_DIR
-    chmod -R 755 $CNI_BIN_DIR
-    # Turn on br_netfilter (needed for the iptables rules to work on bridges)
-    # and permanently enable it
-    retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
-    # /etc/modules-load.d is the location used by systemd to load modules
-    echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
+	if $FULL_INSTALL_REQUIRED; then
+		mkdir -p $CNI_BIN_DIR
+		CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+		retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+		tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
+		chown -R root:root $CNI_BIN_DIR
+		chmod -R 755 $CNI_BIN_DIR
+		# Turn on br_netfilter (needed for the iptables rules to work on bridges)
+		# and permanently enable it
+		retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
+		# /etc/modules-load.d is the location used by systemd to load modules
+		echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
+	else
+		echo "Golden image; skipping CNI plugin installation"
+	fi
 }
 
 function configAzureCNI() {
-    CNI_CONFIG_DIR=/etc/cni/net.d
-    mkdir -p $CNI_CONFIG_DIR
-    chown -R root:root $CNI_CONFIG_DIR
-    chmod 755 $CNI_CONFIG_DIR
-    mkdir -p $CNI_BIN_DIR
-    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    installCNI
-    mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-    /sbin/ebtables -t nat --list
+	if $FULL_INSTALL_REQUIRED; then
+		CNI_CONFIG_DIR=/etc/cni/net.d
+		mkdir -p $CNI_CONFIG_DIR
+		chown -R root:root $CNI_CONFIG_DIR
+		chmod 755 $CNI_CONFIG_DIR
+		mkdir -p $CNI_BIN_DIR
+		AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+		retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+		tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
+		installCNI
+		mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+		chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+		/sbin/ebtables -t nat --list
+	else
+		echo "Golden image; skipping Azure CNI installation"
+	fi
 }
 
 function configNetworkPlugin() {
@@ -420,22 +436,27 @@ function ensureKubelet() {
 }
 
 function extractHyperkube(){
-    TMP_DIR=$(mktemp -d)
-    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
-    chmod +x /usr/local/bin/img
-    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    path=$(find /tmp/img -name "hyperkube")
+	if $FULL_INSTALL_REQUIRED; then
+		installContainerd
+		TMP_DIR=$(mktemp -d)
+		retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
+		chmod +x /usr/local/bin/img
+		retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+		path=$(find /tmp/img -name "hyperkube")
 
-    if [[ $OS == $COREOS_OS_NAME ]]; then
-        cp "$path" "/opt/kubelet"
-        cp "$path" "/opt/kubectl"
-        chmod a+x /opt/kubelet /opt/kubectl
-    else
-        cp "$path" "/usr/local/bin/kubelet"
-        cp "$path" "/usr/local/bin/kubectl"
-        chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
-    fi
-    rm -rf /tmp/hyperkube.tar "/tmp/img"
+		if [[ $OS == $COREOS_OS_NAME ]]; then
+			cp "$path" "/opt/kubelet"
+			cp "$path" "/opt/kubectl"
+			chmod a+x /opt/kubelet /opt/kubectl
+		else
+			cp "$path" "/usr/local/bin/kubelet"
+			cp "$path" "/usr/local/bin/kubectl"
+			chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
+		fi
+		rm -rf /tmp/hyperkube.tar "/tmp/img"
+	else
+		echo "Golden image, skipping containerd and hyperkube extraction"
+	fi
 }
 
 function ensureJournal(){
@@ -565,23 +586,17 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
 fi
 
 holdWALinuxAgent
-if $FULLINSTALL; then
-    installDeps
-fi
+installDeps
 ensureRpc
 
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
-    if $FULLINSTALL; then
-        installDocker
-    fi
+	installDocker
     ensureDocker
 fi
 
 configureK8s
 
-if $FULLINSTALL; then
-    configNetworkPlugin
-fi
+configNetworkPlugin
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     configAddons
@@ -589,9 +604,7 @@ fi
 
 # containerd needs to be installed before extractHyperkube
 # so runc is present.
-if $FULLINSTALL; then
-    installContainerd
-    extractHyperkube
+extractHyperkube
 fi
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
