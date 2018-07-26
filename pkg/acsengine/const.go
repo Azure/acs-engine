@@ -203,6 +203,7 @@ const (
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
 	kubernetesCustomSearchDomainsScript      = "k8s/setup-custom-search-domains.sh"
+	kubernetesB64EbtablesSystemdConfig       = "k8s/ebtables.config"
 	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "k8s/kubernetesagentcustomdata.yml"
 	kubernetesJumpboxCustomDataYaml          = "k8s/kubernetesjumpboxcustomdata.yml"
