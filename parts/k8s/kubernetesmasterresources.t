@@ -438,10 +438,10 @@
           },
           "storageProfile": {
               "imageReference": {
-                  "publisher": "Canonical",
-                  "offer": "UbuntuServer",
-                  "sku": "16.04-LTS",
-                  "version": "latest"
+                  "publisher": "microsoft-aks",
+                  "offer": "aks",
+                  "sku": "aks",
+                  "version": "0.0.1"
               },
             {{if JumpboxIsManagedDisks}}
               "osDisk": {
@@ -637,7 +637,7 @@
        "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
-       "dependsOn": 
+       "dependsOn":
        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -670,7 +670,7 @@
            }
          ],
  {{else}}
-         "accessPolicies": 
+         "accessPolicies":
          [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
