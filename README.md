@@ -17,7 +17,7 @@ The cluster definition file enables you to customize your Docker enabled cluster
 * Custom VNET
 * Extensions
 
-More info, including a thorough walkthrough is [here(docs/acsengine.md)].
+More info, including a thorough walkthrough is [here](docs/acsengine.md).
 
 ## User guides
 
