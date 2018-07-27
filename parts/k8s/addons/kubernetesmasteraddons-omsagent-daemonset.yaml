@@ -77,8 +77,8 @@ metadata:
 type: Opaque
 data:
   #BASE64 ENCODED (Both WSID & KEY) INSIDE DOUBLE QUOTE ("")
-  WSID: ""
-  KEY: ""
+  WSID: <workspaceGuid>
+  KEY: <workspaceKey>
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
@@ -116,6 +116,8 @@ spec:
          value: "my_acs_cluster_name"
        - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
          value: "true"
+       - name: ISTEST
+         value: true
        - name: NODE_IP
          valueFrom:
             fieldRef:
@@ -205,6 +207,8 @@ spec:
          value: "my_acs_cluster_name"
        - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
          value: "true"
+       - name: ISTEST
+         value: true
        - name: NODE_IP
          valueFrom:
             fieldRef:
