@@ -730,7 +730,7 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 			api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 		}
 		if vp.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy == nil &&
-			vp.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
+			vp.OrchestratorProfile.KubernetesConfig.EnableRbac != helpers.PointerToBool(false) {
 			api.KubernetesConfig.EnablePodSecurityPolicy = helpers.PointerToBool(true)
 			api.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
 		}
