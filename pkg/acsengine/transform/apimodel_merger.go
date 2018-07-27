@@ -113,8 +113,8 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	return tmpFileName, nil
 }
 
-func parseKeyValuePairs(value string) map[string]string {
-	log.Debugln(fmt.Sprintf("parsing --set flag key/value pairs from %s", value))
+func parseKeyValuePairs(literal string) map[string]string {
+	log.Debugln(fmt.Sprintf("parsing --set flag key/value pairs from %s", literal))
 	inQuoteLiteral := false
 	inDblQuoteLiteral := false
 	inKey := true
@@ -123,9 +123,9 @@ func parseKeyValuePairs(value string) map[string]string {
 	currentKey := ""
 	currentValue := ""
 
-	// "linuxProfile.ssh.publicKeys[0].keyData=\"ssh-rsa AAAAB3NO8b9== azur'euser@cluster.local\",answer=42,hello='wo,rldyou\"ho=u'"
-	for _, char := range value {
-		if char == '\'' { // if we hit a ' char
+	for _, literalChar := range literal {
+		switch literalChar {
+		case '\'': // if we hit a ' char
 			if !inQuoteLiteral && !inDblQuoteLiteral { // and we are not already in a literal
 				inQuoteLiteral = true // start a new ' delimited literal value
 				inKey = false
@@ -133,7 +133,7 @@ func parseKeyValuePairs(value string) map[string]string {
 				inQuoteLiteral = false // stop it
 				inKey = true
 			}
-		} else if char == '"' { // if we hit a " char
+		case '"': // if we hit a " char
 			if !inDblQuoteLiteral && !inQuoteLiteral { // and we are not already in a literal
 				inDblQuoteLiteral = true // start a new " delimited literal value
 				inKey = false
@@ -141,9 +141,9 @@ func parseKeyValuePairs(value string) map[string]string {
 				inDblQuoteLiteral = false // stop it
 				inKey = true
 			}
-		} else if char == ',' { // if we hit a , char
+		case ',': // if we hit a , char
 			if inQuoteLiteral || inDblQuoteLiteral { // we are in a literal
-				currentValue += string(char)
+				currentValue += string(literalChar)
 			} else {
 				log.Debugln(fmt.Sprintf("new key/value parsed: %s = %s", currentKey, currentValue))
 				kvpMap[currentKey] = currentValue
@@ -151,17 +151,17 @@ func parseKeyValuePairs(value string) map[string]string {
 				currentValue = ""
 				inKey = true
 			}
-		} else if char == '=' { // if we hit a = char
-			if inQuoteLiteral || inDblQuoteLiteral { // we are in a literal
-				currentValue += string(char)
+		case '=': // if we hit a = char
+			if inQuoteLiteral || inDblQuoteLiteral || !inKey { // we are in a literal / value
+				currentValue += string(literalChar)
 			} else {
 				inKey = false
 			}
-		} else { // we hit any other char
+		default: // we hit any other char
 			if inKey {
-				currentKey += string(char)
+				currentKey += string(literalChar)
 			} else {
-				currentValue += string(char)
+				currentValue += string(literalChar)
 			}
 		}
 	}
