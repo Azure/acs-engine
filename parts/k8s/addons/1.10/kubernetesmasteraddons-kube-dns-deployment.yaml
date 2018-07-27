@@ -152,6 +152,8 @@ spec:
         - "--url=/healthz-kubedns"
         - "--port=8080"
         - "--quiet"
+        - --no-negcache
+        - --server=/cluster.local/127.0.0.1#10053
         env:
         - name: PROBE_DOMAINS
           value: bing.com kubernetes.default.svc.<kubernetesKubeletClusterDomain>
