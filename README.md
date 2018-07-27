@@ -1,6 +1,7 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
 [![Coverage Status](https://codecov.io/gh/Azure/acs-engine/branch/master/graph/badge.svg)](https://codecov.io/gh/Azure/acs-engine)
 [![CircleCI](https://circleci.com/gh/Azure/acs-engine/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/acs-engine/tree/master)
+[![GoDoc](https://godoc.org/github.com/Azure/acs-engine?status.svg)](https://godoc.org/github.com/Azure/acs-engine)
 
 ## Overview
 
