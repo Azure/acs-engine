@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/blang/semver"
 )
 
 ///////////////////////////////////////////////////////////
@@ -729,10 +730,20 @@ func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) 
 			api.KubernetesConfig.NetworkPlugin = vp.OrchestratorProfile.KubernetesConfig.NetworkPlugin
 			api.KubernetesConfig.NetworkPolicy = vp.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 		}
-		if vp.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy == nil &&
-			vp.OrchestratorProfile.KubernetesConfig.EnableRbac != helpers.PointerToBool(false) {
-			api.KubernetesConfig.EnablePodSecurityPolicy = helpers.PointerToBool(true)
-			api.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
+		version := common.RationalizeReleaseAndVersion(
+			vp.OrchestratorProfile.OrchestratorType,
+			vp.OrchestratorProfile.OrchestratorRelease,
+			vp.OrchestratorProfile.OrchestratorVersion,
+			vp.HasWindows())
+		sv, _ := semver.Make(version)
+		k8s1Dot8, _ := semver.Make("1.8.0")
+		if sv.GE(k8s1Dot8) {
+			// vlabs defaults for Kubernetes v1.8.0 and above
+			if vp.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy == nil &&
+				vp.OrchestratorProfile.KubernetesConfig.EnableRbac != helpers.PointerToBool(false) {
+				api.KubernetesConfig.EnablePodSecurityPolicy = helpers.PointerToBool(true)
+				api.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
+			}
 		}
 	}
 	if api.KubernetesConfig.NetworkPlugin == "" {
