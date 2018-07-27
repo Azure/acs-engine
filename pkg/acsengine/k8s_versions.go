@@ -11,7 +11,6 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.11": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.8.3",
-		"exechealthz":                      "exechealthz-amd64:v1.3.0",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -252,7 +251,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"windowszip":                  "v" + version + "-1int.zip",
 			"dockerEngineVersion":         k8sComponentVersions["1.11"]["dockerEngine"],
 			DefaultDashboardAddonName:     k8sComponentVersions["1.11"]["dashboard"],
-			"exechealthz":                 k8sComponentVersions["1.11"]["exechealthz"],
 			"addonresizer":                k8sComponentVersions["1.11"]["addon-resizer"],
 			"heapster":                    k8sComponentVersions["1.11"]["heapster"],
 			DefaultMetricsServerAddonName: k8sComponentVersions["1.11"]["metrics-server"],
