@@ -1170,6 +1170,8 @@ func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorP
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
+	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
@@ -1178,6 +1180,10 @@ func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 
 func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
+}
+
+func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.IsAzureCNI())
 }
 
 func generateEtcdEncryptionKey() string {
