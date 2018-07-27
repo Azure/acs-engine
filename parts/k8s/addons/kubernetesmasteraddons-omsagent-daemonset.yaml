@@ -117,7 +117,7 @@ spec:
        - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
          value: "true"
        - name: ISTEST
-         value: true
+         value: "true"
        - name: NODE_IP
          valueFrom:
             fieldRef:
@@ -208,7 +208,7 @@ spec:
        - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
          value: "true"
        - name: ISTEST
-         value: true
+         value: "true"
        - name: NODE_IP
          valueFrom:
             fieldRef:
