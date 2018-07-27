@@ -15,9 +15,8 @@ func TestAPIModelMergerMapValues(t *testing.T) {
 	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin"}
 
 	MapValues(m, values)
-	Expect(m["masterProfile.count"].intValue).To(BeIdenticalTo(int64(5)))
-	Expect(m["agentPoolProfiles[0].name"].arrayValue).To(BeTrue())
-	Expect(m["agentPoolProfiles[0].name"].arrayIndex).To(BeIdenticalTo(0))
+	Expect(*m["masterProfile.count"].intValue).To(BeIdenticalTo(int64(5)))
+	Expect(*m["agentPoolProfiles[0].name"].arrayIndex).To(BeIdenticalTo(0))
 	Expect(m["agentPoolProfiles[0].name"].arrayProperty).To(BeIdenticalTo("name"))
 	Expect(m["agentPoolProfiles[0].name"].arrayName).To(BeIdenticalTo("agentPoolProfiles"))
 	Expect(m["agentPoolProfiles[0].name"].stringValue).To(BeIdenticalTo("agentpool1"))
@@ -28,7 +27,7 @@ func TestMergeValuesWithAPIModel(t *testing.T) {
 	RegisterTestingT(t)
 
 	m := make(map[string]APIModelValue)
-	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin"}
+	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin", "orchestratorProfile.kubernetesConfig.useManagedIdentity=true"}
 
 	MapValues(m, values)
 	tmpFile, _ := MergeValuesWithAPIModel("../testdata/simple/kubernetes.json", m)
@@ -47,4 +46,7 @@ func TestMergeValuesWithAPIModel(t *testing.T) {
 
 	agentPoolProfileName := jsonAPIModel.Path("properties.agentPoolProfiles").Index(0).Path("name").Data().(string)
 	Expect(agentPoolProfileName).To(BeIdenticalTo("agentpool1"))
+
+	useManagedID := jsonAPIModel.Path("properties.orchestratorProfile.kubernetesConfig.useManagedIdentity").Data()
+	Expect(useManagedID).To(BeIdenticalTo(true))
 }

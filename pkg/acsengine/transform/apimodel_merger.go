@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
+
 	"github.com/Jeffail/gabs"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,11 +17,11 @@ import (
 // APIModelValue represents a value in the APIModel JSON file
 type APIModelValue struct {
 	stringValue   string
-	intValue      int64
-	arrayValue    bool
-	arrayIndex    int
+	intValue      *int64
+	arrayIndex    *int
 	arrayProperty string
 	arrayName     string
+	boolvalue     *bool
 }
 
 // MapValues converts an arraw of rwa ApiModel values (like ["masterProfile.count=4","linuxProfile.adminUsername=admin"]) to a map
@@ -40,9 +42,16 @@ func MapValues(m map[string]APIModelValue, values []string) {
 			flagValue := APIModelValue{}
 
 			if asInteger, err := strconv.ParseInt(stringValue, 10, 64); err == nil {
-				flagValue.intValue = asInteger
+				flagValue.intValue = &asInteger
 			} else {
-				flagValue.stringValue = stringValue
+				switch stringValue {
+				case "true":
+					flagValue.boolvalue = helpers.PointerToBool(true)
+				case "false":
+					flagValue.boolvalue = helpers.PointerToBool(false)
+				default:
+					flagValue.stringValue = stringValue
+				}
 			}
 
 			// use regex to find array[index].property pattern in the key
@@ -56,9 +65,8 @@ func MapValues(m map[string]APIModelValue, values []string) {
 					log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
 				} else {
 					arrayIndex := int(i)
-					flagValue.arrayValue = true
 					flagValue.arrayName = match[1]
-					flagValue.arrayIndex = arrayIndex
+					flagValue.arrayIndex = &arrayIndex
 					flagValue.arrayProperty = match[3]
 					m[key] = flagValue
 				}
@@ -86,20 +94,21 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	// update api model definition with each value in the map
 	for key, flagValue := range m {
 		// working on an array
-		if flagValue.arrayValue {
+		switch {
+		case flagValue.arrayIndex != nil:
 			log.Infoln(fmt.Sprintf("--set flag array value detected. Name: %s, Index: %b, PropertyName: %s", flagValue.arrayName, flagValue.arrayIndex, flagValue.arrayProperty))
 			arrayValue := jsonObj.Path(fmt.Sprint("properties.", flagValue.arrayName))
 			if flagValue.stringValue != "" {
-				arrayValue.Index(flagValue.arrayIndex).SetP(flagValue.stringValue, flagValue.arrayProperty)
+				arrayValue.Index(*flagValue.arrayIndex).SetP(flagValue.stringValue, flagValue.arrayProperty)
 			} else {
-				arrayValue.Index(flagValue.arrayIndex).SetP(flagValue.intValue, flagValue.arrayProperty)
+				arrayValue.Index(*flagValue.arrayIndex).SetP(*flagValue.intValue, flagValue.arrayProperty)
 			}
-		} else {
-			if flagValue.stringValue != "" {
-				jsonObj.SetP(flagValue.stringValue, fmt.Sprint("properties.", key))
-			} else {
-				jsonObj.SetP(flagValue.intValue, fmt.Sprint("properties.", key))
-			}
+		case flagValue.boolvalue != nil:
+			jsonObj.SetP(*flagValue.boolvalue, fmt.Sprint("properties.", key))
+		case flagValue.intValue != nil:
+			jsonObj.SetP(*flagValue.intValue, fmt.Sprint("properties.", key))
+		default:
+			jsonObj.SetP(flagValue.stringValue, fmt.Sprint("properties.", key))
 		}
 	}
 
