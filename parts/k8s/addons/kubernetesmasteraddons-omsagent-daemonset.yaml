@@ -103,11 +103,11 @@ spec:
        imagePullPolicy: IfNotPresent
        resources:
         limits:
-         cpu: <kubernetesOMSAgentCPURequests>
-         memory: <kubernetesOMSAgentMemoryRequests>
-        requests:
          cpu: <kubernetesOMSAgentCPULimit>
          memory: <kubernetesOMSAgentMemoryLimit>
+        requests:
+         cpu: <kubernetesOMSAgentCPURequests>
+         memory: <kubernetesOMSAgentMemoryRequests>
        env:
        #- name: AKS_RESOURCE_ID
        #  value: "VALUE_AKS_RESOURCE_ID_VALUE"
