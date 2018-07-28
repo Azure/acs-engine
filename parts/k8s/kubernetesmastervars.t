@@ -94,6 +94,7 @@
     "kubernetesDashboardCPULimit": "[parameters('kubernetesDashboardCPULimit')]",
     "kubernetesDashboardMemoryLimit": "[parameters('kubernetesDashboardMemoryLimit')]",
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
+    "kubernetesDNSSidecarSpec": "[parameters('kubernetesDNSSidecarSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
     "kubernetesMetricsServerSpec": "[parameters('kubernetesMetricsServerSpec')]",
     "kubernetesNVIDIADevicePluginSpec": "[parameters('kubernetesNVIDIADevicePluginSpec')]",

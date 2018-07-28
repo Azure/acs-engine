@@ -290,6 +290,13 @@
       },
       "type": "string"
     },
+    "kubernetesDNSSidecarSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesDNSSidecarSpec"}}
+      "metadata": {
+        "description": "The container spec for k8s-dns-sidecar-amd64."
+      },
+      "type": "string"
+    },
     "kubernetesHeapsterSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesHeapsterSpec"}}
       "metadata": {
