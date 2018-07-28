@@ -536,6 +536,8 @@ type HostedMasterProfile struct {
 	// Agents will be provisioned. This is stored on the HostedMasterProfile
 	// and will become `masterSubnet` in the compiled template.
 	Subnet string `json:"subnet"`
+	// ApiServerWhiteListRange is a comma delimited CIDR which is whitelisted to AKS
+	ApiServerWhiteListRange *string `json:"apiServerWhiteListRange"`
 }
 
 // AuthenticatorType represents the authenticator type the cluster was
