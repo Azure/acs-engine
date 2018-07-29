@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/sirupsen/logrus"
 )
 

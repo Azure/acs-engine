@@ -72,7 +72,7 @@ func (client TagsClient) CreateOrUpdatePreparer(ctx context.Context, tagName str
 		"tagName":        autorest.Encode("path", tagName),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -139,7 +139,7 @@ func (client TagsClient) CreateOrUpdateValuePreparer(ctx context.Context, tagNam
 		"tagValue":       autorest.Encode("path", tagValue),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -204,7 +204,7 @@ func (client TagsClient) DeletePreparer(ctx context.Context, tagName string) (*h
 		"tagName":        autorest.Encode("path", tagName),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -270,7 +270,7 @@ func (client TagsClient) DeleteValuePreparer(ctx context.Context, tagName string
 		"tagValue":       autorest.Encode("path", tagValue),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -332,7 +332,7 @@ func (client TagsClient) ListPreparer(ctx context.Context) (*http.Request, error
 		"subscriptionId": autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
