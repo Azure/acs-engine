@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -589,7 +589,7 @@ func (mc *MockACSEngineClient) ListDeploymentOperations(ctx context.Context, res
 	provisioningState := "Failed"
 	id := "00000000"
 	operationID := "d5062e45-6e9f-4fd3-a0a0-6b2c56b15757"
-	nextLink := fmt.Sprintf("https://management.azure.com/subscriptions/11111/resourcegroups/%s/deployments/%s/operations?$top=%s&api-version=2018-02-01", resourceGroupName, deploymentName, "5")
+	nextLink := fmt.Sprintf("https://management.azure.com/subscriptions/11111/resourcegroups/%s/deployments/%s/operations?$top=%s&api-version=2018-05-01", resourceGroupName, deploymentName, "5")
 	return &MockDeploymentOperationsListResultPage{
 		Fn: func(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error) {
 			if lastResults.NextLink != nil {
