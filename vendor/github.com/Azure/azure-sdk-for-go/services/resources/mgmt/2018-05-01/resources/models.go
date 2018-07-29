@@ -221,6 +221,8 @@ type Dependency struct {
 
 // Deployment deployment operation parameters.
 type Deployment struct {
+	// Location - The location to store the deployment data.
+	Location *string `json:"location,omitempty"`
 	// Properties - The deployment properties.
 	Properties *DeploymentProperties `json:"properties,omitempty"`
 }
@@ -239,6 +241,8 @@ type DeploymentExtended struct {
 	ID *string `json:"id,omitempty"`
 	// Name - The name of the deployment.
 	Name *string `json:"name,omitempty"`
+	// Location - the location of the deployment.
+	Location *string `json:"location,omitempty"`
 	// Properties - Deployment properties.
 	Properties *DeploymentPropertiesExtended `json:"properties,omitempty"`
 }
@@ -532,6 +536,35 @@ type DeploymentPropertiesExtended struct {
 	OnErrorDeployment *OnErrorDeploymentExtended `json:"onErrorDeployment,omitempty"`
 }
 
+// DeploymentsCreateOrUpdateAtSubscriptionScopeFuture an abstraction for monitoring and retrieving the results of a
+// long-running operation.
+type DeploymentsCreateOrUpdateAtSubscriptionScopeFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *DeploymentsCreateOrUpdateAtSubscriptionScopeFuture) Result(client DeploymentsClient) (de DeploymentExtended, err error) {
+	var done bool
+	done, err = future.Done(client)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+		return
+	}
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture")
+		return
+	}
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if de.Response.Response, err = future.GetResult(sender); err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+		de, err = client.CreateOrUpdateAtSubscriptionScopeResponder(de.Response.Response)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+		}
+	}
+	return
+}
+
 // DeploymentsCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a long-running
 // operation.
 type DeploymentsCreateOrUpdateFuture struct {
@@ -558,6 +591,29 @@ func (future *DeploymentsCreateOrUpdateFuture) Result(client DeploymentsClient) 
 			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateFuture", "Result", de.Response.Response, "Failure responding to request")
 		}
 	}
+	return
+}
+
+// DeploymentsDeleteAtSubscriptionScopeFuture an abstraction for monitoring and retrieving the results of a
+// long-running operation.
+type DeploymentsDeleteAtSubscriptionScopeFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *DeploymentsDeleteAtSubscriptionScopeFuture) Result(client DeploymentsClient) (ar autorest.Response, err error) {
+	var done bool
+	done, err = future.Done(client)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+		return
+	}
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtSubscriptionScopeFuture")
+		return
+	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -904,6 +960,34 @@ type Identity struct {
 	TenantID *string `json:"tenantId,omitempty"`
 	// Type - The identity type. Possible values include: 'SystemAssigned', 'UserAssigned', 'SystemAssignedUserAssigned', 'None'
 	Type ResourceIdentityType `json:"type,omitempty"`
+	// UserAssignedIdentities - The list of user identities associated with the resource. The user identity dictionary key references will be ARM resource ids in the form: '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'.
+	UserAssignedIdentities map[string]*IdentityUserAssignedIdentitiesValue `json:"userAssignedIdentities"`
+}
+
+// MarshalJSON is the custom marshaler for Identity.
+func (i Identity) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if i.PrincipalID != nil {
+		objectMap["principalId"] = i.PrincipalID
+	}
+	if i.TenantID != nil {
+		objectMap["tenantId"] = i.TenantID
+	}
+	if i.Type != "" {
+		objectMap["type"] = i.Type
+	}
+	if i.UserAssignedIdentities != nil {
+		objectMap["userAssignedIdentities"] = i.UserAssignedIdentities
+	}
+	return json.Marshal(objectMap)
+}
+
+// IdentityUserAssignedIdentitiesValue ...
+type IdentityUserAssignedIdentitiesValue struct {
+	// PrincipalID - The principal id of user assigned identity.
+	PrincipalID *string `json:"principalId,omitempty"`
+	// ClientID - The client id of user assigned identity.
+	ClientID *string `json:"clientId,omitempty"`
 }
 
 // ListResult list of resource groups.

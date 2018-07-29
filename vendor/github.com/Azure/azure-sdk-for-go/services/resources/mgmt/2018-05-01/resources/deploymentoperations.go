@@ -88,7 +88,7 @@ func (client DeploymentOperationsClient) GetPreparer(ctx context.Context, resour
 		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -111,6 +111,81 @@ func (client DeploymentOperationsClient) GetSender(req *http.Request) (*http.Res
 // GetResponder handles the response to the Get request. The method always
 // closes the http.Response Body.
 func (client DeploymentOperationsClient) GetResponder(resp *http.Response) (result DeploymentOperation, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// GetAtSubscriptionScope gets a deployments operation.
+// Parameters:
+// deploymentName - the name of the deployment.
+// operationID - the ID of the operation to get.
+func (client DeploymentOperationsClient) GetAtSubscriptionScope(ctx context.Context, deploymentName string, operationID string) (result DeploymentOperation, err error) {
+	if err := validation.Validate([]validation.Validation{
+		{TargetValue: deploymentName,
+			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
+				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+		return result, validation.NewError("resources.DeploymentOperationsClient", "GetAtSubscriptionScope", err.Error())
+	}
+
+	req, err := client.GetAtSubscriptionScopePreparer(ctx, deploymentName, operationID)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "GetAtSubscriptionScope", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.GetAtSubscriptionScopeSender(req)
+	if err != nil {
+		result.Response = autorest.Response{Response: resp}
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "GetAtSubscriptionScope", resp, "Failure sending request")
+		return
+	}
+
+	result, err = client.GetAtSubscriptionScopeResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "GetAtSubscriptionScope", resp, "Failure responding to request")
+	}
+
+	return
+}
+
+// GetAtSubscriptionScopePreparer prepares the GetAtSubscriptionScope request.
+func (client DeploymentOperationsClient) GetAtSubscriptionScopePreparer(ctx context.Context, deploymentName string, operationID string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"deploymentName": autorest.Encode("path", deploymentName),
+		"operationId":    autorest.Encode("path", operationID),
+		"subscriptionId": autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2018-05-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsGet(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/providers/Microsoft.Resources/deployments/{deploymentName}/operations/{operationId}", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// GetAtSubscriptionScopeSender sends the GetAtSubscriptionScope request. The method will close the
+// http.Response Body if it receives an error.
+func (client DeploymentOperationsClient) GetAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
+	return autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+}
+
+// GetAtSubscriptionScopeResponder handles the response to the GetAtSubscriptionScope request. The method always
+// closes the http.Response Body.
+func (client DeploymentOperationsClient) GetAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentOperation, err error) {
 	err = autorest.Respond(
 		resp,
 		client.ByInspecting(),
@@ -169,7 +244,7 @@ func (client DeploymentOperationsClient) ListPreparer(ctx context.Context, resou
 		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-02-01"
+	const APIVersion = "2018-05-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -229,5 +304,110 @@ func (client DeploymentOperationsClient) listNextResults(lastResults DeploymentO
 // ListComplete enumerates all values, automatically crossing page boundaries as required.
 func (client DeploymentOperationsClient) ListComplete(ctx context.Context, resourceGroupName string, deploymentName string, top *int32) (result DeploymentOperationsListResultIterator, err error) {
 	result.page, err = client.List(ctx, resourceGroupName, deploymentName, top)
+	return
+}
+
+// ListAtSubscriptionScope gets all deployments operations for a deployment.
+// Parameters:
+// deploymentName - the name of the deployment with the operation to get.
+// top - the number of results to return.
+func (client DeploymentOperationsClient) ListAtSubscriptionScope(ctx context.Context, deploymentName string, top *int32) (result DeploymentOperationsListResultPage, err error) {
+	if err := validation.Validate([]validation.Validation{
+		{TargetValue: deploymentName,
+			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
+				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+		return result, validation.NewError("resources.DeploymentOperationsClient", "ListAtSubscriptionScope", err.Error())
+	}
+
+	result.fn = client.listAtSubscriptionScopeNextResults
+	req, err := client.ListAtSubscriptionScopePreparer(ctx, deploymentName, top)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "ListAtSubscriptionScope", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.ListAtSubscriptionScopeSender(req)
+	if err != nil {
+		result.dolr.Response = autorest.Response{Response: resp}
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "ListAtSubscriptionScope", resp, "Failure sending request")
+		return
+	}
+
+	result.dolr, err = client.ListAtSubscriptionScopeResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "ListAtSubscriptionScope", resp, "Failure responding to request")
+	}
+
+	return
+}
+
+// ListAtSubscriptionScopePreparer prepares the ListAtSubscriptionScope request.
+func (client DeploymentOperationsClient) ListAtSubscriptionScopePreparer(ctx context.Context, deploymentName string, top *int32) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"deploymentName": autorest.Encode("path", deploymentName),
+		"subscriptionId": autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2018-05-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+	if top != nil {
+		queryParameters["$top"] = autorest.Encode("query", *top)
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsGet(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/providers/Microsoft.Resources/deployments/{deploymentName}/operations", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ListAtSubscriptionScopeSender sends the ListAtSubscriptionScope request. The method will close the
+// http.Response Body if it receives an error.
+func (client DeploymentOperationsClient) ListAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
+	return autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+}
+
+// ListAtSubscriptionScopeResponder handles the response to the ListAtSubscriptionScope request. The method always
+// closes the http.Response Body.
+func (client DeploymentOperationsClient) ListAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentOperationsListResult, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// listAtSubscriptionScopeNextResults retrieves the next set of results, if any.
+func (client DeploymentOperationsClient) listAtSubscriptionScopeNextResults(lastResults DeploymentOperationsListResult) (result DeploymentOperationsListResult, err error) {
+	req, err := lastResults.deploymentOperationsListResultPreparer()
+	if err != nil {
+		return result, autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "listAtSubscriptionScopeNextResults", nil, "Failure preparing next results request")
+	}
+	if req == nil {
+		return
+	}
+	resp, err := client.ListAtSubscriptionScopeSender(req)
+	if err != nil {
+		result.Response = autorest.Response{Response: resp}
+		return result, autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "listAtSubscriptionScopeNextResults", resp, "Failure sending next results request")
+	}
+	result, err = client.ListAtSubscriptionScopeResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentOperationsClient", "listAtSubscriptionScopeNextResults", resp, "Failure responding to next results request")
+	}
+	return
+}
+
+// ListAtSubscriptionScopeComplete enumerates all values, automatically crossing page boundaries as required.
+func (client DeploymentOperationsClient) ListAtSubscriptionScopeComplete(ctx context.Context, deploymentName string, top *int32) (result DeploymentOperationsListResultIterator, err error) {
+	result.page, err = client.ListAtSubscriptionScope(ctx, deploymentName, top)
 	return
 }
