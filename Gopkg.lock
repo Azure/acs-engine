@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:1b49a1469ee2d6d7cff186d3c274759f658f9e5a536e4d82150361ddd50f5220"
+  digest = "1:778f2d25f2091b66cec4dc1eae03896c21f461019ec2102424b3352e2ceb749d"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/apimanagement/mgmt/2017-03-01/apimanagement",
@@ -11,7 +11,7 @@
     "services/graphrbac/1.6/graphrbac",
     "services/network/mgmt/2018-05-01/network",
     "services/resources/mgmt/2016-06-01/subscriptions",
-    "services/resources/mgmt/2018-02-01/resources",
+    "services/resources/mgmt/2018-05-01/resources",
     "services/storage/mgmt/2018-02-01/storage",
     "storage",
     "version",
@@ -650,7 +650,7 @@
     "github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-06-01/subscriptions",
-    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources",
+    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
     "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage",
     "github.com/Azure/azure-sdk-for-go/storage",
     "github.com/Azure/go-autorest/autorest",
