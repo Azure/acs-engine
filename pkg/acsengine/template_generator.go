@@ -1229,6 +1229,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			switch cs.Location {
 			case "eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "northeurope", "westeurope":
 				return 3
+			case "centraluseuap":
+				return 1
 			default:
 				return 2
 			}
