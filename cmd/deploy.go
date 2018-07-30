@@ -373,9 +373,9 @@ func (dc *deployCmd) validateApimodel() (*api.ContainerService, string, error) {
 
 	p := dc.containerService.Properties
 	if strings.ToLower(p.OrchestratorProfile.OrchestratorType) == "kubernetes" {
-		if p.ServicePrincipalProfile == nil || (p.ServicePrincipalProfile.ClientID == "" || p.ServicePrincipalProfile.Secret == "") {
+		if p.ServicePrincipalProfile == nil || (p.ServicePrincipalProfile.ClientID == "" || (p.ServicePrincipalProfile.Secret == "" && p.ServicePrincipalProfile.KeyvaultSecretRef == nil)) {
 			if p.OrchestratorProfile.KubernetesConfig != nil && !p.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
-				return nil, "", errors.New("when using the kubernetes orchestrator, must either set useManagedIdentity in the kubernetes config or set --client-id and --client-secret (also available in the API model)")
+				return nil, "", errors.New("when using the kubernetes orchestrator, must either set useManagedIdentity in the kubernetes config or set --client-id and --client-secret or KeyvaultSecretRef of secret (also available in the API model)")
 			}
 		}
 	}
