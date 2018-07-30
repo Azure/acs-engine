@@ -362,6 +362,10 @@ function setupContainerd() {
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
 	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
 	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
+
 	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
