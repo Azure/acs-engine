@@ -37,3 +37,4 @@ cmd/_test_output
 packer/settings.json
 
 .idea
+.vs

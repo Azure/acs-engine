@@ -81,6 +81,7 @@
           "sudo /bin/bash -eux /home/packer/install-cni.sh",
           "sudo /bin/bash -eux /home/packer/install-containerd.sh",
           "sudo /bin/bash -eux /home/packer/extract-kubelet.sh",
+          "sudo /bin/bash -eux /home/packer/image-completed.sh",
           "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
           "rm /home/packer/*.sh"
         ]
