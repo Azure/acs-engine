@@ -380,7 +380,7 @@ function setupContainerd() {
 
 function installContainerd() {
 	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
