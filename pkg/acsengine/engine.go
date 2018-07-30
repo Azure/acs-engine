@@ -147,7 +147,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 }
 
 //getCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
-//for example: if the target is the public azure, then the default container image url should be k8s-gcrio.azureedge.net/...
+//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch getCloudTargetEnv(location) {
@@ -472,6 +472,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - mkdir -p %s
+- wait_for_file 900 1 /var/log/azure/docker-install.complete
 - cd %s`, dest, dest)
 
 	/*
@@ -507,7 +508,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
 - echo "%s" > /etc/ld.so.conf.d/nvidia.conf
 - sudo ldconfig
-- umount /usr/lib/x86_64-linux-gnu
+- umount -l /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
 - sudo ldconfig

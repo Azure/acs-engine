@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os/exec"
 	"regexp"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // List is a container that holds all jobs returned from doing a kubectl get jobs
@@ -134,7 +134,7 @@ func WaitOnReady(jobPrefix, namespace string, sleep, duration time.Duration) (bo
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Jobs (%s) to complete in namespace (%s)", duration.String(), jobPrefix, namespace)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Jobs (%s) to complete in namespace (%s)", duration.String(), jobPrefix, namespace)
 			default:
 				ready, _ := AreAllJobsCompleted(jobPrefix, namespace)
 				if ready {

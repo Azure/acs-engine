@@ -368,6 +368,16 @@ type OpenShiftConfig struct {
 	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
 
 	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
+
+	PublicHostname string
+	RouterProfiles []OpenShiftRouterProfile
+}
+
+// OpenShiftRouterProfile represents an OpenShift router.
+type OpenShiftRouterProfile struct {
+	Name            string
+	PublicSubdomain string
+	FQDN            string
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -442,7 +452,7 @@ type AgentPoolProfile struct {
 	IPAddressCount               int                  `json:"ipAddressCount,omitempty"`
 	Distro                       Distro               `json:"distro,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 	FQDN                         string               `json:"fqdn,omitempty"`
 	CustomNodeLabels             map[string]string    `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension        *Extension           `json:"preProvisionExtension"`
@@ -896,6 +906,17 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
 }
 
+// IsAADPodIdentityEnabled checks if the tiller addon is enabled
+func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
+	var aadPodIdentityAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultAADPodIdentityAddonName {
+			aadPodIdentityAddon = k.Addons[i]
+		}
+	}
+	return aadPodIdentityAddon.IsEnabled(DefaultAADPodIdentityAddonEnabled)
+}
+
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
 	var aciConnectorAddon KubernetesAddon
@@ -916,6 +937,17 @@ func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
 		}
 	}
 	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
+}
+
+// IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
+func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
+	var kvFlexVolumeAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultKeyVaultFlexVolumeAddonName {
+			kvFlexVolumeAddon = k.Addons[i]
+		}
+	}
+	return kvFlexVolumeAddon.IsEnabled(DefaultKeyVaultFlexVolumeAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled

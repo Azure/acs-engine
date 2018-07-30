@@ -11,8 +11,10 @@ import (
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -163,7 +165,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.6.9 cannot be upgraded to 1.8.6"))
+		fmt.Print("GOT :   ", err.Error())
+		Expect(err.Error()).To(ContainSubstring("Error while querying ARM for resources: Kubernetes:1.6.9 cannot be upgraded to 1.8.6"))
 	})
 
 	It("Should return error message when failing to delete role assignment during upgrade operation", func() {

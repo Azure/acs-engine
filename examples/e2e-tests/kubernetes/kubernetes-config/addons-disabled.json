@@ -14,6 +14,10 @@
             "enabled": false
           },
           {
+            "name": "keyvault-flexvolume",
+            "enabled": false
+          },
+          {
             "name": "kubernetes-dashboard",
             "enabled": false
           },

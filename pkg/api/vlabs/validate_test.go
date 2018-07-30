@@ -1,15 +1,14 @@
 package vlabs
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -272,22 +271,25 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
@@ -320,22 +322,25 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
@@ -780,7 +785,7 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 		p := getK8sDefaultProperties(true)
 		p.ExtensionProfiles = test.extensionProfiles
 		err := p.Validate(true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
+		if !helpers.EqualError(err, test.expectedErr) {
 			t.Errorf("expected error with message : %s, but got %s", test.expectedErr.Error(), err.Error())
 		}
 	}
@@ -1083,6 +1088,18 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 		)
 	}
 
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "kata-containers"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on kata-containers for windows clusters",
+		)
+	}
+
 	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "containerd"
 	p.AgentPoolProfiles = []*AgentPoolProfile{
 		{
@@ -1260,7 +1277,7 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 			},
 		}
 		gotErr := p.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(gotErr, test.expectedErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("scenario %q", test.name)
 			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
 		}
@@ -1654,7 +1671,7 @@ func TestOpenshiftValidate(t *testing.T) {
 
 	for _, test := range tests {
 		gotErr := test.properties.Validate(test.isUpgrade)
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("running scenario %q", test.name)
 			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
@@ -1770,7 +1787,7 @@ func TestValidateAgentPoolProfiles(t *testing.T) {
 
 	for _, test := range tests {
 		gotErr := test.properties.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
+		if !helpers.EqualError(gotErr, test.expectedErr) {
 			t.Logf("running scenario %q", test.name)
 			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
 		}
@@ -1841,7 +1858,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 
 	for _, test := range tests {
 		err := validateKeyVaultSecrets(test.secrets, true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
+		if err.Error() != test.expectedErr.Error() {
 			t.Errorf("expected error to be thrown with msg : %s", test.expectedErr.Error())
 		}
 	}

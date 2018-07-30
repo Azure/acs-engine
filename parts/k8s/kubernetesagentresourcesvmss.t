@@ -145,8 +145,9 @@
                   "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
-            },
-            {
+            }
+            {{if UseAksExtension}}
+            ,{
               "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-computeAksLinuxBilling')]",
               "location": "[variables('location')]",
               "properties": {
@@ -157,6 +158,7 @@
                 "settings": {}
               }
             }
+            {{end}}
             {{if UseManagedIdentity}}
             ,{
               "name": "managedIdentityExtension",

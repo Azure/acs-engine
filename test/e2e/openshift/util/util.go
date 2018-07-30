@@ -15,6 +15,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/pkg/errors"
 )
 
 func printCmd(cmd *exec.Cmd) {
@@ -28,17 +29,17 @@ func ApplyFromTemplate(templateName, templateNamespace, namespace string) error 
 	printCmd(processCmd)
 	out, err := processCmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("cannot process template %s: %v\noutput: %s", templateName, err, string(out))
+		return errors.Wrapf(err, "cannot process template %s\noutput: %s", templateName, string(out))
 	}
 	if err := ioutil.WriteFile(templateName, out, 0644); err != nil {
-		return fmt.Errorf("cannot create tempfile for processed template %s: %v", templateName, err)
+		return errors.Wrapf(err, "cannot create tempfile for processed template %s", templateName)
 	}
 	defer os.Remove(templateName)
 	createCmd := exec.Command("oc", "apply", "-n", namespace, "-f", templateName)
 	printCmd(createCmd)
 	out, err = createCmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("cannot apply processed template %s: %v\noutput: %s", templateName, err, string(out))
+		return errors.Wrapf(err, "cannot apply processed template %s\noutput: %s", templateName, string(out))
 	}
 	return nil
 }
@@ -104,7 +105,7 @@ func TestHost(host string, maxRetries int, retryDelay time.Duration) error {
 	if err != nil {
 		return err
 	}
-	return fmt.Errorf("unexpected response status: %v", resp.Status)
+	return errors.Errorf("unexpected response status: %v", resp.Status)
 }
 
 // DumpNodes dumps information about nodes.
@@ -169,10 +170,10 @@ func FetchClusterInfo(logPath string) error {
 // (control plane and infra).
 func FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, name, location, logPath string) error {
 	if err := fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, location, logPath); err != nil {
-		return fmt.Errorf("cannot fetch logs for control plane components: %v", err)
+		return errors.Wrap(err, "cannot fetch logs for control plane components: %v")
 	}
 	if err := fetchInfraLogs(logPath); err != nil {
-		return fmt.Errorf("cannot fetch logs for infra components: %v", err)
+		return errors.Wrap(err, "cannot fetch logs for infra components: %v")
 	}
 	return nil
 }
@@ -187,7 +188,7 @@ func fetchControlPlaneLogs(distro, version, sshKeyPath, adminName, name, locatio
 	case common.OpenShiftVersionUnstable:
 		return fetchUnstableControlPlaneLogs(distro, sshKeyPath, sshAddress, name, logPath)
 	default:
-		return fmt.Errorf("invalid OpenShift version %q - won't gather logs from the control plane", version)
+		return errors.Errorf("invalid OpenShift version %q - won't gather logs from the control plane", version)
 	}
 }
 
@@ -311,12 +312,12 @@ func FetchOpenShiftMetrics(logPath string) error {
 	printCmd(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		errs = append(errs, fmt.Errorf("cannot get api server metrics: %v", err))
+		errs = append(errs, errors.Wrap(err, "cannot get api server metrics"))
 	} else {
 		path := filepath.Join(logPath, "api-server-metrics")
 		err := ioutil.WriteFile(path, []byte(out), 0644)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("cannot write api server metrics: %v", err))
+			errs = append(errs, errors.Wrap(err, "cannot write api server metrics: "))
 		}
 	}
 
@@ -325,12 +326,12 @@ func FetchOpenShiftMetrics(logPath string) error {
 	printCmd(cmd)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
-		errs = append(errs, fmt.Errorf("cannot get controller manager metrics: %v", err))
+		errs = append(errs, errors.Wrap(err, "cannot get controller manager metrics"))
 	} else {
 		path := filepath.Join(logPath, "controller-manager-metrics")
 		err := ioutil.WriteFile(path, []byte(out), 0644)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("cannot write controller manager metrics: %v", err))
+			errs = append(errs, errors.Wrap(err, "cannot write controller manager metrics"))
 		}
 	}
 
@@ -339,12 +340,12 @@ func FetchOpenShiftMetrics(logPath string) error {
 	printCmd(cmd)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
-		errs = append(errs, fmt.Errorf("cannot get etcd metrics: %v", err))
+		errs = append(errs, errors.Wrap(err, "cannot get etcd metrics"))
 	} else {
 		path := filepath.Join(logPath, "etcd-metrics")
 		err := ioutil.WriteFile(path, []byte(out), 0644)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("cannot write etcd metrics: %v", err))
+			errs = append(errs, errors.Wrap(err, "cannot write etcd metrics"))
 		}
 	}
 
@@ -366,7 +367,7 @@ func FetchWaagentLogs(sshKeyPath, adminName, name, location, logPath string) err
 		out := remoteExec(sshKeyPath, sshAddress, cmdToExec)
 		logPath := filepath.Join(logPath, fmt.Sprintf("waagent-%s", filepath.Base(path)))
 		if err := ioutil.WriteFile(logPath, out, 0644); err != nil {
-			errs = append(errs, fmt.Errorf("Cannot write to path %s: %v", logPath, err))
+			errs = append(errs, errors.Wrapf(err, "Cannot write to path %s", logPath))
 		}
 	}
 

@@ -58,6 +58,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled(),
 		},
 		{
+			"kubernetesmasteraddons-aad-pod-identity-deployment.yaml",
+			"aad-pod-identity-deployment.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-aci-connector-deployment.yaml",
 			"aci-connector-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled(),
@@ -121,6 +126,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"kubernetesmaster-audit-policy.yaml",
 			"audit-policy.yaml",
 			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
+		},
+		{
+			"kubernetesmasteraddons-keyvault-flexvolume-installer.yaml",
+			"keyvault-flexvolume-installer.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled(),
 		},
 	}
 }

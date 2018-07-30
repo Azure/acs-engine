@@ -3,7 +3,6 @@ package pod
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -221,7 +221,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
 			default:
 				ready, err := AreAllPodsRunning(podPrefix, namespace)
 				if err != nil {
@@ -237,7 +237,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 					if successCount > 1 {
 						failureCount = failureCount + 1
 						if failureCount >= successesNeeded {
-							errCh <- fmt.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, failureCount, successesNeeded)
+							errCh <- errors.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, failureCount, successesNeeded)
 						}
 					}
 					time.Sleep(sleep)
@@ -298,7 +298,7 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
 				if !installedCurl {
 					_, err := p.Exec("--", "/usr/bin/apt", "update")
@@ -351,7 +351,7 @@ func (p *Pod) ValidateCurlConnection(uri string, sleep, duration time.Duration) 
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to curl uri %s", duration.String(), p.Metadata.Name, uri)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to curl uri %s", duration.String(), p.Metadata.Name, uri)
 			default:
 				if !installedCurl {
 					_, err := p.Exec("--", "/usr/bin/apt", "update")
@@ -397,7 +397,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
 				out, err := p.Exec("--", "powershell", "iwr", "-UseBasicParsing", "-TimeoutSec", "60", "www.bing.com")
 				if err == nil {
@@ -429,7 +429,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, master, sshKeyPath string) bool {
 	hostIP := p.Status.HostIP
 	if len(p.Spec.Containers) == 0 || len(p.Spec.Containers[0].Ports) == 0 {
-		log.Printf("Unexpectd POD container spec: %v. Should have hostPort.\n", p.Spec)
+		log.Printf("Unexpected POD container spec: %v. Should have hostPort.\n", p.Spec)
 		return false
 	}
 	hostPort := p.Spec.Containers[0].Ports[0].HostPort
@@ -439,8 +439,7 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 
 	for i := 0; i < attempts; i++ {
 		cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
-		util.PrintCommand(cmd)
-		out, err := cmd.CombinedOutput()
+		out, err := util.RunAndLogCommand(cmd)
 		if err == nil {
 			matched, _ := regexp.MatchString(check, string(out))
 			if matched {
@@ -462,7 +461,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check azure file mounted", duration.String(), p.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check azure file mounted", duration.String(), p.Metadata.Name)
 			default:
 				out, err := p.Exec("--", "powershell", "mkdir", mountPath+"\\"+testDir)
 				if err == nil && strings.Contains(string(out), testDir) {
@@ -502,13 +501,13 @@ func (c *Container) ValidateResources(a api.KubernetesContainerSpec) error {
 	actualMemoryRequests := c.getMemoryRequests()
 	actualLimits := c.getMemoryLimits()
 	if expectedCPURequests != actualCPURequests {
-		return fmt.Errorf("expected CPU requests %s does not match %s", expectedCPURequests, actualCPURequests)
+		return errors.Errorf("expected CPU requests %s does not match %s", expectedCPURequests, actualCPURequests)
 	} else if expectedCPULimits != actualCPULimits {
-		return fmt.Errorf("expected CPU limits %s does not match %s", expectedCPULimits, actualCPULimits)
+		return errors.Errorf("expected CPU limits %s does not match %s", expectedCPULimits, actualCPULimits)
 	} else if expectedMemoryRequests != actualMemoryRequests {
-		return fmt.Errorf("expected Memory requests %s does not match %s", expectedMemoryRequests, actualMemoryRequests)
+		return errors.Errorf("expected Memory requests %s does not match %s", expectedMemoryRequests, actualMemoryRequests)
 	} else if expectedMemoryLimits != actualLimits {
-		return fmt.Errorf("expected Memory limits %s does not match %s", expectedMemoryLimits, actualLimits)
+		return errors.Errorf("expected Memory limits %s does not match %s", expectedMemoryLimits, actualLimits)
 	} else {
 		return nil
 	}

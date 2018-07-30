@@ -39,7 +39,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade, isScale bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -54,7 +54,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
 	}()
-	if certsGenerated, err = setPropertiesDefaults(containerService, isUpgrade); err != nil {
+	if certsGenerated, err = setPropertiesDefaults(containerService, isUpgrade, isScale); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -283,6 +283,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+		},
+		"UseAksExtension": func() bool {
+			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			return cloudSpecConfig.CloudName == azurePublicCloud
 		},
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
@@ -758,6 +762,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
 				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
+				kvFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
+				kC := getAddonContainersIndexByName(kvFlexVolumeAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -809,6 +815,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dnsmasq"]
 				case "kubernetesExecHealthzSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["exechealthz"]
+				case "kubernetesDNSSidecarSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["k8s-dns-sidecar"]
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesACIConnectorSpec":
@@ -875,6 +883,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
 						}
 					}
+				case "kubernetesClusterAutoscalerAzureCloud":
+					if aS > -1 {
+						val = cloudSpecConfig.CloudName
+					} else {
+						val = ""
+					}
 				case "kubernetesClusterAutoscalerCPURequests":
 					if aS > -1 {
 						val = clusterAutoscalerAddon.Containers[aC].CPURequests
@@ -906,6 +920,30 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						} else {
 							val = "false"
 						}
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerCPURequests":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerCPULimit":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit":
+					if kC > -1 {
+						val = kvFlexVolumeAddon.Containers[kC].MemoryLimits
+					} else {
+						val = ""
 					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {
@@ -964,6 +1002,30 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						}
 					} else {
 						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
+					}
+				case "kubernetesNVIDIADevicePluginCPURequests":
+					if nC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginMemoryRequests":
+					if nC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginCPULimit":
+					if nC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesNVIDIADevicePluginMemoryLimit":
+					if nC > -1 {
+						val = nvidiaDevicePluginAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {

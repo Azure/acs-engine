@@ -290,6 +290,13 @@
       },
       "type": "string"
     },
+    "kubernetesDNSSidecarSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesDNSSidecarSpec"}}
+      "metadata": {
+        "description": "The container spec for k8s-dns-sidecar-amd64."
+      },
+      "type": "string"
+    },
     "kubernetesHeapsterSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesHeapsterSpec"}}
       "metadata": {
@@ -308,6 +315,34 @@
       {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginSpec"}}
       "metadata": {
         "description": "The container spec for NVIDIA Device Plugin."
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPURequests"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryRequests"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPULimit"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesNVIDIADevicePluginMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryLimit"}}
+      "metadata": {
+        "description": "NVIDIA Device Plugin Memory Limit"
       },
       "type": "string"
     },
@@ -352,6 +387,13 @@
         "description": "Helm Tiller Max History to Store. '0' for no limit."
       },
       "type": "string"
+    },
+    "kubernetesAADPodIdentityEnabled": {
+      "defaultValue": false,
+      "metadata": {
+        "description": "AAD Pod Identity status"
+      },
+      "type": "bool"
     },
     "kubernetesACIConnectorEnabled": {
       "defaultValue": false,
@@ -430,6 +472,13 @@
       },
       "type": "string"
     },
+    "kubernetesClusterAutoscalerAzureCloud": {
+      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerAzureCloud"}}
+      "metadata": {
+        "description": "Name of the Azure cloud for the cluster autoscaler."
+      },
+      "type": "string"
+    },
     "kubernetesClusterAutoscalerCPULimit": {
       {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
       "metadata": {
@@ -483,6 +532,34 @@
       {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerUseManagedIdentity"}}
       "metadata": {
         "description": "Managed identity for the cluster autoscaler addon"
+      },
+      "type": "string"
+    },
+    "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
+      "metadata": {
+        "description": "Key Vault FlexVolume Installer CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}
+      "metadata": {
+        "description": "Key Vault FlexVolume Installer Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesKeyVaultFlexVolumeInstallerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPULimit"}}
+      "metadata": {
+        "description": "Key Vault FlexVolume Installer CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit"}}
+      "metadata": {
+        "description": "Key Vault FlexVolume Installer Memory Limit"
       },
       "type": "string"
     },
@@ -652,11 +729,12 @@
     "containerRuntime": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
       "metadata": {
-        "description": "The container runtime to use (docker|clear-containers|containerd)"
+        "description": "The container runtime to use (docker|clear-containers|kata-containers|containerd)"
       },
       "allowedValues": [
         "docker",
         "clear-containers",
+        "kata-containers",
         "containerd"
       ],
       "type": "string"

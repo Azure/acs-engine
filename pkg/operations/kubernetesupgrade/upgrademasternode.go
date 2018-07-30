@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -107,7 +108,7 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 			return nil
 		case <-time.After(kmn.timeout):
 			kmn.logger.Errorf("Node was not ready within %v", kmn.timeout)
-			return fmt.Errorf("Node was not ready within %v", kmn.timeout)
+			return errors.Errorf("Node was not ready within %v", kmn.timeout)
 		}
 	}
 }

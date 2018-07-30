@@ -192,7 +192,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
-    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsVariable "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g; s|<kubernetesDNSSidecarSpec>|{{WrapAsVariable "kubernetesDNSSidecarSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsVariable "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
@@ -229,6 +229,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
+    sed -i "s|<kubernetesClusterAutoscalerAzureCloud>|{{WrapAsVariable "kubernetesClusterAutoscalerAzureCloud"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerSpec>|{{WrapAsVariable "kubernetesClusterAutoscalerSpec"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerCPULimit>|{{WrapAsVariable "kubernetesClusterAutoscalerCPULimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
     sed -i "s|<kubernetesClusterAutoscalerMemoryLimit>|{{WrapAsVariable "kubernetesClusterAutoscalerMemoryLimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
@@ -239,6 +240,14 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesClusterAutoscalerUseManagedIdentity>|{{WrapAsVariable "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
 {{end}}
 
+{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
+    sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerCPURequests>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerMemoryRequests>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerCPULimit>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerCPULimit"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerMemoryLimit>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
+
+
+{{end}}
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     sed -i "s|<kubernetesReschedulerSpec>|{{WrapAsVariable "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
     sed -i "s|<kubernetesReschedulerCPURequests>|{{WrapAsVariable "kubernetesReschedulerCPURequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
@@ -253,6 +262,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 {{if IsNVIDIADevicePluginEnabled}}
     sed -i "s|<kubernetesNVIDIADevicePluginSpec>|{{WrapAsVariable "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginCPURequests>|{{WrapAsVariable "kubernetesNVIDIADevicePluginCPURequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginMemoryRequests>|{{WrapAsVariable "kubernetesNVIDIADevicePluginMemoryRequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginCPULimit>|{{WrapAsVariable "kubernetesNVIDIADevicePluginCPULimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<kubernetesNVIDIADevicePluginMemoryLimit>|{{WrapAsVariable "kubernetesNVIDIADevicePluginMemoryLimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}
