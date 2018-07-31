@@ -1,0 +1,14 @@
+trigger:
+- master
+
+variables:
+  goPath: '/root/go'
+  goAppName: 'github.com/azure/acs-engine'
+
+phases:
+- phase: Build VHD
+  queue: Hosted Linux Preview
+  steps:
+  - script: |
+      echo 'Building VHD!'
+    displayName: Building VHD
