@@ -749,8 +749,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				)
 
 				By("Applying a network policy to deny egress access")
-				networkPolicyName, namespace = "default-deny-egress", nsClientOne
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-egress-policy.yaml"), networkPolicyName, namespace)
+				networkPolicyName, namespace = "client-one-deny-egress", nsClientOne
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-egress-policy.yaml"), networkPolicyName, namespace)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have outbound internet access from the nginx client pods")
@@ -764,8 +764,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 
 				By("Applying a network policy to deny ingress access")
-				networkPolicyName, namespace = "default-deny-ingress", nsServer
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "default-deny-ingress-policy.yaml"), networkPolicyName, namespace)
+				networkPolicyName, namespace = "client-one-deny-ingress", nsServer
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-ingress-policy.yaml"), networkPolicyName, namespace)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have inbound internet access from the nginx server pods")
