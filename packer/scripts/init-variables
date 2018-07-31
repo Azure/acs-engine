@@ -2,28 +2,29 @@
 
 CDIR=$(dirname "${BASH_SOURCE}")
 
-SETTINGS_JSON="${SETTINGS_JSON:-./settings.json}"
+SETTINGS_JSON="${SETTINGS_JSON:-./packer/settings.json}"
+SP_JSON="${SP_JSON:-./packer/sp.json}"
 SUBSCRIPTION_ID="${SUBSCRIPTION_ID:-`az account show -o json --query="id" | tr -d '"'`}"
 STORAGE_ACCOUNT_NAME="aksimages$(date +%s)"
 
 echo "Subscription ID: ${SUBSCRIPTION_ID}"
-echo "Service Principal Path: ${SETTINGS_JSON}"
+echo "Service Principal Path: ${SP_JSON}"
 
-if [ -a "${SETTINGS_JSON}" ]; then
+if [ -a "${SP_JSON}" ]; then
 	echo "Existing credentials file found."
 	exit 0
-else
-	echo "Service principal file not found! Generating one @ ${SETTINGS_JSON}"
-	az ad sp create-for-rbac -n aks-images-packer$(date +%s) -o json > ${SETTINGS_JSON}
-	client_id=`cat ${SETTINGS_JSON} | jq -r .appId`
-	client_secret=`cat ${SETTINGS_JSON} | jq -r .password`
-	tenant_id=`cat ${SETTINGS_JSON} | jq -r .tenant`
+elif [ -z "${CLIENT_ID}" ]; then
+	echo "Service principal not found! Generating one @ ${SP_JSON}"
+	az ad sp create-for-rbac -n aks-images-packer$(date +%s) -o json > ${SP_JSON}
+	CLIENT_ID=`cat ${SP_JSON} | jq -r .appId`
+	CLIENT_SECRET=`cat ${SP_JSON} | jq -r .password`
+	TENANT_ID=`cat ${SP_JSON} | jq -r .tenant`
 fi
 
 avail=$(az storage account check-name -n ${STORAGE_ACCOUNT_NAME} -o json | jq -r .nameAvailable)
 if $avail ; then
 	echo "creating new storage account ${STORAGE_ACCOUNT_NAME}"
-	az storage account create -n $STORAGE_ACCOUNT_NAME -g $AZURE_RESOURCE_GROUP_NAME
+	az storage account create -n $STORAGE_ACCOUNT_NAME -g $AZURE_RESOURCE_GROUP_NAME --sku "Standard_RAGRS"
 	echo "creating new container system"
 	key=$(az storage account keys list -n $STORAGE_ACCOUNT_NAME -g $AZURE_RESOURCE_GROUP_NAME | jq -r '.[0].value')
 	az storage container create --name system --public-access container --account-key=$key --account-name=$STORAGE_ACCOUNT_NAME
@@ -31,29 +32,29 @@ else
 	echo "storage account ${STORAGE_ACCOUNT_NAME} already exists."
 fi
 
-if [ -z "${client_id}" ]; then
-	echo "client_id was not set! Something happened when generating the service principal or when trying to read the sp file!"
+if [ -z "${CLIENT_ID}" ]; then
+	echo "CLIENT_ID was not set! Something happened when generating the service principal or when trying to read the sp file!"
 	exit 1
 fi
 
-if [ -z "${client_secret}" ]; then
-	echo "client_secret was not set! Something happened when generating the service principal or when trying to read the sp file!"
+if [ -z "${CLIENT_SECRET}" ]; then
+	echo "CLIENT_SECRET was not set! Something happened when generating the service principal or when trying to read the sp file!"
 	exit 1
 fi
 
-if [ -z "${tenant_id}" ]; then
-	echo "tenant_id was not set! Something happened when generating the service principal or when trying to read the sp file!"
+if [ -z "${TENANT_ID}" ]; then
+	echo "TENANT_ID was not set! Something happened when generating the service principal or when trying to read the sp file!"
 	exit 1
 fi
 
 echo "storage name: ${STORAGE_ACCOUNT_NAME}"
 
-cat <<EOF > settings.json
+cat <<EOF > packer/settings.json
 {
   "subscription_id":  "${SUBSCRIPTION_ID}",
-  "client_id": "${client_id}",
-  "client_secret": "${client_secret}",
-  "tenant_id":      "${tenant_id}",
+  "client_id": "${CLIENT_ID}",
+  "client_secret": "${CLIENT_SECRET}",
+  "tenant_id":      "${TENANT_ID}",
   "resource_group_name": "${AZURE_RESOURCE_GROUP_NAME}",
   "location": "${AZURE_LOCATION}",
   "storage_account_name": "${STORAGE_ACCOUNT_NAME}",
@@ -61,4 +62,4 @@ cat <<EOF > settings.json
 }
 EOF
 
-cat settings.json
+cat packer/settings.json

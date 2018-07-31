@@ -45,43 +45,28 @@
       },
       {
         "type": "file",
-        "source": "./cleanup-vhd.sh",
+        "source": "packer/cleanup-vhd.sh",
         "destination": "/home/packer/cleanup-vhd.sh"
       },
       {
         "type": "file",
-        "source": "./install-core-packages.sh",
-        "destination": "/home/packer/install-core-packages.sh"
+        "source": "parts/k8s/kubernetesinstalls.sh",
+        "destination": "/home/packer/provision_installs.sh"
       },
       {
         "type": "file",
-        "source": "./install-docker.sh",
-        "destination": "/home/packer/install-docker.sh"
+        "source": "parts/k8s/kubernetesprovisionsource.sh",
+        "destination": "/home/packer/provision_source.sh"
       },
       {
         "type": "file",
-        "source": "./install-cni.sh",
-        "destination": "/home/packer/install-cni.sh"
-      },
-      {
-        "type": "file",
-        "source": "./install-containerd.sh",
-        "destination": "/home/packer/install-containerd.sh"
-      },
-      {
-        "type": "file",
-        "source": "./extract-kubelet.sh",
-        "destination": "/home/packer/extract-kubelet.sh"
+        "source": "packer/install-dependencies.sh",
+        "destination": "/home/packer/install-dependencies.sh"
       },
       {
         "type": "shell",
         "inline": [
-          "sudo /bin/bash -eux /home/packer/install-core-packages.sh",
-          "sudo /bin/bash -eux /home/packer/install-docker.sh",
-          "sudo /bin/bash -eux /home/packer/install-cni.sh",
-          "sudo /bin/bash -eux /home/packer/install-containerd.sh",
-          "sudo /bin/bash -eux /home/packer/extract-kubelet.sh",
-          "sudo /bin/bash -eux /home/packer/image-completed.sh",
+          "sudo /bin/bash -eux /home/packer/install-dependencies.sh",
           "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
           "rm /home/packer/*.sh"
         ]

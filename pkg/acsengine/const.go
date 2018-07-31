@@ -205,6 +205,8 @@ const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
+	kubernetesInstalls                       = "k8s/kubernetesinstalls.sh"
+	kubernetesConfigurations                 = "k8s/kubernetesconfigs.sh"
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
 	kubernetesCustomSearchDomainsScript      = "k8s/setup-custom-search-domains.sh"
 	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
