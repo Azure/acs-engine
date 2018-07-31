@@ -450,6 +450,9 @@ type AgentPoolProfile struct {
 	Extensions                   []Extension          `json:"extensions"`
 	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
+	MaxCount                     *int                 `json:"maxCount,omitempty"`
+	MinCount                     *int                 `json:"minCount,omitempty"`
+	EnableAutoScaling            *bool                `json:"enableAutoScaling,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
