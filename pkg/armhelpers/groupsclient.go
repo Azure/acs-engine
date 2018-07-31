@@ -34,6 +34,16 @@ func (az *AzureClient) CheckResourceGroupExistence(ctx context.Context, name str
 }
 
 // DeleteResourceGroup delete the named resource group
-func (az *AzureClient) DeleteResourceGroup(ctx context.Context, name string) (resources.GroupsDeleteFuture, error) {
-	return az.groupsClient.Delete(ctx, name)
+func (az *AzureClient) DeleteResourceGroup(ctx context.Context, name string) error {
+	future, err := az.groupsClient.Delete(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	if err = future.WaitForCompletion(ctx, az.groupsClient.Client); err != nil {
+		return err
+	}
+
+	_, err = future.Result(az.groupsClient)
+	return err
 }
