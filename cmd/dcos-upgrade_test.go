@@ -30,9 +30,11 @@ var _ = Describe("the upgrade command", func() {
 		privKey, err := ioutil.TempFile("", "id_rsa")
 		Expect(err).To(BeNil())
 		defer os.Remove(privKey.Name())
+
 		cases := []struct {
-			uc          *dcosUpgradeCmd
-			expectedErr error
+			uc                *dcosUpgradeCmd
+			expectedErr       error
+			hideLocalAzConfig bool
 		}{
 			{
 				uc: &dcosUpgradeCmd{
@@ -108,7 +110,8 @@ var _ = Describe("the upgrade command", func() {
 					sshPrivateKeyPath:   privKey.Name(),
 					authArgs:            authArgs{},
 				},
-				expectedErr: errors.New("--subscription-id is required (and must be a valid UUID)"),
+				expectedErr:       errors.New("--subscription-id is required (and must be a valid UUID)"),
+				hideLocalAzConfig: true,
 			},
 			{
 				uc: &dcosUpgradeCmd{
@@ -138,7 +141,16 @@ var _ = Describe("the upgrade command", func() {
 		}
 
 		for _, c := range cases {
-			err := c.uc.validate(r)
+
+			if c.hideLocalAzConfig {
+				// Temporarily unset HOME env var so local subscription won't override test config
+				home := os.Getenv("HOME")
+				os.Setenv("HOME", "")
+				err = c.uc.validate(r)
+				os.Setenv("HOME", home)
+			} else {
+				err = c.uc.validate(r)
+			}
 
 			if c.expectedErr != nil && err != nil {
 				Expect(err.Error()).To(Equal(c.expectedErr.Error()))
