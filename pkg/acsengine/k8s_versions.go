@@ -42,6 +42,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.10": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.8.3",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.1",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -73,6 +74,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.9": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.8.3",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.1",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -287,6 +289,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"windowszip":                  "v" + version + "-1int.zip",
 			"dockerEngineVersion":         k8sComponentVersions["1.10"]["dockerEngine"],
 			DefaultDashboardAddonName:     k8sComponentVersions["1.10"]["dashboard"],
+			"exechealthz":                 k8sComponentVersions["1.10"]["exechealthz"],
 			"addonresizer":                k8sComponentVersions["1.10"]["addon-resizer"],
 			"heapster":                    k8sComponentVersions["1.10"]["heapster"],
 			DefaultMetricsServerAddonName: k8sComponentVersions["1.10"]["metrics-server"],
@@ -322,6 +325,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"windowszip":                  "v" + version + "-1int.zip",
 			"dockerEngineVersion":         k8sComponentVersions["1.9"]["dockerEngine"],
 			DefaultDashboardAddonName:     k8sComponentVersions["1.9"]["dashboard"],
+			"exechealthz":                 k8sComponentVersions["1.9"]["exechealthz"],
 			"addonresizer":                k8sComponentVersions["1.9"]["addon-resizer"],
 			"heapster":                    k8sComponentVersions["1.9"]["heapster"],
 			DefaultMetricsServerAddonName: k8sComponentVersions["1.9"]["metrics-server"],
