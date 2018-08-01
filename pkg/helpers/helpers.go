@@ -97,52 +97,38 @@ func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, pu
 
 // AcceleratedNetworkingSupported check if the VmSKU support the Accelerated Networking
 func AcceleratedNetworkingSupported(sku string) bool {
-	if strings.Contains(sku, "Standard_DS2") {
+	switch sku {
+	case "Standard_D3_v2", "Standard_D12_v2", "Standard_D3_v2_Promo", "Standard_D12_v2_Promo",
+		"Standard_DS3_v2", "Standard_DS12_v2", "Standard_DS13-4_v2", "Standard_DS14-4_v2",
+		"Standard_DS3_v2_Promo", "Standard_DS12_v2_Promo", "Standard_DS13-4_v2_Promo",
+		"Standard_DS14-4_v2_Promo", "Standard_F4", "Standard_F4s", "Standard_D8_v3", "Standard_D8s_v3",
+		"Standard_D32-8s_v3", "Standard_E8_v3", "Standard_E8s_v3", "Standard_D3_v2_ABC",
+		"Standard_D12_v2_ABC", "Standard_F4_ABC", "Standard_F8s_v2", "Standard_D4_v2",
+		"Standard_D13_v2", "Standard_D4_v2_Promo", "Standard_D13_v2_Promo", "Standard_DS4_v2",
+		"Standard_DS13_v2", "Standard_DS14-8_v2", "Standard_DS4_v2_Promo", "Standard_DS13_v2_Promo",
+		"Standard_DS14-8_v2_Promo", "Standard_F8", "Standard_F8s", "Standard_M64-16ms", "Standard_D16_v3",
+		"Standard_D16s_v3", "Standard_D32-16s_v3", "Standard_D64-16s_v3", "Standard_E16_v3",
+		"Standard_E16s_v3", "Standard_E32-16s_v3", "Standard_D4_v2_ABC", "Standard_D13_v2_ABC",
+		"Standard_F8_ABC", "Standard_F16s_v2", "Standard_D5_v2", "Standard_D14_v2", "Standard_D5_v2_Promo",
+		"Standard_D14_v2_Promo", "Standard_DS5_v2", "Standard_DS14_v2", "Standard_DS5_v2_Promo",
+		"Standard_DS14_v2_Promo", "Standard_F16", "Standard_F16s", "Standard_M64-32ms",
+		"Standard_M128-32ms", "Standard_D32_v3", "Standard_D32s_v3", "Standard_D64-32s_v3",
+		"Standard_E32_v3", "Standard_E32s_v3", "Standard_E32-8s_v3", "Standard_E32-16_v3",
+		"Standard_D5_v2_ABC", "Standard_D14_v2_ABC", "Standard_F16_ABC", "Standard_F32s_v2",
+		"Standard_D15_v2", "Standard_D15_v2_Promo", "Standard_D15_v2_Nested", "Standard_DS15_v2",
+		"Standard_DS15_v2_Promo", "Standard_DS15_v2_Nested", "Standard_D40_v3", "Standard_D40s_v3",
+		"Standard_D15_v2_ABC", "Standard_M64ms", "Standard_M64s", "Standard_M128-64ms",
+		"Standard_D64_v3", "Standard_D64s_v3", "Standard_E64_v3", "Standard_E64s_v3", "Standard_E64-16s_v3",
+		"Standard_E64-32s_v3", "Standard_F64s_v2", "Standard_F72s_v2", "Standard_M128s", "Standard_M128ms",
+		"Standard_L8s_v2", "Standard_L16s_v2", "Standard_L32s_v2", "Standard_L64s_v2", "Standard_L96s_v2",
+		"SQLGL", "SQLGLCore", "Standard_D4_v3", "Standard_D4s_v3", "Standard_D2_v2", "Standard_DS2_v2",
+		"Standard_E4_v3", "Standard_E4s_v3", "Standard_F2", "Standard_F2s", "Standard_F4s_v2",
+		"Standard_D11_v2", "Standard_DS11_v2", "AZAP_Performance_ComputeV17C", "Standard_PB6s",
+		"Standard_PB12s", "Standard_PB24s":
+		return true
+	default:
 		return false
 	}
-	if strings.Contains(sku, "Standard_E2s_v3") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_F2s_v2") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_D2s_v3") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_DS3") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_D2_v3") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_A") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_B") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_G") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_H") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_L") {
-		return false
-	}
-	if strings.Contains(sku, "Standard_N") {
-		return false
-	}
-	if strings.EqualFold(sku, "Standard_D1") || strings.Contains(sku, "Standard_D1_") {
-		return false
-	}
-	if strings.EqualFold(sku, "Standard_DS1") || strings.Contains(sku, "Standard_DS1_") {
-		return false
-	}
-	if strings.EqualFold(sku, "Standard_F1") || strings.EqualFold(sku, "Standard_F1s") {
-		return false
-	}
-	return true
 }
 
 // GetHomeDir attempts to get the home dir from env
