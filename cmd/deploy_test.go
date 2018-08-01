@@ -467,7 +467,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	}
 }
 
-func testDeployCmdMergeAPIModel(t *testing.T) {
+func TestDeployCmdMergeAPIModel(t *testing.T) {
 	d := &deployCmd{}
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
 	err := d.mergeAPIModel()
@@ -500,7 +500,8 @@ func testDeployCmdMergeAPIModel(t *testing.T) {
 	}
 }
 
-func testDeployCmdMLoadAPIModel(t *testing.T) {
+func TestDeployCmdMLoadAPIModel(t *testing.T) {
+	t.Skip("FIXME: this test runs into an unexpected 404")
 	d := &deployCmd{}
 	r := &cobra.Command{}
 	f := r.Flags()
