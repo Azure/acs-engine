@@ -1,0 +1,47 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.10",
+      "kubernetesConfig": {
+          "clusterSubnet": "172.16.3.0/24",
+          "privateCluster": {
+              "enabled": true
+          }
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "newprivatecluster",
+      "vmSize": "Standard_D2_v2",
+      "vnetSubnetId": "/subscriptions/931980ec-6458-48c2-9668-354453011dac/resourceGroups/RG-NAME/providers/Microsoft.Network/virtualNetworks/VNET-NAME/subnets/SUBNET-NAME",
+      "firstConsecutiveStaticIP": "172.16.3.239",
+      "vnetCidr": "172.16.3.0/24"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpri",
+        "count": 2,
+        "vmSize": "Standard_D2_v2",
+       "vnetSubnetId": "/subscriptions/931980ec-6458-48c2-9668-354453011dac/resourceGroups/RG-NAME/providers/Microsoft.Network/virtualNetworks/VNET-NAME/subnets/SUBNET-NAME",
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "storageProfile": "ManagedDisks"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "THE-KEY"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
