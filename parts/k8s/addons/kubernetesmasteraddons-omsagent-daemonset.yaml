@@ -77,8 +77,8 @@ metadata:
 type: Opaque
 data:
   #BASE64 ENCODED (Both WSID & KEY) INSIDE DOUBLE QUOTE ("")
-  WSID: <workspaceGuid>
-  KEY: <workspaceKey>
+  WSID: "<workspaceGuid>"
+  KEY: "<workspaceKey>"
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
