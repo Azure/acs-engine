@@ -97,6 +97,15 @@ func CreateSSH(rg io.Reader, s *i18n.Translator) (privateKey *rsa.PrivateKey, pu
 
 // AcceleratedNetworkingSupported check if the VmSKU support the Accelerated Networking
 func AcceleratedNetworkingSupported(sku string) bool {
+	if strings.Contains(sku, "Standard_DS2") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_E2s_v3") {
+		return false
+	}
+	if strings.Contains(sku, "Standard_F2s_v2") {
+		return false
+	}
 	if strings.Contains(sku, "Standard_D2s_v3") {
 		return false
 	}
