@@ -353,9 +353,9 @@ var (
 				Name:           "omsagent",
 				Image:          "microsoft/oms:June21st",
 				CPURequests:    "50m",
-				MemoryRequests: "100Mi",
+				MemoryRequests: "200Mi",
 				CPULimits:      "150m",
-				MemoryLimits:   "500Mi",
+				MemoryLimits:   "750Mi",
 			},
 		},
 	}
