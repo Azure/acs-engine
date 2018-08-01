@@ -121,3 +121,8 @@ required = [
 [[constraint]]
   name = "gopkg.in/ini.v1"
   version = "1.38.1"
+
+# Apply workaround from https://github.com/golang/dep/issues/1799
+[[constraint]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
