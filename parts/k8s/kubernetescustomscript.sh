@@ -406,6 +406,8 @@ function ensureContainerd() {
 function ensureDocker() {
     wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
+    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
+    systemctlEnableAndStart docker-health-probe
 }
 function ensureKMS() {
     systemctlEnableAndStart kms
