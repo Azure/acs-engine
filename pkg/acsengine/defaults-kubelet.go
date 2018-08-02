@@ -36,7 +36,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
 		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
+		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPods),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
@@ -49,6 +49,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 		"--image-pull-progress-deadline":    "30m",
+	}
+
+	// Apply Azure CNI-specific --max-pods value
+	if o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure {
+		defaultKubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated)
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -65,7 +70,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		if o.KubernetesConfig.NetworkPolicy != NetworkPolicyCalico {
 			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		}
-		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
 	// We don't support user-configurable values for the following,

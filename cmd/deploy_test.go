@@ -110,9 +110,10 @@ func TestValidate(t *testing.T) {
 				forceOverwrite:    false,
 				caCertificatePath: "test",
 				caPrivateKeyPath:  "test",
+				location:          "west europe",
 			},
 			args:        []string{},
-			expectedErr: errors.New("--api-model was not supplied, nor was one specified as a positional argument"),
+			expectedErr: nil,
 		},
 		{
 			dc: &deployCmd{
@@ -466,7 +467,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	}
 }
 
-func testDeployCmdMergeAPIModel(t *testing.T) {
+func TestDeployCmdMergeAPIModel(t *testing.T) {
 	d := &deployCmd{}
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
 	err := d.mergeAPIModel()
@@ -499,7 +500,8 @@ func testDeployCmdMergeAPIModel(t *testing.T) {
 	}
 }
 
-func testDeployCmdMLoadAPIModel(t *testing.T) {
+func TestDeployCmdMLoadAPIModel(t *testing.T) {
+	t.Skip("FIXME: this test runs into an unexpected 404")
 	d := &deployCmd{}
 	r := &cobra.Command{}
 	f := r.Flags()

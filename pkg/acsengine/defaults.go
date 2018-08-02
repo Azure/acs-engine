@@ -22,7 +22,7 @@ const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVer = "v1.0.7"
+	AzureCniPluginVer = "v1.0.10"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
@@ -43,6 +43,7 @@ var (
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-" + CNIPluginVer + ".tgz",
 		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
 		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVer + ".zip",
+		ContainerdDownloadURLBase:        "https://storage.googleapis.com/cri-containerd-release/",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
@@ -68,7 +69,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201806220",
+		ImageVersion:   "16.04.201807240",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -188,6 +189,7 @@ var (
 			CNIPluginsDownloadURL:            DefaultKubernetesSpecConfig.CNIPluginsDownloadURL,
 			VnetCNILinuxPluginsDownloadURL:   DefaultKubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL,
 			VnetCNIWindowsPluginsDownloadURL: DefaultKubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL,
+			ContainerdDownloadURLBase:        "https://mirror.azure.cn/kubernetes/containerd/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
@@ -538,7 +540,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
-				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				// When Azure CNI is enabled, all masters, agents and pods share the same large subnet.
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
@@ -1168,22 +1170,22 @@ func mapToString(valueMap map[string]string) string {
 func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
 	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
 	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
-	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
+	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
+	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
-func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return helpers.PointerToBool(o.IsAzureCNI())
-}
-
 func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
+}
+
+func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.IsAzureCNI())
 }
 
 func generateEtcdEncryptionKey() string {

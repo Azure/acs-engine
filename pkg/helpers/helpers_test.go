@@ -84,6 +84,23 @@ func TestPointerToBool(t *testing.T) {
 	}
 }
 
+func TestPointerToInt(t *testing.T) {
+	int1 := 1
+	int2 := 2
+	ret1 := PointerToInt(int1)
+	if *ret1 != int1 {
+		t.Fatalf("expected PointerToInt(1) to return *1, instead returned %#v", ret1)
+	}
+	ret2 := PointerToInt(int2)
+	if *ret2 != int2 {
+		t.Fatalf("expected PointerToInt(2) to return *2, instead returned %#v", ret2)
+	}
+
+	if *ret2 <= *ret1 {
+		t.Fatalf("Pointers to ints messed up their values and made 2 <= 1")
+	}
+}
+
 func TestCreateSSH(t *testing.T) {
 	rg := rand.New(rand.NewSource(42))
 
@@ -209,14 +226,14 @@ func TestAcceleratedNetworkingSupported(t *testing.T) {
 		},
 		{
 			input:          "",
-			expectedResult: true,
+			expectedResult: false,
 		},
 	}
 
 	for _, c := range cases {
 		result := AcceleratedNetworkingSupported(c.input)
 		if c.expectedResult != result {
-			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result: expected %t but got %t", c.expectedResult, result)
+			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result for %s: expected %t but got %t", c.input, c.expectedResult, result)
 		}
 	}
 }

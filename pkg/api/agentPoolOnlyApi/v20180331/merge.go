@@ -42,19 +42,6 @@ func (mc *ManagedCluster) Merge(emc *ManagedCluster) error {
 		mc.Properties.KubernetesVersion = emc.Properties.KubernetesVersion
 	}
 
-	// Merge properties.enableRBAC
-	if emc.Properties.EnableRBAC == nil {
-		return errors.New("existing ManagedCluster expect properties.enableRBAC not to be nil")
-	}
-
-	if mc.Properties.EnableRBAC == nil {
-		// For update scenario, the default behavior is to use existing behavior
-		mc.Properties.EnableRBAC = emc.Properties.EnableRBAC
-	} else if *mc.Properties.EnableRBAC != *emc.Properties.EnableRBAC {
-		return errors.Errorf("existing ManagedCluster has properties.enableRBAC %v. update to %v is not supported",
-			*emc.Properties.EnableRBAC,
-			*mc.Properties.EnableRBAC)
-	}
 	if mc.Properties.NetworkProfile == nil {
 		// For update scenario, the default behavior is to use existing behavior
 		mc.Properties.NetworkProfile = emc.Properties.NetworkProfile

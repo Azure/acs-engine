@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -22,7 +26,8 @@ const (
 )
 
 var (
-	debug bool
+	debug            bool
+	dumpDefaultModel bool
 )
 
 // NewRootCmd returns the root command for ACS-Engine.
@@ -36,10 +41,19 @@ func NewRootCmd() *cobra.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if dumpDefaultModel {
+				return writeDefaultModel(cmd.OutOrStdout())
+			}
+			return cmd.Usage()
+		},
 	}
 
 	p := rootCmd.PersistentFlags()
 	p.BoolVar(&debug, "debug", false, "enable verbose debug logs")
+
+	f := rootCmd.Flags()
+	f.BoolVar(&dumpDefaultModel, "show-default-model", false, "Dump the default API model to stdout")
 
 	rootCmd.AddCommand(newVersionCmd())
 	rootCmd.AddCommand(newGenerateCmd())
@@ -51,6 +65,24 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(getCompletionCmd(rootCmd))
 
 	return rootCmd
+}
+
+func writeDefaultModel(out io.Writer) error {
+	meta, p := api.LoadDefaultContainerServiceProperties()
+	type withMeta struct {
+		APIVersion string            `json:"apiVersion"`
+		Properties *vlabs.Properties `json:"properties"`
+	}
+
+	b, err := json.MarshalIndent(withMeta{APIVersion: meta.APIVersion, Properties: p}, "", "\t")
+	if err != nil {
+		return errors.Wrap(err, "error encoding model to json")
+	}
+	b = append(b, '\n')
+	if _, err := out.Write(b); err != nil {
+		return errors.Wrap(err, "error writing output")
+	}
+	return nil
 }
 
 type authArgs struct {

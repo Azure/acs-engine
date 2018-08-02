@@ -5,6 +5,9 @@ import "github.com/pkg/errors"
 // ErrorInvalidNetworkProfile error
 var ErrorInvalidNetworkProfile = errors.New("ServiceCidr, DNSServiceIP, DockerBridgeCidr should all be empty or neither should be empty")
 
+// ErrorPodCidrNotSetableInAzureCNI error
+var ErrorPodCidrNotSetableInAzureCNI = errors.New("PodCidr should not be set when network plugin is set to Azure")
+
 // ErrorInvalidNetworkPlugin error
 var ErrorInvalidNetworkPlugin = errors.New("Network plugin should be either Azure or Kubenet")
 
