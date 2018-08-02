@@ -535,6 +535,34 @@
       },
       "type": "string"
     },
+    "kubernetesBlobfuseFlexVolumeInstallerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerCPURequests"}}
+      "metadata": {
+        "description": "Blobfuse FlexVolume Installer CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"}}
+      "metadata": {
+        "description": "Blobfuse FlexVolume Installer Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesBlobfuseFlexVolumeInstallerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerCPULimit"}}
+      "metadata": {
+        "description": "Blobfuse FlexVolume Installer CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"}}
+      "metadata": {
+        "description": "Blobfuse FlexVolume Installer Memory Limit"
+      },
+      "type": "string"
+    },
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
       {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
       "metadata": {

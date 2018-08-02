@@ -765,6 +765,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
 				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
+				bfFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
+				bFFVC := getAddonContainersIndexByName(bfFlexVolumeAddon.Containers, DefaultBlobfuseFlexVolumeAddonName)
 				kvFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 				kC := getAddonContainersIndexByName(kvFlexVolumeAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 				switch attr {
@@ -923,6 +925,30 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						} else {
 							val = "false"
 						}
+					}
+				case "kubernetesBlobfuseFlexVolumeInstallerCPURequests":
+					if bFFVC > -1 {
+						val = bfFlexVolumeAddon.Containers[bFFVC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests":
+					if bFFVC > -1 {
+						val = bfFlexVolumeAddon.Containers[bFFVC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesBlobfuseFlexVolumeInstallerCPULimit":
+					if bFFVC > -1 {
+						val = bfFlexVolumeAddon.Containers[bFFVC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit":
+					if bFFVC > -1 {
+						val = bfFlexVolumeAddon.Containers[bFFVC].MemoryLimits
+					} else {
+						val = ""
 					}
 				case "kubernetesKeyVaultFlexVolumeInstallerCPURequests":
 					if kC > -1 {

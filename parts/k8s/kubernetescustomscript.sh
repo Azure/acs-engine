@@ -26,7 +26,7 @@ ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
-ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT=44 # Failed to add repo pkg file
+#ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT=44 # Failed to add repo pkg file -- DEPRECATED
 ERR_MODPROBE_FAIL=49 # Unable to load a kernel module using modprobe
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
 ERR_KATA_KEY_DOWNLOAD_TIMEOUT=60 # Timeout waiting to download kata repo key
@@ -172,20 +172,6 @@ function installDeps() {
     apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
-}
-
-function installFlexVolDrivers() {
-    PLUGIN_DIR=/etc/kubernetes/volumeplugins
-    # install blobfuse flexvolume driver
-    BLOBFUSE_DIR=$PLUGIN_DIR/azure~blobfuse
-    mkdir -p $BLOBFUSE_DIR
-    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/blobfuse-v0.1 > $BLOBFUSE_DIR/blobfuse || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
-    chmod a+x $BLOBFUSE_DIR/blobfuse
-    # install smb flexvolume driver
-    SMB_DIR=$PLUGIN_DIR/microsoft.com~smb
-    mkdir -p $SMB_DIR
-    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/smb-v0.1 > $SMB_DIR/smb || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
-    chmod a+x $SMB_DIR/smb
 }
 
 function installDocker() {
@@ -614,7 +600,6 @@ fi
 
 ensureKubelet
 ensureJournal
-installFlexVolDrivers
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig

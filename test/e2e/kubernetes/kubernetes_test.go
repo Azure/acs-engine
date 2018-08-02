@@ -383,6 +383,24 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have blobfuse-flexvolume running", func() {
+			if hasBlobfuseFlexVolume, BlobfuseFlexVolumeAddon := eng.HasAddon("blobfuse-flexvolume"); hasBlobfuseFlexVolume {
+				running, err := pod.WaitOnReady("blobfuse-flexvolume", "flex", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("blobfuse-flexvolume", "flex")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range BlobfuseFlexVolumeAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+			} else {
+				Skip("blobfuse-flexvolume disabled for this cluster, will not test")
+			}
+		})
+
 		It("should have cluster-omsagent daemonset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
 				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)

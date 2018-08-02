@@ -142,6 +142,10 @@
     "kubernetesKeyVaultFlexVolumeInstallerCPULimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPULimit')]",
     "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerMemoryLimit')]",
 {{end}}
+    "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPURequests')]",
+    "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryRequests')]",
+    "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPULimit')]",
+    "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryLimit')]",
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",
