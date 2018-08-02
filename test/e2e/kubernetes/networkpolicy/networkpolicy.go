@@ -8,7 +8,7 @@ import (
 )
 
 // CreateNetworkPolicyFromFile will create a NetworkPolicy from file with a name
-func CreateNetworkPolicyFromFile(filename, name, namespace string) error {
+func CreateNetworkPolicyFromFile(filename, name string) error {
 	cmd := exec.Command("kubectl", "create", "-f", filename)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
