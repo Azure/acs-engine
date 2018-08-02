@@ -374,7 +374,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
-				pods, err := pod.GetAllByPrefix("omsagent-", "kube-system")
+				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
 				for i, c := range clusterContainerMonitoringAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
@@ -434,11 +434,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running cadvisor_perf plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the cadvisor_perf plugin is writing data successfully")
-				pods, err := pod.GetAllByPrefix("omsagent-", "kube-system")
+				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
 				_, err = pods[0].Exec("grep", "\"in_cadvisor_perf::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
 				Expect(err).NotTo(HaveOccurred())
