@@ -145,7 +145,7 @@ func getDefaultAdmissionControls(cs *api.ContainerService) (string, string) {
 	case common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"):
 		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,AlwaysPullImages,ExtendedResourceToleration"
 	default:
-		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages,DenyEscalatingExec"
 	}
 
 	// Pod Security Policy configuration
