@@ -764,7 +764,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 
 				By("Applying a network policy to deny ingress access")
-				networkPolicyName, namespace = "client-one-deny-ingress", nsServer
+				networkPolicyName, namespace = "client-one-deny-ingress", nsClientOne
 				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-ingress-policy.yaml"), networkPolicyName, namespace)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -774,6 +774,29 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
+					}
+				}
+
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+
+				By("Applying a network policy to only allow egress access from label:role=client-one to label:role=server")
+				networkPolicyName, namespace = "client-one-allow-egress-server", nsClientOne
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-allow-egress-server-policy.yaml"), networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring client-one pods only have egress access to server pods but not client-two pods")
+				for _, clientOnePod := range clientOnePods {
+					for _, clientTwoPod := range clientTwoPods {
+						pass, err := clientOnePod.ValidateCurlConnection(clientTwoPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).Should(HaveOccurred())
+						Expect(pass).To(BeFalse())
+					}
+
+					for _, serverPod := range serverPods {
+						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(pass).To(BeTrue())
 					}
 				}
 
