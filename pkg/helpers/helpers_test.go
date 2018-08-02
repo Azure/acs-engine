@@ -226,14 +226,14 @@ func TestAcceleratedNetworkingSupported(t *testing.T) {
 		},
 		{
 			input:          "",
-			expectedResult: true,
+			expectedResult: false,
 		},
 	}
 
 	for _, c := range cases {
 		result := AcceleratedNetworkingSupported(c.input)
 		if c.expectedResult != result {
-			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result: expected %t but got %t", c.expectedResult, result)
+			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result for %s: expected %t but got %t", c.input, c.expectedResult, result)
 		}
 	}
 }
