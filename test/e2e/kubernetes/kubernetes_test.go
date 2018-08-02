@@ -802,6 +802,29 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Cleaning up after ourselves")
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+
+				By("Applying a network policy to only allow ingress access to label:role=server from label:role=client-one")
+				networkPolicyName, namespace = "server-allow-ingress-client-one", nsServer
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-client-one-policy.yaml"), networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring server pods only have ingress access from client-one pods but not client-two pods")
+				for _, serverPod := range serverPods {
+					for _, clientOnePod := range clientOnePods {
+						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(pass).To(BeTrue())
+					}
+
+					for _, clientTwoPod := range clientTwoPods {
+						pass, err := clientTwoPod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).Should(HaveOccurred())
+						Expect(pass).To(BeFalse())
+					}
+				}
+
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 				err = clientOneDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = clientTwoDeploy.Delete()

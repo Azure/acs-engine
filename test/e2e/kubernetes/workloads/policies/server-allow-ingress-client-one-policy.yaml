@@ -1,0 +1,16 @@
+# This network policy blocks all ingress traffic to pods with label role=server
+# except for traffic going from pods with label role=client-one.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: server
+  name: server-allow-ingress-client-one
+spec:
+  podSelector:
+    matchLabels:
+      role: server
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: client-one
