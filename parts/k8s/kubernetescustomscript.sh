@@ -356,15 +356,13 @@ function installClearContainersRuntime() {
 }
 
 function installMoby() {
-    MOBY_VERSION="moby-v1.0.0"
-    MOBY_DOWNLOAD_URL="https://github.com/Azure/moby/releases/download/${MOBY_VERSION}/${MOBY_VERSION}.tar.gz"
+    echo "Installing Moby CRI..."
 
-    MOBY_TGZ_TMP=/tmp/moby.tar.gz
-    retrycmd_get_tarball 60 5 "${MOBY_TGZ_TMP}" "${MOBY_DOWNLOAD_URL}"
-    tar -xzf "${MOBY_TGZ_TMP}" -C /tmp
-    files=$(find /tmp/${MOBY_VERSION} -executable -type f)
-    cp ${files} /usr/local/bin
-	rm -rf /tmp/${MOBY_VERSION}
+	retrycmd_if_failure 20 1 5 curl -sSL -o /tmp/moby-cli_1.0.0-1_amd64.deb "https://kaldevshare.blob.core.windows.net/moby-deb-pkg-8-1-2018/moby-cli_1.0.0-1_amd64.deb?sp=r&st=2018-07-31T20:28:06Z&se=2018-09-01T04:28:06Z&spr=https&sv=2017-11-09&sig=CjhYgYZJi%2FWX5POXCX%2FhdXD9Y8fuihR3Vt5mgJcsCjs%3D&sr=b"
+	retrycmd_if_failure 20 1 5 curl -sSL -o /tmp/moby-engine_1.0.0-1_amd64.deb "https://kaldevshare.blob.core.windows.net/moby-deb-pkg-8-1-2018/moby-engine_1.0.0-1_amd64.deb?sp=r&st=2018-07-31T20:30:01Z&se=2018-09-01T04:30:01Z&spr=https&sv=2017-11-09&sig=YaQuAbRoLwTEErFk5uzQEdo%2FOmVeMFPro%2FhPmrAuccI%3D&sr=b"
+
+	dpkg -i /tmp/moby*.deb
+	rm -rf /tmp/moby*.deb
 
     echo "Successfully installed Moby..."
 }
@@ -614,10 +612,7 @@ if [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
 fi
 
 if [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
-    # Ensure we can nest virtualization
-    if grep -q vmx /proc/cpuinfo; then
-        installMoby
-    fi
+	installMoby
 fi
 
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
