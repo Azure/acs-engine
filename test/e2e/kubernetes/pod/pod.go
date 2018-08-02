@@ -386,7 +386,6 @@ func (p *Pod) ValidateCurlConnection(uri string, sleep, duration time.Duration) 
 func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Duration) (bool, error) {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
-	var logsFound bool
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	go func() {
@@ -395,12 +394,9 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
 			default:
-				if !logsFound {
-					_, err := p.Exec("grep", execCmdString, "/var/opt/microsoft/omsagent/log/omsagent.log")
-					if err != nil {
-						break
-					}
-					logsFound = true
+				_, err := p.Exec("grep", execCmdString, "/var/opt/microsoft/omsagent/log/omsagent.log")
+				if err == nil {
+					readyCh <- true
 				}
 				time.Sleep(sleep)
 			}
