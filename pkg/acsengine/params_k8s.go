@@ -105,6 +105,14 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests", bfFlexVolumeInstallerAddon.Containers[c].MemoryRequests)
 				addValue(parametersMap, "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit", bfFlexVolumeInstallerAddon.Containers[c].MemoryLimits)
 			}
+			smbFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
+			c = getAddonContainersIndexByName(smbFlexVolumeInstallerAddon.Containers, DefaultSMBFlexVolumeAddonName)
+			if c > -1 {
+				addValue(parametersMap, "kubernetesSMBFlexVolumeInstallerCPURequests", smbFlexVolumeInstallerAddon.Containers[c].CPURequests)
+				addValue(parametersMap, "kubernetesSMBFlexVolumeInstallerCPULimit", smbFlexVolumeInstallerAddon.Containers[c].CPULimits)
+				addValue(parametersMap, "kubernetesSMBFlexVolumeInstallerMemoryRequests", smbFlexVolumeInstallerAddon.Containers[c].MemoryRequests)
+				addValue(parametersMap, "kubernetesSMBFlexVolumeInstallerMemoryLimit", smbFlexVolumeInstallerAddon.Containers[c].MemoryLimits)
+			}
 			kvFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 			c = getAddonContainersIndexByName(kvFlexVolumeInstallerAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 			if c > -1 {

@@ -563,6 +563,34 @@
       },
       "type": "string"
     },
+    "kubernetesSMBFlexVolumeInstallerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerCPURequests"}}
+      "metadata": {
+        "description": "SMB FlexVolume Installer CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesSMBFlexVolumeInstallerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerMemoryRequests"}}
+      "metadata": {
+        "description": "SMB FlexVolume Installer Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesSMBFlexVolumeInstallerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerCPULimit"}}
+      "metadata": {
+        "description": "SMB FlexVolume Installer CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesSMBFlexVolumeInstallerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerMemoryLimit"}}
+      "metadata": {
+        "description": "SMB FlexVolume Installer Memory Limit"
+      },
+      "type": "string"
+    },
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
       {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
       "metadata": {

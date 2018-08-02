@@ -286,6 +286,21 @@ var (
 		},
 	}
 
+	// DefaultSMBFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
+	DefaultSMBFlexVolumeAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultSMBFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultSMBFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultSMBFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
 	// DefaultKeyVaultFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
 	DefaultKeyVaultFlexVolumeAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultKeyVaultFlexVolumeAddonName,
@@ -466,6 +481,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultACIConnectorAddonsConfig,
 				DefaultClusterAutoscalerAddonsConfig,
 				DefaultBlobfuseFlexVolumeAddonsConfig,
+				DefaultSMBFlexVolumeAddonsConfig,
 				DefaultKeyVaultFlexVolumeAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
@@ -534,6 +550,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if bFFV < 0 {
 				// Provide default acs-engine config for Blobfuse FlexVolume
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonsConfig)
+			}
+			sFV := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
+			if sFV < 0 {
+				// Provide default acs-engine config for SMB FlexVolume
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonsConfig)
 			}
 			kv := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 			if kv < 0 {
@@ -654,6 +675,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		bFFV := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[bFFV].IsEnabled(api.DefaultBlobfuseFlexVolumeAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[bFFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[bFFV], DefaultBlobfuseFlexVolumeAddonsConfig)
+		}
+		sFV := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[sFV].IsEnabled(api.DefaultSMBFlexVolumeAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[sFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[bFFV], DefaultSMBFlexVolumeAddonsConfig)
 		}
 		kv := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[kv].IsEnabled(api.DefaultKeyVaultFlexVolumeAddonEnabled) {

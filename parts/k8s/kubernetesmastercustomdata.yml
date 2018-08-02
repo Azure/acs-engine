@@ -260,6 +260,13 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesBlobfuseFlexVolumeInstallerMemoryLimit>|{{WrapAsVariable "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
 {{end}}
 
+{{if .OrchestratorProfile.KubernetesConfig.IsSMBFlexVolumeEnabled}}
+    sed -i "s|<kubernetesSMBFlexVolumeInstallerCPURequests>|{{WrapAsVariable "kubernetesSMBFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesSMBFlexVolumeInstallerMemoryRequests>|{{WrapAsVariable "kubernetesSMBFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesSMBFlexVolumeInstallerCPULimit>|{{WrapAsVariable "kubernetesSMBFlexVolumeInstallerCPULimit"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
+    sed -i "s|<kubernetesSMBFlexVolumeInstallerMemoryLimit>|{{WrapAsVariable "kubernetesSMBFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
+{{end}}
+
 {{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
     sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerCPURequests>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
     sed -i "s|<kubernetesKeyVaultFlexVolumeInstallerMemoryRequests>|{{WrapAsVariable "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
