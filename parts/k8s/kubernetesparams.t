@@ -739,6 +739,10 @@
       ],
       "type": "string"
     },
+    "containerdDownloadURLBase": {
+      "defaultValue": "https://storage.googleapis.com/cri-containerd-release/",
+      "type": "string"
+    },
     "cniPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
       "type": "string"

@@ -362,6 +362,10 @@ function setupContainerd() {
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
 	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
 	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
+
 	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
@@ -380,7 +384,7 @@ function setupContainerd() {
 
 function installContainerd() {
 	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
