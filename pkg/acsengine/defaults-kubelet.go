@@ -98,6 +98,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 	}
 
+	// Get rid of values not supported in v1.12 and up
+	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.12.0-alpha.1") {
+		for _, key := range []string{"--cadvisor-port"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
 		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
