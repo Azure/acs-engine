@@ -65,7 +65,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
-		It("should have functional DNS", func() {
+		/*It("should have functional DNS", func() {
 			if !eng.HasWindowsAgents() {
 				if !eng.HasNetworkPolicy("calico") {
 					var err error
@@ -173,7 +173,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(ready).To(Equal(true))
 			}
-		})
+		})*/
 
 		It("should have kube-dns running", func() {
 			running, err := pod.WaitOnReady("kube-dns", "kube-system", 3, 30*time.Second, cfg.Timeout)
