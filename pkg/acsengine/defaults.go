@@ -109,7 +109,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.0.2",
+		ImageVersion:   "0.0.3",
 	}
 
 	//AzureCloudSpec is the default configurations for global azure.
