@@ -394,9 +394,11 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
 			default:
-				_, err := p.Exec("cat", "/var/opt/microsoft/omsagent/log/omsagent.log", "|", "grep", execCmdString)
+				istest, err := p.Exec("printenv", "ISTEST")
 				if err == nil {
-					readyCh <- true
+				    if istest == true {
+						readyCh <- true
+					}
 				}
 				time.Sleep(sleep)
 			}
