@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"bytes"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
@@ -396,8 +395,7 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
 			default:
 				istest, err := p.Exec("printenv", "ISTEST")
-				istestval := BytesToString(istest)
-				//istestval := string(istest)
+				istestval := string(istest[:])
 				if err == nil {
 					if (strings.EqualFold("Go", "go")) {
 						log.Printf("inside go compare\n")
