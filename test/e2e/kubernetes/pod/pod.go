@@ -402,7 +402,6 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 					}
 					if (strings.Compare("true", "true") == 0) {
 						log.Printf("inside second compare\n")
-						readyCh <- true
 					}
 					if (strings.EqualFold(istestval, "true")) {
 						log.Printf("inside istestval compare\n")
