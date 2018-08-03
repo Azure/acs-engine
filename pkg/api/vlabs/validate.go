@@ -332,7 +332,7 @@ func (a *Properties) validateMasterProfile() error {
 func (a *Properties) validateAgentPoolProfiles() error {
 
 	profileNames := make(map[string]bool)
-	for i, agentPoolProfile := range a.AgentPoolProfiles {
+	for _, agentPoolProfile := range a.AgentPoolProfiles {
 
 		if e := validatePoolName(agentPoolProfile.Name); e != nil {
 			return e
