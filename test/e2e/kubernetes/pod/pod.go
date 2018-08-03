@@ -395,19 +395,17 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
 			default:
 				istest, err := p.Exec("printenv", "ISTEST")
-				istestval := string(istest[:])
 				if err == nil {
-					if (strings.EqualFold("Go", "go")) {
-						log.Printf("inside go compare\n")
-					}
-					if (strings.Compare("true", "true") == 0) {
-						log.Printf("inside second compare\n")
-					}
-					if (strings.EqualFold(istestval, "true")) {
+					if (strings.EqualFold(string(istest), "true")) {
 						log.Printf("inside istestval compare\n")
+						readyCh <- true
 					}
-				    if (strings.Compare(istestval, "true") == 0) {
+				    if (strings.Compare(string(istest), "true") == 0) {
 						log.Printf("inside true compare\n")
+						readyCh <- true
+					}
+					if (strings.Contains(string(istest), "true")) {
+						log.Printf("inside contains\n")
 						readyCh <- true
 					}
 				}
