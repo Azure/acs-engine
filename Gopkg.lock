@@ -4,18 +4,19 @@
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
-    "arm/authorization",
-    "arm/compute",
-    "arm/disk",
-    "arm/graphrbac",
-    "arm/network",
-    "arm/resources/resources",
-    "arm/resources/subscriptions",
-    "arm/storage",
-    "storage"
+    "services/apimanagement/mgmt/2017-03-01/apimanagement",
+    "services/authorization/mgmt/2015-07-01/authorization",
+    "services/compute/mgmt/2018-04-01/compute",
+    "services/graphrbac/1.6/graphrbac",
+    "services/network/mgmt/2018-05-01/network",
+    "services/resources/mgmt/2016-06-01/subscriptions",
+    "services/resources/mgmt/2018-05-01/resources",
+    "services/storage/mgmt/2018-02-01/storage",
+    "storage",
+    "version"
   ]
-  revision = "f111fc2fa3861c5fdced76cae4c9c71821969577"
-  version = "v12.4.0-beta"
+  revision = "520918e6c8e8e1064154f51d13e02fad92b287b8"
+  version = "v19.0.0"
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
@@ -25,10 +26,11 @@
     "autorest/azure",
     "autorest/date",
     "autorest/to",
-    "autorest/validation"
+    "autorest/validation",
+    "version"
   ]
-  revision = "fc3b03a2d2d1f43fad3007038bd16f044f870722"
-  version = "v9.10.0"
+  revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
+  version = "v10.14.0"
 
 [[projects]]
   name = "github.com/Jeffail/gabs"
@@ -184,7 +186,8 @@
 [[projects]]
   name = "github.com/marstr/guid"
   packages = ["."]
-  revision = "8bdf7d1a087ccc975cf37dd6507da50698fd19ca"
+  revision = "8bd9a64bf37eb297b492a4101fb28e80ac0b290f"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -532,6 +535,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c1558db0b09f432a3d40f84d86adc10908019becbc5194d322d8937f0fea1a5"
+  inputs-digest = "09d18a302df6f52ed3650b78ba636e968b3a0565df8afdf8d2de9399aa8196fc"
   solver-name = "gps-cdcl"
   solver-version = 1
