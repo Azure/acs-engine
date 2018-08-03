@@ -25,4 +25,13 @@
     "primaryAvailabilitySetName": {
         "type": "string",
         "value": "[variables('primaryAvailabilitySetName')]"
+    },
+    "primaryScaleSetName": {
+        "type": "string",
+        "value": "[variables('primaryScaleSetName')]"
+    },
+    "vmType": {
+        "type": "string",
+        "value": "[variables('vmType')]"
     }
+
