@@ -396,9 +396,9 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 			default:
 				istest, err := p.Exec("printenv", "ISTEST")
 				istestval := string(istest)
-				log.Printf("istestval:%s\n", istestval)
 				if err == nil {
-				    if istestval == "true" {
+				    if (strings.Compare(istestval, "true") == 0){
+						log.Printf("inside true compare\n")
 						readyCh <- true
 					}
 				}
