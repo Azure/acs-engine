@@ -80,24 +80,6 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
-{{if UseAgentCustomVHD .}}
-    {
-      "type": "Microsoft.Compute/disks",
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "copy": {
-        "count": "{{.Name}}-custom-vhd",
-        "name": "loop"
-      },
-      "location": "[variables('location')]",
-      "properties": {
-        "creationData": {
-          "createOption": "Import",
-          "sourceUri": "[parameters('{{.Name}}osDiskVhdUri')]"
-        },
-        "osType": "Linux"
-      }
-    },
-{{end}}
 {{if .IsManagedDisks}}
    {
       "location": "[variables('location')]",
@@ -183,9 +165,6 @@
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
-        {{if UseAgentCustomVHD .}}
-        ,"{{.Name}}-custom-vhd"
-        {{end}}
       ],
       "tags":
       {
@@ -223,6 +202,7 @@
             }
           ]
         },
+        {{if not (UseAgentCustomVHD .)}}
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
@@ -245,10 +225,12 @@
               "secrets": "[variables('linuxProfileSecrets')]"
             {{end}}
         },
+        {{end}}
         "storageProfile": {
-          {{if not (UseAgentCustomImage .)}}
+          {{if and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .))}}
           {{GetDataDisks .}}
           {{end}}
+          {{if not (UseAgentCustomVHD .)}}
           "imageReference": {
             {{if UseAgentCustomImage .}}
             "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
@@ -259,12 +241,14 @@
             "version": "[variables('{{.Name}}osImageVersion')]"
             {{end}}
           },
+          {{end}}
           "osDisk": {
-            {{if UseMasterCustomVHD}}
+            {{if UseAgentCustomVHD .}}
             "osType": "Linux",
             "createOption": "Attach",
-            "managedDisk": {
-              "id": "[resourceId('Microsoft.Compute/disks/{{.Name}}-custom-vhd')]"
+            "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]",
+            "vhd": {
+              "uri": "[parameters('{{.Name}}osDiskVhdUri')]"
             }
           {{else}}
             "createOption": "FromImage"

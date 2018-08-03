@@ -34,21 +34,6 @@
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{end}}
-{{if UseMasterCustomVHD}}
- {
-      "type": "Microsoft.Compute/disks",
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "name": "custom-vhd",
-      "location": "[variables('location')]",
-      "properties": {
-        "creationData": {
-          "createOption": "Import",
-          "sourceUri": "[parameters('osDiskVhdUri')]"
-        },
-        "osType": "Linux"
-      }
-    },
-{{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -744,9 +729,6 @@
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
-{{if UseMasterCustomVHD}}
-        ,"custom-vhd"
-{{end}}
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}
@@ -810,7 +792,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if and (and (not UseMasterCustomImage) (not UserMasterCustomVHD)) (not IsOpenShift)}}
+          {{if and (and (not UseMasterCustomImage) (not UseMasterCustomVHD)) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
@@ -825,6 +807,7 @@
             }
           ],
           {{end}}
+          {{if not UseMasterCustomVHD}}
           "imageReference": {
             {{if UseMasterCustomImage}}
             "id": "[resourceId(variables('osImageResourceGroup'), 'Microsoft.Compute/images', variables('osImageName'))]"
@@ -835,18 +818,19 @@
             "version": "[variables('osImageVersion')]"
             {{end}}
           },
+          {{end}}
           "osDisk": {
+          "caching": "ReadWrite",
+          "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
           {{if UseMasterCustomVHD}}
             "osType": "Linux",
             "createOption": "Attach",
-            "managedDisk": {
-              "id": "[resourceId('Microsoft.Compute/disks/custom-vhd')]"
+            "vhd": {
+              "uri": "[parameters('osDiskVhdUri')]"
             }
           {{else}}
-            "caching": "ReadWrite"
-            ,"createOption": "FromImage"
+            "createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
-            ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
