@@ -5,7 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"path/filepath"
 	//"regexp"
 	"time"
@@ -21,7 +21,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/storageclass"
-	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	//"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
