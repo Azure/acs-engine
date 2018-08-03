@@ -382,12 +382,6 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			return e
 		}
 
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
-				return errors.New("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
-			}
-		}
-
 		if a.OrchestratorProfile.OrchestratorType == OpenShift {
 			if (agentPoolProfile.Name == "infra") != (agentPoolProfile.Role == "infra") {
 				return errors.New("OpenShift requires that the 'infra' agent pool profile, and no other, should have role 'infra'")
