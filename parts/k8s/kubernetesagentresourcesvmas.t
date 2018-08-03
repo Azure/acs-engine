@@ -80,6 +80,24 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
+{{if UseAgentCustomVHD .}}
+    {
+      "type": "Microsoft.Compute/disks",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "copy": {
+        "count": "{{.Name}}-custom-vhd",
+        "name": "loop"
+      },
+      "location": "[variables('location')]",
+      "properties": {
+        "creationData": {
+          "createOption": "Import",
+          "sourceUri": "[parameters('{{.Name}}osDiskVhdUri')]"
+        },
+        "osType": "Linux"
+      }
+    },
+{{end}}
 {{if .IsManagedDisks}}
    {
       "location": "[variables('location')]",
@@ -165,6 +183,9 @@
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
+        {{if UseAgentCustomVHD .}}
+        ,"{{.Name}}-custom-vhd"
+        {{end}}
       ],
       "tags":
       {
@@ -181,7 +202,7 @@
         "type": "systemAssigned"
       },
       {{end}}
-      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
+      {{if and IsOpenShift (and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .)))}}
       "plan": {
         "name": "[variables('{{.Name}}osImageSKU')]",
         "publisher": "[variables('{{.Name}}osImagePublisher')]",
@@ -239,6 +260,13 @@
             {{end}}
           },
           "osDisk": {
+            {{if UseMasterCustomVHD}}
+            "osType": "Linux",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks/{{.Name}}-custom-vhd')]"
+            }
+          {{else}}
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}
@@ -249,6 +277,7 @@
           {{end}}
           {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
+          {{end}}
           {{end}}
           }
         }

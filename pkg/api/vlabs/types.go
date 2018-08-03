@@ -383,6 +383,7 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	CustomVHD                string            `json:"customVHD,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -442,6 +443,7 @@ type AgentPoolProfile struct {
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
 	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
+	CustomVHD                    string               `json:"customVHD,omitempty"`
 
 	// subnet is internal
 	subnet string

@@ -27,6 +27,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
 		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
 	}
+	if properties.MasterProfile != nil && properties.MasterProfile.CustomVHD != "" {
+		addValue(parametersMap, "osDiskVhdURI", properties.MasterProfile.CustomVHD)
+	}
 	// TODO: Choose the correct image config based on the version
 	// for the openshift orchestrator
 	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
@@ -190,6 +193,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			if agentProfile.ImageRef != nil {
 				addValue(parametersMap, fmt.Sprintf("%sosImageName", agentProfile.Name), agentProfile.ImageRef.Name)
 				addValue(parametersMap, fmt.Sprintf("%sosImageResourceGroup", agentProfile.Name), agentProfile.ImageRef.ResourceGroup)
+			}
+			if agentProfile.CustomVHD != "" {
+				addValue(parametersMap, fmt.Sprintf("%sosDiskVhdURI", agentProfile.Name), agentProfile.CustomVHD)
 			}
 			addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageOffer)
 			addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageSku)

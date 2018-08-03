@@ -892,6 +892,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.StorageProfile = vlabs.StorageProfile
 	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
 	api.OAuthEnabled = vlabs.OAuthEnabled
+	api.CustomVHD = vlabs.CustomVHD
 	// by default vlabs will use managed disks as it has encryption at rest
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
@@ -1004,6 +1005,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.AcceleratedNetworkingEnabled = vlabs.AcceleratedNetworkingEnabled
+	api.CustomVHD = vlabs.CustomVHD
 
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
