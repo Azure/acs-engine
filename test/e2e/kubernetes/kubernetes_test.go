@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
+	//"regexp"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
