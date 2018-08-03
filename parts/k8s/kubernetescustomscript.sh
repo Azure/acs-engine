@@ -62,7 +62,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 nc -v www.google.com 443 || retrycmd_if_failure 20 1 3 nc -v www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
@@ -362,6 +362,10 @@ function setupContainerd() {
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
 	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
 	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
+
 	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
@@ -380,7 +384,7 @@ function setupContainerd() {
 
 function installContainerd() {
 	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
@@ -406,6 +410,8 @@ function ensureContainerd() {
 function ensureDocker() {
     wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
+    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
+    systemctlEnableAndStart docker-health-probe
 }
 function ensureKMS() {
     systemctlEnableAndStart kms

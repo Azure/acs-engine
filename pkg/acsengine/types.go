@@ -59,6 +59,7 @@ type KubernetesSpecConfig struct {
 	CNIPluginsDownloadURL            string
 	VnetCNILinuxPluginsDownloadURL   string
 	VnetCNIWindowsPluginsDownloadURL string
+	ContainerdDownloadURLBase        string
 }
 
 //AzureEndpointConfig describes an Azure endpoint

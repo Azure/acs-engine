@@ -18,11 +18,8 @@ import (
 )
 
 var (
-	cfg         config.Config
-	eng         engine.Engine
-	ch          = make(chan os.Signal, 1)
-	failed      bool
-	interrupted bool
+	cfg config.Config
+	eng engine.Engine
 )
 
 var _ = BeforeSuite(func() {
