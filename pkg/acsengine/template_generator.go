@@ -550,6 +550,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesB64GenerateProxyCerts": func() string {
 			return getBase64CustomScript(kubernetesMasterGenerateProxyCertsScript)
 		},
+		"GetB64sshdConfig": func() string {
+			return getBase64CustomScript(sshdConfig)
+		},
 		"GetKubernetesMasterPreprovisionYaml": func() string {
 			str := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
