@@ -1227,7 +1227,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetPlatformFaultDomainCountForManagedDisks": func() int {
 			switch cs.Location {
-			case "eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "northeurope", "westeurope":
+			case "eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "northeurope", "westeurope", "canadacentral":
 				return 3
 			case "centraluseuap":
 				return 1
