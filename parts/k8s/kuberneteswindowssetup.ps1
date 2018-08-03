@@ -321,7 +321,10 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
         $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
         $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
     }
-
+    
+    # add HyperV isolation by default
+    $KubeletCommandLine += "  --feature-gates=HyperVContainer=true"
+    
     # more time is needed to pull windows server images
     $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     $KubeletCommandLine += " --volume-plugin-dir=`$global:VolumePluginDir"
