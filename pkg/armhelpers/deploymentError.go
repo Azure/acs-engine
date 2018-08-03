@@ -2,12 +2,13 @@ package armhelpers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,20 +58,17 @@ func (e *DeploymentValidationError) Error() string {
 
 // DeployTemplateSync deploys the template and returns ArmError
 func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) error {
-	deploymentExtended, err := az.DeployTemplate(resourceGroupName, deploymentName, template, parameters, nil)
+	ctx := context.Background()
+	deploymentExtended, err := az.DeployTemplate(ctx, resourceGroupName, deploymentName, template, parameters)
 	if err == nil {
 		return nil
 	}
 
 	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
-	deploymentErr := &DeploymentError{}
-	deploymentErr.DeploymentName = deploymentName
-	deploymentErr.ResourceGroup = resourceGroupName
-	deploymentErr.TopError = err
-
-	if deploymentExtended == nil {
-		logger.Warn("DeploymentExtended is nil")
-		return deploymentErr
+	deploymentErr := &DeploymentError{
+		DeploymentName: deploymentName,
+		ResourceGroup:  resourceGroupName,
+		TopError:       err,
 	}
 
 	// try to extract error from ARM Response
@@ -93,21 +91,13 @@ func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 	properties := deploymentExtended.Properties
 	deploymentErr.ProvisioningState = *properties.ProvisioningState
 
-	var top int32 = 1
-	res, err := az.ListDeploymentOperations(resourceGroupName, deploymentName, &top)
-	if err != nil {
-		logger.Errorf("unable to list deployment operations %s. error: %v", deploymentName, err)
-		return deploymentErr
-	}
-	deploymentErr.OperationsLists = append(deploymentErr.OperationsLists, res)
-
-	for res.NextLink != nil {
-		res, err = az.ListDeploymentOperationsNextResults(res)
+	for page, err := az.ListDeploymentOperations(ctx, resourceGroupName, deploymentName, nil); page.NotDone(); err = page.Next() {
 		if err != nil {
-			logger.Warningf("unable to list next deployment operations %s. error: %v", deploymentName, err)
-			break
+			logger.Errorf("unable to list deployment operations %s. error: %v", deploymentName, err)
+			return deploymentErr
 		}
-		deploymentErr.OperationsLists = append(deploymentErr.OperationsLists, res)
+		deploymentErr.OperationsLists = append(deploymentErr.OperationsLists, page.Response())
 	}
+
 	return deploymentErr
 }
