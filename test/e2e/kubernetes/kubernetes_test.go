@@ -238,7 +238,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should be able to access the dashboard from each node", func() {
+		/*It("should be able to access the dashboard from each node", func() {
 			if hasDashboard, dashboardAddon := eng.HasAddon("kubernetes-dashboard"); hasDashboard {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
 
@@ -312,7 +312,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("kubernetes-dashboard disabled for this cluster, will not test")
 			}
-		})
+		})*/
 
 		It("should have aci-connector running", func() {
 			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
