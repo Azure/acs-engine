@@ -410,7 +410,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the kubepodinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("\"in_kube_nodeinventory::emit-stream : Success\"", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("\"in_kube_podinventory::emit-stream : Success\"", 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
