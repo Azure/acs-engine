@@ -400,7 +400,7 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 						readyCh <- true
 					}
 				}*/
-				istest, err := p.Exec("grep", "-i", "Success", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				_, err := p.Exec("grep", "-i", "Success", "/var/opt/microsoft/omsagent/log/omsagent.log")
 				if err == nil {
 					readyCh <- true
 				}
