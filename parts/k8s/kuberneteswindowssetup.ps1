@@ -386,9 +386,31 @@ if (`$hnsNetwork)
 
     Write-Host "Cleaning up old HNS network found"
     Remove-HnsNetwork `$hnsNetwork
-    Start-Sleep 10
-    `$cnijson = "$global:KubeDir" + "\azure-vnet*"
-    remove-item `$cnijson  -ErrorAction SilentlyContinue
+    # Kill all cni instances & stale data left by cni
+    # Cleanup all files related to cni
+    `$cnijson = "$global:KubeDir" + "\azure-vnet-ipam.json"
+    if ((Test-Path `$cnijson))
+    {
+        Remove-Item `$cnijson
+    }
+    `$cnilock = "$global:KubeDir" + "\azure-vnet-ipam.lock"
+    if ((Test-Path `$cnilock))
+    {
+        Remove-Item `$cnilock
+    }
+    taskkill /IM azure-vnet-ipam.exe /f
+
+    `$cnijson = "$global:KubeDir" + "\azure-vnet.json"
+    if ((Test-Path `$cnijson))
+    {
+        Remove-Item `$cnijson
+    }
+    `$cnilock = "$global:KubeDir" + "\azure-vnet.lock"
+    if ((Test-Path `$cnilock))
+    {
+        Remove-Item `$cnilock
+    }
+    taskkill /IM azure-vnet.exe /f
 }
 
 # Restart Kubeproxy, which would wait, until the network is created
