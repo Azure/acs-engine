@@ -16,6 +16,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"windowszip":                  "v1.11.0-alpha.1-1int.zip",
 		"dockerEngineVersion":         k8sComponentVersions["1.11"]["dockerEngine"],
 		DefaultDashboardAddonName:     k8sComponentVersions["1.11"]["dashboard"],
+		"exechealthz":                 k8sComponentVersions["1.11"]["exechealthz"],
 		"addonresizer":                k8sComponentVersions["1.11"]["addon-resizer"],
 		"heapster":                    k8sComponentVersions["1.11"]["heapster"],
 		DefaultMetricsServerAddonName: k8sComponentVersions["1.11"]["metrics-server"],
