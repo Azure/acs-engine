@@ -29,9 +29,5 @@
     "primaryScaleSetName": {
         "type": "string",
         "value": "[variables('primaryScaleSetName')]"
-    },
-    "vmType": {
-        "type": "string",
-        "value": "[variables('vmType')]"
     }
 
