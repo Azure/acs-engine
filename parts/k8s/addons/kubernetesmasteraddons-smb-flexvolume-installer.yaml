@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: flex
+  labels:
+    kubernetes.io/cluster-service: "true"
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
@@ -10,6 +12,7 @@ metadata:
   namespace: flex
   labels:
     k8s-app: smb
+    kubernetes.io/cluster-service: "true"
 spec:
   selector:
     matchLabels:
@@ -18,6 +21,7 @@ spec:
     metadata:
       labels:
         name: smb
+        kubernetes.io/cluster-service: "true"
     spec:
       containers:
       - name: smb-flexvol-installer
