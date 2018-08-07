@@ -142,18 +142,18 @@
     "kubernetesKeyVaultFlexVolumeInstallerCPULimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPULimit')]",
     "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerMemoryLimit')]",
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsBlobfuseFlexVolumeEnabled}}
     "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPURequests')]",
     "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryRequests')]",
     "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPULimit')]",
     "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryLimit')]",
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsSMBFlexVolumeEnabled}}
     "kubernetesSMBFlexVolumeInstallerCPURequests": "[parameters('kubernetesSMBFlexVolumeInstallerCPURequests')]",
     "kubernetesSMBFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesSMBFlexVolumeInstallerMemoryRequests')]",
     "kubernetesSMBFlexVolumeInstallerCPULimit": "[parameters('kubernetesSMBFlexVolumeInstallerCPULimit')]",
     "kubernetesSMBFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesSMBFlexVolumeInstallerMemoryLimit')]",
-    "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPURequests')]",
-    "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryRequests')]",
-    "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerCPULimit')]",
-    "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesBlobfuseFlexVolumeInstallerMemoryLimit')]",
+{{end}}
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",
