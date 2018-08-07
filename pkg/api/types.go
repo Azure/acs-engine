@@ -888,9 +888,8 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 }
 
 // IsContainerMonitoringEnabled checks if the container monitoring addon is enabled
-func (o *OrchestratorProfile) IsContainerMonitoringEnabled() bool {
+func (k *KubernetesConfig) IsContainerMonitoringEnabled() bool {
 	var containerMonitoringAddon KubernetesAddon
-	k := o.KubernetesConfig
 	for i := range k.Addons {
 		if k.Addons[i].Name == ContainerMonitoringAddonName {
 			containerMonitoringAddon = k.Addons[i]
