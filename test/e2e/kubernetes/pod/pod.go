@@ -493,7 +493,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check azure file mounted", duration.String(), p.Metadata.Name)
 			default:
-				out, err := p.Exec("--", "powershell", "mkdir", mountPath+"\\"+testDir)
+				out, err := p.Exec("--", "powershell", "mkdir", "-force", mountPath+"\\"+testDir)
 				if err == nil && strings.Contains(string(out), testDir) {
 					out, err := p.Exec("--", "powershell", "ls", mountPath)
 					if err == nil && strings.Contains(string(out), testDir) {
