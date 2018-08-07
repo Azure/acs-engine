@@ -174,7 +174,7 @@ MASTER_CUSTOM_FILES_PLACEHOLDER
 {{if IsKubernetesVersionGe "1.6.0"}}
   {{if HasLinuxAgents}}
     KUBELET_REGISTER_NODE=--register-node=true
-    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints=node-role.kubernetes.io/master=true:NoSchedule
   {{end}}
 {{else}}
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
