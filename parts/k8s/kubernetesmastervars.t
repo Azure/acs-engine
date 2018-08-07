@@ -357,11 +357,11 @@
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
 {{if not AnyAgentUsesVirtualMachineScaleSets}}
     "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
-    "primaryScaleSetName": "''",
+    "primaryScaleSetName": "",
     "vmType": "standard",
 {{else}}
     "primaryScaleSetName": "[concat(variables('orchestratorName'), '-{{ (index .AgentPoolProfiles 0).Name }}-',variables('nameSuffix'), '-vmss')]",
-    "primaryAvailabilitySetName": "''",
+    "primaryAvailabilitySetName": "",
     "vmType": "vmss",
 {{end}}
 {{if not IsHostedMaster }}
