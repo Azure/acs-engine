@@ -1145,21 +1145,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnablePodSecurityPolicy": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
-		"ACIConnectorAddonEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled()
-		},
-		"DashboardAddonEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled()
-		},
-		"ClusterAutoscalerAddonEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled()
-		},
-		"KeyvaultFlexVolumeAddonEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled()
-		},
-		"OMSAddonEnabled": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled()
-		},
 		"OpenShiftGetMasterSh": func() (string, error) {
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)

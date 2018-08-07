@@ -88,7 +88,7 @@
     "kubernetesCcmImageSpec": "[parameters('kubernetesCcmImageSpec')]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
-{{if DashboardAddonEnabled}}
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
     "kubernetesDashboardCPURequests": "[parameters('kubernetesDashboardCPURequests')]",
     "kubernetesDashboardMemoryRequests": "[parameters('kubernetesDashboardMemoryRequests')]",
@@ -114,7 +114,7 @@
     "kubernetesTillerMaxHistory": "[parameters('kubernetesTillerMaxHistory')]",
     "kubernetesAADPodIdentityEnabled": "[parameters('kubernetesAADPodIdentityEnabled')]",
     "kubernetesACIConnectorEnabled": "[parameters('kubernetesACIConnectorEnabled')]",
-{{if ACIConnectorAddonEnabled}} 
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}} 
     "kubernetesACIConnectorSpec": "[parameters('kubernetesACIConnectorSpec')]",
     "kubernetesACIConnectorNodeName": "[parameters('kubernetesACIConnectorNodeName')]",
     "kubernetesACIConnectorOS": "[parameters('kubernetesACIConnectorOS')]",
@@ -126,7 +126,7 @@
     "kubernetesACIConnectorMemoryLimit": "[parameters('kubernetesACIConnectorMemoryLimit')]",
 {{end}}
     "kubernetesClusterAutoscalerEnabled": "[parameters('kubernetesClusterAutoscalerEnabled')]",
-{{if ClusterAutoscalerAddonEnabled}}
+{{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
     "kubernetesClusterAutoscalerSpec": "[parameters('kubernetesClusterAutoscalerSpec')]",
     "kubernetesClusterAutoscalerAzureCloud": "[parameters('kubernetesClusterAutoscalerAzureCloud')]",
     "kubernetesClusterAutoscalerCPULimit": "[parameters('kubernetesClusterAutoscalerCPULimit')]",
@@ -137,7 +137,7 @@
     "kubernetesClusterAutoscalerMaxNodes": "[parameters('kubernetesClusterAutoscalerMaxNodes')]",
     "kubernetesClusterAutoscalerUseManagedIdentity": "[parameters('kubernetesClusterAutoscalerUseManagedIdentity')]",
 {{end}}
-{{if KeyvaultFlexVolumeAddonEnabled}}
+{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPURequests')]",
     "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesKeyVaultFlexVolumeInstallerMemoryRequests')]",
     "kubernetesKeyVaultFlexVolumeInstallerCPULimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPULimit')]",
@@ -174,7 +174,7 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
-{{if OMSAddonEnabled}}
+{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     "omsAgentVersion": "[parameters('omsAgentVersion')]",
     "omsAgentDockerProviderVersion": "[parameters('omsAgentDockerProviderVersion')]",
     "omsAgentImage": "[parameters('omsAgentImage')]",
