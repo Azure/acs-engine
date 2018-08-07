@@ -87,7 +87,7 @@
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "properties":
         {
-            "platformFaultDomainCount": 2,
+            "platformFaultDomainCount": {{ GetPlatformFaultDomainCountForManagedDisks }},
             "platformUpdateDomainCount": 3,
 		"managed" : "true"
         },
