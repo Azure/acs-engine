@@ -638,6 +638,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"WrapAsVariable": func(s string) string {
 			return fmt.Sprintf("',variables('%s'),'", s)
 		},
+		"WrapAsParameter": func(s string) string {
+			return fmt.Sprintf("',parameters('%s'),'", s)
+		},
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
