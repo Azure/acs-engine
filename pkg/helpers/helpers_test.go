@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/pkg/errors"
 )
 
 type ContainerService struct {
@@ -80,6 +81,23 @@ func TestPointerToBool(t *testing.T) {
 
 	if IsTrueBoolPointer(ret) != boolVar {
 		t.Fatalf("expected IsTrueBoolPointer(*false) to return false, instead returned %#v", IsTrueBoolPointer(ret))
+	}
+}
+
+func TestPointerToInt(t *testing.T) {
+	int1 := 1
+	int2 := 2
+	ret1 := PointerToInt(int1)
+	if *ret1 != int1 {
+		t.Fatalf("expected PointerToInt(1) to return *1, instead returned %#v", ret1)
+	}
+	ret2 := PointerToInt(int2)
+	if *ret2 != int2 {
+		t.Fatalf("expected PointerToInt(2) to return *2, instead returned %#v", ret2)
+	}
+
+	if *ret2 <= *ret1 {
+		t.Fatalf("Pointers to ints messed up their values and made 2 <= 1")
 	}
 }
 
@@ -162,5 +180,100 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 
 	if publicKey != expectedPublicKeyString {
 		t.Fatalf("Public Key did not match expected format/value")
+	}
+}
+
+func TestAcceleratedNetworkingSupported(t *testing.T) {
+	cases := []struct {
+		input          string
+		expectedResult bool
+	}{
+		{
+			input:          "Standard_A1",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_B3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D1_v2",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_L3",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_NC6",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_G4",
+			expectedResult: false,
+		},
+		{
+			input:          "Standard_D2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "Standard_DS2_v2",
+			expectedResult: true,
+		},
+		{
+			input:          "",
+			expectedResult: false,
+		},
+	}
+
+	for _, c := range cases {
+		result := AcceleratedNetworkingSupported(c.input)
+		if c.expectedResult != result {
+			t.Fatalf("AcceleratedNetworkingSupported returned unexpected result for %s: expected %t but got %t", c.input, c.expectedResult, result)
+		}
+	}
+}
+
+func TestEqualError(t *testing.T) {
+	testcases := []struct {
+		errA     error
+		errB     error
+		expected bool
+	}{
+		{
+			errA:     nil,
+			errB:     nil,
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     nil,
+			expected: false,
+		},
+		{
+			errA:     nil,
+			errB:     errors.New("sample error"),
+			expected: false,
+		},
+		{
+			errA:     errors.New("sample error"),
+			errB:     errors.New("sample error"),
+			expected: true,
+		},
+		{
+			errA:     errors.New("sample error 1"),
+			errB:     errors.New("sample error 2"),
+			expected: false,
+		},
+	}
+
+	for _, test := range testcases {
+		if EqualError(test.errA, test.errB) != test.expected {
+			t.Errorf("expected EqualError to return %t for errors %s and %s", test.expected, test.errA, test.errB)
+		}
 	}
 }

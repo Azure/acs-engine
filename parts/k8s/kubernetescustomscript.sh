@@ -26,7 +26,12 @@ ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
+ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT=44 # Failed to add repo pkg file
+ERR_MODPROBE_FAIL=49 # Unable to load a kernel module using modprobe
 ERR_OUTBOUND_CONN_FAIL=50 # Unable to establish outbound connection
+ERR_KATA_KEY_DOWNLOAD_TIMEOUT=60 # Timeout waiting to download kata repo key
+ERR_KATA_APT_KEY_TIMEOUT=61 # Timeout waiting for kata apt-key
+ERR_KATA_INSTALL_TIMEOUT=62 # Timeout waiting for kata install
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
@@ -57,7 +62,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 1 3 nc -v 8.8.8.8 53 || retrycmd_if_failure 20 1 3 nc -v 8.8.4.4 53 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 nc -v www.google.com 443 || retrycmd_if_failure 20 1 3 nc -v www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
@@ -164,9 +169,23 @@ function installDeps() {
     # make sure walinuxagent doesn't get updated in the middle of running this script
     retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     # See https://github.com/kubernetes/kubernetes/blob/master/build/debian-hyperkube-base/Dockerfile#L25-L44
-    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
     systemctlEnableAndStart rpcbind
     systemctlEnableAndStart rpc-statd
+}
+
+function installFlexVolDrivers() {
+    PLUGIN_DIR=/etc/kubernetes/volumeplugins
+    # install blobfuse flexvolume driver
+    BLOBFUSE_DIR=$PLUGIN_DIR/azure~blobfuse
+    mkdir -p $BLOBFUSE_DIR
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/blobfuse-v0.1 > $BLOBFUSE_DIR/blobfuse || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
+    chmod a+x $BLOBFUSE_DIR/blobfuse
+    # install smb flexvolume driver
+    SMB_DIR=$PLUGIN_DIR/microsoft.com~smb
+    mkdir -p $SMB_DIR
+    retrycmd_if_failure_no_stats 20 1 30 curl -fsSL https://acs-mirror.azureedge.net/flexvol/smb-v0.1 > $SMB_DIR/smb || exit $ERR_FLEXVOLUME_DOWNLOAD_TIMEOUT
+    chmod a+x $SMB_DIR/smb
 }
 
 function installDocker() {
@@ -178,6 +197,7 @@ function installDocker() {
     apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
     usermod -aG docker ${ADMINUSER}
+    touch /var/log/azure/docker-install.complete
 }
 
 function runAptDaily() {
@@ -254,6 +274,11 @@ function installCNI() {
     tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
+    # Turn on br_netfilter (needed for the iptables rules to work on bridges)
+    # and permanently enable it
+    retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
+    # /etc/modules-load.d is the location used by systemd to load modules
+    echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
 }
 
 function configAzureCNI() {
@@ -279,6 +304,24 @@ function configNetworkPlugin() {
 	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
         installCNI
     fi
+}
+
+function installKataContainersRuntime() {
+    # Add Kata Containers repository key
+    echo "Adding Kata Containers repository key..."
+    KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
+    KATA_URL=http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/Release.key
+    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $KATA_URL > $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_KEY_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
+
+    # Add Kata Container repository
+    echo "Adding Kata Containers repository..."
+    echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/kata-containers.list
+
+    # Install Kata Containers runtime
+    echo "Installing Kata Containers runtime..."
+    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+    apt_get_install 20 30 120 kata-runtime || exit $ERR_KATA_INSTALL_TIMEOUT
 }
 
 function installClearContainersRuntime() {
@@ -319,10 +362,16 @@ function setupContainerd() {
 	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
 	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
 	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
+
 	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
 	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+	elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+		echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
 	else
 		echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
 	fi
@@ -335,7 +384,7 @@ function setupContainerd() {
 
 function installContainerd() {
 	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
 
     CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
     retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL"
@@ -344,13 +393,13 @@ function installContainerd() {
 	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
 
 	echo "Successfully installed cri-containerd..."
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
 		setupContainerd
 	fi
 }
 
 function ensureContainerd() {
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
 		# Enable and start cri-containerd service
 		# Make sure this is done after networking plugins are installed
 		echo "Enabling and starting cri-containerd service..."
@@ -361,6 +410,8 @@ function ensureContainerd() {
 function ensureDocker() {
     wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
+    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
+    systemctlEnableAndStart docker-health-probe
 }
 function ensureKMS() {
     systemctlEnableAndStart kms
@@ -546,6 +597,14 @@ if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 		installClearContainersRuntime
 	fi
 fi
+
+if [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+	# Ensure we can nest virtualization
+	if grep -q vmx /proc/cpuinfo; then
+		installKataContainersRuntime
+	fi
+fi
+
 echo `date`,`hostname`, ensureContainerdStart>>/opt/m
 ensureContainerd
 
@@ -555,6 +614,7 @@ fi
 
 ensureKubelet
 ensureJournal
+installFlexVolDrivers
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig

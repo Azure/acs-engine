@@ -5,6 +5,7 @@ import "testing"
 func Test_ServicePrincipalProfile_ValidateSecret(t *testing.T) {
 
 	t.Run("ServicePrincipalProfile is nil should fail", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile = nil
 
@@ -14,6 +15,7 @@ func Test_ServicePrincipalProfile_ValidateSecret(t *testing.T) {
 	})
 
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties()
 
 		if err := p.Validate(); err != nil {
@@ -22,6 +24,7 @@ func Test_ServicePrincipalProfile_ValidateSecret(t *testing.T) {
 	})
 
 	t.Run("ServicePrincipalProfile with missing secret should pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
 

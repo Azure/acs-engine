@@ -1,6 +1,7 @@
 package armhelpers
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -12,12 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/authorization"
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
-	"github.com/Azure/azure-sdk-for-go/arm/network"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/azure-sdk-for-go/arm/storage"
+	"github.com/Azure/azure-sdk-for-go/services/apimanagement/mgmt/2017-03-01/apimanagement"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -27,7 +29,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
-	"github.com/Azure/azure-sdk-for-go/arm/disk"
 )
 
 const (
@@ -50,7 +51,7 @@ type AzureClient struct {
 	authorizationClient             authorization.RoleAssignmentsClient
 	deploymentsClient               resources.DeploymentsClient
 	deploymentOperationsClient      resources.DeploymentOperationsClient
-	resourcesClient                 resources.GroupClient
+	resourcesClient                 apimanagement.GroupClient
 	storageAccountsClient           storage.AccountsClient
 	interfacesClient                network.InterfacesClient
 	groupsClient                    resources.GroupsClient
@@ -58,7 +59,7 @@ type AzureClient struct {
 	virtualMachinesClient           compute.VirtualMachinesClient
 	virtualMachineScaleSetsClient   compute.VirtualMachineScaleSetsClient
 	virtualMachineScaleSetVMsClient compute.VirtualMachineScaleSetVMsClient
-	disksClient                     disk.DisksClient
+	disksClient                     compute.DisksClient
 
 	applicationsClient      graphrbac.ApplicationsClient
 	servicePrincipalsClient graphrbac.ServicePrincipalsClient
@@ -95,7 +96,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		if err != nil {
 			log.Warnf("Refresh token failed. Will fallback to device auth. %q", err)
 		} else {
-			graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.GraphEndpoint, armSpt.Token)
+			graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.GraphEndpoint, armSpt.Token())
 			if err != nil {
 				return nil, err
 			}
@@ -123,7 +124,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 	armSpt.Refresh()
 
-	adRawToken := armSpt.Token
+	adRawToken := armSpt.Token()
 	adRawToken.Resource = env.GraphEndpoint
 	graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, acsEngineClientID, env.GraphEndpoint, adRawToken)
 	if err != nil {
@@ -239,7 +240,7 @@ func tryLoadCachedToken(cachePath string) (*adal.Token, error) {
 }
 
 func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthConfig, string, error) {
-	tenantID, err := acsengine.GetTenantID(env, subscriptionID)
+	tenantID, err := acsengine.GetTenantID(env.ResourceManagerEndpoint, subscriptionID)
 	if err != nil {
 		return nil, "", err
 	}
@@ -269,7 +270,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		authorizationClient:             authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentsClient:               resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentOperationsClient:      resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		resourcesClient:                 resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		resourcesClient:                 apimanagement.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient:           storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:                network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		groupsClient:                    resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -277,7 +278,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		virtualMachinesClient:           compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachineScaleSetsClient:   compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachineScaleSetVMsClient: compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		disksClient:                     disk.NewDisksClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		disksClient:                     compute.NewDisksClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 
 		applicationsClient:      graphrbac.NewApplicationsClientWithBaseURI(env.GraphEndpoint, tenantID),
 		servicePrincipalsClient: graphrbac.NewServicePrincipalsClientWithBaseURI(env.GraphEndpoint, tenantID),
@@ -309,16 +310,17 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 
 // EnsureProvidersRegistered checks if the AzureClient is registered to required resource providers and, if not, register subscription to providers
 func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
-	registeredProviders, err := az.providersClient.List(to.Int32Ptr(100), "")
+	ctx := context.Background()
+	registeredProviders, err := az.providersClient.List(ctx, to.Int32Ptr(100), "")
 	if err != nil {
 		return err
 	}
-	if registeredProviders.Value == nil {
+	if registeredProviders.Values() == nil {
 		return errors.Errorf("Providers list was nil. subscription=%q", subscriptionID)
 	}
 
 	m := make(map[string]bool)
-	for _, provider := range *registeredProviders.Value {
+	for _, provider := range registeredProviders.Values() {
 		m[strings.ToLower(to.String(provider.Namespace))] = to.String(provider.RegistrationState) == "Registered"
 	}
 
@@ -331,7 +333,7 @@ func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
 			log.Debugf("Already registered for %q", provider)
 		} else {
 			log.Infof("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
-			if _, err := az.providersClient.Register(provider); err != nil {
+			if _, err := az.providersClient.Register(ctx, provider); err != nil {
 				return err
 			}
 		}
@@ -370,22 +372,22 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 //AddAcceptLanguages sets the list of languages to accept on this request
 func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.acceptLanguages = languages
-	az.authorizationClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.resourcesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.storageAccountsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.interfacesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.groupsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.disksClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.authorizationClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.resourcesClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.storageAccountsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.interfacesClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.groupsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.providersClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachinesClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachineScaleSetsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.disksClient.Client.RequestInspector = az.addAcceptLanguages()
 
-	az.applicationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.servicePrincipalsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.applicationsClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.servicePrincipalsClient.Client.RequestInspector = az.addAcceptLanguages()
 }
 
 func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {

@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
@@ -21,7 +24,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 )
@@ -120,14 +123,13 @@ func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 		} else if len(args) > 1 {
 			cmd.Usage()
 			return errors.New("too many arguments were provided to 'deploy'")
-		} else {
-			cmd.Usage()
-			return errors.New("--api-model was not supplied, nor was one specified as a positional argument")
 		}
 	}
 
-	if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
-		return errors.Errorf("specified api model does not exist (%s)", dc.apimodelPath)
+	if dc.apimodelPath != "" {
+		if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
+			return errors.Errorf("specified api model does not exist (%s)", dc.apimodelPath)
+		}
 	}
 
 	if dc.location == "" {
@@ -141,15 +143,30 @@ func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 func (dc *deployCmd) mergeAPIModel() error {
 	var err error
 
+	if dc.apimodelPath == "" {
+		log.Infoln("no --api-model was specified, using default model")
+		f, err := ioutil.TempFile("", fmt.Sprintf("%s-default-api-model_%s-%s_", filepath.Base(os.Args[0]), BuildSHA, GitTreeState))
+		if err != nil {
+			return errors.Wrap(err, "error creating temp file for default API model")
+		}
+		log.Infoln("default api model generated at", f.Name())
+
+		defer f.Close()
+		if err := writeDefaultModel(f); err != nil {
+			return err
+		}
+		dc.apimodelPath = f.Name()
+	}
+
 	// if --set flag has been used
-	if dc.set != nil && len(dc.set) > 0 {
+	if len(dc.set) > 0 {
 		m := make(map[string]transform.APIModelValue)
 		transform.MapValues(m, dc.set)
 
 		// overrides the api model and generates a new file
 		dc.apimodelPath, err = transform.MergeValuesWithAPIModel(dc.apimodelPath, m)
 		if err != nil {
-			return errors.Wrap(err, "error merging --set values with the api model: %s")
+			return errors.Wrapf(err, "error merging --set values with the api model: %s")
 		}
 
 		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
@@ -285,7 +302,8 @@ func autofillApimodel(dc *deployCmd) error {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
+	ctx := context.Background()
+	_, err = dc.client.EnsureResourceGroup(ctx, dc.resourceGroup, dc.location, nil)
 	if err != nil {
 		return err
 	}
@@ -319,7 +337,7 @@ func autofillApimodel(dc *deployCmd) error {
 					},
 				}
 			}
-			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL, replyURLs, requiredResourceAccess)
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(ctx, appName, appURL, replyURLs, requiredResourceAccess)
 			if err != nil {
 				return errors.Wrap(err, "apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials")
 			}
@@ -327,7 +345,7 @@ func autofillApimodel(dc *deployCmd) error {
 
 			log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
 
-			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+			err = dc.client.CreateRoleAssignmentSimple(ctx, dc.resourceGroup, servicePrincipalObjectID)
 			if err != nil {
 				return errors.Wrap(err, "apimodel: could not create or assign ServicePrincipal")
 
@@ -355,6 +373,15 @@ func (dc *deployCmd) validateApimodel() (*api.ContainerService, string, error) {
 		},
 	}
 
+	p := dc.containerService.Properties
+	if strings.ToLower(p.OrchestratorProfile.OrchestratorType) == "kubernetes" {
+		if p.ServicePrincipalProfile == nil || (p.ServicePrincipalProfile.ClientID == "" || (p.ServicePrincipalProfile.Secret == "" && p.ServicePrincipalProfile.KeyvaultSecretRef == nil)) {
+			if p.OrchestratorProfile.KubernetesConfig != nil && !p.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+				return nil, "", errors.New("when using the kubernetes orchestrator, must either set useManagedIdentity in the kubernetes config or set --client-id and --client-secret or KeyvaultSecretRef of secret (also available in the API model)")
+			}
+		}
+	}
+
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
 	rawVersionedAPIModel, err := apiloader.SerializeContainerService(dc.containerService, dc.apiVersion)
 	if err != nil {
@@ -375,7 +402,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalf("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, BuildTag)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, false, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)
@@ -414,12 +441,13 @@ func (dc *deployCmd) run() error {
 	deploymentSuffix := dc.random.Int31()
 
 	if res, err := dc.client.DeployTemplate(
+		context.Background(),
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),
 		templateJSON,
 		parametersJSON,
-		nil); err != nil {
-		if res != nil && res.Response.Response != nil && res.Body != nil {
+	); err != nil {
+		if res.Response.Response != nil && res.Body != nil {
 			defer res.Body.Close()
 			body, _ := ioutil.ReadAll(res.Body)
 			log.Errorf(string(body))

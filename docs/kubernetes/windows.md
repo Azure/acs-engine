@@ -304,7 +304,7 @@ Windows support is still in active development with many changes each week. Read
 
 ### Finding logs
 
-To connect to a Windows node using Remote Desktop and get logs, please read over this topic in the main [troubleshooting](troubleshooting.md#how-to-debug-cse-errors-windows) page first.
+To connect to a Windows node using Remote Desktop and get logs, please read over this topic in the main [troubleshooting](troubleshooting.md#connecting-to-windows-nodes) page first.
 
 ### Checking versions
 

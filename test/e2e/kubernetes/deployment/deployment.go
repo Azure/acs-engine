@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/pkg/errors"
 )
 
 // List holds a list of deployments returned from kubectl get deploy
@@ -63,9 +64,9 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 	var cmd *exec.Cmd
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	if miscOpts != "" {
-		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, miscOpts)
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--overrides", overrides, miscOpts)
 	} else {
-		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides)
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--overrides", overrides)
 	}
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
@@ -84,7 +85,7 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
@@ -192,7 +193,7 @@ func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]po
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
 			default:
 				pods, err := pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
 				if err != nil {

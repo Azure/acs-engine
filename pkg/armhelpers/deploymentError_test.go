@@ -6,10 +6,9 @@ import (
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 
-	"fmt"
-
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	. "github.com/onsi/ginkgo"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -116,7 +115,7 @@ func TestDeploymentError_Error(t *testing.T) {
 	deploymentErr := &DeploymentError{
 		DeploymentName:    "agentvm",
 		ResourceGroup:     "rg1",
-		TopError:          fmt.Errorf("sample error"),
+		TopError:          errors.New("sample error"),
 		ProvisioningState: "Failed",
 		Response:          []byte("sample resp"),
 		StatusCode:        500,

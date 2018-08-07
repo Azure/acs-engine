@@ -97,3 +97,35 @@ systemctl_restart() {
         fi
     done
 }
+docker_health_probe()
+{
+  # finds out if docker runtime is misbehaving
+  every=10 #check every n seconds
+  max_fail=3 #max failure count before restarting docker
+  count_fail=0
+  trap 'exit 0' SIGINT SIGTERM
+  while true;
+  do
+    # we use docker run here instead of docker ps
+    # because dockerd might be running but containerd is misbehaving
+    # docker run with *it* options ensure the entire execution
+    # pipeline is healthy
+    docker run --rm busybox /bin/sh -c 'exit 0'
+    if [ $? -ne 0 ]; then
+	    echo "docker is not healthy"
+	    count_fail=$(( count_fail + 1 ))
+    else
+	    echo "docker is healthy"
+	    count_fail=0
+    fi
+    if [ $count_fail -ge  $max_fail ];then
+	   echo "docker has failed for ${max_fail} and checked ${every} seconds. will restart it"
+	   sudo systemctl restart docker
+	   if [ $? -ne 0 ]; then
+	     echo "Failed to restart docker, will try again in ${every}"
+	   fi
+    fi
+    echo "Sleeping for ${every}"
+    sleep ${every}
+  done
+}

@@ -40,6 +40,13 @@ spec:
       containers:
       - image: <kubernetesNVIDIADevicePluginSpec>
         name: nvidia-device-plugin-ctr
+        resources:
+          requests:
+            cpu: <kubernetesNVIDIADevicePluginCPURequests>
+            memory: <kubernetesNVIDIADevicePluginMemoryRequests>
+          limits:
+            cpu: <kubernetesNVIDIADevicePluginCPULimit>
+            memory: <kubernetesNVIDIADevicePluginMemoryLimit>
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

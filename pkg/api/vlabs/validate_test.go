@@ -1,15 +1,14 @@
 package vlabs
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -272,22 +271,25 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error: %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
@@ -320,22 +322,25 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		err := test.properties.validateOrchestratorProfile(test.isUpdate)
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+			err := test.properties.validateOrchestratorProfile(test.isUpdate)
 
-		if test.expectedError == "" && err == nil {
-			continue
-		}
-		if test.expectedError == "" && err != nil {
-			t.Errorf("%s expected no error but received: %s", testName, err.Error())
-			continue
-		}
-		if test.expectedError != "" && err == nil {
-			t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
-			continue
-		}
-		if !strings.Contains(err.Error(), test.expectedError) {
-			t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
-		}
+			if test.expectedError == "" && err == nil {
+				return
+			}
+			if test.expectedError == "" && err != nil {
+				t.Errorf("%s expected no error but received: %s", testName, err.Error())
+				return
+			}
+			if test.expectedError != "" && err == nil {
+				t.Errorf("%s expected error: %s, but received no error", testName, test.expectedError)
+				return
+			}
+			if !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("%s expected error to container %s but received: %s", testName, test.expectedError, err.Error())
+			}
+		})
 	}
 }
 
@@ -735,10 +740,12 @@ func TestProperties_ValidateInvalidExtensions(t *testing.T) {
 
 func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 	tests := []struct {
+		name              string
 		extensionProfiles []*ExtensionProfile
 		expectedErr       error
 	}{
 		{
+			name: "Extension Profile without Keyvault ID",
 			extensionProfiles: []*ExtensionProfile{
 				{
 					Name: "FakeExtensionProfile",
@@ -751,6 +758,7 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 			expectedErr: errors.New("the Keyvault ID must be specified for Extension FakeExtensionProfile"),
 		},
 		{
+			name: "Extension Profile without Keyvault Secret",
 			extensionProfiles: []*ExtensionProfile{
 				{
 					Name: "FakeExtensionProfile",
@@ -763,6 +771,7 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 			expectedErr: errors.New("the Keyvault Secret must be specified for Extension FakeExtensionProfile"),
 		},
 		{
+			name: "Extension Profile with invalid secret format",
 			extensionProfiles: []*ExtensionProfile{
 				{
 					Name: "FakeExtensionProfile",
@@ -777,18 +786,22 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p := getK8sDefaultProperties(true)
-		p.ExtensionProfiles = test.extensionProfiles
-		err := p.Validate(true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
-			t.Errorf("expected error with message : %s, but got %s", test.expectedErr.Error(), err.Error())
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := getK8sDefaultProperties(true)
+			p.ExtensionProfiles = test.extensionProfiles
+			err := p.Validate(true)
+			if !helpers.EqualError(err, test.expectedErr) {
+				t.Errorf("expected error with message : %s, but got %s", test.expectedErr.Error(), err.Error())
+			}
+		})
 	}
 }
 
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
 
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 
 		if err := p.Validate(false); err != nil {
@@ -797,6 +810,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
@@ -810,6 +824,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
@@ -823,6 +838,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = "secret"
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
@@ -836,6 +852,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
@@ -888,6 +905,7 @@ func TestValidateKubernetesLabelKey(t *testing.T) {
 func Test_AadProfile_Validate(t *testing.T) {
 	properties := getK8sDefaultProperties(false)
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
+		t.Parallel()
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
@@ -907,6 +925,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 
 	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
+		t.Parallel()
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "1",
@@ -936,6 +955,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 
 	t.Run("aadProfiles should not be supported non-Kubernetes orchestrators", func(t *testing.T) {
+		t.Parallel()
 		properties.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: OpenShift,
 		}
@@ -951,9 +971,9 @@ func Test_AadProfile_Validate(t *testing.T) {
 }
 
 func TestValidateProperties_AzProfile(t *testing.T) {
-	p := getK8sDefaultProperties(false)
-
 	t.Run("It returns error for unsupported orchestratorTypes", func(t *testing.T) {
+		t.Parallel()
+		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: Kubernetes,
 		}
@@ -969,6 +989,8 @@ func TestValidateProperties_AzProfile(t *testing.T) {
 	})
 
 	t.Run("It should return an error for incomplete azProfile details", func(t *testing.T) {
+		t.Parallel()
+		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: OpenShift,
 			OpenShiftConfig:  validOpenShiftConifg(),
@@ -1080,6 +1102,18 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	if err := p.validateContainerRuntime(); err == nil {
 		t.Errorf(
 			"should error on clear-containers for windows clusters",
+		)
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "kata-containers"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on kata-containers for windows clusters",
 		)
 	}
 
@@ -1248,50 +1282,58 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 		},
 	}
 
-	p := getK8sDefaultProperties(true)
 	for _, test := range tests {
-		p.AgentPoolProfiles = []*AgentPoolProfile{
-			{
-				Name:                "agentpool",
-				VMSize:              "Standard_D2_v2",
-				Count:               1,
-				AvailabilityProfile: AvailabilitySet,
-				ImageRef:            &test.image,
-			},
-		}
-		gotErr := p.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(gotErr, test.expectedErr) {
-			t.Logf("scenario %q", test.name)
-			t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := getK8sDefaultProperties(true)
+			p.AgentPoolProfiles = []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_D2_v2",
+					Count:               1,
+					AvailabilityProfile: AvailabilitySet,
+					ImageRef:            &test.image,
+				},
+			}
+			gotErr := p.validateAgentPoolProfiles()
+			if !helpers.EqualError(gotErr, test.expectedErr) {
+				t.Logf("scenario %q", test.name)
+				t.Errorf("expected error: %v, got: %v", test.expectedErr, gotErr)
+			}
+		})
 	}
 }
 
 func TestMasterProfileValidate(t *testing.T) {
 	tests := []struct {
+		name             string
 		orchestratorType string
 		masterProfile    MasterProfile
 		expectedErr      string
 	}{
 		{
+			name: "Master Profile with Invalid DNS Prefix",
 			masterProfile: MasterProfile{
 				DNSPrefix: "bad!",
 			},
 			expectedErr: "DNSPrefix 'bad!' is invalid. The DNSPrefix must contain between 3 and 45 characters and can contain only letters, numbers, and hyphens.  It must start with a letter and must end with a letter or a number. (length was 4)",
 		},
 		{
+			name: "Master Profile with valid DNS Prefix 1",
 			masterProfile: MasterProfile{
 				DNSPrefix: "dummy",
 				Count:     1,
 			},
 		},
 		{
+			name: "Master Profile with valid DNS Prefix 2",
 			masterProfile: MasterProfile{
 				DNSPrefix: "dummy",
 				Count:     3,
 			},
 		},
 		{
+			name:             "Master Profile with valid DNS Prefix 3",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
 				DNSPrefix: "dummy",
@@ -1299,6 +1341,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			},
 		},
 		{
+			name:             "Openshift Master Profile with invalid DNS prefix config",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
 				DNSPrefix: "dummy",
@@ -1307,6 +1350,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			expectedErr: "openshift can only deployed with one master",
 		},
 		{ // test existing vnet: run with only specifying vnetsubnetid
+			name:             "Master Profile with empty firstconsecutivestaticip and non-empty vnetsubnetid",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
 				VnetSubnetID: "testvnetstring",
@@ -1315,6 +1359,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			expectedErr: "when specifying a vnetsubnetid the firstconsecutivestaticip is required",
 		},
 		{ // test existing vnet: run with specifying both vnetsubnetid and firstconsecutivestaticip
+			name:             "Master Profile with non-empty firstconsecutivestaticip and non-empty vnetsubnetid",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
 				DNSPrefix:                "dummy",
@@ -1324,6 +1369,7 @@ func TestMasterProfileValidate(t *testing.T) {
 			},
 		},
 		{
+			name:             "Master Profile with empty imageName and non-empty imageResourceGroup",
 			orchestratorType: Kubernetes,
 			masterProfile: MasterProfile{
 				DNSPrefix: "dummy",
@@ -1337,18 +1383,21 @@ func TestMasterProfileValidate(t *testing.T) {
 		},
 	}
 
-	for i, test := range tests {
-		properties := &Properties{}
-		properties.MasterProfile = &test.masterProfile
-		properties.MasterProfile.StorageProfile = ManagedDisks
-		properties.OrchestratorProfile = &OrchestratorProfile{
-			OrchestratorType: test.orchestratorType,
-		}
-		err := properties.validateMasterProfile()
-		if test.expectedErr == "" && err != nil ||
-			test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
-			t.Errorf("test %d: unexpected error %q\n", i, err)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			properties := &Properties{}
+			properties.MasterProfile = &test.masterProfile
+			properties.MasterProfile.StorageProfile = ManagedDisks
+			properties.OrchestratorProfile = &OrchestratorProfile{
+				OrchestratorType: test.orchestratorType,
+			}
+			err := properties.validateMasterProfile()
+			if test.expectedErr == "" && err != nil ||
+				test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
+				t.Errorf("test %s: unexpected error %q\n", test.name, err)
+			}
+		})
 	}
 }
 
@@ -1383,13 +1432,14 @@ func TestProperties_ValidateVNET(t *testing.T) {
 	validVNetSubnetID := "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME"
 	validVNetSubnetID2 := "/subscriptions/SUB_ID2/resourceGroups/RG_NAME2/providers/Microsoft.Network/virtualNetworks/VNET_NAME2/subnets/SUBNET_NAME"
 
-	p := getK8sDefaultProperties(true)
 	tests := []struct {
+		name              string
 		masterProfile     *MasterProfile
 		agentPoolProfiles []*AgentPoolProfile
 		expectedMsg       string
 	}{
 		{
+			name: "Multiple VNET Subnet configs",
 			masterProfile: &MasterProfile{
 				VnetSubnetID: "testvnetstring",
 				Count:        1,
@@ -1408,6 +1458,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all",
 		},
 		{
+			name: "Invalid vnet subnet ID",
 			masterProfile: &MasterProfile{
 				VnetSubnetID: "testvnetstring",
 				Count:        1,
@@ -1426,6 +1477,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "Unable to parse vnetSubnetID. Please use a vnetSubnetID with format /subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
 		},
 		{
+			name: "Multiple VNETs",
 			masterProfile: &MasterProfile{
 				VnetSubnetID: validVNetSubnetID,
 				Count:        1,
@@ -1451,6 +1503,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)",
 		},
 		{
+			name: "Invalid MasterProfile FirstConsecutiveStaticIP",
 			masterProfile: &MasterProfile{
 				VnetSubnetID: validVNetSubnetID,
 				Count:        1,
@@ -1470,6 +1523,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '10.0.0.invalid' is an invalid IP address",
 		},
 		{
+			name: "Invalid vnetcidr",
 			masterProfile: &MasterProfile{
 				VnetSubnetID: validVNetSubnetID,
 				Count:        1,
@@ -1492,19 +1546,22 @@ func TestProperties_ValidateVNET(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p.MasterProfile = test.masterProfile
-		p.AgentPoolProfiles = test.agentPoolProfiles
-		err := p.Validate(true)
-		if err.Error() != test.expectedMsg {
-			t.Errorf("expected error message : %s, but got %s", test.expectedMsg, err.Error())
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := getK8sDefaultProperties(true)
+			p.MasterProfile = test.masterProfile
+			p.AgentPoolProfiles = test.agentPoolProfiles
+			err := p.Validate(true)
+			if err.Error() != test.expectedMsg {
+				t.Errorf("expected error message : %s, but got %s", test.expectedMsg, err.Error())
+			}
+		})
 	}
 }
 
 func TestOpenshiftValidate(t *testing.T) {
 	tests := []struct {
-		name string
-
+		name       string
 		properties *Properties
 		isUpgrade  bool
 
@@ -1653,37 +1710,62 @@ func TestOpenshiftValidate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		gotErr := test.properties.Validate(test.isUpgrade)
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
-			t.Logf("running scenario %q", test.name)
-			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			gotErr := test.properties.Validate(test.isUpgrade)
+			if !helpers.EqualError(gotErr, test.expectedErr) {
+				t.Logf("running scenario %q", test.name)
+				t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
+			}
+		})
 	}
 }
 
 func TestWindowsProfile_Validate(t *testing.T) {
-	w := &WindowsProfile{}
-	w.WindowsImageSourceURL = "http://fakeWindowsImageSourceURL"
-	err := w.Validate("Mesos")
-	expectedMsg := "Windows Custom Images are only supported if the Orchestrator Type is DCOS or Kubernetes"
-	if err.Error() != expectedMsg {
-		t.Errorf("should error on unsupported orchType with msg : %s, but got : %s", expectedMsg, err.Error())
+	tests := []struct {
+		name             string
+		orchestratorType string
+		w                *WindowsProfile
+		expectedMsg      string
+	}{
+		{
+			name:             "unsupported orchestrator",
+			orchestratorType: "Mesos",
+			w: &WindowsProfile{
+				WindowsImageSourceURL: "http://fakeWindowsImageSourceURL",
+			},
+			expectedMsg: "Windows Custom Images are only supported if the Orchestrator Type is DCOS or Kubernetes",
+		},
+		{
+			name:             "empty adminUsername",
+			orchestratorType: "Kubernetes",
+			w: &WindowsProfile{
+				WindowsImageSourceURL: "http://fakeWindowsImageSourceURL",
+				AdminUsername:         "",
+				AdminPassword:         "password",
+			},
+			expectedMsg: "WindowsProfile.AdminUsername is required, when agent pool specifies windows",
+		},
+		{
+			name:             "empty password",
+			orchestratorType: "DCOS",
+			w: &WindowsProfile{
+				WindowsImageSourceURL: "http://fakeWindowsImageSourceURL",
+				AdminUsername:         "azure",
+				AdminPassword:         "",
+			},
+			expectedMsg: "WindowsProfile.AdminPassword is required, when agent pool specifies windows",
+		},
 	}
 
-	w.AdminUsername = ""
-	w.AdminPassword = "password"
-	err = w.Validate(Kubernetes)
-	expectedMsg = "WindowsProfile.AdminUsername is required, when agent pool specifies windows"
-	if err.Error() != expectedMsg {
-		t.Errorf("should error on unsupported orchType with msg : %s, but got : %s", expectedMsg, err.Error())
-	}
-
-	w.AdminUsername = "azureuser"
-	w.AdminPassword = ""
-	err = w.Validate(Kubernetes)
-	expectedMsg = "WindowsProfile.AdminPassword is required, when agent pool specifies windows"
-	if err.Error() != expectedMsg {
-		t.Errorf("should error on unsupported orchType with msg : %s, but got : %s", expectedMsg, err.Error())
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			err := test.w.Validate(test.orchestratorType)
+			if err.Error() != test.expectedMsg {
+				t.Errorf("should error on unsupported orchType with msg : %s, but got : %s", test.expectedMsg, err.Error())
+			}
+		})
 	}
 }
 
@@ -1769,21 +1851,26 @@ func TestValidateAgentPoolProfiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		gotErr := test.properties.validateAgentPoolProfiles()
-		if !reflect.DeepEqual(test.expectedErr, gotErr) {
-			t.Logf("running scenario %q", test.name)
-			t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			gotErr := test.properties.validateAgentPoolProfiles()
+			if !helpers.EqualError(gotErr, test.expectedErr) {
+				t.Logf("running scenario %q", test.name)
+				t.Errorf("expected error: %v\ngot error: %v", test.expectedErr, gotErr)
+			}
+		})
 	}
 }
 
 func TestValidate_VaultKeySecrets(t *testing.T) {
 
 	tests := []struct {
+		name        string
 		secrets     []KeyVaultSecrets
 		expectedErr error
 	}{
 		{
+			name: "Empty Vault Certificates",
 			secrets: []KeyVaultSecrets{
 				{
 					SourceVault: &KeyVaultID{
@@ -1795,6 +1882,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 			expectedErr: errors.New("Valid KeyVaultSecrets must have no empty VaultCertificates"),
 		},
 		{
+			name: "No SourceVault ID",
 			secrets: []KeyVaultSecrets{
 				{
 					SourceVault: &KeyVaultID{},
@@ -1809,6 +1897,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 			expectedErr: errors.New("KeyVaultSecrets must have a SourceVault.ID"),
 		},
 		{
+			name: "Empty SourceVault",
 			secrets: []KeyVaultSecrets{
 				{
 					VaultCertificates: []KeyVaultCertificate{
@@ -1822,6 +1911,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 			expectedErr: errors.New("missing SourceVault in KeyVaultSecrets"),
 		},
 		{
+			name: "Empty Certificate Store",
 			secrets: []KeyVaultSecrets{
 				{
 					SourceVault: &KeyVaultID{
@@ -1840,15 +1930,19 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		err := validateKeyVaultSecrets(test.secrets, true)
-		if !reflect.DeepEqual(err, test.expectedErr) {
-			t.Errorf("expected error to be thrown with msg : %s", test.expectedErr.Error())
-		}
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			err := validateKeyVaultSecrets(test.secrets, true)
+			if err.Error() != test.expectedErr.Error() {
+				t.Errorf("expected error to be thrown with msg : %s", test.expectedErr.Error())
+			}
+		})
 	}
 }
 
 func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	t.Run("Should not support DNS prefix for Kubernetes orchestrators", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].DNSPrefix = "sampleprefix"
@@ -1859,6 +1953,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should not contain agentPool ports for Kubernetes orchestrators", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].Ports = []int{80, 443, 8080}
@@ -1869,6 +1964,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should not support ScaleSetEviction policies with regular priority", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].Ports = []int{}
@@ -1881,6 +1977,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should contain a valid DNS prefix", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1892,6 +1989,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should not contain ports when DNS prefix is empty", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1903,6 +2001,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should contain unique ports", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1915,6 +2014,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should contain valid Storage Profile", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1927,6 +2027,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should contain valid Availability Profile", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1940,6 +2041,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 	})
 
 	t.Run("Should not support both VirtualMachineScaleSets and StorageAccount", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1956,6 +2058,7 @@ func TestValidateProperties_OrchestratorSpecificProperties(t *testing.T) {
 func TestValidateProperties_CustomNodeLabels(t *testing.T) {
 
 	t.Run("Should throw error for invalid Kubernetes Label Keys", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].CustomNodeLabels = map[string]string{
@@ -1968,6 +2071,7 @@ func TestValidateProperties_CustomNodeLabels(t *testing.T) {
 	})
 
 	t.Run("Should throw error for invalid Kubernetes Label Values", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].CustomNodeLabels = map[string]string{
@@ -1980,6 +2084,7 @@ func TestValidateProperties_CustomNodeLabels(t *testing.T) {
 	})
 
 	t.Run("Should not support orchestratorTypes other than Kubernetes/DCOS", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = SwarmMode
 		agentPoolProfiles := p.AgentPoolProfiles
@@ -1995,6 +2100,7 @@ func TestValidateProperties_CustomNodeLabels(t *testing.T) {
 
 func TestAgentPoolProfile_ValidateAvailabilityProfile(t *testing.T) {
 	t.Run("Should fail for invalid availability profile", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		agentPoolProfiles := p.AgentPoolProfiles
 		agentPoolProfiles[0].AvailabilityProfile = "InvalidAvailabilityProfile"
@@ -2005,6 +2111,7 @@ func TestAgentPoolProfile_ValidateAvailabilityProfile(t *testing.T) {
 	})
 
 	t.Run("Should fail when using VirtualMachineScalesets with Openshift", func(t *testing.T) {
+		t.Parallel()
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorType = OpenShift
 		agentPoolProfiles := p.AgentPoolProfiles

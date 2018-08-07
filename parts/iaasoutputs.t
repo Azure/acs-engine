@@ -25,4 +25,9 @@
     "primaryAvailabilitySetName": {
         "type": "string",
         "value": "[variables('primaryAvailabilitySetName')]"
+    },
+    "primaryScaleSetName": {
+        "type": "string",
+        "value": "[variables('primaryScaleSetName')]"
     }
+

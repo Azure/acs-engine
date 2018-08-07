@@ -55,7 +55,7 @@ node(env.NODE? env.NODE : 'slave') {
             sh("docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD} ${REGISTRY_USERNAME}.azurecr.io")
 
             // We retag the gcr image from hyperkube-amd64 to just hyperkube since we can use image tags for separate architectures
-            sh("cd /go/src/github.com/kubernetes/kubernetes && docker tag k8s-gcrio.azureedge.net/hyperkube-amd64:${tag} ${REGISTRY_USERNAME}.azurecr.io/hyperkube:${tag}")
+            sh("cd /go/src/github.com/kubernetes/kubernetes && docker tag k8s.gcr.io/hyperkube-amd64:${tag} ${REGISTRY_USERNAME}.azurecr.io/hyperkube:${tag}")
             sh("cd /go/src/github.com/kubernetes/kubernetes && docker push ${REGISTRY_USERNAME}.azurecr.io/hyperkube:${tag}")
           }
         }

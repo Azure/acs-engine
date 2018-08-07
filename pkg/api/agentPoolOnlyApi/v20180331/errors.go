@@ -1,60 +1,63 @@
 package v20180331
 
-import "fmt"
+import "github.com/pkg/errors"
 
 // ErrorInvalidNetworkProfile error
-var ErrorInvalidNetworkProfile = fmt.Errorf("ServiceCidr, DNSServiceIP, DockerBridgeCidr should all be empty or neither should be empty")
+var ErrorInvalidNetworkProfile = errors.New("ServiceCidr, DNSServiceIP, DockerBridgeCidr should all be empty or neither should be empty")
+
+// ErrorPodCidrNotSetableInAzureCNI error
+var ErrorPodCidrNotSetableInAzureCNI = errors.New("PodCidr should not be set when network plugin is set to Azure")
 
 // ErrorInvalidNetworkPlugin error
-var ErrorInvalidNetworkPlugin = fmt.Errorf("Network plugin should be either Azure or Kubenet")
+var ErrorInvalidNetworkPlugin = errors.New("Network plugin should be either Azure or Kubenet")
 
 // ErrorInvalidServiceCidr error
-var ErrorInvalidServiceCidr = fmt.Errorf("ServiceCidr is not a valid CIDR")
+var ErrorInvalidServiceCidr = errors.New("ServiceCidr is not a valid CIDR")
 
 // ErrorServiceCidrTooLarge error
-var ErrorServiceCidrTooLarge = fmt.Errorf("ServiceCidr is too large")
+var ErrorServiceCidrTooLarge = errors.New("ServiceCidr is too large")
 
 // ErrorInvalidDNSServiceIP error
-var ErrorInvalidDNSServiceIP = fmt.Errorf("DNSServiceIP is not a valid IP address")
+var ErrorInvalidDNSServiceIP = errors.New("DNSServiceIP is not a valid IP address")
 
 // ErrorInvalidDockerBridgeCidr error
-var ErrorInvalidDockerBridgeCidr = fmt.Errorf("DockerBridgeCidr is not a valid IP address")
+var ErrorInvalidDockerBridgeCidr = errors.New("DockerBridgeCidr is not a valid IP address")
 
 // ErrorDNSServiceIPNotInServiceCidr error
-var ErrorDNSServiceIPNotInServiceCidr = fmt.Errorf("DNSServiceIP is not within ServiceCidr")
+var ErrorDNSServiceIPNotInServiceCidr = errors.New("DNSServiceIP is not within ServiceCidr")
 
 // ErrorDNSServiceIPAlreadyUsed error
-var ErrorDNSServiceIPAlreadyUsed = fmt.Errorf("DNSServiceIP can not be the first IP address in ServiceCidr")
+var ErrorDNSServiceIPAlreadyUsed = errors.New("DNSServiceIP can not be the first IP address in ServiceCidr")
 
 // ErrorAtLeastAgentPoolNoSubnet error
-var ErrorAtLeastAgentPoolNoSubnet = fmt.Errorf("At least one agent pool does not have subnet defined")
+var ErrorAtLeastAgentPoolNoSubnet = errors.New("At least one agent pool does not have subnet defined")
 
 // ErrorInvalidMaxPods error
-var ErrorInvalidMaxPods = fmt.Errorf("Max pods per node needs to be at least 5")
+var ErrorInvalidMaxPods = errors.New("Max pods per node needs to be at least 5")
 
 // ErrorParsingSubnetID error
-var ErrorParsingSubnetID = fmt.Errorf("Failed to parse VnetSubnetID")
+var ErrorParsingSubnetID = errors.New("Failed to parse VnetSubnetID")
 
 // ErrorSubscriptionNotMatch error
-var ErrorSubscriptionNotMatch = fmt.Errorf("Subscription for subnet does not match with other subnet")
+var ErrorSubscriptionNotMatch = errors.New("Subscription for subnet does not match with other subnet")
 
 // ErrorResourceGroupNotMatch error
-var ErrorResourceGroupNotMatch = fmt.Errorf("ResourceGroup for subnet does not match with other subnet")
+var ErrorResourceGroupNotMatch = errors.New("ResourceGroup for subnet does not match with other subnet")
 
 // ErrorVnetNotMatch error
-var ErrorVnetNotMatch = fmt.Errorf("Vnet for subnet does not match with other subnet")
+var ErrorVnetNotMatch = errors.New("Vnet for subnet does not match with other subnet")
 
 // ErrorRBACNotEnabledForAAD error
-var ErrorRBACNotEnabledForAAD = fmt.Errorf("RBAC must be enabled for AAD to be enabled")
+var ErrorRBACNotEnabledForAAD = errors.New("RBAC must be enabled for AAD to be enabled")
 
 // ErrorAADServerAppIDNotSet error
-var ErrorAADServerAppIDNotSet = fmt.Errorf("ServerAppID in AADProfile cannot be empty string")
+var ErrorAADServerAppIDNotSet = errors.New("ServerAppID in AADProfile cannot be empty string")
 
 // ErrorAADServerAppSecretNotSet error
-var ErrorAADServerAppSecretNotSet = fmt.Errorf("ServerAppSecret in AADProfile cannot be empty string")
+var ErrorAADServerAppSecretNotSet = errors.New("ServerAppSecret in AADProfile cannot be empty string")
 
 // ErrorAADClientAppIDNotSet error
-var ErrorAADClientAppIDNotSet = fmt.Errorf("ClientAppID in AADProfile cannot be empty string")
+var ErrorAADClientAppIDNotSet = errors.New("ClientAppID in AADProfile cannot be empty string")
 
 // ErrorAADTenantIDNotSet error
-var ErrorAADTenantIDNotSet = fmt.Errorf("TenantID in AADProfile cannot be empty string")
+var ErrorAADTenantIDNotSet = errors.New("TenantID in AADProfile cannot be empty string")

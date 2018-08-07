@@ -8,7 +8,7 @@ dockerConfig:
   execHandlerName: ""
 iptablesSyncPeriod: "30s"
 imageConfig:
-  format: IMAGE_PREFIX/IMAGE_TYPE-${component}:${version}
+  format: MASTER_OREG_URL
   latest: False
 kind: NodeConfig
 kubeletArguments:

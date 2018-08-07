@@ -25,7 +25,7 @@ GITTAG := $(VERSION_SHORT)
 endif
 
 REPO_PATH := github.com/Azure/acs-engine
-DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.10.0
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.14.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -50,7 +50,7 @@ validate-generated: bootstrap
 
 .PHONY: generate
 generate: bootstrap
-	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
+	go generate $(GOFLAGS) -v `go list ./...`
 
 .PHONY: generate-azure-constants
 generate-azure-constants:
@@ -111,24 +111,21 @@ test-style:
 test-e2e:
 	@test/e2e.sh
 
-HAS_GLIDE := $(shell command -v glide;)
+HAS_DEP := $(shell command -v dep;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
-HAS_GOBINDATA := $(shell command -v go-bindata;)
 HAS_GOMETALINTER := $(shell command -v gometalinter;)
 HAS_GINKGO := $(shell command -v ginkgo;)
 
 .PHONY: bootstrap
 bootstrap:
-ifndef HAS_GLIDE
-	go get -u github.com/Masterminds/glide
+ifndef HAS_DEP
+	go get -u github.com/golang/dep/cmd/dep
 endif
 ifndef HAS_GOX
 	go get -u github.com/mitchellh/gox
 endif
-ifndef HAS_GOBINDATA
-	go get github.com/go-bindata/go-bindata/...
-endif
+	go install ./vendor/github.com/go-bindata/go-bindata/...
 ifndef HAS_GIT
 	$(error You must install Git)
 endif
@@ -141,7 +138,7 @@ ifndef HAS_GINKGO
 endif
 
 build-vendor:
-	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force --strip-vendor
+	${DEV_ENV_CMD} dep ensure
 	rm -rf vendor/github.com/docker/distribution/contrib/docker-integration/generated_certs.d
 
 ci: bootstrap test-style build test lint

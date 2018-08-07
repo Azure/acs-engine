@@ -1,6 +1,7 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
 [![Coverage Status](https://codecov.io/gh/Azure/acs-engine/branch/master/graph/badge.svg)](https://codecov.io/gh/Azure/acs-engine)
 [![CircleCI](https://circleci.com/gh/Azure/acs-engine/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/acs-engine/tree/master)
+[![GoDoc](https://godoc.org/github.com/Azure/acs-engine?status.svg)](https://godoc.org/github.com/Azure/acs-engine)
 
 ## Overview
 
@@ -17,15 +18,19 @@ The cluster definition file enables you to customize your Docker enabled cluster
 * Custom VNET
 * Extensions
 
+More info, including a thorough walkthrough is [here](docs/acsengine.md).
+
 ## User guides
 
-* [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom Docker enabled container clusters
+These guides show how to create your first deployment for each orchestrator:
+* [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS cluster on Azure
+* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Linux or Windows Kubernetes cluster on Azure
+* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift cluster on Azure
+* [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a [Docker Swarm Mode](https://docs.docker.com/engine/swarm/) cluster on Azure
+* [Standalone Swarm Walkthrough](docs/swarm.md) - shows how to create a [Docker Standalone Swarm](https://docs.docker.com/swarm/) cluster on Azure
+
+These guides cover more advanced features to try out after you have built your first cluster:
 * [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
-* [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
-* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
-* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift enabled Docker cluster on Azure
-* [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
-* [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](examples/disks-managed) - shows how to use managed disks
@@ -35,7 +40,7 @@ The cluster definition file enables you to customize your Docker enabled cluster
 
 Follow the [developers guide](docs/developers.md) to set up your environment.
 
-To build acs-engine, run `make build`. If you are developing with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` first to start a Docker container and run `make build` inside the container.
+To build acs-engine, run `make build`. If you are developing with a working [Docker environment](https://docs.docker.com/engine), you can also run `make dev` (or `makedev.ps1` on Windows) first to start a Docker container and run `make build` inside the container.
 
 Please follow these instructions before submitting a PR:
 

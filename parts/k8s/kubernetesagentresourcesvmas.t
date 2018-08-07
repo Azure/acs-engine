@@ -1,6 +1,6 @@
     {
 {{if .AcceleratedNetworkingEnabled}}
-      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+      "apiVersion": "2018-04-01",
 {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
 {{end}}
@@ -324,8 +324,9 @@
         {{end}}
         }
       }
-    },
-    {
+    }
+    {{if UseAksExtension}}
+    ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -346,4 +347,5 @@
         }
       }
     }
+    {{end}}
     

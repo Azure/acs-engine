@@ -2,8 +2,9 @@ package vlabs
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -212,7 +213,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, OpenShift):
 		o.OrchestratorType = OpenShift
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }
@@ -440,7 +441,7 @@ type AgentPoolProfile struct {
 	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	// subnet is internal
 	subnet string

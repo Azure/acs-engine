@@ -175,6 +175,27 @@ func TestKubeletMaxPods(t *testing.T) {
 		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
 			NetworkPluginKubenet, k["--max-pods"])
 	}
+
+	// Test that user-overrides for --max-pods work as intended
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--max-pods"] = "99"
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != "99" {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPluginKubenet, k["--max-pods"])
+	}
+
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = NetworkPluginAzure
+	cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--max-pods"] = "99"
+	setKubeletConfig(cs)
+	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+	if k["--max-pods"] != "99" {
+		t.Fatalf("got unexpected '--max-pods' kubelet config value for NetworkPolicy=%s: %s",
+			NetworkPluginKubenet, k["--max-pods"])
+	}
 }
 
 func TestKubeletCalico(t *testing.T) {

@@ -1,6 +1,7 @@
 package kubernetesupgrade
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -9,9 +10,10 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/blang/semver"
-	uuid "github.com/satori/go.uuid"
+	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -141,94 +143,95 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 }
 
 func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourceGroup string) error {
-	vmListResult, err := uc.Client.ListVirtualMachines(resourceGroup)
-	if err != nil {
-		return err
-	}
+	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
-	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
-		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-
-	vmScaleSets, err := uc.Client.ListVirtualMachineScaleSets(resourceGroup)
-	if err != nil {
-		return err
-	}
-	if vmScaleSets.Value != nil {
-		for _, vmScaleSet := range *vmScaleSets.Value {
-			vmScaleSetVMs, err := uc.Client.ListVirtualMachineScaleSetVMs(resourceGroup, *vmScaleSet.Name)
-			if err != nil {
-				return err
-			}
-			scaleSetToUpgrade := AgentPoolScaleSet{
-				Name:     *vmScaleSet.Name,
-				Sku:      *vmScaleSet.Sku,
-				Location: *vmScaleSet.Location,
-			}
-			for _, vm := range *vmScaleSetVMs.Value {
-				if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
-					uc.Logger.Infof("No tags found for scale set VM: %s skipping.\n", *vm.Name)
-					continue
+	ctx := context.Background()
+	for vmScaleSetPage, err := uc.Client.ListVirtualMachineScaleSets(ctx, resourceGroup); vmScaleSetPage.NotDone(); err = vmScaleSetPage.Next() {
+		if err != nil {
+			return err
+		}
+		for _, vmScaleSet := range vmScaleSetPage.Values() {
+			for vmScaleSetVMsPage, err := uc.Client.ListVirtualMachineScaleSetVMs(ctx, resourceGroup, *vmScaleSet.Name); vmScaleSetVMsPage.NotDone(); err = vmScaleSetVMsPage.Next() {
+				if err != nil {
+					return err
 				}
-
-				scaleSetVMOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
-				if scaleSetVMOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
-					// This condition is a scale set VM that is an older version and should be handled
-					uc.Logger.Infof(
-						"VM %s in VMSS %s has a current tag of %s and a desired tag of %s. Upgrading this node.\n",
-						*vm.Name,
-						*vmScaleSet.Name,
-						scaleSetVMOrchestratorTypeAndVersion,
-						targetOrchestratorTypeVersion,
-					)
-					scaleSetToUpgrade.VMsToUpgrade = append(
-						scaleSetToUpgrade.VMsToUpgrade,
-						AgentPoolScaleSetVM{
-							Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
-							InstanceID: *vm.InstanceID,
-						},
-					)
+				scaleSetToUpgrade := AgentPoolScaleSet{
+					Name:     *vmScaleSet.Name,
+					Sku:      *vmScaleSet.Sku,
+					Location: *vmScaleSet.Location,
 				}
+				for _, vm := range vmScaleSetVMsPage.Values() {
+					if vm.Tags == nil || vm.Tags["orchestrator"] == nil {
+						uc.Logger.Infof("No tags found for scale set VM: %s skipping.\n", *vm.Name)
+						continue
+					}
+
+					scaleSetVMOrchestratorTypeAndVersion := *vm.Tags["orchestrator"]
+					if scaleSetVMOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
+						// This condition is a scale set VM that is an older version and should be handled
+						uc.Logger.Infof(
+							"VM %s in VMSS %s has a current tag of %s and a desired tag of %s. Upgrading this node.\n",
+							*vm.Name,
+							*vmScaleSet.Name,
+							scaleSetVMOrchestratorTypeAndVersion,
+							targetOrchestratorTypeVersion,
+						)
+						scaleSetToUpgrade.VMsToUpgrade = append(
+							scaleSetToUpgrade.VMsToUpgrade,
+							AgentPoolScaleSetVM{
+								Name:       *vm.VirtualMachineScaleSetVMProperties.OsProfile.ComputerName,
+								InstanceID: *vm.InstanceID,
+							},
+						)
+					}
+				}
+				uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
 			}
-			uc.AgentPoolScaleSetsToUpgrade = append(uc.AgentPoolScaleSetsToUpgrade, scaleSetToUpgrade)
 		}
 	}
 
-	for _, vm := range *vmListResult.Value {
-		if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
-			uc.Logger.Infof("No tags found for VM: %s skipping.\n", *vm.Name)
-			continue
+	for vmListPage, err := uc.Client.ListVirtualMachines(ctx, resourceGroup); vmListPage.NotDone(); err = vmListPage.Next() {
+		if err != nil {
+			return err
 		}
 
-		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
-		if vmOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
-			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
-				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
-					uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
-						*vm.Name, uc.NameSuffix)
-					continue
-				}
-				if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
-					return err
-				}
-				uc.Logger.Infof("Master VM name: %s, orchestrator: %s (MasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
-				*uc.MasterVMs = append(*uc.MasterVMs, vm)
-			} else {
-				if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
-					return err
-				}
-				uc.addVMToAgentPool(vm, true)
+		for _, vm := range vmListPage.Values() {
+			if vm.Tags == nil || vm.Tags["orchestrator"] == nil {
+				uc.Logger.Infof("No tags found for VM: %s skipping.\n", *vm.Name)
+				continue
 			}
-		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
-			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
-				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
-					uc.Logger.Infof("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s\n",
-						*vm.Name, uc.NameSuffix)
-					continue
+
+			vmOrchestratorTypeAndVersion := *vm.Tags["orchestrator"]
+			if vmOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
+				if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
+					if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+						uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
+							*vm.Name, uc.NameSuffix)
+						continue
+					}
+					if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
+						return err
+					}
+					uc.Logger.Infof("Master VM name: %s, orchestrator: %s (MasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
+					*uc.MasterVMs = append(*uc.MasterVMs, vm)
+				} else {
+					if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
+						return err
+					}
+					uc.addVMToAgentPool(vm, true)
 				}
-				uc.Logger.Infof("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
-				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
-			} else {
-				uc.addVMToAgentPool(vm, false)
+			} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
+				if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
+					if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+						uc.Logger.Infof("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s\n",
+							*vm.Name, uc.NameSuffix)
+						continue
+					}
+					uc.Logger.Infof("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
+					*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
+				} else {
+					uc.addVMToAgentPool(vm, false)
+				}
 			}
 		}
 	}
@@ -239,11 +242,11 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error {
 	arr := strings.Split(vmOrchestratorTypeAndVersion, ":")
 	if len(arr) != 2 {
-		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
+		return errors.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
 	}
 	currentVer, err := semver.Make(arr[1])
 	if err != nil {
-		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer.String())
+		return errors.Errorf("Unsupported orchestrator version format %s", currentVer.String())
 	}
 	csOrch := &api.OrchestratorProfile{
 		OrchestratorType:    api.Kubernetes,
@@ -258,7 +261,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 			return nil
 		}
 	}
-	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	return errors.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
@@ -266,12 +269,12 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	var poolPrefix string
 	var err error
 
-	if vm.Tags == nil || (*vm.Tags)["poolName"] == nil {
+	if vm.Tags == nil || vm.Tags["poolName"] == nil {
 		uc.Logger.Infof("poolName tag not found for VM: %s skipping.\n", *vm.Name)
 		return nil
 	}
 
-	vmPoolName := *(*vm.Tags)["poolName"]
+	vmPoolName := *vm.Tags["poolName"]
 	uc.Logger.Infof("Evaluating VM: %s in pool: %s...\n", *vm.Name, vmPoolName)
 	if vmPoolName == "" {
 		uc.Logger.Infof("VM: %s does not contain `poolName` tag, skipping.\n", *vm.Name)
@@ -313,16 +316,16 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 
 	if uc.AgentPools[poolIdentifier] == nil {
 		uc.AgentPools[poolIdentifier] =
-			&AgentPoolTopology{&poolIdentifier, (*vm.Tags)["poolName"], &[]compute.VirtualMachine{}, &[]compute.VirtualMachine{}}
+			&AgentPoolTopology{&poolIdentifier, vm.Tags["poolName"], &[]compute.VirtualMachine{}, &[]compute.VirtualMachine{}}
 	}
 
 	if isUpgradableVM {
 		uc.Logger.Infof("Adding Agent VM: %s, orchestrator: %s to pool: %s (AgentVMs)\n",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier)
+			*vm.Name, *vm.Tags["orchestrator"], poolIdentifier)
 		*uc.AgentPools[poolIdentifier].AgentVMs = append(*uc.AgentPools[poolIdentifier].AgentVMs, vm)
 	} else {
 		uc.Logger.Infof("Adding Agent VM: %s, orchestrator: %s to pool: %s (UpgradedAgentVMs)\n",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier)
+			*vm.Name, *vm.Tags["orchestrator"], poolIdentifier)
 		*uc.AgentPools[poolIdentifier].UpgradedAgentVMs = append(*uc.AgentPools[poolIdentifier].UpgradedAgentVMs, vm)
 	}
 

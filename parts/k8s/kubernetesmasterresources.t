@@ -904,8 +904,9 @@
         {{end}}
         }
       }
-    },
-    {
+    }
+    {{if UseAksExtension}}
+    ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -925,4 +926,6 @@
         "settings": {
         }
       }
-    }{{WriteLinkedTemplatesForExtensions}}
+    }
+    {{end}}
+    {{WriteLinkedTemplatesForExtensions}}

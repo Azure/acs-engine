@@ -17,6 +17,8 @@ LABEL maintainer="Microsoft" \
       org.label-schema.vcs-url="https://github.com/Azure/acs-engine.git" \
       org.label-schema.docker.cmd="docker run -v \${PWD}:/acs-engine/workspace -it --rm microsoft/acs-engine:$ACSENGINE_VERSION"
 
+RUN apk add --no-cache ca-certificates
+
 ADD "https://github.com/Azure/acs-engine/releases/download/v${ACSENGINE_VERSION}/acs-engine-v${ACSENGINE_VERSION}-linux-amd64.tar.gz" /tmp/acs-engine.tgz
 
 RUN mkdir /opt/ && \

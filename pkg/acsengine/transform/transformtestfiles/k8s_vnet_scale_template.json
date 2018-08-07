@@ -2117,14 +2117,6 @@
           }
         },
         "storageProfile": {
-          "dataDisks": [
-            {
-              "createOption": "Empty",
-              "diskSizeGB": "128",
-              "lun": 0,
-              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
-            }
-          ],
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage"
