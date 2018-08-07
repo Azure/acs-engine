@@ -80,8 +80,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideKubeletConfig map[string]string = staticLinuxKubeletConfig
-	for key, val := range overrideKubeletConfig {
+	for key, val := range staticLinuxKubeletConfig {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
 
@@ -126,14 +125,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
-			// TODO [plang] finish this
-			// if cs.Properties.HasWindows() {
-			// 	overrideKubeletConfig = staticWindowsKubeletConfig
-			// } else {
-			// 	overrideKubeletConfig = staticLinuxKubeletConfig
-			// }
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
+			if profile.OSType == "Windows" {
+				for key, val := range staticWindowsKubeletConfig {
+					profile.KubernetesConfig.KubeletConfig[key] = val
+				}
+			}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 
