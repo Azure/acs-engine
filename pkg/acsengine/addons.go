@@ -115,7 +115,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 		{
 			"kubernetesmasteraddons-omsagent-daemonset.yaml",
 			"omsagent-daemonset.yaml",
-			profile.OrchestratorProfile.IsContainerMonitoringEnabled(),
+			profile.OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled(),
 		},
 		{
 			"azure-cni-networkmonitor.yaml",
