@@ -161,7 +161,7 @@ MASTER_CUSTOM_FILES_PLACEHOLDER
 {{if IsKubernetesVersionGe "1.6.0"}}
   {{if HasLinuxAgents}}
     KUBELET_REGISTER_NODE=--register-node=true
-    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints=node-role.kubernetes.io/master=true:NoSchedule
   {{end}}
 {{else}}
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
@@ -306,7 +306,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<searchDomainRealmUser>|{{WrapAsVariable "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
     sed -i "s|<searchDomainRealmPassword>|{{WrapAsVariable "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
-{{if .OrchestratorProfile.IsContainerMonitoringEnabled}}
+{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     sed -i "s|<omsAgentVersion>|{{WrapAsVariable "omsAgentVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<dockerProviderVersion>|{{WrapAsVariable "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<kubernetesContainerMonitoringSpec>|{{WrapAsVariable "omsAgentImage"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"

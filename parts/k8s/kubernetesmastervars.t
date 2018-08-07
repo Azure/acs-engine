@@ -88,20 +88,24 @@
     "kubernetesCcmImageSpec": "[parameters('kubernetesCcmImageSpec')]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
     "kubernetesDashboardCPURequests": "[parameters('kubernetesDashboardCPURequests')]",
     "kubernetesDashboardMemoryRequests": "[parameters('kubernetesDashboardMemoryRequests')]",
     "kubernetesDashboardCPULimit": "[parameters('kubernetesDashboardCPULimit')]",
     "kubernetesDashboardMemoryLimit": "[parameters('kubernetesDashboardMemoryLimit')]",
+{{end}}
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
     "kubernetesDNSSidecarSpec": "[parameters('kubernetesDNSSidecarSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
     "kubernetesMetricsServerSpec": "[parameters('kubernetesMetricsServerSpec')]",
+{{if IsNVIDIADevicePluginEnabled}}
     "kubernetesNVIDIADevicePluginSpec": "[parameters('kubernetesNVIDIADevicePluginSpec')]",
     "kubernetesNVIDIADevicePluginCPURequests": "[parameters('kubernetesNVIDIADevicePluginCPURequests')]",
     "kubernetesNVIDIADevicePluginMemoryRequests": "[parameters('kubernetesNVIDIADevicePluginMemoryRequests')]",
     "kubernetesNVIDIADevicePluginCPULimit": "[parameters('kubernetesNVIDIADevicePluginCPULimit')]",
     "kubernetesNVIDIADevicePluginMemoryLimit": "[parameters('kubernetesNVIDIADevicePluginMemoryLimit')]",
+{{end}}
     "kubernetesTillerSpec": "[parameters('kubernetesTillerSpec')]",
     "kubernetesTillerCPURequests": "[parameters('kubernetesTillerCPURequests')]",
     "kubernetesTillerMemoryRequests": "[parameters('kubernetesTillerMemoryRequests')]",
@@ -109,6 +113,7 @@
     "kubernetesTillerMemoryLimit": "[parameters('kubernetesTillerMemoryLimit')]",
     "kubernetesTillerMaxHistory": "[parameters('kubernetesTillerMaxHistory')]",
     "kubernetesACIConnectorEnabled": "[parameters('kubernetesACIConnectorEnabled')]",
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}} 
     "kubernetesACIConnectorSpec": "[parameters('kubernetesACIConnectorSpec')]",
     "kubernetesACIConnectorNodeName": "[parameters('kubernetesACIConnectorNodeName')]",
     "kubernetesACIConnectorOS": "[parameters('kubernetesACIConnectorOS')]",
@@ -118,6 +123,9 @@
     "kubernetesACIConnectorMemoryRequests": "[parameters('kubernetesACIConnectorMemoryRequests')]",
     "kubernetesACIConnectorCPULimit": "[parameters('kubernetesACIConnectorCPULimit')]",
     "kubernetesACIConnectorMemoryLimit": "[parameters('kubernetesACIConnectorMemoryLimit')]",
+{{end}}
+    "kubernetesClusterAutoscalerEnabled": "[parameters('kubernetesClusterAutoscalerEnabled')]",
+{{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
     "kubernetesClusterAutoscalerSpec": "[parameters('kubernetesClusterAutoscalerSpec')]",
     "kubernetesClusterAutoscalerAzureCloud": "[parameters('kubernetesClusterAutoscalerAzureCloud')]",
     "kubernetesClusterAutoscalerCPULimit": "[parameters('kubernetesClusterAutoscalerCPULimit')]",
@@ -126,12 +134,14 @@
     "kubernetesClusterAutoscalerMemoryRequests": "[parameters('kubernetesClusterAutoscalerMemoryRequests')]",
     "kubernetesClusterAutoscalerMinNodes": "[parameters('kubernetesClusterAutoscalerMinNodes')]",
     "kubernetesClusterAutoscalerMaxNodes": "[parameters('kubernetesClusterAutoscalerMaxNodes')]",
-    "kubernetesClusterAutoscalerEnabled": "[parameters('kubernetesClusterAutoscalerEnabled')]",
     "kubernetesClusterAutoscalerUseManagedIdentity": "[parameters('kubernetesClusterAutoscalerUseManagedIdentity')]",
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPURequests')]",
     "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests": "[parameters('kubernetesKeyVaultFlexVolumeInstallerMemoryRequests')]",
     "kubernetesKeyVaultFlexVolumeInstallerCPULimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerCPULimit')]",
     "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": "[parameters('kubernetesKeyVaultFlexVolumeInstallerMemoryLimit')]",
+{{end}}
     "kubernetesReschedulerSpec": "[parameters('kubernetesReschedulerSpec')]",
     "kubernetesReschedulerCPURequests": "[parameters('kubernetesReschedulerCPURequests')]",
     "kubernetesReschedulerMemoryRequests": "[parameters('kubernetesReschedulerMemoryRequests')]",
@@ -162,6 +172,7 @@
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
     "gcLowThreshold":"[parameters('gcLowThreshold')]",
+{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     "omsAgentVersion": "[parameters('omsAgentVersion')]",
     "omsAgentDockerProviderVersion": "[parameters('omsAgentDockerProviderVersion')]",
     "omsAgentImage": "[parameters('omsAgentImage')]",
@@ -171,6 +182,7 @@
     "kubernetesOMSAgentMemoryRequests": "[parameters('kubernetesOMSAgentMemoryRequests')]",
     "kubernetesOMSAgentCPULimit": "[parameters('kubernetesOMSAgentCPULimit')]",
     "kubernetesOMSAgentMemoryLimit": "[parameters('kubernetesOMSAgentMemoryLimit')]",
+{{end}}
 {{if EnableDataEncryptionAtRest}}
     "etcdEncryptionKey": "[parameters('etcdEncryptionKey')]",
 {{end}}
@@ -201,7 +213,6 @@
     "masterOffset": "[parameters('masterOffset')]",
 {{end}}
     "apiVersionDefault": "2016-03-30",
-    "apiVersionAcceleratedNetworking": "2018-04-01",
     "apiVersionLinkDefault": "2015-01-01",
     "locations": [
          "[resourceGroup().location]",
@@ -340,15 +351,6 @@
     "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
-{{if IsKubernetesVersionGe "1.6.0"}}
-    "registerWithTaints": "node-role.kubernetes.io/master=true:NoSchedule",
-{{else}}
-    {{if HasLinuxAgents}}
-    "registerSchedulable": "false",
-    {{else}}
-    "registerSchedulable": "true",
-    {{end}}
-{{end}}
 {{if not IsHostedMaster }}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
 {{else}}
