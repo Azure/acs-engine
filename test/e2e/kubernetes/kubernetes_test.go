@@ -5,9 +5,9 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	//"os/exec"
+	"os/exec"
 	"path/filepath"
-	//"regexp"
+	"regexp"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -21,7 +21,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/storageclass"
-	//"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -65,7 +65,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
-		/*It("should have functional DNS", func() {
+		It("should have functional DNS", func() {
 			if !eng.HasWindowsAgents() {
 				if !eng.HasNetworkPolicy("calico") {
 					var err error
@@ -173,7 +173,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(ready).To(Equal(true))
 			}
-		})*/
+		})
 
 		It("should have kube-dns running", func() {
 			running, err := pod.WaitOnReady("kube-dns", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -238,7 +238,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		/*It("should be able to access the dashboard from each node", func() {
+		It("should be able to access the dashboard from each node", func() {
 			if hasDashboard, dashboardAddon := eng.HasAddon("kubernetes-dashboard"); hasDashboard {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
 
@@ -312,7 +312,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("kubernetes-dashboard disabled for this cluster, will not test")
 			}
-		})*/
+		})
 
 		It("should have aci-connector running", func() {
 			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
