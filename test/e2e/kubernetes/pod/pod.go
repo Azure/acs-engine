@@ -382,7 +382,7 @@ func (p *Pod) ValidateCurlConnection(uri string, sleep, duration time.Duration) 
 	}
 }
 
-// ValidateOMSagent logs
+// ValidateOmsAgentLogs validates omsagent logs
 func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Duration) (bool, error) {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
@@ -411,7 +411,6 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 		}
 	}
 }
-
 
 // CheckWindowsOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (bool, error) {
