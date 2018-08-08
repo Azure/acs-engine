@@ -444,6 +444,7 @@ type AgentPoolProfile struct {
 	OSType                       OSType               `json:"osType,omitempty"`
 	Ports                        []int                `json:"ports,omitempty"`
 	AvailabilityProfile          string               `json:"availabilityProfile"`
+	ScaleSetName                 string               `json:"scaleSetName,omitempty"`
 	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty"`
 	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty"`
 	StorageProfile               string               `json:"storageProfile,omitempty"`
