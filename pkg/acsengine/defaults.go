@@ -678,7 +678,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		sFV := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[sFV].IsEnabled(api.DefaultSMBFlexVolumeAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[sFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[bFFV], DefaultSMBFlexVolumeAddonsConfig)
+			a.OrchestratorProfile.KubernetesConfig.Addons[sFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[sFV], DefaultSMBFlexVolumeAddonsConfig)
 		}
 		kv := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[kv].IsEnabled(api.DefaultKeyVaultFlexVolumeAddonEnabled) {
