@@ -812,7 +812,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we no longer have inbound internet access")
 				for _, clientOnePod := range clientOnePods {
 					for _, serverPod := range serverPods {
-						pass, err := serverPod.ValidateCurlConnection(clientPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := serverPod.ValidateCurlConnection(clientOnePod.Status.PodIP, 5*time.Second, 3*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
@@ -869,12 +869,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Applying a network policy to only allow ingress access to label:role=server from pods within the same namespace")
 				networkPolicyName, namespace = "server-allow-server-namespace", nsServer
-				err = networkPolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-server-namespace-policy.yaml"), networkPolicyName)
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-server-namespace-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring server pods only have ingress access from pods within the same namespace")
 				for _, listenerServerPod := range serverPods {
-					for _, clientOnePods := range clientOnePods {
+					for _, clientOnePod := range clientOnePods {
 						pass, err := clientOnePod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
