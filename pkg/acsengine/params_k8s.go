@@ -183,14 +183,15 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 			addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
-			addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
-			addValue(parametersMap, "cloudProviderBackoffRetries", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries))
-			addValue(parametersMap, "cloudProviderBackoffExponent", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64))
-			addValue(parametersMap, "cloudProviderBackoffDuration", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration))
-			addValue(parametersMap, "cloudProviderBackoffJitter", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'f', -1, 64))
-			addValue(parametersMap, "cloudProviderRatelimit", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit))
-			addValue(parametersMap, "cloudProviderRatelimitQPS", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64))
-			addValue(parametersMap, "cloudProviderRatelimitBucket", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket))
+			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
+				CloudProviderBackoff:         properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff,
+				CloudProviderBackoffRetries:  properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries,
+				CloudProviderBackoffJitter:   properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter,
+				CloudProviderBackoffDuration: properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration,
+				CloudProviderBackoffExponent: properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent,
+				CloudProviderRateLimit:       properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit,
+				CloudProviderRateLimitQPS:    properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS,
+			})
 			addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 			addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--non-masquerade-cidr"])
 			addValue(parametersMap, "kubernetesKubeletClusterDomain", properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--cluster-domain"])
