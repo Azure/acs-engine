@@ -69,7 +69,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201807240",
+		ImageVersion:   "16.04.201808060",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
