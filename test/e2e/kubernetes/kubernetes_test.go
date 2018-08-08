@@ -809,10 +809,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-ingress-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
-				By("Ensuring we no longer have inbound internet access from the nginx server pods")
+				By("Ensuring we no longer have inbound internet access")
 				for _, clientOnePod := range clientOnePods {
 					for _, serverPod := range serverPods {
-						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := serverPod.ValidateCurlConnection(clientPod.Status.PodIP, 5*time.Second, 3*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
