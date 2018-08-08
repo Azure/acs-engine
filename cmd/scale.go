@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
-	"sort"
+	// "sort"
 	"strings"
 	"time"
 
@@ -213,8 +213,9 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex, index, winPoolIndex int
 	winPoolIndex = -1
-	indexes := make([]int, 0)
-	indexToVM := make(map[int]string)
+	// indexes := make([]int, 0)
+	// indexToVM := make(map[int]string)
+	vms := make([]string, 0)
 	if sc.agentPool.IsAvailabilitySets() {
 		for vmsListPage, err := sc.client.ListVirtualMachines(ctx, sc.resourceGroupName); vmsListPage.NotDone(); err = vmsListPage.Next() {
 			if err != nil {
@@ -239,20 +240,26 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 					_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
 				}
 
-				indexToVM[index] = *vm.Name
-				indexes = append(indexes, index)
+				if index > highestUsedIndex {
+					highestUsedIndex = index
+				}
+
+				// indexToVM[index] = *vm.Name
+				// indexes = append(indexes, index)
+				vms = append(vms, *vm.Name)
 			}
 		}
-		sortedIndexes := sort.IntSlice(indexes)
-		sortedIndexes.Sort()
-		indexes = []int(sortedIndexes)
-		currentNodeCount = len(indexes)
+		// sortedIndexes := sort.IntSlice(indexes)
+		// sortedIndexes.Sort()
+		// indexes = []int(sortedIndexes)
+		// currentNodeCount = len(indexes)
+		currentNodeCount = len(vms)
 
 		if currentNodeCount == sc.newDesiredAgentCount {
 			log.Info("Cluster is currently at the desired agent count.")
 			return nil
 		}
-		highestUsedIndex = indexes[len(indexes)-1]
+		// highestUsedIndex = indexes[len(indexes)-1]
 
 		// Scale down Scenario
 		if currentNodeCount > sc.newDesiredAgentCount {
@@ -262,8 +269,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			}
 
 			vmsToDelete := make([]string, 0)
-			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
-				vmsToDelete = append(vmsToDelete, indexToVM[i])
+			// for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
+			// 	vmsToDelete = append(vmsToDelete, indexToVM[i])
+			// }
+			for i := len(vms)-1; i >= sc.newDesiredAgentCount; i-- {
+				vmsToDelete = append(vmsToDelete, vms[i])
 			}
 
 			switch orchestratorInfo.OrchestratorType {
