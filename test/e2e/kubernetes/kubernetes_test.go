@@ -70,7 +70,16 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
 			if err != nil {
-				log.Printf("Error while getting Ubuntu image version: %s\n", out)
+				log.Printf("Error while getting Ubuntu image version: %s\n", err)
+			}
+
+			kernelVerCmd := fmt.Sprintf("cat /proc/version")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting LinuxKernel version: %s\n", err)
 			}
 		})
 
@@ -110,7 +119,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				out, err := cmd.CombinedOutput()
 				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 
 				resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
@@ -119,7 +128,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				out, err = cmd.CombinedOutput()
 				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 
 				By("Ensuring that we have a valid connection to our resolver")
@@ -127,8 +136,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 
 				nodeList, err := node.Get()
@@ -139,8 +149,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 					util.PrintCommand(cmd)
 					out, err = cmd.CombinedOutput()
+					log.Printf("%s\n", out)
 					if err != nil {
-						log.Printf("Error while querying DNS: %s\n", out)
+						log.Printf("Error while querying DNS: %s\n", err)
 					}
 					Expect(err).NotTo(HaveOccurred())
 				}
@@ -157,8 +168,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 
 				By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
@@ -166,15 +178,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 				digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
 				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
 				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
+					log.Printf("Error while querying DNS: %s\n", err)
 				}
 
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
