@@ -641,6 +641,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"WrapAsParameter": func(s string) string {
 			return fmt.Sprintf("',parameters('%s'),'", s)
 		},
+		"WrapAsParameterObject": func(o, p string) string {
+			return fmt.Sprintf("',parameters('%s').%s,'", o, p)
+		},
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
@@ -765,10 +768,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
 				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
 				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
-				bfFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
-				bFFVC := getAddonContainersIndexByName(bfFlexVolumeAddon.Containers, DefaultBlobfuseFlexVolumeAddonName)
-				smbFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
-				smbFVC := getAddonContainersIndexByName(smbFlexVolumeAddon.Containers, DefaultSMBFlexVolumeAddonName)
 				kvFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 				kC := getAddonContainersIndexByName(kvFlexVolumeAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 				switch attr {
@@ -927,54 +926,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						} else {
 							val = "false"
 						}
-					}
-				case "kubernetesBlobfuseFlexVolumeInstallerCPURequests":
-					if bFFVC > -1 {
-						val = bfFlexVolumeAddon.Containers[bFFVC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests":
-					if bFFVC > -1 {
-						val = bfFlexVolumeAddon.Containers[bFFVC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesBlobfuseFlexVolumeInstallerCPULimit":
-					if bFFVC > -1 {
-						val = bfFlexVolumeAddon.Containers[bFFVC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit":
-					if bFFVC > -1 {
-						val = bfFlexVolumeAddon.Containers[bFFVC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesSMBFlexVolumeInstallerCPURequests":
-					if smbFVC > -1 {
-						val = smbFlexVolumeAddon.Containers[smbFVC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesSMBFlexVolumeInstallerMemoryRequests":
-					if smbFVC > -1 {
-						val = smbFlexVolumeAddon.Containers[smbFVC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesSMBFlexVolumeInstallerCPULimit":
-					if smbFVC > -1 {
-						val = smbFlexVolumeAddon.Containers[smbFVC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesSMBFlexVolumeInstallerMemoryLimit":
-					if smbFVC > -1 {
-						val = smbFlexVolumeAddon.Containers[smbFVC].MemoryLimits
-					} else {
-						val = ""
 					}
 				case "kubernetesKeyVaultFlexVolumeInstallerCPURequests":
 					if kC > -1 {

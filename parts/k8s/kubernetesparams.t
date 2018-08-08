@@ -535,61 +535,18 @@
       },
       "type": "string"
     },
-    "kubernetesBlobfuseFlexVolumeInstallerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerCPURequests"}}
-      "metadata": {
-        "description": "Blobfuse FlexVolume Installer CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"}}
-      "metadata": {
-        "description": "Blobfuse FlexVolume Installer Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesBlobfuseFlexVolumeInstallerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerCPULimit"}}
-      "metadata": {
-        "description": "Blobfuse FlexVolume Installer CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"}}
-      "metadata": {
-        "description": "Blobfuse FlexVolume Installer Memory Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesSMBFlexVolumeInstallerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerCPURequests"}}
-      "metadata": {
-        "description": "SMB FlexVolume Installer CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesSMBFlexVolumeInstallerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerMemoryRequests"}}
-      "metadata": {
-        "description": "SMB FlexVolume Installer Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesSMBFlexVolumeInstallerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerCPULimit"}}
-      "metadata": {
-        "description": "SMB FlexVolume Installer CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesSMBFlexVolumeInstallerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesSMBFlexVolumeInstallerMemoryLimit"}}
-      "metadata": {
-        "description": "SMB FlexVolume Installer Memory Limit"
-      },
-      "type": "string"
+     "flexVolumeDriverConfig": {
+      "type": "object",
+      "defaultValue": {
+        "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryLimit": "10Mi"
+      }
     },
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
       {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
