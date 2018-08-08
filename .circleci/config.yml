@@ -223,7 +223,7 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -247,7 +247,7 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -271,7 +271,7 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.11' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -295,7 +295,7 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.12' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
