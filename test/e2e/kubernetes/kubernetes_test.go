@@ -72,6 +72,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if err != nil {
 				log.Printf("Error while getting Ubuntu image version: %s\n", out)
 			}
+
+			kernelVerCmd := fmt.Sprintf("cat /proc/version")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting LinuxKernel version: %s\n", out)
+			}
 		})
 
 		It("should have have the appropriate node count", func() {
