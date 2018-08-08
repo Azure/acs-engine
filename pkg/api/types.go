@@ -252,16 +252,15 @@ type PrivateJumpboxProfile struct {
 }
 
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
-// TODO use this when strict JSON checking accommodates struct embedding
 type CloudProviderConfig struct {
-	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	CloudProviderBackoff         bool   `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int    `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   string `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int    `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent string `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool   `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    string `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int    `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
 // KubernetesConfigDeprecated are properties that are no longer operable and will be ignored

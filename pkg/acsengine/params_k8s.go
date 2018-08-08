@@ -186,11 +186,11 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
 				CloudProviderBackoff:         properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff,
 				CloudProviderBackoffRetries:  properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries,
-				CloudProviderBackoffJitter:   properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter,
+				CloudProviderBackoffJitter:   strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'f', -1, 64),
 				CloudProviderBackoffDuration: properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration,
-				CloudProviderBackoffExponent: properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent,
+				CloudProviderBackoffExponent: strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64),
 				CloudProviderRateLimit:       properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit,
-				CloudProviderRateLimitQPS:    properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS,
+				CloudProviderRateLimitQPS:    strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64),
 				CloudProviderRateLimitBucket: properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket,
 			})
 			addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)

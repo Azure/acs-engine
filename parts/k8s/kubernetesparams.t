@@ -610,11 +610,11 @@
       "defaultValue": {
         "cloudProviderBackoff": true,
         "cloudProviderBackoffRetries": 10,
-        "cloudProviderBackoffJitter": 0,
+        "cloudProviderBackoffJitter": "0",
         "cloudProviderBackoffDuration": 0,
-        "cloudProviderBackoffExponent": 0,
+        "cloudProviderBackoffExponent": "0",
         "cloudProviderRateLimit": false,
-        "cloudProviderRateLimitQPS": 0,
+        "cloudProviderRateLimitQPS": "0",
         "cloudProviderRateLimitBucket": 0
       }
     },
