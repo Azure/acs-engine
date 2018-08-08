@@ -191,6 +191,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				CloudProviderBackoffExponent: properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent,
 				CloudProviderRateLimit:       properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit,
 				CloudProviderRateLimitQPS:    properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS,
+				CloudProviderRateLimitBucket: properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket,
 			})
 			addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 			addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--non-masquerade-cidr"])
