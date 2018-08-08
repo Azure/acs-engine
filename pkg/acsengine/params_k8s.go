@@ -97,26 +97,24 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
 				}
 			}
+			flexVolumeDriverConfig := map[string]string{}
 			bfFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
 			c = getAddonContainersIndexByName(bfFlexVolumeInstallerAddon.Containers, DefaultBlobfuseFlexVolumeAddonName)
 			if c > -1 {
-				addValue(parametersMap, "flexVolumeDriverConfig", map[string]string{
-					"kubernetesBlobfuseFlexVolumeInstallerCPURequests":    bfFlexVolumeInstallerAddon.Containers[c].CPURequests,
-					"kubernetesBlobfuseFlexVolumeInstallerCPULimit":       bfFlexVolumeInstallerAddon.Containers[c].CPULimits,
-					"kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": bfFlexVolumeInstallerAddon.Containers[c].MemoryRequests,
-					"kubernetesBlobfuseFlexVolumeInstallerMemoryLimit":    bfFlexVolumeInstallerAddon.Containers[c].MemoryLimits,
-				})
+				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerCPURequests"] = bfFlexVolumeInstallerAddon.Containers[c].CPURequests
+				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerCPULimit"] = bfFlexVolumeInstallerAddon.Containers[c].CPULimits
+				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"] = bfFlexVolumeInstallerAddon.Containers[c].MemoryRequests
+				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"] = bfFlexVolumeInstallerAddon.Containers[c].MemoryLimits
 			}
 			smbFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
 			c = getAddonContainersIndexByName(smbFlexVolumeInstallerAddon.Containers, DefaultSMBFlexVolumeAddonName)
 			if c > -1 {
-				addValue(parametersMap, "flexVolumeDriverConfig", map[string]string{
-					"kubernetesSMBFlexVolumeInstallerCPURequests":    smbFlexVolumeInstallerAddon.Containers[c].CPURequests,
-					"kubernetesSMBFlexVolumeInstallerCPULimit":       smbFlexVolumeInstallerAddon.Containers[c].CPULimits,
-					"kubernetesSMBFlexVolumeInstallerMemoryRequests": smbFlexVolumeInstallerAddon.Containers[c].MemoryRequests,
-					"kubernetesSMBFlexVolumeInstallerMemoryLimit":    smbFlexVolumeInstallerAddon.Containers[c].MemoryLimits,
-				})
+				flexVolumeDriverConfig["kubernetesSMBFlexVolumeInstallerCPURequests"] = smbFlexVolumeInstallerAddon.Containers[c].CPURequests
+				flexVolumeDriverConfig["kubernetesSMBFlexVolumeInstallerCPULimit"] = smbFlexVolumeInstallerAddon.Containers[c].CPULimits
+				flexVolumeDriverConfig["kubernetesSMBFlexVolumeInstallerMemoryRequests"] = smbFlexVolumeInstallerAddon.Containers[c].MemoryRequests
+				flexVolumeDriverConfig["kubernetesSMBFlexVolumeInstallerMemoryLimit"] = smbFlexVolumeInstallerAddon.Containers[c].MemoryLimits
 			}
+			addValue(parametersMap, "flexVolumeDriverConfig", flexVolumeDriverConfig)
 			kvFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 			c = getAddonContainersIndexByName(kvFlexVolumeInstallerAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
 			if c > -1 {
