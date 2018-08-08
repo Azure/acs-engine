@@ -271,6 +271,36 @@ var (
 		},
 	}
 
+	// DefaultBlobfuseFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
+	DefaultBlobfuseFlexVolumeAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultBlobfuseFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultBlobfuseFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultBlobfuseFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
+	// DefaultSMBFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
+	DefaultSMBFlexVolumeAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultSMBFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultSMBFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultSMBFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
 	// DefaultKeyVaultFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
 	DefaultKeyVaultFlexVolumeAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultKeyVaultFlexVolumeAddonName,
@@ -450,6 +480,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultTillerAddonsConfig,
 				DefaultACIConnectorAddonsConfig,
 				DefaultClusterAutoscalerAddonsConfig,
+				DefaultBlobfuseFlexVolumeAddonsConfig,
+				DefaultSMBFlexVolumeAddonsConfig,
 				DefaultKeyVaultFlexVolumeAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
@@ -513,6 +545,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if aNP < 0 {
 				// Provide default acs-engine config for Azure NetworkPolicy addon
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureNetworkPolicyAddonsConfig)
+			}
+			bFFV := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
+			if bFFV < 0 {
+				// Provide default acs-engine config for Blobfuse FlexVolume
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonsConfig)
+			}
+			sFV := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
+			if sFV < 0 {
+				// Provide default acs-engine config for SMB FlexVolume
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonsConfig)
 			}
 			kv := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 			if kv < 0 {
@@ -629,6 +671,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		aNP := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[aNP].IsEnabled(a.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[aNP] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aNP], DefaultAzureNetworkPolicyAddonsConfig)
+		}
+		bFFV := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[bFFV].IsEnabled(api.DefaultBlobfuseFlexVolumeAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[bFFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[bFFV], DefaultBlobfuseFlexVolumeAddonsConfig)
+		}
+		sFV := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultSMBFlexVolumeAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[sFV].IsEnabled(api.DefaultSMBFlexVolumeAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[sFV] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[sFV], DefaultSMBFlexVolumeAddonsConfig)
 		}
 		kv := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[kv].IsEnabled(api.DefaultKeyVaultFlexVolumeAddonEnabled) {

@@ -93,6 +93,10 @@ const (
 	DefaultACIConnectorAddonEnabled = false
 	// DefaultClusterAutoscalerAddonEnabled determines the acs-engine provided default for enabling cluster autoscaler addon
 	DefaultClusterAutoscalerAddonEnabled = false
+	// DefaultBlobfuseFlexVolumeAddonEnabled determines the acs-engine provided default for enabling blobfuse flexvolume addon
+	DefaultBlobfuseFlexVolumeAddonEnabled = true
+	// DefaultSMBFlexVolumeAddonEnabled determines the acs-engine provided default for enabling smb flexvolume addon
+	DefaultSMBFlexVolumeAddonEnabled = true
 	// DefaultKeyVaultFlexVolumeAddonEnabled determines the acs-engine provided default for enabling key vault flexvolume addon
 	DefaultKeyVaultFlexVolumeAddonEnabled = false
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
@@ -121,6 +125,10 @@ const (
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultClusterAutoscalerAddonName is the name of the cluster autoscaler addon deployment
 	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
+	// DefaultBlobfuseFlexVolumeAddonName is the name of the blobfuse flexvolume addon
+	DefaultBlobfuseFlexVolumeAddonName = "blobfuse-flexvolume"
+	// DefaultSMBFlexVolumeAddonName is the name of the smb flexvolume addon
+	DefaultSMBFlexVolumeAddonName = "smb-flexvolume"
 	// DefaultKeyVaultFlexVolumeAddonName is the name of the key vault flexvolume addon deployment
 	DefaultKeyVaultFlexVolumeAddonName = "keyvault-flexvolume"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment

@@ -535,6 +535,19 @@
       },
       "type": "string"
     },
+     "flexVolumeDriverConfig": {
+      "type": "object",
+      "defaultValue": {
+        "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryLimit": "10Mi"
+      }
+    },
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
       {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
       "metadata": {
