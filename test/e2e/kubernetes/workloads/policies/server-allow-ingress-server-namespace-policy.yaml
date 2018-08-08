@@ -1,0 +1,14 @@
+# This network policy blocks all ingress traffic to pods with label role=server
+# except for traffic going from pods within the same namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: server
+  name: server-allow-server-namespace
+spec:
+  podSelector:
+    matchLabels:
+      role: server
+  ingress:
+  - from:
+    - podSelector: {}

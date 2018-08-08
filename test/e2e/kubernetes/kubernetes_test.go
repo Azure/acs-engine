@@ -866,6 +866,35 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Cleaning up after ourselves")
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+
+				By("Applying a network policy to only allow ingress access to label:role=server from pods within the same namespace")
+				networkPolicyName, namespace = "server-allow-server-namespace", nsServer
+				err = networkPolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-server-namespace-policy.yaml"), networkPolicyName)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring server pods only have ingress access from pods within the same namespace")
+				for _, listenerServerPod := range serverPods {
+					for _, clientOnePods := range clientOnePods {
+						pass, err := clientOnePod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).Should(HaveOccurred())
+						Expect(pass).To(BeFalse())
+					}
+
+					for _, clientTwoPod := range clientTwoPods {
+						pass, err := clientTwoPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).Should(HaveOccurred())
+						Expect(pass).To(BeFalse())
+					}
+
+					for _, senderServerPod := range serverPods {
+						pass, err := senderServerPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(pass).To(BeTrue())
+					}
+				}
+
+				By("Cleaning up after ourselves")
+				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
 				err = clientOneDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = clientTwoDeploy.Delete()
