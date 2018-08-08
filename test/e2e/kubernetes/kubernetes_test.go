@@ -700,7 +700,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if !eng.HasWindowsAgents() && !eng.HasNetworkPolicy("calico") {
 				pod, err := pod.Get("dns-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
+				running, err := pod.WaitOnReady(5*time.Second, 1*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				restarts := pod.Status.ContainerStatuses[0].RestartCount
@@ -796,7 +796,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Ensuring we no longer have outbound internet access from the nginx client pods")
 				for _, clientOnePod := range clientOnePods {
-					pass, err := clientOnePod.CheckLinuxOutboundConnection(5*time.Second, 3*time.Minute)
+					pass, err := clientOnePod.CheckLinuxOutboundConnection(5*time.Second, 1*time.Minute)
 					Expect(err).Should(HaveOccurred())
 					Expect(pass).To(BeFalse())
 				}
@@ -812,7 +812,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we no longer have inbound internet access")
 				for _, clientOnePod := range clientOnePods {
 					for _, serverPod := range serverPods {
-						pass, err := serverPod.ValidateCurlConnection(clientOnePod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := serverPod.ValidateCurlConnection(clientOnePod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
@@ -829,13 +829,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring client-one pods only have egress access to server pods but not client-two pods")
 				for _, clientOnePod := range clientOnePods {
 					for _, clientTwoPod := range clientTwoPods {
-						pass, err := clientOnePod.ValidateCurlConnection(clientTwoPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientOnePod.ValidateCurlConnection(clientTwoPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
 
 					for _, serverPod := range serverPods {
-						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
@@ -852,13 +852,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring server pods only have ingress access from client-one pods but not client-two pods")
 				for _, serverPod := range serverPods {
 					for _, clientOnePod := range clientOnePods {
-						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientOnePod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
 
 					for _, clientTwoPod := range clientTwoPods {
-						pass, err := clientTwoPod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientTwoPod.ValidateCurlConnection(serverPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
@@ -875,19 +875,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring server pods only have ingress access from pods within the same namespace")
 				for _, listenerServerPod := range serverPods {
 					for _, clientOnePod := range clientOnePods {
-						pass, err := clientOnePod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientOnePod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
 
 					for _, clientTwoPod := range clientTwoPods {
-						pass, err := clientTwoPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := clientTwoPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).Should(HaveOccurred())
 						Expect(pass).To(BeFalse())
 					}
 
 					for _, senderServerPod := range serverPods {
-						pass, err := senderServerPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 3*time.Minute)
+						pass, err := senderServerPod.ValidateCurlConnection(listenerServerPod.Status.PodIP, 5*time.Second, 1*time.Minute)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
