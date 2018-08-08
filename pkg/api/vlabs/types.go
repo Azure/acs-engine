@@ -260,19 +260,6 @@ type PrivateJumpboxProfile struct {
 	StorageProfile string `json:"storageProfile,omitempty"`
 }
 
-// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
-// TODO use this when strict JSON checking accommodates struct embedding
-type CloudProviderConfig struct {
-	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
-}
-
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {

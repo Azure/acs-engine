@@ -378,7 +378,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     # TODO standardize/generalize CSE exit codes
     ERR_ETCD_DOWNLOAD_TIMEOUT=12
     ERR_SYSTEMCTL_ENABLE_FAIL=3
-    ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
+    ETCD_VER=v{{WrapAsParameter "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     retrycmd_get_tarball 60 10 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
     if [ $? -ne 0 ]; then

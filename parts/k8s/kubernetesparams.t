@@ -605,61 +605,18 @@
       },
       "type": "string"
     },
-    "cloudProviderBackoff": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoff"}}
-      "metadata": {
-        "description": "Enable cloudprovider backoff?"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffRetries": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffRetries"}}
-      "metadata": {
-        "description": "If backoff enabled, how many times to retry"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffExponent": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffExponent"}}
-      "metadata": {
-        "description": "If backoff enabled, retry exponent"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffDuration": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffDuration"}}
-      "metadata": {
-        "description": "If backoff enabled, how long until timeout"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffJitter": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffJitter"}}
-      "metadata": {
-        "description": "If backoff enabled, jitter factor between retries"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimit": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimit"}}
-      "metadata": {
-        "description": "Enable cloudprovider rate limiting?"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimitQPS": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitQPS"}}
-      "metadata": {
-        "description": "If rate limiting enabled, target maximum QPS"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimitBucket": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitBucket"}}
-      "metadata": {
-        "description": "If rate limiting enabled, bucket size"
-      },
-      "type": "string"
+    "cloudproviderConfig": {
+      "type": "object",
+      "defaultValue": {
+        "cloudProviderBackoff": true,
+        "cloudProviderBackoffRetries": 10,
+        "cloudProviderBackoffJitter": "0",
+        "cloudProviderBackoffDuration": 0,
+        "cloudProviderBackoffExponent": "0",
+        "cloudProviderRateLimit": false,
+        "cloudProviderRateLimitQPS": "0",
+        "cloudProviderRateLimitBucket": 0
+      }
     },
     "kubernetesKubeDNSSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
