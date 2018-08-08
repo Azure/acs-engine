@@ -385,11 +385,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have blobfuse-flexvolume running", func() {
 			if hasBlobfuseFlexVolume, BlobfuseFlexVolumeAddon := eng.HasAddon("blobfuse-flexvolume"); hasBlobfuseFlexVolume {
-				running, err := pod.WaitOnReady("blobfuse-flexvolume", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
-				pods, err := pod.GetAllByPrefix("blobfuse-flexvolume", "flex")
+				pods, err := pod.GetAllByPrefix("blobfuse-flexvol-installer", "flex")
 				Expect(err).NotTo(HaveOccurred())
 				for i, c := range BlobfuseFlexVolumeAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
@@ -403,11 +403,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have smb-flexvolume running", func() {
 			if hasSMBFlexVolume, SMBFlexVolumeAddon := eng.HasAddon("smb-flexvolume"); hasSMBFlexVolume {
-				running, err := pod.WaitOnReady("smb-flexvolume", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
-				pods, err := pod.GetAllByPrefix("smb-flexvolume", "flex")
+				pods, err := pod.GetAllByPrefix("smb-flexvol-installer", "flex")
 				Expect(err).NotTo(HaveOccurred())
 				for i, c := range SMBFlexVolumeAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
