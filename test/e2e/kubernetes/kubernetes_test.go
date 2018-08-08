@@ -791,7 +791,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Applying a network policy to deny egress access")
 				networkPolicyName, namespace = "client-one-deny-egress", nsClientOne
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-egress-policy.yaml"), networkPolicyName, namespace)
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-egress-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have outbound internet access from the nginx client pods")
@@ -806,7 +806,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Applying a network policy to deny ingress access")
 				networkPolicyName, namespace = "client-one-deny-ingress", nsClientOne
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-ingress-policy.yaml"), networkPolicyName, namespace)
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-deny-ingress-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we no longer have inbound internet access from the nginx server pods")
@@ -823,7 +823,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Applying a network policy to only allow egress access from label:role=client-one to label:role=server")
 				networkPolicyName, namespace = "client-one-allow-egress-server", nsClientOne
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-allow-egress-server-policy.yaml"), networkPolicyName, namespace)
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "client-one-allow-egress-server-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring client-one pods only have egress access to server pods but not client-two pods")
@@ -846,7 +846,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Applying a network policy to only allow ingress access to label:role=server from label:role=client-one")
 				networkPolicyName, namespace = "server-allow-ingress-client-one", nsServer
-				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-client-one-policy.yaml"), networkPolicyName, namespace)
+				err = networkpolicy.CreateNetworkPolicyFromFile(filepath.Join(PolicyDir, "server-allow-ingress-client-one-policy.yaml"), networkPolicyName)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring server pods only have ingress access from client-one pods but not client-two pods")
