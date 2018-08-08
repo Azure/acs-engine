@@ -562,24 +562,24 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		if o.KubernetesConfig.CloudProviderBackoff {
-			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
-			}
-			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
-			}
-			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
-			}
-			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
-			}
+		o.KubernetesConfig.CloudProviderBackoff = true
+		if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+			o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+		}
+		if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+			o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+		}
+		if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+			o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+		}
+		if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+			o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 		}
 		k8sSemVer, _ := semver.Make(k8sVersion)
 		minVersion, _ := semver.Make("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
+		o.KubernetesConfig.CloudProviderRateLimit = true
 		if o.KubernetesConfig.CloudProviderRateLimit && k8sSemVer.GTE(minVersion) {
 			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
