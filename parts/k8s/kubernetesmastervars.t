@@ -306,6 +306,9 @@
     , "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
+    {{ if not UseManagedIdentity}}
+    ,"servicePrincipalObjectId": "[parameters('servicePrincipalObjectId')]"
+    {{end}}
      ,"apiVersionKeyVault": "2016-10-01",
      {{if not .HasStorageAccountDisks}}
      "apiVersionStorage": "2015-06-15",
