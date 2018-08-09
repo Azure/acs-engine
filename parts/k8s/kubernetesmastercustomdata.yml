@@ -14,6 +14,20 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
+- path: "/opt/azure/containers/provision_installs.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionInstalls"}}
+
+- path: "/opt/azure/containers/provision_configs.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionConfigs"}}
+
 {{if .OrchestratorProfile.KubernetesConfig.RequiresDocker}}
     {{if not .MasterProfile.IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -387,17 +401,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
-    source /opt/azure/containers/provision_source.sh
-    # TODO standardize/generalize CSE exit codes
-    ERR_ETCD_DOWNLOAD_TIMEOUT=12
-    ERR_SYSTEMCTL_ENABLE_FAIL=3
-    ETCD_VER=v{{WrapAsParameter "etcdVersion"}}
-    DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
-    retrycmd_get_tarball 60 10 /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz
-    if [ $? -ne 0 ]; then
-        exit $ERR_ETCD_DOWNLOAD_TIMEOUT
-    fi
-    tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
     sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
