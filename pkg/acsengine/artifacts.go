@@ -128,6 +128,16 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
 		},
 		{
+			"kubernetesmasteraddons-blobfuse-flexvolume-installer.yaml",
+			"blobfuse-flexvolume-installer.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsBlobfuseFlexVolumeEnabled(),
+		},
+		{
+			"kubernetesmasteraddons-smb-flexvolume-installer.yaml",
+			"smb-flexvolume-installer.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsSMBFlexVolumeEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-keyvault-flexvolume-installer.yaml",
 			"keyvault-flexvolume-installer.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled(),
