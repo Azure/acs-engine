@@ -985,7 +985,7 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }
 
-func isNSeriesSKU(p *Properties) bool {
+func IsNSeriesSKU(p *Properties) bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
 			return true
@@ -1009,7 +1009,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	var addonEnabled bool
 	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
 		addonEnabled = false
-	} else if isNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	} else if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false

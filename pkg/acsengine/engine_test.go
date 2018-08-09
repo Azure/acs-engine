@@ -536,14 +536,14 @@ func TestIsNSeriesSKU(t *testing.T) {
 	}
 
 	for _, sku := range validSkus {
-		if !isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
-			t.Fatalf("Expected isNSeriesSKU(%s) to be true", sku)
+		if !IsNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
+			t.Fatalf("Expected IsNSeriesSKU(%s) to be true", sku)
 		}
 	}
 
 	for _, sku := range invalidSkus {
-		if isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
-			t.Fatalf("Expected isNSeriesSKU(%s) to be false", sku)
+		if IsNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
+			t.Fatalf("Expected IsNSeriesSKU(%s) to be false", sku)
 		}
 	}
 }

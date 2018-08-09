@@ -440,7 +440,7 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 	return ""
 }
 
-func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
+func IsNSeriesSKU(profile *api.AgentPoolProfile) bool {
 	return strings.Contains(profile.VMSize, "Standard_N")
 }
 

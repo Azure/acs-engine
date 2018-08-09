@@ -418,7 +418,7 @@ func (a *Properties) validateLinuxProfile() error {
 func (a *Properties) validateAddons() error {
 	if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.Addons != nil {
 		var isAvailabilitySets bool
-		var isNSeriesSKU bool
+		var IsNSeriesSKU bool
 
 		for _, agentPool := range a.AgentPoolProfiles {
 			if agentPool.IsAvailabilitySets() {
@@ -426,7 +426,7 @@ func (a *Properties) validateAddons() error {
 			}
 
 			if agentPool.IsNSeriesSKU() {
-				isNSeriesSKU = true
+				IsNSeriesSKU = true
 			}
 		}
 
@@ -454,7 +454,7 @@ func (a *Properties) validateAddons() error {
 					if err != nil {
 						return errors.New("could not validate version")
 					}
-					if isNSeriesSKU && sv.LT(minVersion) {
+					if IsNSeriesSKU && sv.LT(minVersion) {
 						return errors.New("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
 					}
 				}
