@@ -312,5 +312,5 @@
      {{end}}
      "clusterKeyVaultName": "[take(concat('kv', tolower(uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),parameters('nameSuffix'))))), 22)]"
 {{else}}
-    "clusterKeyVaultName": ""
+    ,"clusterKeyVaultName": ""
 {{end}}
