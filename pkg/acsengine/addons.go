@@ -219,19 +219,15 @@ func setAddonsConfig(cs *api.ContainerService) {
 		o.KubernetesConfig.Addons = defaultAddons
 	} else {
 		for _, addon := range defaultAddons {
-			appendAddonIfMissing(o.KubernetesConfig.Addons, addon)
+			i := getAddonsIndexByName(o.KubernetesConfig.Addons, addon.Name)
+			if i < 0 {
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, addon)
+			}
 		}
 	}
 
 	for _, addon := range defaultAddons {
 		synthesizeAddonsConfig(o.KubernetesConfig.Addons, addon, false)
-	}
-}
-
-func appendAddonIfMissing(addons []api.KubernetesAddon, addon api.KubernetesAddon) {
-	i := getAddonsIndexByName(addons, addon.Name)
-	if i < 0 {
-		addons = append(addons, addon)
 	}
 }
 
