@@ -94,7 +94,7 @@ fi
 
 ensureContainerd
 
-if [[ ! -z "${MASTER_NODE}" && ! -z "${EnableEncryptionWithExternalKms}" ]]; then
+if [[ ! -z "${MASTER_NODE}" && "${KMS_PROVIDER_VAULT_NAME}" != "" ]]; then
     ensureKMS
 fi
 
