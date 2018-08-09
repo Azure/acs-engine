@@ -883,8 +883,8 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 		},
 	}
 
-	if !isNSeriesSKU(&p) {
-		t.Fatalf("isNSeriesSKU should return true when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
+	if !IsNSeriesSKU(&p) {
+		t.Fatalf("IsNSeriesSKU should return true when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
 	}
 	if p.IsNVIDIADevicePluginEnabled() {
 		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false with N-series VMs with < k8s 1.10, instead returned %t", p.IsNVIDIADevicePluginEnabled())
@@ -903,8 +903,8 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 		},
 	}
 
-	if isNSeriesSKU(&p) {
-		t.Fatalf("isNSeriesSKU should return false when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
+	if IsNSeriesSKU(&p) {
+		t.Fatalf("IsNSeriesSKU should return false when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
 	}
 	if p.IsNVIDIADevicePluginEnabled() {
 		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false when explicitly disabled")
