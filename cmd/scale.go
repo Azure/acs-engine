@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"sort"
 	// "sort"
 	"strings"
 	"time"
@@ -213,8 +214,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex, index, winPoolIndex int
 	winPoolIndex = -1
-	// indexes := make([]int, 0)
-	// indexToVM := make(map[int]string)
 	vms := make([]string, 0)
 	if sc.agentPool.IsAvailabilitySets() {
 		for vmsListPage, err := sc.client.ListVirtualMachines(ctx, sc.resourceGroupName); vmsListPage.NotDone(); err = vmsListPage.Next() {
@@ -244,22 +243,18 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 					highestUsedIndex = index
 				}
 
-				// indexToVM[index] = *vm.Name
-				// indexes = append(indexes, index)
 				vms = append(vms, *vm.Name)
 			}
 		}
-		// sortedIndexes := sort.IntSlice(indexes)
-		// sortedIndexes.Sort()
-		// indexes = []int(sortedIndexes)
-		// currentNodeCount = len(indexes)
+		sortedVMs := sort.StringSlice(vms)
+		sortedVMs.Sort()
+		vms = []string(sortedVMs)
 		currentNodeCount = len(vms)
 
 		if currentNodeCount == sc.newDesiredAgentCount {
 			log.Info("Cluster is currently at the desired agent count.")
 			return nil
 		}
-		// highestUsedIndex = indexes[len(indexes)-1]
 
 		// Scale down Scenario
 		if currentNodeCount > sc.newDesiredAgentCount {
@@ -269,10 +264,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			}
 
 			vmsToDelete := make([]string, 0)
-			// for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
-			// 	vmsToDelete = append(vmsToDelete, indexToVM[i])
-			// }
-			for i := len(vms)-1; i >= sc.newDesiredAgentCount; i-- {
+			for i := len(vms) - 1; i >= sc.newDesiredAgentCount; i-- {
 				vmsToDelete = append(vmsToDelete, vms[i])
 			}
 
