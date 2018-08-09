@@ -20,15 +20,13 @@ import (
 
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
-	ClassicMode bool
-	Translator  *i18n.Translator
+	Translator *i18n.Translator
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(ctx Context) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
-		ClassicMode: classicMode,
-		Translator:  ctx.Translator,
+		Translator: ctx.Translator,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -99,7 +97,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode, acsengineVersion); err != nil {
+	if parametersMap, err = getParameters(containerService, generatorCode, acsengineVersion); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -426,17 +424,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return agentPreprovisionExtensionParameters
 		},
 		"GetMasterAllowedSizes": func() string {
-			if t.ClassicMode {
-				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
+			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 				return GetDCOSMasterAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
 		},
 		"GetAgentAllowedSizes": func() string {
-			if t.ClassicMode {
-				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
+			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
 				return GetKubernetesAgentAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
@@ -448,13 +442,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
-			if t.ClassicMode {
-				return GetClassicSizeMap()
-			}
 			return GetSizeMap()
-		},
-		"GetClassicMode": func() bool {
-			return t.ClassicMode
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))

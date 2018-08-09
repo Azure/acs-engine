@@ -198,11 +198,7 @@
     "aadAdminGroupId": "[parameters('aadAdminGroupId')]",
 {{end}}
 {{if not IsHostedMaster}}
-  {{if GetClassicMode}}
-    "masterCount": "[parameters('masterCount')]",
-  {{else}}
     "masterCount": {{.MasterProfile.Count}},
-  {{end}}
     "masterOffset": "[parameters('masterOffset')]",
 {{end}}
     "apiVersionDefault": "2016-03-30",

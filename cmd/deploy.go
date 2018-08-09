@@ -53,7 +53,6 @@ type deployCmd struct {
 	forceOverwrite    bool
 	caCertificatePath string
 	caPrivateKeyPath  string
-	classicMode       bool
 	parametersOnly    bool
 	set               []string
 
@@ -397,7 +396,7 @@ func (dc *deployCmd) run() error {
 		},
 	}
 
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, dc.classicMode)
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx)
 	if err != nil {
 		log.Fatalf("failed to initialize template generator: %s", err.Error())
 	}

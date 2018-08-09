@@ -243,7 +243,6 @@ const (
 const (
 	agentOutputs                  = "agentoutputs.t"
 	agentParams                   = "agentparams.t"
-	classicParams                 = "classicparams.t"
 	dcosAgentResourcesVMAS        = "dcos/dcosagentresourcesvmas.t"
 	dcosWindowsAgentResourcesVMAS = "dcos/dcosWindowsAgentResourcesVmas.t"
 	dcosAgentResourcesVMSS        = "dcos/dcosagentresourcesvmss.t"
@@ -277,7 +276,6 @@ const (
 	swarmParams                   = "swarm/swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarm/swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS       = "swarm/swarmagentresourcesvmss.t"
-	swarmAgentResourcesClassic    = "swarm/swarmagentresourcesclassic.t"
 	swarmAgentVars                = "swarm/swarmagentvars.t"
 	swarmMasterResources          = "swarm/swarmmasterresources.t"
 	swarmMasterVars               = "swarm/swarmmastervars.t"
