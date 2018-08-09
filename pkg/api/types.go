@@ -985,6 +985,7 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }
 
+// IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
 func IsNSeriesSKU(p *Properties) bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
