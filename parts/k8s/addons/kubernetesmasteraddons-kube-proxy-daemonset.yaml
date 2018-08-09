@@ -15,9 +15,10 @@ spec:
         tier: node
     spec:
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - operator: Exists
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - command:
         - "/hyperkube"
