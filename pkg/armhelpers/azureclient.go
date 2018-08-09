@@ -106,7 +106,9 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		}
 	}
 
-	client := &autorest.Client{}
+	client := &autorest.Client{
+		PollingDuration: 1 * time.Hour,
+	}
 
 	deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, acsEngineClientID, env.ServiceManagementEndpoint)
 	if err != nil {
