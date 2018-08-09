@@ -33,7 +33,7 @@ This guide will step through everything needed to build your first Kubernetes cl
 - Managing the cluster from your Windows machine
 - Deploying your first app on the cluster
 
-All of these steps can be done from any OS platform, so some sections are split out by Windows, Mac or Linux to provide the most relevant samples and scripts.
+All of these steps can be done from any OS platform, so some sections are split out by Windows, Mac or Linux to provide the most relevant samples and scripts. If you have a Windows machine but want to use the Linux tools - no problem! Set up the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) and you can follow the Linux instructions on this page.
 
 > Note: Windows support for Kubernetes is still in beta and under **active development**. If you run into problems, please be sure to check the [Troubleshooting](windows-details.md#troubleshooting) page and [active Windows issues](https://github.com/azure/acs-engine/issues?&q=is:issue+is:open+label:windows) in this repo, then help us by filing new issues for things that aren't already covered.
 
@@ -134,52 +134,118 @@ The key's randomart image is:
 
 #### Mac
 
-> TODO
+Most of the needed tools are available with [Homebrew](https://brew.sh/). Use it or another package manager to install these:
 
-##### Azure CLI (Mac)
+- `jq` - helpful JSON processor
+- `azure-cli` - for the `az` Azure command line tool
+- `kubernetes-cli` - for the `kubectl` "Kube Control" management tool
 
-> TODO
+Once you have those installed, make sure you can log into Azure. Open a new Terminal window, then run `az login`. It will have you log in to Azure in your web browser, then return back to the command line and show "You have logged in. Now let us find all the subscriptions to which you have access..." along with the list of subscriptions.
 
 ##### ACS-Engine (Mac)
 
-> TODO
+Windows support is evolving rapidly, so be sure to use the latest ACS-Engine version (v0.20 or later).
 
-##### Kubectl (Mac)
+1. Browse to the ACS-Engine [releases page](https://github.com/Azure/acs-engine/releases) on GitHub.
 
-> TODO
+2. Find the latest version, and download the file ending in `-darwin-amd64.zip`.
+
+3. Extract the `acs-engine...-darwin-amd64.zip` file to a folder in your path such as `/usr/local/bin`
+
+4. Check that it runs with `acs-engine version`
+
+```bash
+$ acs-engine.exe version
+Version: v0.20.6
+GitCommit: 293adfda
+GitTreeState: clean
+```
 
 ##### SSH (Mac)
 
-> TODO
+SSH is preinstalled, but you may need to generate an SSH key.
 
 ###### Generate SSH key (Mac)
 
-> TODO
+Open up Terminal, and make sure you have a SSH public key
+
+```bash
+$ ls ~/.ssh/id_rsa.pub
+/home/patrick/.ssh/id_rsa.pub
+```
+
+If the file doesn't exist, run `ssh-keygen` to create one.
 
 #### Linux
 
-> TODO
+These tools are included in most distributions. Use your typical package manager to make sure they're installed: 
+
+- `jq` - helpful JSON processor
+- `curl` - to download files
+- `openssh` or another `ssh` client
+- `tar`
 
 ##### Azure CLI (Linux)
 
-> TODO
+Packages for the `az` cli are available for most distributions. Please follow the right link for your package manager:
+[apt](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest),
+ [yum](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest),
+ [zypper](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-zypper?view=azure-cli-latest)
+
+Now, make sure you can log into Azure. Open a new Terminal window, then run `az login`. It will have you log in to Azure in your web browser, then return back to the command line and show "You have logged in. Now let us find all the subscriptions to which you have access..." along with the list of subscriptions.
 
 ##### ACS-Engine (Linux)
 
-> TODO
+Windows support is evolving rapidly, so be sure to use the latest ACS-Engine version (v0.20 or later).
+
+1. Browse to the ACS-Engine [releases page](https://github.com/Azure/acs-engine/releases) on GitHub.
+
+2. Find the latest version, and download the file ending in `-linux-amd64.zip`.
+
+3. Extract the `acs-engine...-linux-amd64.zip` file to a folder in your path such as `/usr/local/bin`
+
+4. Check that it runs with `acs-engine version`
+
+```bash
+$ acs-engine.exe version
+Version: v0.20.6
+GitCommit: 293adfda
+GitTreeState: clean
+```
 
 ##### Kubectl (Linux)
 
-> TODO
+The latest release of Kubernetes Control (kubectl) is available on the [Kubernetes release page](https://kubernetes.io/docs/imported/release/notes/). Look for `kubernetes-client-linux-....tar.gz` and copy the link to it.
 
-##### SSH (Linux)
+Download and extract it with curl & tar:
+```bash
+curl -L https://dl.k8s.io/v1.11.0/kubernetes-client-linux-amd64.tar.gz | tar xvzf -
 
-> TODO
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   161  100   161    0     0    304      0 --:--:-- --:--:-- --:--:--   304
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0kubernetes/
+kubernetes/client/
+kubernetes/client/bin/
+kubernetes/client/bin/kubectl
+100 13.2M  100 13.2M    0     0  5608k      0  0:00:02  0:00:02 --:--:-- 8034k
+```
 
-###### Generate SSH key (Linux)
+Then copy it to `/usr/local/bin` or another directory in your `PATH`
+```bash
+sudo cp kubernetes/client/bin/kubectl /usr/local/bin/
+```
 
-> TODO
+##### Generate SSH key (Linux)
 
+From a terminal, make sure you have a SSH public key
+
+```bash
+$ ls ~/.ssh/id_rsa.pub
+/home/patrick/.ssh/id_rsa.pub
+```
+
+If the file doesn't exist, run `ssh-keygen` to create one.
 
 ### Create a Resource Group and Service Principal
 
@@ -188,8 +254,6 @@ Now that we have the Azure CLI configured and a SSH key generated, it's time to 
 ACS-Engine and Kubernetes also need access to deploy resources inside that resource group to build the cluster, as well as configure more resources such as Azure Load Balancers once the cluster is running. This is done using an Azure Service Principal. It's safest to create one with access just to the resource group so that once your deployment is deleted, the service principal can't be used to make other changes in your subscription.
 
 #### Create a Resource Group and Service Principal (Windows)
-
-
 
 `az group create --location <location> --name <name>` will create a group for you. Be sure to use a unique name for each cluster. If you need a list of available locations, run `az account list-locations -o table`.
 
