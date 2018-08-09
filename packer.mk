@@ -1,5 +1,5 @@
 build-packer:
-	@packer build -var-file=packer/settings.json packer/vhd-image.json
+	@packer build -var-file=packer/settings.json packer/vhd-image-builder.json
 
 init-packer:
 	@./packer/init-variables
