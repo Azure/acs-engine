@@ -64,14 +64,14 @@ write_files:
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "caCertificate"}}
+    {{WrapAsParameter "caCertificate"}}
 
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "clientCertificate"}}
+    {{WrapAsParameter "clientCertificate"}}
 
 {{if HasCustomSearchDomain}}
 - path: "/opt/azure/containers/setup-custom-search-domains.sh"
@@ -115,7 +115,7 @@ write_files:
     KUBELET_OPTS=
 {{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
-    KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
+    KUBELET_IMAGE={{WrapAsParameter "kubernetesHyperkubeSpec"}}
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 

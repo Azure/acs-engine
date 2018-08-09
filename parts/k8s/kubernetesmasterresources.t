@@ -796,7 +796,7 @@
           "dataDisks": [
             {
               "createOption": "Empty"
-              ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
+              ,"diskSizeGB": "[parameters('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
               {{if .MasterProfile.IsStorageAccount}}

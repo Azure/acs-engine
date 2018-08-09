@@ -36,8 +36,8 @@ param(
     $AADClientSecret
 )
 
-$global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
-$global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
+$global:CACertificate = "{{WrapAsParameter "caCertificate"}}"
+$global:AgentCertificate = "{{WrapAsParameter "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
