@@ -144,7 +144,7 @@ Copy this yaml to a file, then deploy it with `kubectl apply -f <filename.yaml>`
 
 It will run 2 containers:
 
-- iis-container: This is a basic static web serber
+- iis-container: This is a basic static web server
 - servercore-container: This will run a script that changes the index page every 10 seconds
 
 Once deployed, you can load the web page and refresh it to see the contents changing.
