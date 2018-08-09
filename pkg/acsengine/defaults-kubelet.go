@@ -30,6 +30,12 @@ func setKubeletConfig(cs *api.ContainerService) {
 	for key, val := range staticLinuxKubeletConfig {
 		staticWindowsKubeletConfig[key] = val
 	}
+	staticWindowsKubeletConfig["--azure-container-registry-config"] = "c:\\k\\azure.json"
+	staticWindowsKubeletConfig["--pod-infra-container-image"] = "kubletwin/pause"
+	staticWindowsKubeletConfig["--kubeconfig"] = "c:\\k\\config"
+	staticWindowsKubeletConfig["--cloud-config"] = "c:\\k\\azure.json"
+	staticWindowsKubeletConfig["--cgroups-per-qos"] = "false"
+	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"\""
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
@@ -74,12 +80,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideKubeletConfig map[string]string
-	if cs.Properties.HasWindows() {
-		overrideKubeletConfig = staticWindowsKubeletConfig
-	} else {
-		overrideKubeletConfig = staticLinuxKubeletConfig
-	}
+	var overrideKubeletConfig map[string]string = staticLinuxKubeletConfig
 	for key, val := range overrideKubeletConfig {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
@@ -125,6 +126,12 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
+			// TODO [plang] finish this
+			// if cs.Properties.HasWindows() {
+			// 	overrideKubeletConfig = staticWindowsKubeletConfig
+			// } else {
+			// 	overrideKubeletConfig = staticLinuxKubeletConfig
+			// }
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
