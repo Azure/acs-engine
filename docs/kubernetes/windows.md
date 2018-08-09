@@ -33,6 +33,8 @@ This guide will step through everything needed to build your first Kubernetes cl
 - Managing the cluster from your Windows machine
 - Deploying your first app on the cluster
 
+All of these steps can be done from any OS platform, so some sections are split out by Windows, Mac or Linux to provide the most relevant samples and scripts.
+
 > Note: Windows support for Kubernetes is still in beta and under **active development**. If you run into problems, please be sure to check the [Troubleshooting](windows-details.md#troubleshooting) page and [active Windows issues](https://github.com/azure/acs-engine/issues?&q=is:issue+is:open+label:windows) in this repo, then help us by filing new issues for things that aren't already covered.
 
 ### Install Needed Tools
@@ -73,7 +75,7 @@ GitCommit: 293adfda
 GitTreeState: clean
 ```
 
-5. [optional] Add the folder you created in step 3 to your path.
+5. Add the folder you created in step 3 to your path.
 
 ```powershell
 $ENV:Path += ';c:\tools'
@@ -95,7 +97,10 @@ Move-Item .\kubernetes\client\bin\kubectl.exe c:\tools
 
 ##### SSH (Windows)
 
-> TODO: complete this section
+Windows 10 version 1803 comes with the Secure Shell (SSH) client as an optional feature installed at `C:\Windows\system32\openssh`. If you have `ssh.exe` and `ssh-keygen.exe` there, skip forward to [Generate SSH key (Windows)](#generate-ssh-key-windows)
+
+1. Download the latest OpenSSH-Win64.zip file from [Win32-OpenSSH releases](https://github.com/PowerShell/Win32-OpenSSH/releases)
+2. Extract it to the same `c:\tools` folder or another folder in your path
 
 ###### Generate SSH key (Windows)
 
@@ -105,6 +110,8 @@ First, check if you already have a SSH key generated at `~\.ssh\id_rsa.pub`
 dir ~\.ssh\id_rsa.pub
 dir : Cannot find path 'C:\Users\patrick\.ssh\id_rsa.pub' because it does not exist.
 ```
+
+If the file already exists, then you can skip forward to [Create a Resource Group and Service Principal](#create-a-resource-group-and-service-principal).
 
 If it does not exist, then run `ssh-keygen.exe`. Use the default file, and enter a passphrase if you wish to protect it. Be sure not to use a SSH key with blank passphrase in production.
 
@@ -214,7 +221,7 @@ $sp = az ad sp create-for-rbac --role="Contributor" --scopes=$groupId | ConvertF
 
 ### Create an acs-engine apimodel
 
-Multiple samples are available at https://github.com/Azure/acs-engine/tree/master/examples/windows. This guide will use the [windows/kubernetes.json](https://raw.githubusercontent.com/Azure/acs-engine/master/examples/windows/kubernetes.json) sample to deploy 1 Linux VM to run Kubernetes services, and 2 Windows nodes to run your Windows containers.
+Multiple samples are available in this repo under [examples/windows](../../examples/windows/). This guide will use the [windows/kubernetes.json](../../examples/windows/kubernetes.json) sample to deploy 1 Linux VM to run Kubernetes services, and 2 Windows nodes to run your Windows containers.
 
 After downloading that file, you will need to
 
