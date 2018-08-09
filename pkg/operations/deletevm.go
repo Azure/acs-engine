@@ -3,6 +3,7 @@ package operations
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
@@ -17,7 +18,8 @@ const (
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
 func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID, resourceGroup, name string) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
 	logger.Infof("fetching VM: %s/%s", resourceGroup, name)
 	vm, err := az.GetVirtualMachine(ctx, resourceGroup, name)
 	if err != nil {

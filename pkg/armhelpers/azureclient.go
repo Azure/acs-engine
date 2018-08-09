@@ -310,7 +310,8 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 
 // EnsureProvidersRegistered checks if the AzureClient is registered to required resource providers and, if not, register subscription to providers
 func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
 	registeredProviders, err := az.providersClient.List(ctx, to.Int32Ptr(100), "")
 	if err != nil {
 		return err
