@@ -67,7 +67,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 
 	defaultBlobfuseFlexVolumeAddonsConfig := api.KubernetesAddon{
 		Name:    DefaultBlobfuseFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultBlobfuseFlexVolumeAddonEnabled),
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultBlobfuseFlexVolumeAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultBlobfuseFlexVolumeAddonName,
@@ -81,7 +81,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 
 	defaultSMBFlexVolumeAddonsConfig := api.KubernetesAddon{
 		Name:    DefaultSMBFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultSMBFlexVolumeAddonEnabled),
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultSMBFlexVolumeAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultSMBFlexVolumeAddonName,
