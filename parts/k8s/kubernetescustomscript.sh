@@ -5,12 +5,6 @@ source /opt/azure/containers/provision_source.sh
 source /opt/azure/containers/provision_installs.sh
 source /opt/azure/containers/provision_configs.sh
 
-OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
-UBUNTU_OS_NAME="UBUNTU"
-RHEL_OS_NAME="RHEL"
-COREOS_OS_NAME="COREOS"
-KUBECTL=/usr/local/bin/kubectl
-DOCKER=/usr/bin/docker
 CUSTOM_SEARCH_DOMAIN_SCRIPT=/opt/azure/containers/setup-custom-search-domains.sh
 
 set +x
