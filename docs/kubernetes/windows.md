@@ -271,6 +271,8 @@ PS C:\Users\patrick\acs-engine> az group create --location westus2 --name k8s-wi
 }
 ```
 
+Now that the group is created, create a service principal with Contributor access for that group only
+
 ```powershell
 # Get the group id
 $groupId = (az group show --resource-group <group name> --query id).Replace("""","")
@@ -281,7 +283,24 @@ $sp = az ad sp create-for-rbac --role="Contributor" --scopes=$groupId | ConvertF
 
 #### Create a Resource Group and Service Principal (Mac+Linux)
 
-> TODO
+`az group create --location <location> --name <name>` will create a group for you. Be sure to use a unique name for each cluster. If you need a list of available locations, run `az account list-locations -o table`.
+
+```bash
+export RESOURCEGROUP=k8s-win1
+export LOCATION=westus2
+az group create --location $LOCATION --name $RESOURCEGROUP
+```
+
+Now that the group is created, create a service principal with Contributor access for that group only
+
+```bash
+# Get the group id
+export RESOURCEGROUPID=$(az group show --resource-group $RESOURCEGROUP --query id | sed "s/\"//g")
+
+# Create the service principal
+export SERVICEPRINCIPAL=$(az ad sp create-for-rbac --role="Contributor" --scopes=$RESOURCEGROUPID)
+```
+
 
 ### Create an acs-engine apimodel
 
@@ -330,7 +349,23 @@ $inJson | ConvertTo-Json -Depth 5 | Out-File -Encoding ascii -FilePath "kubernet
 
 #### Filling out apimodel (Mac & Linux)
 
-> TODO
+Using the same terminal as before, you can use this script to download the template and fill it out. Be sure to set DNSPREFIX, WINDOWSUSER, and WINDOWSPASSWORD to meet the requirements.
+
+```bash
+export DNSPREFIX="wink8s1"
+export WINDOWSUSER="winuser"
+export WINDOWSPASSWORD="Cr4shOverride!"
+
+curl -L https://raw.githubusercontent.com/Azure/acs-engine/master/examples/windows/kubernetes.json -o kubernetes.json
+
+cat kubernetes.json | \
+jq ".properties.masterProfile.dnsPrefix = \"$DNSPREFIX\"" | \
+jq ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"`cat ~/.ssh/id_rsa.pub`\"" | \
+jq ".properties.servicePrincipalProfile.clientId = `echo $SERVICEPRINCIPAL | jq .appId`" | \
+jq ".properties.servicePrincipalProfile.secret = `echo $SERVICEPRINCIPAL | jq .password`" | \
+jq ".properties.windowsProfile.adminPassword = \"$WINDOWSPASSWORD\"" | \
+jq ".properties.windowsProfile.adminUsername = \"$WINDOWSUSER\"" > kubernetes-windows-complete.json
+```
 
 ### Generate Azure Resource Manager template
 
@@ -379,8 +414,9 @@ $ENV:KUBECONFIG=(Get-Item _output\plangk8swin1\kubeconfig\kubeconfig.westus2.jso
 
 ##### Setting KUBECONFIG on Mac or Linux
 
-> TODO
-
+```bash
+export KUBECONFIG=$(PWD)/_output/$DNSPREFIX/kubeconfig/kubeconfig.westus2.json
+```
 
 Once you have `KUBECONFIG` set, you can verify the cluster is up with `kubectl get node -o wide`.
 
