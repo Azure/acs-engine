@@ -264,7 +264,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			}
 
 			vmsToDelete := make([]string, 0)
-			for i := len(vms) - 1; i >= sc.newDesiredAgentCount; i-- {
+			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
 				vmsToDelete = append(vmsToDelete, vms[i])
 			}
 
