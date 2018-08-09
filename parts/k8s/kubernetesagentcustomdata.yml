@@ -14,6 +14,20 @@ write_files:
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
+  
+- path: "/opt/azure/containers/provision_installs.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionInstalls"}}
+
+- path: "/opt/azure/containers/provision_configs.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionConfigs"}}
 
 {{if .KubernetesConfig.RequiresDocker}}
     {{if not .IsCoreOS}}
