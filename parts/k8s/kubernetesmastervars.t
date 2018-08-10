@@ -318,5 +318,5 @@
      {{if not .HasStorageAccountDisks}}
      "apiVersionStorage": "2015-06-15",
      {{end}}
-     "clusterKeyVaultName": "[take(concat('kv', tolower(uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),parameters('nameSuffix'))))), 22)]",
+     "clusterKeyVaultName": "[take(concat('kv', tolower(uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),parameters('nameSuffix'))))), 22)]"
 {{end}}
