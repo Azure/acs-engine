@@ -20,7 +20,7 @@
     ],
     "tags":
     {
-      "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
+      "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
       "resourceNameSuffix" : "[variables('winResourceNamePrefix')]",
       "orchestrator" : "[variables('orchestratorNameVersionTag')]",
       "poolName" : "{{.Name}}"
@@ -78,18 +78,18 @@
           ]
         },
         "osProfile": {
-          "computerNamePrefix": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs')]",
+          "computerNamePrefix": "[concat(substring(parameters('nameSuffix'), 0, 5), 'acs')]",
           {{GetKubernetesWindowsAgentCustomData .}}
-          "adminUsername": "[variables('windowsAdminUsername')]",
-          "adminPassword": "[variables('windowsAdminPassword')]"
+          "adminUsername": "[parameters('windowsAdminUsername')]",
+          "adminPassword": "[parameters('windowsAdminPassword')]"
         },
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('agentWindowsOffer')]",
-            "publisher": "[variables('agentWindowsPublisher')]",
-            "sku": "[variables('agentWindowsSku')]",
-            "version": "[variables('agentWindowsVersion')]"
+            "offer": "[parameters('agentWindowsOffer')]",
+            "publisher": "[parameters('agentWindowsPublisher')]",
+            "sku": "[parameters('agentWindowsSku')]",
+            "version": "[parameters('agentWindowsVersion')]"
           },
           "osDisk": {
             "createOption": "FromImage",

@@ -29,7 +29,7 @@
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+        "accountType": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -50,14 +50,14 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[variables('vnetCidr')]"
+            "[parameters('vnetCidr')]"
           ]
         },
         "subnets": [
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnet')]"
+              "addressPrefix": "[parameters('masterSubnet')]"
 {{if not IsOpenShift}}
               ,
               "networkSecurityGroup": {
@@ -284,7 +284,7 @@
               "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[variables('vnetSubnetID')]"
+                "id": "[parameters('masterVnetSubnetID')]"
               }
             }
           }
@@ -297,7 +297,7 @@
               "primary": false,
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('vnetSubnetID')]"
+                "id": "[parameters('masterVnetSubnetID')]"
               }
             }
           }
@@ -311,7 +311,7 @@
 {{if HasCustomNodesDNS}}
  ,"dnsSettings": {
           "dnsServers": [
-              "[variables('dnsServer')]"
+              "[parameters('dnsServer')]"
           ]
       }
 {{end}}
@@ -367,7 +367,7 @@
                 "primary": true,
                 "privateIPAllocationMethod": "Static",
                 "subnet": {
-                  "id": "[variables('vnetSubnetID')]"
+                  "id": "[parameters('masterVnetSubnetID')]"
                 }
               }
             }
@@ -380,7 +380,7 @@
                 "primary": false,
                 "privateIPAllocationMethod": "Dynamic",
                 "subnet": {
-                  "id": "[variables('vnetSubnetID')]"
+                  "id": "[parameters('masterVnetSubnetID')]"
                 }
               }
             }
@@ -394,7 +394,7 @@
   {{if HasCustomNodesDNS}}
    ,"dnsSettings": {
           "dnsServers": [
-              "[variables('dnsServer')]"
+              "[parameters('dnsServer')]"
           ]
       }
   {{end}}
@@ -409,7 +409,7 @@
   {{if ProvisionJumpbox}}
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('jumpboxVMName')]",
+      "name": "[parameters('jumpboxVMName')]",
       {{if JumpboxIsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       {{else}}
@@ -419,22 +419,22 @@
       "properties": {
           "osProfile": {
             {{GetKubernetesJumpboxCustomData .}}
-              "computerName": "[variables('jumpboxVMName')]",
-              "adminUsername": "[variables('jumpboxUsername')]",
+              "computerName": "[parameters('jumpboxVMName')]",
+              "adminUsername": "[parameters('jumpboxUsername')]",
               "linuxConfiguration": {
                   "disablePasswordAuthentication": true,
                   "ssh": {
                       "publicKeys": [
                           {
-                              "path": "[concat('/home/', variables('jumpboxUsername'), '/.ssh/authorized_keys')]",
-                              "keyData": "[variables('jumpboxPublicKey')]"
+                              "path": "[concat('/home/', parameters('jumpboxUsername'), '/.ssh/authorized_keys')]",
+                              "keyData": "[parameters('jumpboxPublicKey')]"
                           }
                       ]
                   }
               }
           },
           "hardwareProfile": {
-              "vmSize": "[variables('jumpboxVMSize')]"
+              "vmSize": "[parameters('jumpboxVMSize')]"
           },
           "storageProfile": {
               "imageReference": {
@@ -446,16 +446,16 @@
             {{if JumpboxIsManagedDisks}}
               "osDisk": {
                   "createOption": "FromImage",
-                  "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
+                  "diskSizeGB": "[parameters('jumpboxOSDiskSizeGB')]",
                   "managedDisk": {
-                      "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                      "storageAccountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
                   }
               },
             {{else}}
               "osDisk": {
                 "createOption": "fromImage",
                 "vhd": {
-                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'jumpboxdisk.vhd')]"
+                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',parameters('jumpboxVMName'),'jumpboxdisk.vhd')]"
                 },
                 "name": "[variables('jumpboxOSDiskName')]"
               },
@@ -481,7 +481,7 @@
             "apiVersion": "[variables('apiVersionStorage')]",
             "location": "[variables('location')]",
             "properties": {
-                "accountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                "accountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
             }
     },
     {{end}}
@@ -534,7 +534,7 @@
                   "name": "ipconfig1",
                   "properties": {
                       "subnet": {
-                          "id": "[variables('vnetSubnetID')]"
+                          "id": "[parameters('masterVnetSubnetID')]"
                       },
                       "primary": true,
                       "privateIPAllocationMethod": "Dynamic",
@@ -583,7 +583,7 @@
               "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[variables('vnetSubnetID')]"
+                "id": "[parameters('masterVnetSubnetID')]"
               }
             }
           }
@@ -663,7 +663,7 @@
          "accessPolicies": [
            {
              "tenantId": "[variables('tenantID')]",
-             "objectId": "[variables('servicePrincipalObjectId')]",
+             "objectId": "[parameters('servicePrincipalObjectId')]",
              "permissions": {
                "keys": ["create", "encrypt", "decrypt", "get", "list"]
              }
@@ -710,7 +710,7 @@
          ],
  {{end}}
          "sku": {
-           "name": "[variables('clusterKeyVaultSku')]",
+           "name": "[parameters('clusterKeyVaultSku')]",
            "family": "A"
          }
        }
@@ -735,10 +735,10 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "creationSource" : "[concat(parameters('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+        "resourceNameSuffix" : "[parameters('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
-        "acsengineVersion" : "[variables('acsengineVersion')]",
+        "acsengineVersion" : "[parameters('acsengineVersion')]",
         "poolName" : "master"
       },
       "location": "[variables('location')]",
@@ -751,8 +751,8 @@
       {{if and IsOpenShift (not UseMasterCustomImage)}}
       "plan": {
         "name": "[variables('osImageSku')]",
-        "publisher": "[variables('osImagePublisher')]",
-        "product": "[variables('osImageOffer')]"
+        "publisher": "[parameters('osImagePublisher')]",
+        "product": "[parameters('osImageOffer')]"
       },
       {{end}}
       "properties": {
@@ -760,7 +760,7 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[variables('masterVMSize')]"
+          "vmSize": "[parameters('masterVMSize')]"
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -770,7 +770,7 @@
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
+          "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
           {{if not IsOpenShift}}
           {{GetKubernetesMasterCustomData .}}
@@ -780,7 +780,7 @@
             "ssh": {
               "publicKeys": [
                 {
-                  "keyData": "[variables('sshPublicKeyData')]",
+                  "keyData": "[parameters('sshRSAPublicKey')]",
                   "path": "[variables('sshKeyPath')]"
                 }
               ]
@@ -809,12 +809,12 @@
           {{end}}
           "imageReference": {
             {{if UseMasterCustomImage}}
-            "id": "[resourceId(variables('osImageResourceGroup'), 'Microsoft.Compute/images', variables('osImageName'))]"
+            "id": "[resourceId(parameters('osImageResourceGroup'), 'Microsoft.Compute/images', parameters('osImageName'))]"
             {{else}}
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
+            "offer": "[parameters('osImageOffer')]",
+            "publisher": "[parameters('osImagePublisher')]",
             "sku": "[variables('osImageSku')]",
-            "version": "[variables('osImageVersion')]"
+            "version": "[parameters('osImageVersion')]"
             {{end}}
           },
           "osDisk": {

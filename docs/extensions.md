@@ -240,7 +240,7 @@ Replace "**EXTENSION-NAME**" with the name of the extension.
                 "value": "[variables('apiVersionDefault')]"
             },
             "username": {
-                "value": "[variables('username')]"
+                "value": "[parameters('linuxAdminUsername')]"
             },
             "storageAccountBaseName": {
                 "value": "[variables('storageAccountBaseName')]"
