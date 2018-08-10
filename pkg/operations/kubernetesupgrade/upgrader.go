@@ -54,7 +54,8 @@ func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clus
 
 // RunUpgrade runs the upgrade pipeline
 func (ku *Upgrader) RunUpgrade() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Minute)
+	defer cancel()
 	if err := ku.upgradeMasterNodes(ctx); err != nil {
 		return err
 	}

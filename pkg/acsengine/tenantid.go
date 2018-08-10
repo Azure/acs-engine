@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-06-01/subscriptions"
 	"github.com/pkg/errors"
@@ -22,7 +23,9 @@ func GetTenantID(resourceManagerEndpoint string, subscriptionID string) (string,
 	// we expect this request to fail (err != nil), but we are only interested
 	// in headers, so surface the error if the Response is not present (i.e.
 	// network error etc)
-	subs, err := c.Get(context.Background(), subscriptionID)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+	subs, err := c.Get(ctx, subscriptionID)
 	if subs.Response.Response == nil {
 		return "", errors.Wrap(err, "Request failed")
 	}
