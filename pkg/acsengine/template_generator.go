@@ -528,7 +528,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
 
 			if err != nil {
-				panic(e)
+				panic(err)
 				return ""
 			}
 
