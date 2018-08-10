@@ -750,7 +750,7 @@
       {{end}}
       {{if and IsOpenShift (not UseMasterCustomImage)}}
       "plan": {
-        "name": "[variables('osImageSku')]",
+        "name": "[parameters('osImageSku')]",
         "publisher": "[parameters('osImagePublisher')]",
         "product": "[parameters('osImageOffer')]"
       },
@@ -813,7 +813,7 @@
             {{else}}
             "offer": "[parameters('osImageOffer')]",
             "publisher": "[parameters('osImagePublisher')]",
-            "sku": "[variables('osImageSku')]",
+            "sku": "[parameters('osImageSku')]",
             "version": "[parameters('osImageVersion')]"
             {{end}}
           },
