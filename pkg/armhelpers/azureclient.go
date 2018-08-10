@@ -303,6 +303,21 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.deploymentsClient.PollingDelay = time.Second * 5
 	c.resourcesClient.PollingDelay = time.Second * 5
 
+	// Set permissive timeouts to accommodate long-running operations
+	c.deploymentsClient.PollingDuration = time.Hour * 1
+	c.deploymentOperationsClient.PollingDuration = time.Hour * 1
+	c.applicationsClient.PollingDuration = time.Hour * 1
+	c.authorizationClient.PollingDuration = time.Hour * 1
+	c.disksClient.PollingDuration = time.Hour * 1
+	c.groupsClient.PollingDuration = time.Hour * 1
+	c.interfacesClient.PollingDuration = time.Hour * 1
+	c.providersClient.PollingDuration = time.Hour * 1
+	c.resourcesClient.PollingDuration = time.Hour * 1
+	c.storageAccountsClient.PollingDuration = time.Hour * 1
+	c.virtualMachineScaleSetsClient.PollingDuration = time.Hour * 1
+	c.virtualMachineScaleSetVMsClient.PollingDuration = time.Hour * 1
+	c.virtualMachinesClient.PollingDuration = time.Hour * 1
+
 	graphAuthorizer := autorest.NewBearerAuthorizer(graphSpt)
 	c.applicationsClient.Authorizer = graphAuthorizer
 	c.servicePrincipalsClient.Authorizer = graphAuthorizer

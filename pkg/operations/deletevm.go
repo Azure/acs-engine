@@ -18,7 +18,7 @@ const (
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
 func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID, resourceGroup, name string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
 	defer cancel()
 	logger.Infof("fetching VM: %s/%s", resourceGroup, name)
 	vm, err := az.GetVirtualMachine(ctx, resourceGroup, name)
