@@ -112,7 +112,7 @@ func (az *AzureClient) CreateRoleAssignmentSimple(ctx context.Context, resourceG
 		},
 	}
 
-	re := regexp.MustCompile("(?i)status=(\\d+)")
+	re := regexp.MustCompile(`(?i)status=(\d+)`)
 	for {
 		_, err := az.CreateRoleAssignment(
 			ctx,

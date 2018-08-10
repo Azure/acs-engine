@@ -174,7 +174,7 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 	pemBuffer := bytes.Buffer{}
 	pem.Encode(&pemBuffer, pemBlock)
 
-	if string(pemBuffer.Bytes()) != expectedPrivateKeyString {
+	if pemBuffer.String() != expectedPrivateKeyString {
 		t.Fatalf("Private Key did not match expected format/value")
 	}
 

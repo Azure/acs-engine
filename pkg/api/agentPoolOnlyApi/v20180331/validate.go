@@ -40,7 +40,7 @@ func (l *LinuxProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *AADProfile) Validate(rbacEnabled *bool) error {
-	if rbacEnabled == nil || *rbacEnabled == false {
+	if rbacEnabled == nil || !*rbacEnabled {
 		return ErrorRBACNotEnabledForAAD
 	}
 

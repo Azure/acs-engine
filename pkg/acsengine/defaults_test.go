@@ -618,12 +618,12 @@ func TestSetVMSSDefaults(t *testing.T) {
 
 	properties.AgentPoolProfiles[0].Count = 110
 	setPropertiesDefaults(&mockCS, false, false)
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != false {
+	if *properties.AgentPoolProfiles[0].SinglePlacementGroup {
 		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup did not have the expected configuration, got %t, expected %t",
 			*properties.AgentPoolProfiles[0].SinglePlacementGroup, false)
 	}
 
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup == false && properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
+	if !*properties.AgentPoolProfiles[0].SinglePlacementGroup && properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
 		t.Fatalf("AgentPoolProfile[0].StorageProfile did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].StorageProfile, api.ManagedDisks)
 	}

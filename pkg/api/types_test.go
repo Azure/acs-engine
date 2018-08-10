@@ -56,7 +56,7 @@ const exampleUserMSIModel = `{
 		"orchestratorType": "Kubernetes",
 		"kubernetesConfig": {
 			"useManagedIdentity": true,
-			"userAssignedID": "` + exampleUserMSI + `"	
+			"userAssignedID": "` + exampleUserMSI + `"
 		}
 	},
 	"masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
@@ -799,7 +799,7 @@ func TestUserAssignedMSI(t *testing.T) {
 	}
 	systemMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 	actualUserMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
-	if systemMSI != true || actualUserMSI != "" {
+	if !systemMSI || actualUserMSI != "" {
 		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
 	}
 
@@ -814,7 +814,7 @@ func TestUserAssignedMSI(t *testing.T) {
 	}
 	systemMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 	actualUserMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
-	if systemMSI != true && actualUserMSI != exampleUserMSI {
+	if !systemMSI && actualUserMSI != exampleUserMSI {
 		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
 	}
 }

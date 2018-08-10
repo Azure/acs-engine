@@ -212,7 +212,7 @@ func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]po
 		select {
 		case err := <-errCh:
 			return pods, err
-		case _ = <-readyCh:
+		case <-readyCh:
 			return pods, nil
 		}
 	}
