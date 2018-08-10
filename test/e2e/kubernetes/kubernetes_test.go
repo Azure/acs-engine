@@ -90,118 +90,116 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have functional DNS", func() {
-			if !eng.HasWindowsAgents() {
-				if !eng.HasNetworkPolicy("calico") {
-					var err error
-					var p *pod.Pod
-					p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
-					if cfg.SoakClusterName == "" {
-						Expect(err).NotTo(HaveOccurred())
-					} else {
-						if err != nil {
-							p, err = pod.Get("dns-liveness", "default")
-							Expect(err).NotTo(HaveOccurred())
-						}
-					}
-					running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
+			if !eng.HasNetworkPolicy("calico") {
+				var err error
+				var p *pod.Pod
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+				if cfg.SoakClusterName == "" {
 					Expect(err).NotTo(HaveOccurred())
-					Expect(running).To(Equal(true))
-				}
-
-				kubeConfig, err := GetConfig()
-				Expect(err).NotTo(HaveOccurred())
-				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-				sshKeyPath := cfg.GetSSHKeyPath()
-
-				ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
-				cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
-				util.PrintCommand(cmd)
-				out, err := cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-
-				resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-
-				By("Ensuring that we have a valid connection to our resolver")
-				digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-
-				nodeList, err := node.Get()
-				Expect(err).NotTo(HaveOccurred())
-				for _, node := range nodeList.Nodes {
-					By("Ensuring that we get a DNS lookup answer response for each node hostname")
-					digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
-					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-					util.PrintCommand(cmd)
-					out, err = cmd.CombinedOutput()
-					log.Printf("%s\n", out)
+				} else {
 					if err != nil {
-						log.Printf("Error while querying DNS: %s\n", err)
+						p, err = pod.Get("dns-liveness", "default")
+						Expect(err).NotTo(HaveOccurred())
 					}
-					Expect(err).NotTo(HaveOccurred())
 				}
-
-				By("Ensuring that we get a DNS lookup answer response for external names")
-				digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-				digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-
-				By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
-				digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-				digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", err)
-				}
-
-				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+				running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
-				}
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+				Expect(running).To(Equal(true))
 			}
+
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			By("Ensuring that we have a valid connection to our resolver")
+			digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			nodeList, err := node.Get()
+			Expect(err).NotTo(HaveOccurred())
+			for _, node := range nodeList.Nodes {
+				By("Ensuring that we get a DNS lookup answer response for each node hostname")
+				digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			By("Ensuring that we get a DNS lookup answer response for external names")
+			digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", out)
+			}
+			digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
+			digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+			digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+			Expect(err).NotTo(HaveOccurred())
+			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
+			delErr := j.Delete()
+			if delErr != nil {
+				fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+				fmt.Println(delErr)
+			}
+			Expect(err).NotTo(HaveOccurred())
+			Expect(ready).To(Equal(true))
 		})
 
 		It("should have kube-dns running", func() {
@@ -745,7 +743,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("after the cluster has been up for awhile", func() {
 		It("dns-liveness pod should not have any restarts", func() {
-			if !eng.HasWindowsAgents() && !eng.HasNetworkPolicy("calico") {
+			if !eng.HasNetworkPolicy("calico") {
 				pod, err := pod.Get("dns-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
 				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
