@@ -602,7 +602,10 @@
               },
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp"
+              "protocol": "tcp",
+              "probe": {
+                "id": "[concat(variables('masterInternalLbID'),'/probes/tcpHTTPSProbe')]"
+              }
             }
           }
         ],
