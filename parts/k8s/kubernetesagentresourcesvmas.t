@@ -87,9 +87,9 @@
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "properties":
         {
-            "platformFaultDomainCount": 2,
+            "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
             "platformUpdateDomainCount": 3,
-		"managed" : "true"
+            "managed": true
         },
 
       "type": "Microsoft.Compute/availabilitySets"
@@ -348,4 +348,4 @@
       }
     }
     {{end}}
-    
+
