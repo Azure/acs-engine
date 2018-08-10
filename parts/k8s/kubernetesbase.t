@@ -93,14 +93,14 @@
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
-              "[variables('vnetCidr')]"
+              "[parameters('vnetCidr')]"
             ]
           },
           "subnets": [
             {
               "name": "[variables('subnetName')]",
               "properties": {
-                "addressPrefix": "[variables('subnet')]",
+                "addressPrefix": "[parameters('masterSubnet')]",
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"
                 }
