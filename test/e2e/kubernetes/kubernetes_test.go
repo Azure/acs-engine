@@ -802,7 +802,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Applying a network policy to deny ingress access")
 				networkPolicyName, namespace = "client-one-deny-ingress", nsClientOne
@@ -819,7 +820,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Applying a network policy to only allow egress access from label:role=client-one to label:role=server")
 				networkPolicyName, namespace = "client-one-allow-egress-server", nsClientOne
@@ -842,7 +844,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Applying a network policy to only allow ingress access to label:role=server from label:role=client-one")
 				networkPolicyName, namespace = "server-allow-ingress-client-one", nsServer
@@ -865,7 +868,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Applying a network policy to only allow ingress access to label:role=server from pods within the same namespace")
 				networkPolicyName, namespace = "server-allow-server-namespace", nsServer
@@ -894,7 +898,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				err = networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
+				Expect(err).NotTo(HaveOccurred())
 				err = clientOneDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = clientTwoDeploy.Delete()
