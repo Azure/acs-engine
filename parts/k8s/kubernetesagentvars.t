@@ -27,7 +27,7 @@
     "{{.Name}}SubnetName": "[parameters('{{.Name}}VnetSubnetID')]",
     "{{.Name}}VnetParts": "[split(parameters('{{.Name}}VnetSubnetID'),'/subnets/')]",
 {{else}}
-    "{{.Name}}VnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "{{.Name}}VnetSubnetID": "[variables('vnetSubnetID')]",
     "{{.Name}}SubnetName": "[variables('subnetName')]",
 {{end}}
     "{{.Name}}osImageOffer": "[parameters('{{.Name}}osImageOffer')]",

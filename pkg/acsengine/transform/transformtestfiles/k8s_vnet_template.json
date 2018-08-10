@@ -1298,7 +1298,7 @@
       "z"
     ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
-    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "subnetNameResourceSegmentIndex": 10,
     "subscriptionId": "[subscription().subscriptionId]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
@@ -1306,7 +1306,7 @@
     "useInstanceMetadata": "false",
     "useManagedIdentityExtension": "false",
     "username": "[parameters('linuxAdminUsername')]",
-    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "vmSizesMap": {
       "Standard_A0": {
         "storageAccountType": "Standard_LRS"
@@ -1644,7 +1644,7 @@
     },
     "vmsPerStorageAccount": 20,
     "vnetNameResourceSegmentIndex": 8,
-    "vnetSubnetID": "[parameters('masterVnetSubnetID')]"
+    "vnetSubnetID": "[variables('vnetSubnetID')]"
   },
   "resources": [
     {
@@ -2117,7 +2117,7 @@
               "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }

@@ -899,7 +899,7 @@
     "agentpool1SubnetName": "[variables('subnetName')]",
     "agentpool1VMNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool1-', parameters('nameSuffix'), '-')]",
     "agentpool1VMSize": "[parameters('agentpool1VMSize')]",
-    "agentpool1VnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "agentpool1VnetSubnetID": "[variables('vnetSubnetID')]",
     "agentpool2AccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "agentpool2AvailabilitySet": "[concat('agentpool2-availabilitySet-', parameters('nameSuffix'))]",
     "agentpool2Count": "[parameters('agentpool2Count')]",
@@ -910,7 +910,7 @@
     "agentpool2SubnetName": "[variables('subnetName')]",
     "agentpool2VMNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool2-', parameters('nameSuffix'), '-')]",
     "agentpool2VMSize": "[parameters('agentpool2VMSize')]",
-    "agentpool2VnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "agentpool2VnetSubnetID": "[variables('vnetSubnetID')]",
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "apiVersionDefault": "2016-03-30",
@@ -1722,7 +1722,7 @@
               "privateIPAddress": "[variables('masterInternalLbIp')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }
@@ -1828,7 +1828,7 @@
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }

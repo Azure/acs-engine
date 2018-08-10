@@ -1119,7 +1119,7 @@
     "agentpool2SubnetName": "[variables('subnetName')]",
     "agentpool2VMNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool2-', parameters('nameSuffix'), '-')]",
     "agentpool2VMSize": "[parameters('agentpool2VMSize')]",
-    "agentpool2VnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "agentpool2VnetSubnetID": "[variables('vnetSubnetID')]",
     "agentppol1AccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "agentppol1AvailabilitySet": "[concat('agentppol1-availabilitySet-', parameters('nameSuffix'))]",
     "agentppol1Count": "[parameters('agentppol1Count')]",
@@ -1130,7 +1130,7 @@
     "agentppol1SubnetName": "[variables('subnetName')]",
     "agentppol1VMNamePrefix": "[concat(parameters('orchestratorName'), '-agentppol1-', parameters('nameSuffix'), '-')]",
     "agentppol1VMSize": "[parameters('agentppol1VMSize')]",
-    "agentppol1VnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "agentppol1VnetSubnetID": "[variables('vnetSubnetID')]",
     "allocateNodeCidrs": true,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
@@ -2012,7 +2012,7 @@
               "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }
@@ -2119,7 +2119,7 @@
               "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }

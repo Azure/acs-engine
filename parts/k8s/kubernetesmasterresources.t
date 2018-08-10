@@ -284,7 +284,7 @@
               "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }
@@ -297,7 +297,7 @@
               "primary": false,
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }
@@ -367,7 +367,7 @@
                 "primary": true,
                 "privateIPAllocationMethod": "Static",
                 "subnet": {
-                  "id": "[parameters('masterVnetSubnetID')]"
+                  "id": "[variables('vnetSubnetID')]"
                 }
               }
             }
@@ -380,7 +380,7 @@
                 "primary": false,
                 "privateIPAllocationMethod": "Dynamic",
                 "subnet": {
-                  "id": "[parameters('masterVnetSubnetID')]"
+                  "id": "[variables('vnetSubnetID')]"
                 }
               }
             }
@@ -534,7 +534,7 @@
                   "name": "ipconfig1",
                   "properties": {
                       "subnet": {
-                          "id": "[parameters('masterVnetSubnetID')]"
+                          "id": "[variables('vnetSubnetID')]"
                       },
                       "primary": true,
                       "privateIPAllocationMethod": "Dynamic",
@@ -583,7 +583,7 @@
               "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[parameters('masterVnetSubnetID')]"
+                "id": "[variables('vnetSubnetID')]"
               }
             }
           }
