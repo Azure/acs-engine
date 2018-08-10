@@ -1,8 +1,8 @@
 build-packer:
-	@packer build -var-file=packer/settings.json packer/vhd-image-builder.json
+	@packer build -var-file=packer/settings.json packer/vhd-image.json
 
 init-packer:
-	@./packer/init-variables
+	@./packer/scripts/init-variables
 
 az-login:
 	az login --service-principal -u ${CLIENT_ID} -p ${CLIENT_SECRET} --tenant ${TENANT_ID}
