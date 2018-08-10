@@ -50,7 +50,9 @@ waitForCloudInit
 holdWALinuxAgent
 
 if $FULL_INSTALL_REQUIRED; then
-    installEtcd
+    if [[ ! -z "${MASTER_NODE}" ]]; then
+        installEtcd
+    fi
     installDeps
     installContainerRuntime
     installNetworkPlugin
