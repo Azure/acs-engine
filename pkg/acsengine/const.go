@@ -217,6 +217,7 @@ const (
 	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
 	openshift39NodeScript   = "openshift/release-3.9/openshiftnodescript.sh"
 	openshift39MasterScript = "openshift/release-3.9/openshiftmasterscript.sh"
+	sshdConfig              = "k8s/sshd_config"
 )
 
 const (

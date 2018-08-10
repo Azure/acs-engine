@@ -14,6 +14,13 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
+- path: "/etc/ssh/sshd_config"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "sshdConfig"}}
+
 {{if .OrchestratorProfile.KubernetesConfig.RequiresDocker}}
     {{if not .MasterProfile.IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
