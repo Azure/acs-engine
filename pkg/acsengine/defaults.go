@@ -562,7 +562,9 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		// On instances that support hyperthreading, Accelerated Networking is supported on VM instances with 4 or more vCPUs.
 		// Supported series are: D/DSv3, E/ESv3, Fsv2, and Ms/Mms.
 		if profile.AcceleratedNetworkingEnabled == nil {
-			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
+			// disable AN by default because of reported instability
+			// profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
+			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(false)
 		}
 
 		// don't default Distro for OpenShift
