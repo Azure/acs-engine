@@ -149,9 +149,6 @@
       },
       "type": "string"
     }
-{{if  GetClassicMode}}
-    ,{{template "classicparams.t" .}}
-{{end}}
 {{if .LinuxProfile.HasSecrets}}
   {{range  $vIndex, $vault := .LinuxProfile.Secrets}}
     ,

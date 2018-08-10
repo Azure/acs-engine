@@ -35,11 +35,7 @@
       ],
 {{end}}
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
-{{if  GetClassicMode}}
-    "masterCount": "[parameters('masterCount')]",
-{{else}}
     "masterCount": {{.MasterProfile.Count}},
-{{end}}
 {{if .MasterProfile.IsRHEL}}
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash ',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]",
 {{else}}

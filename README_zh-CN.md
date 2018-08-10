@@ -37,16 +37,6 @@
 
 ## 使用步骤
 
-通过创建一个容器集群来演示ACS引擎的具体用法：
-```shell
-$ vim examples/kubernetes.classic.json
-
-# 修改默认的DNS prefix
-# 修改ssh public key
-
-$ ./acs-engine generate examples/kubernetes.classic.json
-```
-
 This produces a new directory inside `_output/` that contains an ARM template
 for deploying Kubernetes into Azure. (In the case of Kubernetes, some additional
 needed assets are generated and placed in the output directory.)

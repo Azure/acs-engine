@@ -485,7 +485,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 	ctx := acsengine.Context{
 		Translator: ku.Translator,
 	}
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, false)
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx)
 	if err != nil {
 		return nil, nil, ku.Translator.Errorf("failed to initialize template generator: %s", err.Error())
 	}

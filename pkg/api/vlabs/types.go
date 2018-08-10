@@ -386,9 +386,6 @@ type ImageReference struct {
 	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
-// ClassicAgentPoolProfileType represents types of classic profiles
-type ClassicAgentPoolProfileType string
-
 // ExtensionProfile represents an extension definition
 type ExtensionProfile struct {
 	Name                           string             `json:"name"`
