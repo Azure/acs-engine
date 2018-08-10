@@ -71,8 +71,8 @@
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
 {{ else }}
-    "servicePrincipalClientId": "[variables('servicePrincipalClientId')]",
-    "servicePrincipalClientSecret": "[variables('servicePrincipalClientSecret')]",
+    "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
+    "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
 {{ end }}
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
 {{if not IsHostedMaster}}
