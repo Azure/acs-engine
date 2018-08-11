@@ -806,13 +806,6 @@
         "description": "Encryption at rest key for etcd"
       },
       "type": "string"
-    },
-    "platformFaultDomainCount": {
-      "defaultValue": 0,
-      "metadata": {
-        "description": "Number of fault domains to use. Leave at 0 to have the template set a value appropriate to the Azure region"
-      },
-      "type": "int"
     }
 {{if ProvisionJumpbox}}
     ,"jumpboxVMName": {

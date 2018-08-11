@@ -5,9 +5,9 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
         {
-            "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
+            "platformFaultDomainCount": 2,
             "platformUpdateDomainCount": 3,
-            "managed": true
+		        "managed" : true
         },
       "type": "Microsoft.Compute/availabilitySets"
     },
@@ -640,7 +640,7 @@
        "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
-       "dependsOn":
+       "dependsOn": 
        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -673,7 +673,7 @@
            }
          ],
  {{else}}
-         "accessPolicies":
+         "accessPolicies": 
          [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
