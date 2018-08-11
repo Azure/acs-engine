@@ -275,7 +275,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubeConfig": func() string {
 			kubeConfig, err := GenerateKubeConfig(cs.Properties, cs.Location)
 			if err != nil {
-				return ""
+				panic(err)
 			}
 			return escapeSingleLine(kubeConfig)
 		},
@@ -453,8 +453,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
-				fmt.Printf("%#v\n", e)
-				return ""
+				panic(e)
 			}
 
 			// add manifests
@@ -497,7 +496,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 
 			if e != nil {
-				return ""
+				panic(e)
 			}
 
 			// add artifacts
@@ -514,7 +513,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
 
 			if err != nil {
-				return ""
+				panic(err)
 			}
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
@@ -595,7 +594,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1, cs, profile)
 			if e != nil {
-				return ""
+				panic(e)
 			}
 			preprovisionCmd := ""
 			if profile.PreprovisionExtension != nil {
