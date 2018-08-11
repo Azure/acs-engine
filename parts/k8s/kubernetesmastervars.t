@@ -201,7 +201,6 @@
     "primaryAvailabilitySetName": "",
     "vmType": "vmss",
 {{end}}
-    "platformFaultDomainCount": "[if(greater(parameters('platformFaultDomainCount'),0),parameters('platformFaultDomainCount'),if(contains(split('eastus,eastus2,westus,centralus,northcentralus,southcentralus,canadacentral,northeurope,westeurope',','),variables('location')),3,if(contains('centraluseuap',variables('location')),1,2)))]",
 {{if not IsHostedMaster }}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
