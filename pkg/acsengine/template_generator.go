@@ -760,13 +760,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"EnablePodSecurityPolicy": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy)
 		},
-		"AddonEnabled": func(addon string) bool {
-			if cs.Properties.OrchestratorProfile.KubernetesConfig != nil {
-				a := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, addon)
-				return helpers.IsTrueBoolPointer(a.Enabled)
-			}
-			return false
-		},
 		"OpenShiftGetMasterSh": func() (string, error) {
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
