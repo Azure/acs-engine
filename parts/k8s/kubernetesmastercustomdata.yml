@@ -390,7 +390,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     Type=notify
     User=etcd
     PermissionsStartOnly=true
-    ExecStart=/usr/bin/etcd $DAEMON_ARGS
+    ExecStart=/usr/local/bin/etcd $DAEMON_ARGS
     Restart=always
     [Install]
     WantedBy=multi-user.target
