@@ -101,6 +101,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				By("Cleaning up after ourselves")
 				err = alpineDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
 			}
 			nodeList, err := node.Get()
 			Expect(err).NotTo(HaveOccurred())
