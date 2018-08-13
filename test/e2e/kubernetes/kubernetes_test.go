@@ -97,11 +97,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				running, err := pod.WaitOnReady(alpineDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				alpinePods, err := alpineDeploy.Pods()
+				_, err = alpineDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
-				for i, alpinePod := range alpinePods {
-					// TODO
-				}
 				By("Cleaning up after ourselves")
 				err = alpineDeploy.Delete()
 			}
