@@ -173,7 +173,7 @@ function configureCNI() {
 }
 
 function setKubeletOpts () {
-	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
+    sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
 function ensureCCProxy() {
@@ -185,38 +185,36 @@ function ensureCCProxy() {
 }
 
 function setupContainerd() {
-	echo "Configuring cri-containerd..."
-
-	mkdir -p "/etc/containerd"
-	CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
-	echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
-	echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
+    echo "Configuring cri-containerd..."
+    mkdir -p "/etc/containerd"
+    CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
+    echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
+    echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
     echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG" 
     echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
-	echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-		echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
-	elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
-		echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
-	else
-		echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
-	fi
-	echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
-	echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
-
-	setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+    echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+    if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+        echo "runtime_engine = '/usr/bin/cc-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+    elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
+        echo "runtime_engine = '/usr/bin/kata-runtime'" >> "$CRI_CONTAINERD_CONFIG"
+    else
+        echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+    fi
+    echo "[plugins.cri.containerd.default_runtime]" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
+    echo "runtime_engine = '/usr/local/sbin/runc'" >> "$CRI_CONTAINERD_CONFIG"
+    setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
 function ensureContainerd() {
-	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
-		setupContainerd
+    if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+        setupContainerd
         # Enable and start cri-containerd service
-		# Make sure this is done after networking plugins are installed
-		echo "Enabling and starting cri-containerd service..."
-		systemctlEnableAndStart containerd
-	fi
+        # Make sure this is done after networking plugins are installed
+        echo "Enabling and starting cri-containerd service..."
+        systemctlEnableAndStart containerd
+    fi
 }
 
 function ensureDocker() {
