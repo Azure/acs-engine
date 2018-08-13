@@ -35,7 +35,7 @@ function testOutboundConnection() {
 }
 
 function waitForCloudInit() {
-    wait_for_file 600 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
 }
 
 function holdWALinuxAgent() {
