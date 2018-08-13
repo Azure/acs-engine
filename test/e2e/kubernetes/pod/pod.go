@@ -424,7 +424,7 @@ func (p *Pod) ValidateContainerNetworking(sleep, duration time.Duration) (bool, 
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while validating container networking", duration.String())
 			default:
-				_, err := p.Exec("/bin/sh", "-c", "ping", "-c1", "bbc.co.uk")
+				_, err := p.Exec("/bin/sh", "-c", "nc", "-zv", "bbc.co.uk", "80")
 				if err == nil {
 					readyCh <- true
 				}
