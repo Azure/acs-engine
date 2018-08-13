@@ -93,7 +93,7 @@ function configureEtcd() {
 
 function ensureRPC() {
     systemctlEnableAndStart rpcbind
-	systemctlEnableAndStart rpc-statd
+    systemctlEnableAndStart rpc-statd
 }
 
 function runAptDaily() {
