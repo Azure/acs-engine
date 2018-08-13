@@ -29,6 +29,4 @@ HYPERKUBE_VERSION="v1.10.5"
 HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:${HYPERKUBE_VERSION}"
 extractHyperkube
 
-installFlexVolDrivers
-
 echo "Install complete successfully" > /var/log/azure/golden-image-install.complete
