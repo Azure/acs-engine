@@ -213,7 +213,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex, index, winPoolIndex int
 	winPoolIndex = -1
-	vms := make([]string, 0)
+	indexes := make([]int, 0)
+	indexToVM := make(map[int]string)
 	if sc.agentPool.IsAvailabilitySets() {
 		for vmsListPage, err := sc.client.ListVirtualMachines(ctx, sc.resourceGroupName); vmsListPage.NotDone(); err = vmsListPage.Next() {
 			if err != nil {
@@ -238,22 +239,21 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 					_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
 				}
 
-				if index > highestUsedIndex {
-					highestUsedIndex = index
-				}
 
-				vms = append(vms, *vm.Name)
+				indexToVM[index] = *vm.Name
+				indexes = append(indexes, index)
 			}
 		}
-		sortedVMs := sort.StringSlice(vms)
-		sortedVMs.Sort()
-		vms = []string(sortedVMs)
-		currentNodeCount = len(vms)
+		sortedIndexes := sort.IntSlice(indexes)
+		sortedIndexes.Sort()
+		indexes = []int(sortedIndexes)
+		currentNodeCount = len(indexes)
 
 		if currentNodeCount == sc.newDesiredAgentCount {
 			log.Info("Cluster is currently at the desired agent count.")
 			return nil
 		}
+		highestUsedIndex = indexes[len(indexes)-1]
 
 		// Scale down Scenario
 		if currentNodeCount > sc.newDesiredAgentCount {
@@ -262,9 +262,15 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				return errors.New("master-FQDN is required to scale down a kubernetes cluster's agent pool")
 			}
 
+			// still a problem if 0, 1, 3
+			// what if desired agent count is 3, so I try to delete 3 so it's 0,1,2, but it's only 0,1
+			// except that won't happen because it will start at index 2
+			// part of problem is this won't delete vm w/ index 3
+			// I could make a slice of indexes to go with map... iterate over indices. wait that already exists
 			vmsToDelete := make([]string, 0)
 			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
-				vmsToDelete = append(vmsToDelete, vms[i])
+				index = indexes[i]
+				vmsToDelete = append(vmsToDelete, indexToVM[index])
 			}
 
 			switch orchestratorInfo.OrchestratorType {
