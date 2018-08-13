@@ -3,6 +3,8 @@ package kubernetesupgrade
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -383,6 +385,43 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 }
 
 func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
+	if len(ku.ClusterTopology.AgentPoolScaleSetsToUpgrade) != 0 {
+		// need to apply the ARM template with target kubernets version to the VMSS first in order that the new VMSS instances
+		// created can get the expected kubernetes version. Otherwise the new instances created still have old kubernets version
+		// if the topology dosn't have master nodes(so there is no ARM deployments in previous upgradeMasterNodes step)
+		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
+		if err != nil {
+			ku.logger.Errorf("error generating upgrade template in upgradeAgentScaleSets: %v", err)
+			return err
+		}
+
+		transformer := &transform.Transformer{
+			Translator: ku.Translator,
+		}
+
+		if err := transformer.NormalizeForVMSSScaling(ku.logger, templateMap); err != nil {
+			ku.logger.Errorf("unable to update template, error: %v.", err)
+			return err
+		}
+
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		deploymentSuffix := random.Int31()
+		deploymentName := fmt.Sprintf("agentscaleset-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
+
+		ku.logger.Infof("Deploying the agent scale sets ARM template...")
+		_, err = ku.Client.DeployTemplate(
+			ctx,
+			ku.ClusterTopology.ResourceGroup,
+			deploymentName,
+			templateMap,
+			parametersMap)
+
+		if err != nil {
+			ku.logger.Errorf("error applying upgrade template in upgradeAgentScaleSets: %v", err)
+			return err
+		}
+	}
+
 	for _, vmssToUpgrade := range ku.ClusterTopology.AgentPoolScaleSetsToUpgrade {
 		ku.logger.Infof("Upgrading VMSS %s", vmssToUpgrade.Name)
 
