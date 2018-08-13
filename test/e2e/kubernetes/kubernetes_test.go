@@ -99,7 +99,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(running).To(Equal(true))
 				alpinePods, err := alpineDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
-				for i, curlPod := range curlPods {
+				for i, alpinePod := range alpinePods {
 					// TODO
 				}
 				By("Cleaning up after ourselves")
