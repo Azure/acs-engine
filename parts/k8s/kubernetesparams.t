@@ -238,6 +238,7 @@
       },
       "type": "string"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
     "kubernetesDashboardSpec": {
       "metadata": {
         "description": "The container spec for kubernetes-dashboard-amd64."
@@ -268,6 +269,7 @@
       },
       "type": "string"
     },
+{{end}}
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
@@ -286,12 +288,15 @@
       },
       "type": "string"
     },
+{{if .OrchestratorProfile.IsMetricsServerEnabled}}
     "kubernetesMetricsServerSpec": {
       "metadata": {
         "description": "The container spec for Metrics Server."
       },
       "type": "string"
     },
+{{end}}
+{{if .IsNVIDIADevicePluginEnabled}}
     "kubernetesNVIDIADevicePluginSpec": {
       "metadata": {
         "description": "The container spec for NVIDIA Device Plugin."
@@ -322,6 +327,8 @@
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
     "kubernetesTillerSpec": {
       "metadata": {
         "description": "The container spec for Helm Tiller."
@@ -358,6 +365,8 @@
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled}}
     "kubernetesAADPodIdentityEnabled": {
       "defaultValue": false,
       "metadata": {
@@ -365,13 +374,14 @@
       },
       "type": "bool"
     },
+{{end}}
     "kubernetesACIConnectorEnabled": {
-      "defaultValue": false,
       "metadata": {
         "description": "ACI Connector Status"
       },
       "type": "bool"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
     "kubernetesACIConnectorSpec": {
       "metadata": {
         "description": "The container spec for ACI Connector."
@@ -426,6 +436,14 @@
       },
       "type": "string"
     },
+{{end}}
+    "kubernetesClusterAutoscalerEnabled": {
+      "metadata": {
+        "description": "Cluster autoscaler status"
+      },
+      "type": "bool"
+    },
+{{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
     "kubernetesClusterAutoscalerSpec": {
       "metadata": {
         "description": "The container spec for the cluster autoscaler."
@@ -474,19 +492,13 @@
       },
       "type": "string"
     },
-    "kubernetesClusterAutoscalerEnabled": {
-      "defaultValue": false,
-      "metadata": {
-        "description": "Cluster autoscaler status"
-      },
-      "type": "bool"
-    },
     "kubernetesClusterAutoscalerUseManagedIdentity": {
       "metadata": {
         "description": "Managed identity for the cluster autoscaler addon"
       },
       "type": "string"
     },
+{{end}}
      "flexVolumeDriverConfig": {
       "type": "object",
       "defaultValue": {
@@ -500,6 +512,7 @@
         "kubernetesSMBFlexVolumeInstallerMemoryLimit": "10Mi"
       }
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
       "metadata": {
         "description": "Key Vault FlexVolume Installer CPU Requests"
@@ -524,6 +537,8 @@
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     "kubernetesReschedulerSpec": {
       "metadata": {
         "description": "The container spec for rescheduler."
@@ -554,6 +569,7 @@
       },
       "type": "string"
     },
+{{end}}
     "kubernetesPodInfraContainerSpec": {
       "metadata": {
         "description": "The container spec for pod infra."
@@ -692,6 +708,7 @@
       },
       "type": "int"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     "omsAgentVersion": {
       "defaultValue": "",
       "metadata": {
@@ -755,6 +772,7 @@
       },
       "type": "string"
     },
+{{end}}
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
