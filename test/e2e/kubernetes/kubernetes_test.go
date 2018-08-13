@@ -94,18 +94,18 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				alpineDeploymentName := fmt.Sprintf("alpine-%s", cfg.Name)
 				alpineDeploy, err := deployment.CreateLinuxDeploy("alpine", alpineDeploymentName, "default", "")
 				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(alpineDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady(alpineDeploymentName, "default", 3, 1*time.Second, 1*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				_, err = alpineDeploy.Pods()
+				alpinePods, err := alpineDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
+				pass, err := alpinePods[0].ValidateContainerNetworking(10*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
 				By("Cleaning up after ourselves")
 				err = alpineDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
-			nodeList, err := node.Get()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
 		It("should have functional DNS", func() {
