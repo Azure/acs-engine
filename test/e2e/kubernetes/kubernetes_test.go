@@ -89,6 +89,27 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
+		It("should have functional container networking", func() {
+			for i := 0; i < 60; i++ {
+				alpineDeploymentName := fmt.Sprintf("alpine-%s", cfg.Name)
+				alpineDeploy, err := deployment.CreateLinuxDeploy("alpine", alpineDeploymentName, "default", "")
+				Expect(err).NotTo(HaveOccurred())
+				running, err := pod.WaitOnReady(alpineDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				alpinePods, err := alpineDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				for i, curlPod := range curlPods {
+					// TODO
+				}
+				By("Cleaning up after ourselves")
+				err = alpineDeploy.Delete()
+			}
+			nodeList, err := node.Get()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
+		})
+
 		It("should have functional DNS", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
