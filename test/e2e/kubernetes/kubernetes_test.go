@@ -97,7 +97,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
 				Expect(exitCode).To(Equal(0))
 				By("Cleaning up after ourselves")
-				err := p.Delete()
+				err := d.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
 		})
