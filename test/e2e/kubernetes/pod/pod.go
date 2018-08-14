@@ -342,7 +342,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 	}
 }
 
-// WaitOnSucceeded is used when you dont have a handle on a pod but want to wait until its in a Succeded state.
+// WaitOnSucceeded is used when you dont have a handle on a pod but want to wait until its in a Succeeded state.
 func WaitOnSucceeded(podPrefix, namespace string, sleep, duration time.Duration) (bool, error) {
 	succeededCh := make(chan bool, 1)
 	errCh := make(chan error)

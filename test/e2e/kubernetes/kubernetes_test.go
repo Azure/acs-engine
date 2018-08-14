@@ -94,9 +94,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				alpinePodName := fmt.Sprintf("alpine-%s", cfg.Name)
 				p, _ := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80")
 				log.Printf("%#v\n", p)
-				suceeded, err := p.WaitOnSucceeded(5*time.Second, 1*time.Minute)
+				succeeded, err := p.WaitOnSucceeded(5*time.Second, 1*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(suceeded).To(Equal(true))
+				Expect(succeeded).To(Equal(true))
 				//exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
 				//Expect(exitCode).To(Equal(0))
 				By("Cleaning up after ourselves")
