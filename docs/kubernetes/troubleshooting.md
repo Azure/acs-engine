@@ -46,7 +46,7 @@ How to determine the above?
 execute command: command terminated with exit status=20\n[stdout]\n\n[stderr]\n"."
 ```
 
-Look for the exit code. In the above example, the exit code is `20`. The list of exit codes and their meaning can be found [here](../../parts/k8s/kubernetescustomscript.sh).
+Look for the exit code. In the above example, the exit code is `20`. The list of exit codes and their meaning can be found [here](../../parts/k8s/kubernetesprovisionsource.sh).
 
 If after following the above you are still unable to troubleshoot your deployment error, please open a Github issue with title "CSE error: exit code <INSERT_YOUR_EXIT_CODE>" and include the following in the description:
 
