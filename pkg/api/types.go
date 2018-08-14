@@ -401,6 +401,7 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	CustomVHD                string            `json:"customVHD,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -462,6 +463,7 @@ type AgentPoolProfile struct {
 	MaxCount                     *int                 `json:"maxCount,omitempty"`
 	MinCount                     *int                 `json:"minCount,omitempty"`
 	EnableAutoScaling            *bool                `json:"enableAutoScaling,omitempty"`
+	CustomVHD                    string               `json:"customVHD,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role

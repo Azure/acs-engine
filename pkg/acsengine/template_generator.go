@@ -737,6 +737,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			imageRef := cs.Properties.MasterProfile.ImageRef
 			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
 		},
+		"UseAgentCustomVHD": func(profile *api.AgentPoolProfile) bool {
+			return len(profile.CustomVHD) > 0
+		},
+		"UseMasterCustomVHD": func() bool {
+			return len(cs.Properties.MasterProfile.CustomVHD) > 0
+		},
 		"GetMasterEtcdServerPort": func() int {
 			return DefaultMasterEtcdServerPort
 		},

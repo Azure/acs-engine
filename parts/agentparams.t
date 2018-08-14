@@ -92,6 +92,13 @@
       },
       "type": "string"
     },
+    "{{.Name}}osDiskVhdURI": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OS image URL for using custom VHD."
+      },
+      "type": "string"
+    },
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": {
       "metadata": {

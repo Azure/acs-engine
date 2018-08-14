@@ -795,7 +795,7 @@
           {{end}}
         },
         "storageProfile": {
-          {{if and (not UseMasterCustomImage) (not IsOpenShift)}}
+          {{if and (and (not UseMasterCustomImage) (not UseMasterCustomVHD)) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
@@ -810,6 +810,7 @@
             }
           ],
           {{end}}
+          {{if not UseMasterCustomVHD}}
           "imageReference": {
             {{if UseMasterCustomImage}}
             "id": "[resourceId(parameters('osImageResourceGroup'), 'Microsoft.Compute/images', parameters('osImageName'))]"
@@ -820,11 +821,19 @@
             "version": "[parameters('osImageVersion')]"
             {{end}}
           },
+          {{end}}
           "osDisk": {
-            "caching": "ReadWrite"
-            ,"createOption": "FromImage"
+          "caching": "ReadWrite",
+          "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
+          {{if UseMasterCustomVHD}}
+            "osType": "Linux",
+            "createOption": "Attach",
+            "vhd": {
+              "uri": "[parameters('osDiskVhdUri')]"
+            }
+          {{else}}
+            "createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
-            ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
@@ -832,7 +841,7 @@
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}
-
+          {{end}}
           }
         }
       },

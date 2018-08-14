@@ -181,7 +181,7 @@
         "type": "systemAssigned"
       },
       {{end}}
-      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
+      {{if and IsOpenShift (and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .)))}}
       "plan": {
         "name": "[variables('{{.Name}}osImageSKU')]",
         "publisher": "[variables('{{.Name}}osImagePublisher')]",
@@ -202,6 +202,7 @@
             }
           ]
         },
+        {{if not (UseAgentCustomVHD .)}}
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
@@ -224,10 +225,12 @@
               "secrets": "[variables('linuxProfileSecrets')]"
             {{end}}
         },
+        {{end}}
         "storageProfile": {
-          {{if not (UseAgentCustomImage .)}}
+          {{if and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .))}}
           {{GetDataDisks .}}
           {{end}}
+          {{if not (UseAgentCustomVHD .)}}
           "imageReference": {
             {{if UseAgentCustomImage .}}
             "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
@@ -238,7 +241,16 @@
             "version": "[variables('{{.Name}}osImageVersion')]"
             {{end}}
           },
+          {{end}}
           "osDisk": {
+            {{if UseAgentCustomVHD .}}
+            "osType": "Linux",
+            "createOption": "Attach",
+            "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]",
+            "vhd": {
+              "uri": "[parameters('{{.Name}}osDiskVhdUri')]"
+            }
+          {{else}}
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}
@@ -249,6 +261,7 @@
           {{end}}
           {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
+          {{end}}
           {{end}}
           }
         }
