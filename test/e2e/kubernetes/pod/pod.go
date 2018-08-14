@@ -52,14 +52,29 @@ type Container struct {
 	Resources Resources `json:"resources"`
 }
 
+// TerminatedContainerState shows terminated state of a container
+type TerminatedContainerState struct {
+	ContainerID string `json:"containerID"`
+	ExitCode    int    `json:"exitCode"`
+	FinishedAt  string `json:"finishedAt"`
+	Reason      string `json:"reason"`
+	StartedAt   string `json:"startedAt"`
+}
+
+// ContainerState has state of a container
+type ContainerState struct {
+	Terminated TerminatedContainerState `json:"terminated"`
+}
+
 // ContainerStatus has status of a container
 type ContainerStatus struct {
-	ContainerID  string `json:"containerID"`
-	Image        string `json:"image"`
-	ImageID      string `json:"imageID"`
-	Name         string `json:"name"`
-	Ready        bool   `json:"ready"`
-	RestartCount int    `json:"restartCount"`
+	ContainerID  string         `json:"containerID"`
+	Image        string         `json:"image"`
+	ImageID      string         `json:"imageID"`
+	Name         string         `json:"name"`
+	Ready        bool           `json:"ready"`
+	RestartCount int            `json:"restartCount"`
+	State        ContainerState `json:"state"`
 }
 
 // EnvVar holds environment variables

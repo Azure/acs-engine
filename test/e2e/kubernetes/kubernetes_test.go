@@ -92,18 +92,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should have functional container networking", func() {
 			for i := 0; i < 60; i++ {
 				alpineDeploymentName := fmt.Sprintf("alpine-%s", cfg.Name)
-				alpineDeploy, err := deployment.CreateLinuxDeploy("alpine", alpineDeploymentName, "default", "")
+				_, err := deployment.RunLinuxDeploy("alpine", alpineDeploymentName, "default", "nc -vz bbc.co.uk 80", 1)
 				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(alpineDeploymentName, "default", 3, 1*time.Second, 1*time.Minute)
+				p, err := pod.Get(alpineDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
-				alpinePods, err := alpineDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				pass, err := alpinePods[0].ValidateContainerNetworking(10*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(pass).To(BeTrue())
+				exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
+				Expect(exitCode).To(Equal(0))
 				By("Cleaning up after ourselves")
-				err = alpineDeploy.Delete()
+				err = p.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
 		})
