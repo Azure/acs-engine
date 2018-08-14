@@ -134,6 +134,24 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 	return pod, nil
 }
 
+// RunLinuxPod will create a pod that runs a bash command
+// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", "'", command, "'")
+	out, err := util.RunAndLogCommand(cmd)
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	p, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return p, nil
+}
+
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
 	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
@@ -411,36 +429,6 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
 			default:
 				_, err := p.Exec("grep", "-i", execCmdString, "/var/opt/microsoft/omsagent/log/omsagent.log")
-				if err == nil {
-					readyCh <- true
-				}
-				time.Sleep(sleep)
-			}
-		}
-	}()
-	for {
-		select {
-		case err := <-errCh:
-			return false, err
-		case ready := <-readyCh:
-			return ready, nil
-		}
-	}
-}
-
-// ValidateContainerNetworking validates container networking functionality
-func (p *Pod) ValidateContainerNetworking(sleep, duration time.Duration) (bool, error) {
-	readyCh := make(chan bool, 1)
-	errCh := make(chan error)
-	ctx, cancel := context.WithTimeout(context.Background(), duration)
-	defer cancel()
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				errCh <- errors.Errorf("Timeout exceeded (%s) while validating container networking", duration.String())
-			default:
-				_, err := p.Exec("/bin/sh", "-c", "nc", "-zv", "bbc.co.uk", "80")
 				if err == nil {
 					readyCh <- true
 				}
