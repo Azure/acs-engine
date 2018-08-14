@@ -92,7 +92,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should have functional container networking", func() {
 			for i := 0; i < 60; i++ {
 				alpineDeploymentName := fmt.Sprintf("alpine-%s", cfg.Name)
-				_, err := deployment.RunLinuxDeploy("alpine", alpineDeploymentName, "default", "nc -vz bbc.co.uk 80", 1)
+				_, err := deployment.RunLinuxDeploy("alpine", alpineDeploymentName, "default", "'nc -vz bbc.co.uk 80'", 1)
 				Expect(err).NotTo(HaveOccurred())
 				p, err := pod.Get(alpineDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
