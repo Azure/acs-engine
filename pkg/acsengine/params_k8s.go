@@ -41,65 +41,76 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 			addValue(parametersMap, "kubernetesDNSSidecarSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["k8s-dns-sidecar"])
 			addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
-			tillerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
-			c := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
-				addValue(parametersMap, "kubernetesTillerMaxHistory", tillerAddon.Config["max-history"])
-				if tillerAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsTillerEnabled() {
+				tillerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+				c := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
+					addValue(parametersMap, "kubernetesTillerMaxHistory", tillerAddon.Config["max-history"])
+					if tillerAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+					}
 				}
 			}
-			aadPodIdentityAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultAADPodIdentityAddonName)
-			c = getAddonContainersIndexByName(aadPodIdentityAddon.Containers, DefaultAADPodIdentityAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesAADPodIdentityEnabled", helpers.IsTrueBoolPointer(aadPodIdentityAddon.Enabled))
-			}
-
-			aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
-			c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesACIConnectorEnabled", helpers.IsTrueBoolPointer(aciConnectorAddon.Enabled))
-				addValue(parametersMap, "kubernetesACIConnectorNodeName", aciConnectorAddon.Config["nodeName"])
-				addValue(parametersMap, "kubernetesACIConnectorOS", aciConnectorAddon.Config["os"])
-				addValue(parametersMap, "kubernetesACIConnectorTaint", aciConnectorAddon.Config["taint"])
-				addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Config["region"])
-				addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesACIConnectorCPULimit", aciConnectorAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesACIConnectorMemoryRequests", aciConnectorAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesACIConnectorMemoryLimit", aciConnectorAddon.Containers[c].MemoryLimits)
-				if aciConnectorAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesACIConnectorSpec", aciConnectorAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled() {
+				aadPodIdentityAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultAADPodIdentityAddonName)
+				c := getAddonContainersIndexByName(aadPodIdentityAddon.Containers, DefaultAADPodIdentityAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesAADPodIdentityEnabled", helpers.IsTrueBoolPointer(aadPodIdentityAddon.Enabled))
 				}
 			}
-			clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
-			c = getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesClusterAutoscalerAzureCloud", cloudSpecConfig.CloudName)
-				addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
-				addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
-				addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
-				addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", helpers.IsTrueBoolPointer(clusterAutoscalerAddon.Enabled))
-				addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
-				if clusterAutoscalerAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled() {
+				aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+				c := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesACIConnectorEnabled", true)
+					addValue(parametersMap, "kubernetesACIConnectorNodeName", aciConnectorAddon.Config["nodeName"])
+					addValue(parametersMap, "kubernetesACIConnectorOS", aciConnectorAddon.Config["os"])
+					addValue(parametersMap, "kubernetesACIConnectorTaint", aciConnectorAddon.Config["taint"])
+					addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Config["region"])
+					addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesACIConnectorCPULimit", aciConnectorAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesACIConnectorMemoryRequests", aciConnectorAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesACIConnectorMemoryLimit", aciConnectorAddon.Containers[c].MemoryLimits)
+					if aciConnectorAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesACIConnectorSpec", aciConnectorAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
+					}
 				}
+			} else {
+				addValue(parametersMap, "kubernetesACIConnectorEnabled", false)
+			}
+			if properties.OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled() {
+				clusterAutoscalerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
+				c := getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesClusterAutoscalerAzureCloud", cloudSpecConfig.CloudName)
+					addValue(parametersMap, "kubernetesClusterAutoscalerCPURequests", clusterAutoscalerAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesClusterAutoscalerCPULimit", clusterAutoscalerAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesClusterAutoscalerMemoryRequests", clusterAutoscalerAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesClusterAutoscalerMemoryLimit", clusterAutoscalerAddon.Containers[c].MemoryLimits)
+					addValue(parametersMap, "kubernetesClusterAutoscalerMinNodes", clusterAutoscalerAddon.Config["minNodes"])
+					addValue(parametersMap, "kubernetesClusterAutoscalerMaxNodes", clusterAutoscalerAddon.Config["maxNodes"])
+					addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", true)
+					addValue(parametersMap, "kubernetesClusterAutoscalerUseManagedIdentity", strings.ToLower(strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)))
+					if clusterAutoscalerAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+					}
+				}
+			} else {
+				addValue(parametersMap, "kubernetesClusterAutoscalerEnabled", false)
 			}
 			flexVolumeDriverConfig := map[string]string{}
 			bfFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultBlobfuseFlexVolumeAddonName)
-			c = getAddonContainersIndexByName(bfFlexVolumeInstallerAddon.Containers, DefaultBlobfuseFlexVolumeAddonName)
+			c := getAddonContainersIndexByName(bfFlexVolumeInstallerAddon.Containers, DefaultBlobfuseFlexVolumeAddonName)
 			if c > -1 {
 				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerCPURequests"] = bfFlexVolumeInstallerAddon.Containers[c].CPURequests
 				flexVolumeDriverConfig["kubernetesBlobfuseFlexVolumeInstallerCPULimit"] = bfFlexVolumeInstallerAddon.Containers[c].CPULimits
@@ -115,77 +126,89 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				flexVolumeDriverConfig["kubernetesSMBFlexVolumeInstallerMemoryLimit"] = smbFlexVolumeInstallerAddon.Containers[c].MemoryLimits
 			}
 			addValue(parametersMap, "flexVolumeDriverConfig", flexVolumeDriverConfig)
-			kvFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
-			c = getAddonContainersIndexByName(kvFlexVolumeInstallerAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerCPURequests", kvFlexVolumeInstallerAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerCPULimit", kvFlexVolumeInstallerAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests", kvFlexVolumeInstallerAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit", kvFlexVolumeInstallerAddon.Containers[c].MemoryLimits)
-			}
-			dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
-			c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesDashboardCPURequests", dashboardAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesDashboardCPULimit", dashboardAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesDashboardMemoryRequests", dashboardAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesDashboardMemoryLimit", dashboardAddon.Containers[c].MemoryLimits)
-				if dashboardAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultDashboardAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled() {
+				kvFlexVolumeInstallerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
+				c := getAddonContainersIndexByName(kvFlexVolumeInstallerAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerCPURequests", kvFlexVolumeInstallerAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerCPULimit", kvFlexVolumeInstallerAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests", kvFlexVolumeInstallerAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit", kvFlexVolumeInstallerAddon.Containers[c].MemoryLimits)
 				}
 			}
-			reschedulerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
-			c = getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesReschedulerCPURequests", reschedulerAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesReschedulerCPULimit", reschedulerAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesReschedulerMemoryRequests", reschedulerAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesReschedulerMemoryLimit", reschedulerAddon.Containers[c].MemoryLimits)
-				if reschedulerAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesReschedulerSpec", dashboardAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultReschedulerAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
+				dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+				c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesDashboardCPURequests", dashboardAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesDashboardCPULimit", dashboardAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesDashboardMemoryRequests", dashboardAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesDashboardMemoryLimit", dashboardAddon.Containers[c].MemoryLimits)
+					if dashboardAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultDashboardAddonName])
+					}
 				}
 			}
-			metricsServerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-			c = getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
-			if c > -1 {
-				if metricsServerAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesMetricsServerSpec", metricsServerAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
+			if properties.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled() {
+				reschedulerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+				c := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesReschedulerCPURequests", reschedulerAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesReschedulerCPULimit", reschedulerAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesReschedulerMemoryRequests", reschedulerAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesReschedulerMemoryLimit", reschedulerAddon.Containers[c].MemoryLimits)
+					if reschedulerAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesReschedulerSpec", reschedulerAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultReschedulerAddonName])
+					}
 				}
 			}
-			nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
-			c = getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
-			if c > -1 {
-				addValue(parametersMap, "kubernetesNVIDIADevicePluginCPURequests", nvidiaDevicePluginAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesNVIDIADevicePluginCPULimit", nvidiaDevicePluginAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryRequests", nvidiaDevicePluginAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryLimit", nvidiaDevicePluginAddon.Containers[c].MemoryLimits)
-				if nvidiaDevicePluginAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName])
+			if properties.OrchestratorProfile.IsMetricsServerEnabled() {
+				metricsServerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
+				c = getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
+				if c > -1 {
+					if metricsServerAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesMetricsServerSpec", metricsServerAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
+					}
 				}
 			}
-			containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
-			c = getAddonContainersIndexByName(containerMonitoringAddon.Containers, "omsagent")
-			if c > -1 {
-				addValue(parametersMap, "omsAgentVersion", containerMonitoringAddon.Config["omsAgentVersion"])
-				addValue(parametersMap, "omsAgentDockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
-				addValue(parametersMap, "omsAgentWorkspaceGuid", containerMonitoringAddon.Config["workspaceGuid"])
-				addValue(parametersMap, "omsAgentWorkspaceKey", containerMonitoringAddon.Config["workspaceKey"])
-				addValue(parametersMap, "kubernetesOMSAgentCPURequests", containerMonitoringAddon.Containers[c].CPURequests)
-				addValue(parametersMap, "kubernetesOMSAgentCPULimit", containerMonitoringAddon.Containers[c].CPULimits)
-				addValue(parametersMap, "kubernetesOMSAgentMemoryRequests", containerMonitoringAddon.Containers[c].MemoryRequests)
-				addValue(parametersMap, "kubernetesOMSAgentMemoryLimit", containerMonitoringAddon.Containers[c].MemoryLimits)
-				if containerMonitoringAddon.Containers[c].Image != "" {
-					addValue(parametersMap, "omsAgentImage", containerMonitoringAddon.Containers[c].Image)
-				} else {
-					addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][ContainerMonitoringAddonName])
+			if properties.IsNVIDIADevicePluginEnabled() {
+				nvidiaDevicePluginAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
+				c := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
+				if c > -1 {
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginCPURequests", nvidiaDevicePluginAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginCPULimit", nvidiaDevicePluginAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryRequests", nvidiaDevicePluginAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesNVIDIADevicePluginMemoryLimit", nvidiaDevicePluginAddon.Containers[c].MemoryLimits)
+					if nvidiaDevicePluginAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName])
+					}
+				}
+			}
+			if properties.OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled() {
+				containerMonitoringAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
+				c := getAddonContainersIndexByName(containerMonitoringAddon.Containers, "omsagent")
+				if c > -1 {
+					addValue(parametersMap, "omsAgentVersion", containerMonitoringAddon.Config["omsAgentVersion"])
+					addValue(parametersMap, "omsAgentDockerProviderVersion", containerMonitoringAddon.Config["dockerProviderVersion"])
+					addValue(parametersMap, "omsAgentWorkspaceGuid", containerMonitoringAddon.Config["workspaceGuid"])
+					addValue(parametersMap, "omsAgentWorkspaceKey", containerMonitoringAddon.Config["workspaceKey"])
+					addValue(parametersMap, "kubernetesOMSAgentCPURequests", containerMonitoringAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesOMSAgentCPULimit", containerMonitoringAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesOMSAgentMemoryRequests", containerMonitoringAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesOMSAgentMemoryLimit", containerMonitoringAddon.Containers[c].MemoryLimits)
+					if containerMonitoringAddon.Containers[c].Image != "" {
+						addValue(parametersMap, "omsAgentImage", containerMonitoringAddon.Containers[c].Image)
+					} else {
+						addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][ContainerMonitoringAddonName])
+					}
 				}
 			}
 			if properties.OrchestratorProfile.IsAzureCNI() {
