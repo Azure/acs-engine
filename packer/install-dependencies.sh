@@ -24,8 +24,8 @@ installAzureCNI
 CONTAINERD_DOWNLOAD_URL_BASE="https://storage.googleapis.com/cri-containerd-release/"
 installContainerd
 
-for HYPERKUBE_VERSION in 1.8.15 1.9.10 1.10.6 1.11.2; do
-    HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${HYPERKUBE_VERSION}"
+for KUBERNETES_VERSION in 1.8.15 1.9.10 1.10.6 1.11.2; do
+    HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
     pullHyperkube
 done
 
