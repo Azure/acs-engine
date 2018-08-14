@@ -94,7 +94,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				alpineDeploymentName := fmt.Sprintf("alpine-%s", cfg.Name)
 				d, _ := deployment.RunLinuxDeploy("alpine", alpineDeploymentName, "default", "'nc -vz bbc.co.uk 80'", 1)
 				p, _ := pod.Get(alpineDeploymentName, "default")
-				log.Printf("%#v\n", p.Status)
+				log.Printf("%#v\n", p)
 				//exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
 				//Expect(exitCode).To(Equal(0))
 				By("Cleaning up after ourselves")
