@@ -154,7 +154,7 @@ func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
 
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
-	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
+	cmd := exec.Command("kubectl", "get", "pods", "-a", "-n", namespace, "-o", "json")
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -259,6 +259,42 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	return true, nil
 }
 
+// AreAllPodsSucceeded will return true if all pods in a given namespace are in a Running State
+func AreAllPodsSucceeded(podPrefix, namespace string) (bool, error) {
+	pl, err := GetAll(namespace)
+	if err != nil {
+		return false, err
+	}
+
+	var status []bool
+	for _, pod := range pl.Pods {
+		matched, err := regexp.MatchString(podPrefix, pod.Metadata.Name)
+		if err != nil {
+			log.Printf("Error trying to match pod name:%s\n", err)
+			return false, err
+		}
+		if matched {
+			if pod.Status.Phase != "Succeeded" {
+				status = append(status, false)
+			} else {
+				status = append(status, true)
+			}
+		}
+	}
+
+	if len(status) == 0 {
+		return false, nil
+	}
+
+	for _, s := range status {
+		if !s {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
 // WaitOnReady is used when you dont have a handle on a pod but want to wait until its in a Ready state.
 // successesNeeded is used to make sure we return the correct value even if the pod is in a CrashLoop
 func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, duration time.Duration) (bool, error) {
@@ -306,9 +342,48 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 	}
 }
 
+// WaitOnSucceeded is used when you dont have a handle on a pod but want to wait until its in a Succeded state.
+func WaitOnSucceeded(podPrefix, namespace string, sleep, duration time.Duration) (bool, error) {
+	succeededCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to succeed in namespace (%s)", duration.String(), podPrefix, namespace)
+			default:
+				succeeded, err := AreAllPodsSucceeded(podPrefix, namespace)
+				if err != nil {
+					errCh <- err
+					return
+				}
+				if succeeded {
+					succeededCh <- true
+				}
+				time.Sleep(sleep)
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return false, err
+		case ready := <-succeededCh:
+			return ready, nil
+		}
+	}
+}
+
 // WaitOnReady will call the static method WaitOnReady passing in p.Metadata.Name and p.Metadata.Namespace
 func (p *Pod) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 	return WaitOnReady(p.Metadata.Name, p.Metadata.Namespace, 2, sleep, duration)
+}
+
+// WaitOnSucceeded will call the static method WaitOnSucceeded passing in p.Metadata.Name and p.Metadata.Namespace
+func (p *Pod) WaitOnSucceeded(sleep, duration time.Duration) (bool, error) {
+	return WaitOnSucceeded(p.Metadata.Name, p.Metadata.Namespace, sleep, duration)
 }
 
 // Exec will execute the given command in the pod
