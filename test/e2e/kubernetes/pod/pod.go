@@ -75,6 +75,7 @@ type ContainerStatus struct {
 	Ready        bool           `json:"ready"`
 	RestartCount int            `json:"restartCount"`
 	State        ContainerState `json:"state"`
+	LastState    ContainerState `json:"lastState"`
 }
 
 // EnvVar holds environment variables
