@@ -57,11 +57,11 @@ if $FULL_INSTALL_REQUIRED; then
     installContainerRuntime
     installNetworkPlugin
     installContainerd
-    extractHyperkube
 else 
     echo "Golden image; skipping dependencies installation"
 fi
-
+    
+extractHyperkube
 ensureRPC
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
