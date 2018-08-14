@@ -388,7 +388,7 @@ func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
 	if len(ku.ClusterTopology.AgentPoolScaleSetsToUpgrade) > 0 {
 		// need to apply the ARM template with target Kubernetes version to the VMSS first in order that the new VMSS instances
 		// created can get the expected Kubernetes version. Otherwise the new instances created still have old Kubernetes version
-		// if the topology dosn't have master nodes(so there is no ARM deployments in previous upgradeMasterNodes step)
+		// if the topology doesn't have master nodes (so there are no ARM deployments in previous upgradeMasterNodes step)
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
 		if err != nil {
 			ku.logger.Errorf("error generating upgrade template in upgradeAgentScaleSets: %v", err)
