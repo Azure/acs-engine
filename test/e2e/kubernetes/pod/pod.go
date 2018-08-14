@@ -138,13 +138,13 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", "'", command, "'")
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", fmt.Sprintf("'%s'", command))
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
 	}
-	p, err := Get(name, namespace)
+	p, err := GetTerminated(name, namespace)
 	if err != nil {
 		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
 		return nil, err
@@ -172,6 +172,23 @@ func GetAll(namespace string) (*List, error) {
 // Get will return a pod with a given name and namespace
 func Get(podName, namespace string) (*Pod, error) {
 	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	p := Pod{}
+	err = json.Unmarshal(out, &p)
+	if err != nil {
+		log.Printf("Error unmarshalling pods json:%s\n", err)
+		return nil, err
+	}
+	return &p, nil
+}
+
+// GetTerminated will return a pod with a given name and namespace, including terminated pods
+func GetTerminated(podName, namespace string) (*Pod, error) {
+	cmd := exec.Command("kubectl", "get", "pods", "-a", podName, "-n", namespace, "-o", "json")
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
