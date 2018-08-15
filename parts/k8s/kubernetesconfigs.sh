@@ -150,6 +150,8 @@ function configureK8s() {
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
     "useInstanceMetadata": ${USE_INSTANCE_METADATA},
+    "loadBalancerSku": "${LOAD_BALANCER_SKU}",
+    "excludeMasterFromStandardLB": ${EXCLUDE_MASTER_FROM_STANDARD_LB},
     "providerVaultName": "${KMS_PROVIDER_VAULT_NAME}",
     "providerKeyName": "k8s",
     "providerKeyVersion": ""

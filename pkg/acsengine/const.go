@@ -116,6 +116,8 @@ const (
 	DefaultSMBFlexVolumeAddonName = "smb-flexvolume"
 	// DefaultKeyVaultFlexVolumeAddonName is the name of the keyvault flexvolume addon deployment
 	DefaultKeyVaultFlexVolumeAddonName = "keyvault-flexvolume"
+	// DefaultELBSVCAddonName is the name of the elb service addon deployment
+	DefaultELBSVCAddonName = "elb-svc"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"

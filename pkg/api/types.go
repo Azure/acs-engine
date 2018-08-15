@@ -325,6 +325,8 @@ type KubernetesConfig struct {
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest

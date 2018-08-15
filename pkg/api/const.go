@@ -107,6 +107,10 @@ const (
 	DefaultRBACEnabled = true
 	// DefaultUseInstanceMetadata determines the acs-engine provided default for enabling Azure cloudprovider instance metadata service
 	DefaultUseInstanceMetadata = true
+	// DefaultLoadBalancerSku determines the acs-engine provided default for enabling Azure cloudprovider load balancer SKU
+	DefaultLoadBalancerSku = "Basic"
+	// DefaultExcludeMasterFromStandardLB determines the acs-engine provided default for excluding master nodes from standard load balancer.
+	DefaultExcludeMasterFromStandardLB = true
 	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
 	DefaultSecureKubeletEnabled = true
 	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon

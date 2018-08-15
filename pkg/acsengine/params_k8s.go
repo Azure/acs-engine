@@ -1,8 +1,11 @@
 package acsengine
 
 import (
+	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -211,6 +214,12 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					}
 				}
 			}
+			if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
+				random := rand.New(rand.NewSource(time.Now().UnixNano()))
+				elbsvcName := random.Int()
+				addValue(parametersMap, "kuberneteselbsvcname", fmt.Sprintf("%d", elbsvcName))
+			}
+
 			if properties.OrchestratorProfile.IsAzureCNI() {
 				azureCNINetworkmonitorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 				c = getAddonContainersIndexByName(azureCNINetworkmonitorAddon.Containers, AzureCNINetworkMonitoringAddonName)

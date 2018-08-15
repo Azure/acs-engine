@@ -142,6 +142,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"keyvault-flexvolume-installer.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled(),
 		},
+		{
+			"kubernetesmasteraddons-elb-svc.yaml",
+			"elb-svc.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard",
+		},
 	}
 }
 

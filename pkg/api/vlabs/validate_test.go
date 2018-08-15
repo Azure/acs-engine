@@ -119,6 +119,18 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			},
 			expectedError: "enableEncryptionWithExternalKms is only available in Kubernetes version 1.10.0 or greater; unable to validate for Kubernetes version 1.6.6",
 		},
+		"should error when KubernetesConfig has Standard loadBalancerSku with invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.6.6",
+					KubernetesConfig: &KubernetesConfig{
+						LoadBalancerSku: "Standard",
+					},
+				},
+			},
+			expectedError: "loadBalancerSku is only available in Kubernetes version 1.11.0 or greater; unable to validate for Kubernetes version 1.6.6",
+		},
 		"should error when KubernetesConfig has enablePodSecurity enabled with invalid settings": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{

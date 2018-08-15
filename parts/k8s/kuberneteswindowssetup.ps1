@@ -65,6 +65,8 @@ $global:KubeDnsSearchPath = "svc.cluster.local"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
+$global:LoadBalancerSku = "{{WrapAsVariable "loadBalancerSku"}}"
+$global:ExcludeMasterFromStandardLB = "{{WrapAsVariable "excludeMasterFromStandardLB"}}"
 
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
@@ -183,7 +185,9 @@ Write-AzureConfig()
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
-    "useInstanceMetadata": $global:UseInstanceMetadata
+    "useInstanceMetadata": $global:UseInstanceMetadata,
+    "loadBalancerSku": "$global:LoadBalancerSku",
+    "excludeMasterFromStandardLB": $global:ExcludeMasterFromStandardLB
 }
 "@
 
@@ -227,14 +231,14 @@ New-InfraContainer()
     $computerInfo = Get-ComputerInfo
     $windowsBase = if ($computerInfo.WindowsVersion -eq "1709") {
         "microsoft/nanoserver:1709"
-    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) { 
+    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) {
         "microsoft/nanoserver:1803"
-    } else { 
+    } else {
         # This is a temporary workaround. As of May 2018, Windows Server Insider builds still report 1803 which is wrong.
         # Once that is fixed, add another elseif ( -eq "nnnn") instead and remove the StartsWith("17134") above
         "microsoft/nanoserver-insider"
     }
-    
+
     "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
     "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
     docker build -t kubletwin/pause .
@@ -284,7 +288,7 @@ Set-AzureCNIConfig()
     $fileName  = [Io.path]::Combine("$global:AzureCNIConfDir", "10-azure.conflist")
     $configJson = Get-Content $fileName | ConvertFrom-Json
     $configJson.plugins.dns.Nameservers[0] = $KubeDnsServiceIp
-    $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath 
+    $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[0] = $global:KubeClusterCIDR
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[1] = $global:MasterSubnet
     $configJson.plugins.AdditionalArgs[1].Value.DestinationPrefix  = $global:KubeServiceCIDR
@@ -307,8 +311,8 @@ Set-NetworkConfig
 function
 Write-KubernetesStartFiles($podCIDR)
 {
-    mkdir $global:VolumePluginDir 
-    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")    
+    mkdir $global:VolumePluginDir
+    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
