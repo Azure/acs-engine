@@ -93,22 +93,34 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			var successes int
 			attempts := 60
 			for i := 0; i < attempts; i++ {
+				// Validate basic outbound networking
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				p, err := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80")
+				p, err := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
 				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 30*time.Second)
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
 				if succeeded {
 					successes++
 				}
-				//exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
-				//Expect(exitCode).To(Equal(0))
+				By("Cleaning up after ourselves")
+				err = p.Delete()
+				Expect(err).NotTo(HaveOccurred())
+
+				// Validate basic in-cluster networking
+				r = rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName = fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443")
+				Expect(err).NotTo(HaveOccurred())
+				succeeded, _ = p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				if succeeded {
+					successes++
+				}
 				By("Cleaning up after ourselves")
 				err = p.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
 			log.Printf("Container networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
-			Expect(successes).To(Equal(attempts))
+			Expect(successes).To(Equal(attempts * 2))
 		})
 
 		It("should have functional DNS", func() {
