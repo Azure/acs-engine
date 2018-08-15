@@ -90,13 +90,16 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have functional container networking", func() {
-			for i := 0; i < 60; i++ {
-				alpinePodName := fmt.Sprintf("alpine-%s", cfg.Name)
+			var successes int
+			attempts := 60
+			for i := 0; i < attempts; i++ {
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
 				p, err := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80")
 				Expect(err).NotTo(HaveOccurred())
 				succeeded, _ := p.WaitOnSucceeded(3*time.Second, 10*time.Second)
-				if !succeeded {
-					log.Println("nc -vz bbc.co.uk 80 inside a pod failed")
+				if succeeded {
+					successes++
 				}
 				//exitCode := p.Status.ContainerStatuses[0].State.Terminated.ExitCode
 				//Expect(exitCode).To(Equal(0))
@@ -104,6 +107,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				err = p.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
+			log.Printf("Container networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
 		})
 
 		It("should have functional DNS", func() {
