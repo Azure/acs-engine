@@ -144,7 +144,7 @@ func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
 	}
-	p, err := GetTerminated(name, namespace)
+	p, err := Get(name, namespace)
 	if err != nil {
 		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
 		return nil, err
@@ -154,7 +154,7 @@ func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
 
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
-	cmd := exec.Command("kubectl", "get", "pods", "-a", "-n", namespace, "-o", "json")
+	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -188,7 +188,7 @@ func Get(podName, namespace string) (*Pod, error) {
 
 // GetTerminated will return a pod with a given name and namespace, including terminated pods
 func GetTerminated(podName, namespace string) (*Pod, error) {
-	cmd := exec.Command("kubectl", "get", "pods", "-a", podName, "-n", namespace, "-o", "json")
+	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
