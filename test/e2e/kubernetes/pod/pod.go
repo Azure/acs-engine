@@ -259,11 +259,12 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	return true, nil
 }
 
-// AreAllPodsSucceeded will return true if all pods in a given namespace are in a Running State
-func AreAllPodsSucceeded(podPrefix, namespace string) (bool, error) {
+// AreAllPodsSucceeded returns true, false if all pods in a given namespace are in a Running State
+// returns false, true if any one pod is in a Failed state
+func AreAllPodsSucceeded(podPrefix, namespace string) (bool, bool, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
 	var status []bool
@@ -271,9 +272,12 @@ func AreAllPodsSucceeded(podPrefix, namespace string) (bool, error) {
 		matched, err := regexp.MatchString(podPrefix, pod.Metadata.Name)
 		if err != nil {
 			log.Printf("Error trying to match pod name:%s\n", err)
-			return false, err
+			return false, false, err
 		}
 		if matched {
+			if pod.Status.Phase == "Failed" {
+				return false, true, nil
+			}
 			if pod.Status.Phase != "Succeeded" {
 				status = append(status, false)
 			} else {
@@ -283,16 +287,16 @@ func AreAllPodsSucceeded(podPrefix, namespace string) (bool, error) {
 	}
 
 	if len(status) == 0 {
-		return false, nil
+		return false, false, nil
 	}
 
 	for _, s := range status {
 		if !s {
-			return false, nil
+			return false, false, nil
 		}
 	}
 
-	return true, nil
+	return true, false, nil
 }
 
 // WaitOnReady is used when you dont have a handle on a pod but want to wait until its in a Ready state.
@@ -354,10 +358,13 @@ func WaitOnSucceeded(podPrefix, namespace string, sleep, duration time.Duration)
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to succeed in namespace (%s)", duration.String(), podPrefix, namespace)
 			default:
-				succeeded, err := AreAllPodsSucceeded(podPrefix, namespace)
+				succeeded, failed, err := AreAllPodsSucceeded(podPrefix, namespace)
 				if err != nil {
 					errCh <- err
 					return
+				}
+				if failed {
+					errCh <- errors.New("At least one pod in a Failed state")
 				}
 				if succeeded {
 					succeededCh <- true
