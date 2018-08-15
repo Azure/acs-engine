@@ -93,7 +93,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			for i := 0; i < 60; i++ {
 				alpinePodName := fmt.Sprintf("alpine-%s", cfg.Name)
 				p, _ := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80")
-				log.Printf("%#v\n", p)
 				succeeded, err := p.WaitOnSucceeded(5*time.Second, 1*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(succeeded).To(Equal(true))
