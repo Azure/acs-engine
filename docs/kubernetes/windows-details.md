@@ -1,14 +1,14 @@
 # More on Windows and Kubernetes
 
-If you're trying to deploy Kubernetes with Windows the first time, be sure to check out the [quick start](windows.md) first. If you're looking for more details on deployments, examples or troubleshooting read on.
+If you're trying to deploy Kubernetes with Windows the first time, be sure to check out the [quick start](windows.md) first. If you're looking for more details on deployments, examples or troubleshooting &mdash; read on.
 
 ## Customizing Windows deployments
 
-ACS-Engine allows a lot more customizations available in the [docs](../), but here are a few important ones you should know for Windows deployments. Each of these are extra parameters you can add into the ACS-Engine apimodel file (such as kubernetes-windows.json from the quick start) before running `acs-engine generate`
+ACS-Engine allows a lot more customizations available in the [docs](../), but here are a few important ones you should know for Windows deployments. Each of these are extra parameters you can add into the ACS-Engine apimodel file (such as `kubernetes-windows.json` from the quick start) before running `acs-engine generate`.
 
 ### Changing the OS disk size
 
-The Windows Server deployments default to 30GB for the OS drive (C:), which is not enough to pull multiple `microsoft/windowsservercore` based containers. It's easiest to start with 128GB, then see what your usage is over time before shrinking it down. You can change this size by adding `osDiskSizeGB` under the `agentPoolProfiles`, such as:
+The Windows Server deployments default to 30GB for the OS drive (C:), which is not enough to pull multiple `microsoft/windowsservercore`-based containers. It's easiest to start with 128GB, then see what your usage is over time before shrinking it down. You can change this size by adding `osDiskSizeGB` under the `agentPoolProfiles`, such as:
 
 ```json
 "agentPoolProfiles": [
@@ -24,7 +24,7 @@ The Windows Server deployments default to 30GB for the OS drive (C:), which is n
 
 ### Choosing the Windows Server version
 
-If you want to deploy a specific Windows Server version, you can. First, find available versions with `az vm image list --publisher MicrosoftWindowsServer --all -o table`
+If you want to deploy a specific Windows Server version, you can. First, find available versions with `az vm image list` command:
 
 ```
 $ az vm image list --publisher MicrosoftWindowsServer --all -o table
@@ -36,7 +36,7 @@ WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-wit
 WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
 ```
 
-You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `widndowsVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
+You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `windowsVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
 
 ```json
 "windowsProfile": {
@@ -55,6 +55,8 @@ You can use the Offer, Publisher and Sku to pick a specific version by adding `w
 ### Using Azure Files
 
 This example is modified after https://github.com/andyzhangx/Demo/tree/master/windows/azurefile/rs3
+
+For more background information, please check out  [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) in the Kubernetes documentation.
 
 1. Create an azure file storage class
 ```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/storageclass-azurefile.yaml```
@@ -77,7 +79,7 @@ kubectl get pvc/pvc-azurefile -o wide
 
 6. Watch the status of pod until its `STATUS` is `Running`
 ```
-watch kubectl get po/iis-azurefile -o wide
+kubectl get po/iis-azurefile -o wide -w
 ```
 
 7. Enter the pod container to validate
@@ -197,7 +199,7 @@ spec:
 
 ## Troubleshooting
 
-Windows support is still in **active development** with many changes each week. Read on for more info on known per-version issues and troubleshooting if you run into problems.
+Windows support is still in **active development** with many changes each week. Read on for known per-version issues and for help troubleshooting if you run into problems.
 
 ### Finding logs
 
@@ -236,7 +238,8 @@ V0.16.2	| Windows Server version 1709 (10.0.16299.____)	| V1.9.7 | ? | DNS resol
 V0.17.0 | Windows Server version 1709	| V1.10.2 | v1.0.4 | Acs-engine version 0.17 defaults to Windows Server version 1803. You can override it to use 1709 instead [here](#choosing-the-windows-server-version). Manual workarounds needed on Windows for DNS Server list, DNS search suffix
 V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual workarounds needed on Windows for DNS Server list, DNS search suffix, and dropped packets
 v0.17.1 | Windows Server version 1709 | v1.10.3 | v1.0.4-1-gf0f090e | Manual workarounds needed on Windows for DNS Server list and DNS search suffix. This ACS-Engine version defaults to Windows Server version 1803, but you can override it to use 1709 instead [here](#choosing-the-windows-server-version)
-v0.18.3 | Windows Server version 1803 | v1.10.3 | v1.0.6 | Manual workaround needed for DNS search suffix
+v0.18.3 | Windows Server version 1803 | v1.10.3 | v1.0.6 | Pods cannot resolve cluster DNS names
+v0.20.9 | Windows Server version 1803 | v1.10.6 | v1.0.11 | Pods cannot resolve cluster DNS names
 
 ### Known problems
 
@@ -249,7 +252,7 @@ Issues: https://github.com/Azure/acs-engine/issues/3037
 There is a problem with the “L2Tunnel” networking mode not forwarding packets correctly specific to Windows Server version 1803. Windows Server version 1709 is not affected.
 
 Workarounds:
-**Fixes are still in development.** A Windows hotfix is needed, and willbe deployed by ACS-Engine once it's ready. The hotfix will be removed later when it's in a future cumulative rollup.
+**Fixes are still in development.** A Windows hotfix is needed, and will be deployed by ACS-Engine once it's ready. The hotfix will be removed later when it's in a future cumulative rollup.
 
 
 #### Pods cannot resolve public DNS names
@@ -307,7 +310,7 @@ Workaround:
 
 #### Pods cannot ping default route or internet IPs
 
-Affects: All acs-engine deployed clusters
+Affects: All clusters deployed by acs-engine
 
 ICMP traffic is not routed between private Azure vNETs or to the internet.
 
