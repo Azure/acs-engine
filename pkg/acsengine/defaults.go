@@ -241,6 +241,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
+	setVMSSDefaults(properties)
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
@@ -556,6 +557,33 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 
 	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
 		a.MasterProfile.HTTPSourceAddressPrefix = "*"
+	}
+}
+
+// setVMSSDefaults
+// singlePlacementGroup = false, the scale set can be composed of multiple placement groups and has a range of 0-1,000 VMs
+// singlePlacementGroup = true,, default value, a scale set is composed of a single placement group, and has a range of 0-100 VMs
+// Large scale sets require Azure Managed Disks.
+// https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-placement-groups
+// For availability zones, only standard load balancer is supported.
+func setVMSSDefaults(a *api.Properties) {
+	for _, profile := range a.AgentPoolProfiles {
+		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {
+			if profile.Count > 100 {
+				profile.SinglePlacementGroup = helpers.PointerToBool(false)
+			}
+			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
+				profile.StorageProfile = api.ManagedDisks
+			}
+			if len(profile.AvailabilityZones) > 0 {
+				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+			}
+			if profile.SinglePlacementGroup == nil {
+				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+			}
+		}
+
 	}
 }
 

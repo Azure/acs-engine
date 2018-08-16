@@ -73,14 +73,6 @@
       "type": "string"
     },
 {{end}}
-{{if HaveMasterAvailabilityZones}}
-    "masterAvailabilityZones": {
-      "metadata": {
-        "description": "Master availability zones"
-      },
-      "type": "array"
-    },
-{{end}}
     "sshRSAPublicKey": {
       "metadata": {
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."

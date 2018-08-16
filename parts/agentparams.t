@@ -48,7 +48,7 @@
       },
       "type": "string"
     },
-{{if HaveAvailabilityZones .}}
+{{if HasAvailabilityZones .}}
     "{{.Name}}AvailabilityZones": {
       "metadata": {
         "description": "Agent availability zones"

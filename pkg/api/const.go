@@ -156,6 +156,9 @@ const (
 	NetworkPluginKubenet = "kubenet"
 	// NetworkPluginAzure is thee string expression for Azure CNI plugin.
 	NetworkPluginAzure = "azure"
+	// DefaultSinglePlacementGroup determines the acs-engine provided default for supporting large VMSS
+	// (true = single placement group 0-100 VMs, false = multiple placement group 0-1000 VMs)
+	DefaultSinglePlacementGroup = true
 )
 
 const (

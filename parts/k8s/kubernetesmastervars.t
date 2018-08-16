@@ -83,7 +83,6 @@
 {{end}}
     "apiVersionDefault": "2016-03-30",
     "apiVersionLinkDefault": "2015-01-01",
-    "apiVersionNetwork": "2018-05-01",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"

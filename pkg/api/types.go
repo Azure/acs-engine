@@ -403,7 +403,6 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
-	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -466,7 +465,7 @@ type AgentPoolProfile struct {
 	MinCount                     *int                 `json:"minCount,omitempty"`
 	EnableAutoScaling            *bool                `json:"enableAutoScaling,omitempty"`
 	AvailabilityZones            []string             `json:"availabilityZones,omitempty"`
-	SinglePlacementGroup         bool                 `json:"singlePlacementGroup,omitempty"`
+	SinglePlacementGroup         *bool                `json:"singlePlacementGroup,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role

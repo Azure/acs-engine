@@ -1,4 +1,3 @@
-{{if not HaveMasterAvailabilityZones}}
 {{if .MasterProfile.IsManagedDisks}}
     {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
@@ -12,9 +11,7 @@
         },
       "type": "Microsoft.Compute/availabilitySets"
     },
-{{end}}
 {{else if .MasterProfile.IsStorageAccount}}
-{{if not HaveMasterAvailabilityZones}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -22,7 +19,6 @@
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
-{{end}}
     {
       "apiVersion": "[variables('apiVersionStorage')]",
 {{if not IsPrivateCluster}}
@@ -145,36 +141,24 @@
 {{end}}
 {{if not IsPrivateCluster}}
     {
-      "apiVersion": "[variables('apiVersionNetwork')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
-      {{if HaveMasterAvailabilityZones}}
-      "sku": {
-          "name": "Standard"
-      },
-      {{end}}
       "properties": {
         "dnsSettings": {
           "domainNameLabel": "[variables('masterFqdnPrefix')]"
-        }
-        {{if HaveMasterAvailabilityZones}}
-        ,"publicIPAllocationMethod": "Static"
-        {{end}}
+        },
+        "publicIPAllocationMethod": "Dynamic"
       },
       "type": "Microsoft.Network/publicIPAddresses"
     },
     {
-      "apiVersion": "[variables('apiVersionNetwork')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
-      {{if HaveMasterAvailabilityZones}}
-      "sku": {
-          "name": "Standard"
-      },
-      {{end}}
       "properties": {
         "backendAddressPools": [
           {
@@ -526,13 +510,11 @@
     },
     {
       "type": "Microsoft.Network/publicIpAddresses",
-      {{if HaveMasterAvailabilityZones}}
       "sku": {
-          "name": "Standard"
+          "name": "Basic"
       },
-      {{end}}
       "name": "[variables('jumpboxPublicIpAddressName')]",
-      "apiVersion": "[variables('apiVersionPublicIP')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "properties": {
           "dnsSettings": {
@@ -578,7 +560,7 @@
 {{end}}
 {{if gt .MasterProfile.Count 1}}
     {
-      "apiVersion": "[variables('apiVersionNetwork')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]"
@@ -588,11 +570,6 @@
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterInternalLbName')]",
-      {{if HaveMasterAvailabilityZones}}
-      "sku": {
-          "name": "Standard"
-      },
-      {{end}}
       "properties": {
         "backendAddressPools": [
           {
@@ -663,7 +640,7 @@
        "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
-       "dependsOn":
+       "dependsOn": 
        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -696,7 +673,7 @@
            }
          ],
  {{else}}
-         "accessPolicies":
+         "accessPolicies": 
          [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
@@ -754,9 +731,7 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
-{{if not HaveMasterAvailabilityZones}}
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
-{{end}}
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}
@@ -770,9 +745,6 @@
         "poolName" : "master"
       },
       "location": "[variables('location')]",
-      {{ if HaveMasterAvailabilityZones}}
-      "zones": "[split(string(add(mod(copyIndex(),{{GetMasterAvailabilityZoneLength}}),{{GetMasterMinAvailabilityZone}})), ',')]",
-      {{ end }}
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
       {{if UseManagedIdentity}}
       "identity": {
@@ -787,11 +759,9 @@
       },
       {{end}}
       "properties": {
-        {{if not HaveMasterAvailabilityZones}}
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
         },
-        {{end}}
         "hardwareProfile": {
           "vmSize": "[parameters('masterVMSize')]"
         },

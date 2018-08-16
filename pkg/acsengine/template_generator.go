@@ -680,39 +680,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return isNSeriesSKU(profile)
 		},
 		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
-			return profile.SinglePlacementGroup
+			return *profile.SinglePlacementGroup
 		},
-		"HaveAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
+		"HasAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
 			return len(profile.AvailabilityZones) > 0
-		},
-		"GetMinAvailabilityZone": func(profile *api.AgentPoolProfile) int {
-			min, _ := strconv.Atoi(profile.AvailabilityZones[0])
-			for _, z := range profile.AvailabilityZones {
-				i, _ := strconv.Atoi(z)
-				if min > i {
-					min = i
-				}
-			}
-			return min
-		},
-		"GetAvailabilityZoneLength": func(profile *api.AgentPoolProfile) int {
-			return len(profile.AvailabilityZones)
-		},
-		"HaveMasterAvailabilityZones": func() bool {
-			return len(cs.Properties.MasterProfile.AvailabilityZones) > 0
-		},
-		"GetMasterMinAvailabilityZone": func() int {
-			min, _ := strconv.Atoi(cs.Properties.MasterProfile.AvailabilityZones[0])
-			for _, z := range cs.Properties.MasterProfile.AvailabilityZones {
-				i, _ := strconv.Atoi(z)
-				if min > i {
-					min = i
-				}
-			}
-			return min
-		},
-		"GetMasterAvailabilityZoneLength": func() int {
-			return len(cs.Properties.MasterProfile.AvailabilityZones)
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()

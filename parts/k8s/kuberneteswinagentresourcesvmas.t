@@ -29,9 +29,6 @@
 {{end}}
       ],
       "location": "[variables('location')]",
-      {{ if HaveAvailabilityZones .}}
-      "zones": "[variables('{{.Name}}AvailabilityZones')]",
-      {{ end }}
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
 {{if .IsCustomVNET}}

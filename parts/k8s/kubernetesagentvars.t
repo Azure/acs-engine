@@ -20,9 +20,6 @@
     "{{.Name}}ScaleSetEvictionPolicy": "[parameters('{{.Name}}ScaleSetEvictionPolicy')]",
     {{end}}
 {{end}}
-{{ if HaveAvailabilityZones .}}
-    "{{.Name}}AvailabilityZones": "[parameters('{{.Name}}AvailabilityZones')]",
-{{end}}
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
 {{if .IsCustomVNET}}
