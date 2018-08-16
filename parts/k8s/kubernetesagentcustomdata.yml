@@ -80,6 +80,21 @@ write_files:
     WantedBy=multi-user.target
 {{end}}
 
+{{if IsNSeriesSKU .}}
+- path: "/etc/systemd/system/dkms.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Builds and install new kernel modules through DKMS
+    [Service]
+    Type=oneshot
+    RemainAfterExit=true
+    ExecStart=/bin/sh -c "dkms autoinstall --verbose"
+    [Install]
+    WantedBy=multi-user.target
+{{end}}
+
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
   encoding: "base64"
