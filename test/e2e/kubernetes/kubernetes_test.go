@@ -98,7 +98,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
 				p, err := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
 				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				succeeded, err := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
 				if succeeded {
 					successes++
 				}
