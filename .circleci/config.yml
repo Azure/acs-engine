@@ -38,26 +38,6 @@ jobs:
           command: make coverage
       - store_test_results:
           path: test/junit
-  dcos-e2e:
-    <<: *defaults
-    steps:
-      - checkout
-      - run: |
-          echo 'export TIMEOUT=20m' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
-          echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
-          echo 'export RETAIN_SSH=false' >> $BASH_ENV
-          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
-      - run:
-          name: ginkgo dcos e2e tests
-          command: make build-binary test-dcos
-          no_output_timeout: "30m"
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_output
   k8s-linux-default-e2e:
     <<: *defaults
     steps:
@@ -387,12 +367,6 @@ workflows:
           filters:
             branches:
               ignore: master
-      - dcos-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
   build_and_test_master:
     jobs:
       - test:
@@ -448,12 +422,6 @@ workflows:
             branches:
               only: master
       - k8s-windows-1.12-release-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - dcos-e2e:
           requires:
             - test
           filters:
