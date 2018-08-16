@@ -24,9 +24,9 @@ installAzureCNI
 CONTAINERD_DOWNLOAD_URL_BASE="https://storage.googleapis.com/cri-containerd-release/"
 installContainerd
 
-# TODO: install multiple versions
-HYPERKUBE_VERSION="v1.10.5"
-HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:${HYPERKUBE_VERSION}"
-extractHyperkube
+for KUBERNETES_VERSION in 1.8.15 1.9.10 1.10.6 1.11.2; do
+    HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
+    pullHyperkube
+done
 
 echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete

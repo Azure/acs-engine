@@ -121,7 +121,7 @@ function installContainerd() {
 	echo "Successfully installed cri-containerd..."
 }
 
-function extractHyperkube() {
+function pullHyperkube() {
     TMP_DIR=$(mktemp -d)
     retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
     chmod +x /usr/local/bin/img
@@ -134,9 +134,19 @@ function extractHyperkube() {
         cp "$path" "/opt/kubectl"
         chmod a+x /opt/kubelet /opt/kubectl
     else
-        cp "$path" "/usr/local/bin/kubelet"
-        cp "$path" "/usr/local/bin/kubectl"
+        cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
+        cp "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
         chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     fi
     rm -rf /tmp/hyperkube.tar "/tmp/img"
+}
+
+function extractHyperkube() {
+    if [[ ! -f "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" ]]; then
+        pullHyperkube
+    fi
+    mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
+    mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
+    chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
+    rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
 }
