@@ -89,14 +89,21 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
-		It("should have functional container networking", func() {
+		It("should have stable external container networking", func() {
 			var successes int
-			attempts := 60
+			attempts := 50
 			for i := 0; i < attempts; i++ {
 				// Validate basic outbound networking
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				p, err := pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", false)
+				}
 				Expect(err).NotTo(HaveOccurred())
 				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
 				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
@@ -112,13 +119,35 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Cleaning up after ourselves")
 				err = p.Delete()
 				Expect(err).NotTo(HaveOccurred())
+			}
+			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
+		})
 
+		It("should have stable internal container networking", func() {
+			var successes int
+			attempts := 50
+			for i := 0; i < attempts; i++ {
 				// Validate basic in-cluster networking
-				r = rand.New(rand.NewSource(time.Now().UnixNano()))
-				alpinePodName = fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", false)
+				}
 				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ = p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
 				if succeeded {
 					successes++
 				}
@@ -126,8 +155,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				err = p.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			}
-			log.Printf("Container networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
-			Expect(successes).To(Equal(attempts * 2))
+			log.Printf("Container internal networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
 		})
 
 		It("should have functional DNS", func() {
@@ -231,6 +260,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				log.Printf("Error while querying DNS: %s\n", err)
 			}
 
+			By("Ensuring that we have functional DNS resolution from a container")
 			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
 			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
@@ -241,6 +271,40 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ready).To(Equal(true))
+
+			By("Ensuring that we have stable DNS resolution from a container")
+			var successes int
+			attempts := 50
+			for i := 0; i < attempts; i++ {
+				// Validate basic outbound networking
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", false)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
+				if succeeded {
+					successes++
+				}
+				By("Cleaning up after ourselves")
+				err = p.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			}
+			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
 		})
 
 		It("should have kube-dns running", func() {
