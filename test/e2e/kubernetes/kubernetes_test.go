@@ -91,7 +91,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have stable external container networking", func() {
 			var successes int
-			attempts := 50
+			attempts := cfg.StabilityIterations
 			for i := 0; i < attempts; i++ {
 				// Validate basic outbound networking
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -126,7 +126,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have stable internal container networking", func() {
 			var successes int
-			attempts := 50
+			attempts := cfg.StabilityIterations
 			for i := 0; i < attempts; i++ {
 				// Validate basic in-cluster networking
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -274,7 +274,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we have stable DNS resolution from a container")
 			var successes int
-			attempts := 50
+			attempts := cfg.StabilityIterations
 			for i := 0; i < attempts; i++ {
 				// Validate basic outbound networking
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
