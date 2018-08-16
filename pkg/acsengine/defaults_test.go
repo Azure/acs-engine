@@ -334,7 +334,7 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSize {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSize)
@@ -344,7 +344,7 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 5
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT3Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT3Nodes)
@@ -355,7 +355,7 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 5
 	properties.AgentPoolProfiles[0].Count = 6
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT10Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT10Nodes)
@@ -366,7 +366,7 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 5
 	properties.AgentPoolProfiles[0].Count = 16
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != DefaultEtcdDiskSizeGT20Nodes {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, DefaultEtcdDiskSizeGT20Nodes)
@@ -379,7 +379,7 @@ func TestEtcdDiskSize(t *testing.T) {
 	properties.AgentPoolProfiles[0].Count = 50
 	customEtcdDiskSize := "512"
 	properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = customEtcdDiskSize
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB != customEtcdDiskSize {
 		t.Fatalf("EtcdDiskSizeGB did not have the expected size, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB, customEtcdDiskSize)
@@ -405,7 +405,7 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
@@ -415,7 +415,7 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "cilium" {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "cilium")
@@ -425,7 +425,7 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "azure" {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "azure")
@@ -439,7 +439,7 @@ func TestNetworkPolicyDefaults(t *testing.T) {
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "none"
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 	if properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin != "kubenet" {
 		t.Fatalf("NetworkPlugin did not have the expected value, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin, "kubenet")
@@ -568,7 +568,7 @@ func TestIsAzureCNINetworkmonitorAddon(t *testing.T) {
 	properties.OrchestratorProfile.KubernetesConfig.Addons = []api.KubernetesAddon{
 		getMockAddon(AzureCNINetworkMonitoringAddonName),
 	}
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 
 	i := getAddonsIndexByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 	if !helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.Addons[i].Enabled) {
@@ -580,7 +580,7 @@ func TestIsAzureCNINetworkmonitorAddon(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
-	setOrchestratorDefaults(&mockCS)
+	setPropertiesDefaults(&mockCS, false, false)
 
 	i = getAddonsIndexByName(properties.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
 	if !helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.Addons[i].Enabled) {

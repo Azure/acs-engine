@@ -223,21 +223,94 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
+	if properties.HostedMasterProfile == nil {
+		setNilDefaults(cs)
+		setAgentNetworkDefaults(properties, isUpgrade, isScale)
+		setStorageDefaults(properties)
+		setMasterNetworkDefaults(properties, isUpgrade)
 
-	setMasterNetworkDefaults(properties, isUpgrade)
-
-	setHostedMasterNetworkDefaults(properties)
-
-	setAgentNetworkDefaults(properties, isUpgrade, isScale)
-
-	setStorageDefaults(properties)
-	setExtensionDefaults(properties)
+		if properties.ExtensionProfiles != nil {
+			setExtensionDefaults(properties)
+		}
+	} else {
+		setHostedMasterNetworkDefaults(properties)
+	}
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
 		return false, e
 	}
 	return certsGenerated, nil
+}
+
+// setNilDefaults sets opinionated defaults for on/off config
+func setNilDefaults(cs *api.ContainerService) {
+	a := cs.Properties
+	o := a.OrchestratorProfile
+
+	if o.OrchestratorType == api.Kubernetes {
+		if o.KubernetesConfig != nil {
+			if o.KubernetesConfig.EtcdVersion == "" {
+				o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
+			}
+
+			if o.KubernetesConfig.ContainerRuntime == "" {
+				o.KubernetesConfig.ContainerRuntime = DefaultContainerRuntime
+			}
+			if o.KubernetesConfig.GCHighThreshold == 0 {
+				o.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
+			}
+			if o.KubernetesConfig.GCLowThreshold == 0 {
+				o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
+			}
+			if o.KubernetesConfig.DNSServiceIP == "" {
+				o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+			}
+			if o.KubernetesConfig.DockerBridgeSubnet == "" {
+				o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+			}
+			if o.KubernetesConfig.ServiceCIDR == "" {
+				o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+			}
+
+			if o.KubernetesConfig.PrivateCluster == nil {
+				o.KubernetesConfig.PrivateCluster = &api.PrivateCluster{}
+			}
+
+			if o.KubernetesConfig.PrivateCluster.Enabled == nil {
+				o.KubernetesConfig.PrivateCluster.Enabled = helpers.PointerToBool(api.DefaultPrivateClusterEnabled)
+			}
+
+			if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
+				switch {
+				case a.TotalNodes() > 20:
+					a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT20Nodes
+				case a.TotalNodes() > 10:
+					a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT10Nodes
+				case a.TotalNodes() > 3:
+					a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT3Nodes
+				default:
+					a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+				}
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
+				a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
+				a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(api.DefaultSecureKubeletEnabled)
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
+				a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
+			}
+
+			if a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
+				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
+			}
+		}
+	}
 }
 
 // setOrchestratorDefaults for orchestrators
@@ -261,6 +334,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
+
+		if o.KubernetesConfig.KubernetesImageBase == "" {
+			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		}
+
 		// For backwards compatibility with original, overloaded "NetworkPolicy" config vector
 		// we translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
 		// and set a default network policy enforcement configuration
@@ -279,12 +357,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
 
-		if o.KubernetesConfig.KubernetesImageBase == "" {
-			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
-		}
-		if o.KubernetesConfig.EtcdVersion == "" {
-			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
-		}
 		if a.HasWindows() {
 			if o.KubernetesConfig.NetworkPlugin == "" {
 				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPluginWindows
@@ -294,9 +366,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.NetworkPlugin = DefaultNetworkPlugin
 			}
 		}
-		if o.KubernetesConfig.ContainerRuntime == "" {
-			o.KubernetesConfig.ContainerRuntime = DefaultContainerRuntime
-		}
+
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
 				// When Azure CNI is enabled, all masters, agents and pods share the same large subnet.
@@ -305,21 +375,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
-		if o.KubernetesConfig.GCHighThreshold == 0 {
-			o.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
-		}
-		if o.KubernetesConfig.GCLowThreshold == 0 {
-			o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
-		}
-		if o.KubernetesConfig.DNSServiceIP == "" {
-			o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
-		}
-		if o.KubernetesConfig.DockerBridgeSubnet == "" {
-			o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
-		}
-		if o.KubernetesConfig.ServiceCIDR == "" {
-			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
-		}
+
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		o.KubernetesConfig.CloudProviderBackoff = true
 		if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
@@ -348,27 +404,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		if o.KubernetesConfig.PrivateCluster == nil {
-			o.KubernetesConfig.PrivateCluster = &api.PrivateCluster{}
-		}
-
-		if o.KubernetesConfig.PrivateCluster.Enabled == nil {
-			o.KubernetesConfig.PrivateCluster.Enabled = helpers.PointerToBool(api.DefaultPrivateClusterEnabled)
-		}
-
-		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
-			switch {
-			case a.TotalNodes() > 20:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT20Nodes
-			case a.TotalNodes() > 10:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT10Nodes
-			case a.TotalNodes() > 3:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSizeGT3Nodes
-			default:
-				a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
-			}
-		}
-
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
 			if "" == a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey {
 				a.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey = generateEtcdEncryptionKey()
@@ -385,22 +420,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == "" {
 			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.ManagedDisks
-		}
-
-		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
-		}
-
-		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(api.DefaultSecureKubeletEnabled)
-		}
-
-		if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
-			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
-		}
-
-		if a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
-			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
 		}
 
 		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
@@ -449,9 +468,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 }
 
 func setExtensionDefaults(a *api.Properties) {
-	if a.ExtensionProfiles == nil {
-		return
-	}
 	for _, extension := range a.ExtensionProfiles {
 		if extension.RootURL == "" {
 			extension.RootURL = DefaultExtensionsRootURL
@@ -461,17 +477,11 @@ func setExtensionDefaults(a *api.Properties) {
 
 // SetHostedMasterNetworkDefaults for hosted masters
 func setHostedMasterNetworkDefaults(a *api.Properties) {
-	if a.HostedMasterProfile == nil {
-		return
-	}
 	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
 // SetMasterNetworkDefaults for masters
 func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
-	if a.MasterProfile == nil {
-		return
-	}
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
 		// Set default Distro to Ubuntu
