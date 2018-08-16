@@ -263,7 +263,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 			vmsToDelete := make([]string, 0)
 			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
-				vmsToDelete = append(vmsToDelete, indexToVM[i])
+				index = indexes[i]
+				vmsToDelete = append(vmsToDelete, indexToVM[index])
 			}
 
 			switch orchestratorInfo.OrchestratorType {
