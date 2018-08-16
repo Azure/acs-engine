@@ -1,7 +1,7 @@
     "{{.Name}}Count": {
       "defaultValue": {{.Count}},
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of vms in agent pool {{.Name}}"
       },
       "type": "int"
     },
@@ -9,7 +9,7 @@
     "{{.Name}}Offset": {
       "defaultValue": 0,
       "metadata": {
-        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+        "description": "offset to a particular vm within a VMAS agent pool"
       },
       "type": "int"
     },
