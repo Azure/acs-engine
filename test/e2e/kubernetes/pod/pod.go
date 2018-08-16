@@ -140,6 +140,7 @@ func RunLinuxPod(image, name, namespace, command string) (*Pod, error) {
 	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	out, err := util.RunAndLogCommand(cmd)
+	fmt.Printf("%s\n", string(out[:]))
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
