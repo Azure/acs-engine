@@ -156,20 +156,6 @@
               "sourceAddressPrefix": "*",
               "sourcePortRange": "*"
             }
-          },
-          {
-            "name": "allow_kube_tls",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow kube-apiserver (tls) traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443-443",
-              "direction": "Inbound",
-              "priority": 100,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
           }
         ]
       },
