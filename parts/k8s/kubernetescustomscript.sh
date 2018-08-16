@@ -108,6 +108,8 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureEtcd
     ensureK8sControlPlane
+    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681 will remove once upstream is fixed
+    ensureKubelet
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
