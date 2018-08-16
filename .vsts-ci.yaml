@@ -25,6 +25,7 @@ phases:
   - script: |
       OS_DISK_SAS="$(cat packer-output | grep "OSDiskUriReadOnlySas:" | cut -d " " -f 2)" && \
       VHD_NAME="$(echo $OS_DISK_SAS | cut -d "/" -f 8 | cut -d "?" -f 1)" && \
+      printf "COPY ME ----> ${CLASSIC_BLOB}/${VHD_NAME}?" | tee -a vhd-sas && \
       docker run --rm \
       -v ${PWD}:/go/src/github.com/Azure/acs-engine \
       -w /go/src/github.com/Azure/acs-engine \

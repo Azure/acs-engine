@@ -29,4 +29,4 @@ HYPERKUBE_VERSION="v1.10.5"
 HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:${HYPERKUBE_VERSION}"
 extractHyperkube
 
-echo "Install complete successfully" > /var/log/azure/golden-image-install.complete
+echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
