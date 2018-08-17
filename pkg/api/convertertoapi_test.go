@@ -89,7 +89,7 @@ func TestOrchestratorVersion(t *testing.T) {
 		},
 	}
 	cs := ConvertV20170701ContainerService(v20170701cs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion(false) {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -113,8 +113,8 @@ func TestOrchestratorVersion(t *testing.T) {
 			},
 		},
 	}
-	cs = ConvertVLabsContainerService(vlabscs)
-	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion() {
+	cs = ConvertVLabsContainerService(vlabscs, false)
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != common.GetDefaultKubernetesVersion(false) {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -126,7 +126,7 @@ func TestOrchestratorVersion(t *testing.T) {
 			},
 		},
 	}
-	cs = ConvertVLabsContainerService(vlabscs)
+	cs = ConvertVLabsContainerService(vlabscs, false)
 	if cs.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.11" {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
@@ -210,7 +210,7 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 	for name, test := range tests {
 		t.Logf("running scenario %q", name)
 		actual := &OrchestratorProfile{}
-		convertVLabsOrchestratorProfile(test.props, actual)
+		convertVLabsOrchestratorProfile(test.props, actual, false)
 		if !equality.Semantic.DeepEqual(test.expect, actual) {
 			t.Errorf(spew.Sprintf("Expected:\n%+v\nGot:\n%+v", test.expect, actual))
 		}

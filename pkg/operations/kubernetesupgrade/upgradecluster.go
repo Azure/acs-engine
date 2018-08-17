@@ -253,7 +253,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 		OrchestratorType:    api.Kubernetes,
 		OrchestratorVersion: currentVer.String(),
 	}
-	orch, err := api.GetOrchestratorVersionProfile(csOrch)
+	orch, err := api.GetOrchestratorVersionProfile(csOrch, uc.DataModel.Properties.HasWindows())
 	if err != nil {
 		return err
 	}

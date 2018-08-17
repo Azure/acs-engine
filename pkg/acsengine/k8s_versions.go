@@ -228,7 +228,7 @@ var KubeConfigs = getKubeConfigs()
 
 func getKubeConfigs() map[string]map[string]string {
 	ret := make(map[string]map[string]string)
-	for _, version := range common.GetAllSupportedKubernetesVersions() {
+	for _, version := range common.GetAllSupportedKubernetesVersions(true, false) {
 		ret[version] = getK8sVersionComponents(version, getVersionOverrides(version))
 	}
 	return ret

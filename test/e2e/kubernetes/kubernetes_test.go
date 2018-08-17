@@ -713,6 +713,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+					false,
 					eng.HasWindowsAgents())
 				if common.IsKubernetesVersionGe(version, "1.10.0") {
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")

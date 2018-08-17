@@ -222,7 +222,7 @@ var (
 func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (bool, error) {
 	properties := cs.Properties
 
-	setOrchestratorDefaults(cs)
+	setOrchestratorDefaults(cs, isUpgrade || isScale)
 
 	setMasterNetworkDefaults(properties, isUpgrade)
 
@@ -241,7 +241,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 }
 
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(cs *api.ContainerService) {
+func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 	location := cs.Location
 	a := cs.Properties
 
@@ -252,7 +252,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	o := a.OrchestratorProfile
 	o.OrchestratorVersion = common.GetValidPatchVersion(
 		o.OrchestratorType,
-		o.OrchestratorVersion, a.HasWindows())
+		o.OrchestratorVersion, isUpdate, a.HasWindows())
 
 	switch o.OrchestratorType {
 	case api.Kubernetes:
