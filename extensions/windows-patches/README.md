@@ -12,12 +12,12 @@ This extension will install Windows Server patches, including prerelease hotfixe
 |-------------------|--------|----------------------|
 |name               |yes     | windows-patches      |
 |version            |yes     | v1                   |
-|rootURL            |optional| "https://raw.githubusercontent.com/Azure/acs-engine/master/" or any repo with the same extensions/... directory structure |
+|rootURL            |optional| `https://raw.githubusercontent.com/Azure/acs-engine/master/` or any repo with the same extensions/... directory structure |
 |extensionParameters|yes     | comma-delimited list of URIs enclosed with ' such as `'https://privateupdates.domain.ext/Windows10.0-KB999999-x64-InstallForTestingPurposesOnly.exe', 'https://privateupdates.domain.ext/Windows10.0-KB123456-x64-InstallForTestingPurposesOnly.exe'` |
 
 # Example
 
-``` javascript
+```json
     ...
     "agentPoolProfiles": [
       {

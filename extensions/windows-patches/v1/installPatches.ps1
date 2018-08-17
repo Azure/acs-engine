@@ -3,49 +3,81 @@
 #  0 - success
 #  1 - install failure
 #  2 - download failure
+#  3 - unrecognized patch extension
 
 param(
-    [string[]] $URIs # TODO: this may need some more parsing
+    [string[]] $URIs
 )
 
-function DownloadFile([string] $URI)
+function DownloadFile([string] $URI, [string] $fullName)
 {
     try {
-        $fileName = Split-Path $URI -Leaf
-        $fullName = [io.path]::Combine($env:TEMP, $filename)
+        Write-Host "Downloading $URI"
         Invoke-WebRequest -UseBasicParsing $URI -OutFile $fullName
-        return $fullName
     } catch {
-        Write-Error $_.Exception.Message
+        Write-Error $_
         exit 2
     }
 }
 
 
 $URIs | ForEach-Object {
-    $ext = [io.path]::GetExtension($_)
+    Write-Host "Processing $_"
+    $uri = $_
+    $pathOnly = $uri
+    if ($pathOnly.Contains("?"))
+    {
+        $pathOnly = $pathOnly.Split("?")[0]
+    }
+    $fileName = Split-Path $pathOnly -Leaf
+    $ext = [io.path]::GetExtension($fileName)
+    $fullName = [io.path]::Combine($env:TEMP, $fileName)
     switch ($ext) {
-        ".exe" { 
-            $localPath = DownloadFile($_)
-            Write-Host "Starting $localPath"
-            $proc = Start-Process -Passthru -FilePath "$localPath" /q /norestart
+        ".exe" {
+            Start-Process -FilePath bcdedit.exe -ArgumentList "/set {current} testsigning on" -Wait
+            DownloadFile -URI $uri -fullName $fullName
+            Write-Host "Starting $fullName"
+            $proc = Start-Process -Passthru -FilePath "$fullName" -ArgumentList "/q /norestart"
             Wait-Process -InputObject $proc
-            if ($proc.ExitCode -eq 0)
+            switch ($proc.ExitCode)
             {
-                Write-Host "Finished running $localPath"
-            } else {
-                Write-Error "Error running $localPath, exitcode $($proc.ExitCode)"
+                0 {
+                    Write-Host "Finished running $fullName"
+                }
+                3010 {
+                    Write-Host "Finished running $fullName. Reboot required to finish patching."
+                }
+                Default {
+                    Write-Error "Error running $fullName, exitcode $($proc.ExitCode)"
+                    exit 1
+                }
             }
         }
         ".msu" {
-            Write-Error "MSU Not Implemented Yet"
-            exit 1
+            DownloadFile -URI $uri -fullName $fullName
+            Write-Host "Installing $localPath"
+            $proc = Start-Process -Passthru -FilePath wusa.exe -ArgumentList "$fullName /quiet /norestart"
+            Wait-Process -InputObject $proc
+            switch ($proc.ExitCode)
+            {
+                0 {
+                    Write-Host "Finished running $fullName"
+                }
+                3010 {
+                    Write-Host "Finished running $fullName. Reboot required to finish patching."
+                }
+                Default {
+                    Write-Error "Error running $fullName, exitcode $($proc.ExitCode)"
+                    exit 1
+                }
+            }
         }
         Default {
-            Write-Error "Cannot install $_ - unknown file type"
-            exit 1
+            Write-Error "This script extension doesn't know how to install $ext files"
+            exit 3
         }
     }
 }
 
+# No failures
 exit 0
