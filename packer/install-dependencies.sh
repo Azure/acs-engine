@@ -16,8 +16,10 @@ installDocker
 
 installClearContainersRuntime
 
-VNET_CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-v1.0.10.tgz"
-CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-v0.7.1.tgz"
+VNET_CNI_VERSION="1.0.10"
+CNI_PLUGIN_VERSION="0.7.1"
+VNET_CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-v${VNET_CNI_VERSION}.tgz"
+CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-v${CNI_PLUGIN_VERSION}.tgz"
 
 installAzureCNI
 
