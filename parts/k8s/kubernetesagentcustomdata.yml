@@ -80,6 +80,23 @@ write_files:
     WantedBy=multi-user.target
 {{end}}
 
+{{if IsNSeriesSKU .}}
+- path: "/etc/systemd/system/nvidia-modprobe.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Installs and loads Nvidia GPU kernel module
+    [Service]
+    Type=oneshot
+    RemainAfterExit=true
+    ExecStartPre=/bin/sh -c "dkms autoinstall --verbose"
+    ExecStart=/bin/sh -c "nvidia-modprobe -u -c0"
+    ExecStartPost=/bin/sh -c "sleep 10 && systemctl restart kubelet"
+    [Install]
+    WantedBy=multi-user.target
+{{end}}
+
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
   encoding: "base64"
