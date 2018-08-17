@@ -121,13 +121,15 @@ function installContainerd() {
 	echo "Successfully installed cri-containerd..."
 }
 
-function pullHyperkube() {
-    TMP_DIR=$(mktemp -d)
-    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6"
+function installImg() {
+    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" || exit $ERR_IMG_DOWNLOAD_TIMEOUT
     chmod +x /usr/local/bin/img
+}
+
+function pullHyperkube() {
     retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    img unpack -o "/home/rootfs" $HYPERKUBE_URL
-    path=$(find /home/rootfs -name "hyperkube")
+    img unpack -o "/home/rootfs-${KUBERNETES_VERSION}" $HYPERKUBE_URL
+    path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
         cp "$path" "/opt/kubelet"
@@ -142,6 +144,7 @@ function pullHyperkube() {
 
 function extractHyperkube() {
     if [[ ! -f "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" ]]; then
+        installImg
         pullHyperkube
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
