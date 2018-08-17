@@ -136,7 +136,6 @@ function pullHyperkube() {
     else
         cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
         cp "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
-        chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     fi
     rm -rf /tmp/hyperkube.tar "/tmp/img"
 }
