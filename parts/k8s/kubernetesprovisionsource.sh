@@ -20,6 +20,7 @@ ERR_DOCKER_APT_KEY_TIMEOUT=23 # Timeout waiting for docker apt-key
 ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
+ERR_IMG_DOWNLOAD_TIMEOUT=33 # Timeout waiting for img download
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
