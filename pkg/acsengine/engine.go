@@ -512,7 +512,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
 - sudo ldconfig
-- systemctl enable dkms
+- systemctl enable nvidia-modprobe
 - retrycmd_if_failure 5 10 60 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
