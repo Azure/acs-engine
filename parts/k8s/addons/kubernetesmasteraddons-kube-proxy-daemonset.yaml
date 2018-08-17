@@ -15,10 +15,10 @@ spec:
         tier: node
     spec:
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - command:
         - "/hyperkube"
