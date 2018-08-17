@@ -92,6 +92,7 @@ retrycmd_get_executable() {
             return 1
         else
             timeout 30 curl -fsSL $url -o $filepath
+            chmod +x $filepath
             sleep $wait_sleep
         fi
     done

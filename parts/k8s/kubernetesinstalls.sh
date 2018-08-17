@@ -124,7 +124,6 @@ function installContainerd() {
 function installImg() { 
     img_filepath=/usr/local/bin/img
     retrycmd_get_executable 20 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
-    chmod +x $img_filepath
 }
 
 function pullHyperkube() {
