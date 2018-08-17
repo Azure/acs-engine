@@ -183,6 +183,24 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				return errors.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please use one of the following versions: %v", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion, common.GetAllSupportedKubernetesVersions(false, false))
 			}
 
+			sv, err := semver.Make(version)
+			if err != nil {
+				return errors.Errorf("could not validate version %s", version)
+			}
+
+			if a.HasAvailabilityZones() {
+				// TODO: update this to 1.12 after it's released
+				minVersion, err := semver.Make("1.12.0-beta.0")
+				if err != nil {
+					return errors.New("could not validate version")
+				}
+
+				if sv.LT(minVersion) {
+					return errors.Errorf("availabilityZone is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+						minVersion.String(), version)
+				}
+			}
+
 			if o.KubernetesConfig != nil {
 				err := o.KubernetesConfig.Validate(version, a.HasWindows())
 				if err != nil {
@@ -191,10 +209,6 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				minVersion, err := semver.Make("1.7.0")
 				if err != nil {
 					return errors.New("could not validate version")
-				}
-				sv, err := semver.Make(version)
-				if err != nil {
-					return errors.Errorf("could not validate version %s", version)
 				}
 
 				if o.KubernetesConfig.EnableAggregatedAPIs {
@@ -403,8 +417,14 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			}
 
 			if a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
-				if a.AgentPoolProfiles[i].AvailabilityZones != nil {
-					return fmt.Errorf("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
+				if a.AgentPoolProfiles[i].AvailabilityZones != nil && len(a.AgentPoolProfiles[i].AvailabilityZones) > 0 {
+					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
+				}
+			}
+
+			if a.AgentPoolProfiles[i].AvailabilityZones != nil && len(a.AgentPoolProfiles[i].AvailabilityZones) > 0 {
+				if a.AgentPoolProfiles[i].Count < len(a.AgentPoolProfiles[i].AvailabilityZones)*2 {
+					return errors.New("The node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more. ")
 				}
 			}
 		}

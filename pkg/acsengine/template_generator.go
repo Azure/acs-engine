@@ -683,7 +683,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return *profile.SinglePlacementGroup
 		},
 		"HasAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
-			return len(profile.AvailabilityZones) > 0
+			return profile.AvailabilityZones != nil && len(profile.AvailabilityZones) > 0
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()

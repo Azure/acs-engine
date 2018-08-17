@@ -498,6 +498,16 @@ func (p *Properties) HasWindows() bool {
 	return false
 }
 
+// HasAvailabilityZones returns true if the cluster contains pools with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.AvailabilityZones != nil && len(agentPoolProfile.AvailabilityZones) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
