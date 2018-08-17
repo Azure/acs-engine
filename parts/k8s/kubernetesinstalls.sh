@@ -121,9 +121,9 @@ function installContainerd() {
 	echo "Successfully installed cri-containerd..."
 }
 
-function installImg() {
-    retrycmd_if_failure 100 1 30 curl -sSL -o /usr/local/bin/img "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" || exit $ERR_IMG_DOWNLOAD_TIMEOUT
-    chmod +x /usr/local/bin/img
+function installImg() { 
+    img_filepath=/usr/local/bin/img
+    retrycmd_get_executable 20 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
 function pullHyperkube() {

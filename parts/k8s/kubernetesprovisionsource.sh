@@ -82,6 +82,21 @@ retrycmd_get_tarball() {
         fi
     done
 }
+retrycmd_get_executable() {
+    retries=$1; wait_sleep=$2; filepath=$3; url=$4; validation_args=$5
+    echo "${retries} retries"
+    for i in $(seq 1 $retries); do
+        $filepath $validation_args
+        [ $? -eq 0  ] && break || \
+        if [ $i -eq $retries ]; then
+            return 1
+        else
+            timeout 30 curl -fsSL $url -o $filepath
+            chmod +x $filepath
+            sleep $wait_sleep
+        fi
+    done
+}
 wait_for_file() {
     retries=$1; wait_sleep=$2; filepath=$3
     for i in $(seq 1 $retries); do
