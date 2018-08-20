@@ -99,12 +99,17 @@ function installClearContainersRuntime() {
 }
 
 function installNetworkPlugin() {
-    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
-        installAzureCNI
-    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
-		installCNI
-	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
-        installCNI
+    ls $CNI_BIN_DIR
+    if [ $? -eq 0 ]; then
+        echo "network plugin already installed, skipping download"
+    else
+        if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
+            installAzureCNI
+        elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
+            installCNI
+        elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
+            installCNI
+        fi
     fi
 }
 
@@ -127,14 +132,19 @@ function installAzureCNI() {
 }
 
 function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
-    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
-	echo "Successfully installed cri-containerd..."
+    containerd --version
+    if [ $? -eq 0 ]; then
+        echo "containerd is already installed, skipping download"
+    else
+        CRI_CONTAINERD_VERSION="1.1.0"
+        CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+        CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+        retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
+        tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+        rm -f "$CONTAINERD_TGZ_TMP"
+        sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
+        echo "Successfully installed cri-containerd..."
+    fi
 }
 
 function installImg() { 

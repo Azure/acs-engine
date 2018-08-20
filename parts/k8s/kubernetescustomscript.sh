@@ -55,13 +55,13 @@ fi
 
 if $FULL_INSTALL_REQUIRED; then
     installDeps
-    installNetworkPlugin
-    installContainerd
 else 
     echo "Golden image; skipping dependencies installation"
 fi
 
-installContainerRuntime    
+installContainerRuntime
+installNetworkPlugin
+installContainerd
 extractHyperkube
 ensureRPC
 
