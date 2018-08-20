@@ -38,12 +38,17 @@ function installContainerRuntime() {
 }
 
 function installDocker() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
-    echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-    printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
+    if [[ "$CURRENT_VERSION" = ${DOCKER_ENGINE_VERSION} ]]; then
+        echo "docker version ${DOCKER_ENGINE_VERSION} is already installed, skipping download"
+    else
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
+        retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
+        echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+        printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+        apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    fi
     touch /var/log/azure/docker-install.complete
 }
 
@@ -66,26 +71,31 @@ function installKataContainersRuntime() {
 }
 
 function installClearContainersRuntime() {
-	# Add Clear Containers repository key
-	echo "Adding Clear Containers repository key..."
-    CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
-    CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+    cc-runtime --version
+    if [ $? -eq 0 ]; then
+        echo "cc-runtime is already installed, skipping download"
+    else
+        # Add Clear Containers repository key
+        echo "Adding Clear Containers repository key..."
+        CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
+        CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+        retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
 
-	# Add Clear Container repository
-	echo "Adding Clear Containers repository..."
-	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
+        # Add Clear Container repository
+        echo "Adding Clear Containers repository..."
+        echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
 
-	# Install Clear Containers runtime
-	echo "Installing Clear Containers runtime..."
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 cc-runtime
+        # Install Clear Containers runtime
+        echo "Installing Clear Containers runtime..."
+        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+        apt_get_install 20 30 120 cc-runtime
 
-	# Install the systemd service and socket files.
-	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+        # Install the systemd service and socket files.
+        local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+    fi
 }
 
 function installNetworkPlugin() {
