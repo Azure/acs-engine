@@ -48,6 +48,10 @@ dev:
 validate-generated: bootstrap
 	./scripts/validate-generated.sh
 
+.PHONY: validate-dependencies
+validate-dependencies: bootstrap
+	./scripts/validate-dependencies.sh
+
 .PHONY: generate
 generate: bootstrap
 	go generate $(GOFLAGS) -v `go list ./...`

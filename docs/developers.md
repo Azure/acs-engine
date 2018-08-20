@@ -6,7 +6,7 @@ acs-engine.
 ## Prerequisites
 
 - Go 1.7.0 or later
-- Golang dep 0.4.1 or later
+- Golang dep 0.5.0 or later
 - kubectl 1.7 or later
 - An Azure account (needed for deploying VMs and Azure infrastructure)
 - Git
