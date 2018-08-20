@@ -12,7 +12,12 @@ func TestAPIModelMergerMapValues(t *testing.T) {
 	RegisterTestingT(t)
 
 	m := make(map[string]APIModelValue)
-	values := []string{"masterProfile.count=5", "agentPoolProfiles[0].name=agentpool1", "linuxProfile.adminUsername=admin"}
+	values := []string{
+		"masterProfile.count=5",
+		"agentPoolProfiles[0].name=agentpool1",
+		"linuxProfile.adminUsername=admin",
+		"servicePrincipalProfile.clientId='123a1238-c6eb-4b61-9d6f-7db6f1e14123',servicePrincipalProfile.secret='=!,Test$^='",
+	}
 
 	MapValues(m, values)
 	Expect(m["masterProfile.count"].intValue).To(BeIdenticalTo(int64(5)))
@@ -22,6 +27,8 @@ func TestAPIModelMergerMapValues(t *testing.T) {
 	Expect(m["agentPoolProfiles[0].name"].arrayName).To(BeIdenticalTo("agentPoolProfiles"))
 	Expect(m["agentPoolProfiles[0].name"].stringValue).To(BeIdenticalTo("agentpool1"))
 	Expect(m["linuxProfile.adminUsername"].stringValue).To(BeIdenticalTo("admin"))
+	Expect(m["servicePrincipalProfile.secret"].stringValue).To(BeIdenticalTo("=!,Test$^="))
+	Expect(m["servicePrincipalProfile.clientId"].stringValue).To(BeIdenticalTo("123a1238-c6eb-4b61-9d6f-7db6f1e14123"))
 }
 
 func TestMergeValuesWithAPIModel(t *testing.T) {

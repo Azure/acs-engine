@@ -102,7 +102,6 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 func (gc *generateCmd) mergeAPIModel() error {
 	var err error
-
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
 		m := make(map[string]transform.APIModelValue)
