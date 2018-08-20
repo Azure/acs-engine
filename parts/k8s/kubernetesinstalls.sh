@@ -8,8 +8,14 @@ AZURE_CNI_TGZ_TMP="/tmp/azure_cni.tgz"
 CONTAINERNETWORKING_CNI_TGZ_TMP="/tmp/containernetworking_cni.tgz"
 
 function installEtcd() {
-    retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
-    tar -xzvf /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1 || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+    CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2)
+    if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
+        echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
+    else
+        retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+        rm -rf /usr/bin/etcd
+        tar -xzvf /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1 || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+    fi
 }
 
 function installDeps() {

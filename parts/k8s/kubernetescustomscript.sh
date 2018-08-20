@@ -49,10 +49,11 @@ testOutboundConnection
 waitForCloudInit
 holdWALinuxAgent
 
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    installEtcd
+fi
+
 if $FULL_INSTALL_REQUIRED; then
-    if [[ ! -z "${MASTER_NODE}" ]]; then
-        installEtcd
-    fi
     installDeps
     installContainerRuntime
     installNetworkPlugin
