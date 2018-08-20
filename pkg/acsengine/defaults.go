@@ -92,6 +92,14 @@ var (
 		ImageVersion:   "latest",
 	}
 
+	// DefaultAKSOSImageConfig is the AKS image based on Ubuntu 16.04.
+	DefaultAKSOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "aks",
+		ImageSku:       "aksbase",
+		ImagePublisher: "microsoft-aks",
+		ImageVersion:   "0.0.9",
+	}
+
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
 	DefaultOpenShift39RHELImageConfig = AzureOSImageConfig{
 		ImageOffer:     "acsengine-preview",
@@ -125,6 +133,7 @@ var (
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
+			api.AKS:    DefaultAKSOSImageConfig,
 			// Image config supported for OpenShift
 			api.OpenShift39RHEL: DefaultOpenShift39RHELImageConfig,
 			api.OpenShiftCentOS: DefaultOpenShift39CentOSImageConfig,
