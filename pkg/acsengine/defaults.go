@@ -19,10 +19,14 @@ import (
 )
 
 const (
-	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
+	// AzureCniPluginVerLinux specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVer = "v1.0.10"
+	AzureCniPluginVerLinux = "v1.0.10"
+	// AzureCniPluginVerWindows specifies version of Azure CNI plugin, which has been mirrored from
+	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-windows-amd64-${AZURE_PLUGIN_VER}.tgz
+	// to https://acs-mirror.azureedge.net/cni
+	AzureCniPluginVerWindows = "v1.0.11"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
@@ -41,8 +45,8 @@ var (
 		WindowsPackageSASURLBase:         "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-" + CNIPluginVer + ".tgz",
-		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
-		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVer + ".zip",
+		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVerLinux + ".tgz",
+		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVerWindows + ".zip",
 		ContainerdDownloadURLBase:        "https://storage.googleapis.com/cri-containerd-release/",
 	}
 
@@ -69,7 +73,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201807240",
+		ImageVersion:   "16.04.201808140",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -179,8 +183,8 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
-			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			KubernetesImageBase:              "gcr.akscn.io/google_containers/",
+			TillerImageBase:                  "gcr.akscn.io/kubernetes-helm/",
 			ACIConnectorImageBase:            DefaultKubernetesSpecConfig.ACIConnectorImageBase,
 			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
 			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
@@ -212,182 +216,13 @@ var (
 			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
-
-	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
-	DefaultTillerAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultTillerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultTillerAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultTillerAddonName,
-				CPURequests:    "50m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "150Mi",
-			},
-		},
-		Config: map[string]string{
-			"max-history": strconv.Itoa(DefaultTillerMaxHistory),
-		},
-	}
-
-	// DefaultACIConnectorAddonsConfig is the default ACI Connector Kubernetes addon Config
-	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultACIConnectorAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultACIConnectorAddonEnabled),
-		Config: map[string]string{
-			"region":   "westus",
-			"nodeName": "aci-connector",
-			"os":       "Linux",
-			"taint":    "azure.com/aci",
-		},
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultACIConnectorAddonName,
-				CPURequests:    "50m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "150Mi",
-			},
-		},
-	}
-
-	// DefaultClusterAutoscalerAddonsConfig is the default cluster autoscaler addon config
-	DefaultClusterAutoscalerAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultClusterAutoscalerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
-		Config: map[string]string{
-			"minNodes": "1",
-			"maxNodes": "5",
-		},
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultClusterAutoscalerAddonName,
-				CPURequests:    "100m",
-				MemoryRequests: "300Mi",
-				CPULimits:      "100m",
-				MemoryLimits:   "300Mi",
-			},
-		},
-	}
-
-	// DefaultKeyVaultFlexVolumeAddonsConfig is the default KeyVault FlexVolume Kubernetes addon Config
-	DefaultKeyVaultFlexVolumeAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultKeyVaultFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultKeyVaultFlexVolumeAddonName,
-				CPURequests:    "50m",
-				MemoryRequests: "10Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "10Mi",
-			},
-		},
-	}
-
-	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
-	DefaultDashboardAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultDashboardAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultDashboardAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultDashboardAddonName,
-				CPURequests:    "300m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "300m",
-				MemoryLimits:   "150Mi",
-			},
-		},
-	}
-
-	// DefaultReschedulerAddonsConfig is the default rescheduler Kubernetes addon Config
-	DefaultReschedulerAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultReschedulerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultReschedulerAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           DefaultReschedulerAddonName,
-				CPURequests:    "10m",
-				MemoryRequests: "100Mi",
-				CPULimits:      "10m",
-				MemoryLimits:   "100Mi",
-			},
-		},
-	}
-
-	// DefaultMetricsServerAddonsConfig is the default metrics-server Kubernetes addon Config
-	DefaultMetricsServerAddonsConfig = api.KubernetesAddon{
-		Name:    DefaultMetricsServerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultMetricsServerAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name: DefaultMetricsServerAddonName,
-			},
-		},
-	}
-
-	// DefaultNVIDIADevicePluginAddonsConfig is the default NVIDIA Device Plugin Kubernetes addon Config
-	DefaultNVIDIADevicePluginAddonsConfig = api.KubernetesAddon{
-		Name: NVIDIADevicePluginAddonName,
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name: NVIDIADevicePluginAddonName,
-				// from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/device-plugins/nvidia-gpu/daemonset.yaml#L44
-				CPURequests:    "50m",
-				MemoryRequests: "10Mi",
-				CPULimits:      "50m",
-				MemoryLimits:   "10Mi",
-			},
-		},
-	}
-
-	// DefaultContainerMonitoringAddonsConfig is the default container monitoring Kubernetes addon Config
-	DefaultContainerMonitoringAddonsConfig = api.KubernetesAddon{
-		Name:    ContainerMonitoringAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
-		Config: map[string]string{
-			"omsAgentVersion":       "1.6.0-42",
-			"dockerProviderVersion": "2.0.0-3",
-		},
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name:           "omsagent",
-				Image:          "microsoft/oms:June21st",
-				CPURequests:    "50m",
-				MemoryRequests: "100Mi",
-				CPULimits:      "150m",
-				MemoryLimits:   "500Mi",
-			},
-		},
-	}
-
-	// DefaultAzureCNINetworkMonitorAddonsConfig is the default Azure CNI networkmonitor Kubernetes addon Config
-	DefaultAzureCNINetworkMonitorAddonsConfig = api.KubernetesAddon{
-		Name: AzureCNINetworkMonitoringAddonName,
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name: AzureCNINetworkMonitoringAddonName,
-			},
-		},
-	}
-
-	// DefaultAzureNetworkPolicyAddonsConfig is the default Azure NetworkPolicy addon config
-	DefaultAzureNetworkPolicyAddonsConfig = api.KubernetesAddon{
-		Name: AzureNetworkPolicyAddonName,
-		Containers: []api.KubernetesContainerSpec{
-			{
-				Name: AzureNetworkPolicyAddonName,
-			},
-		},
-	}
 )
 
 // setPropertiesDefaults for the container Properties, returns true if certs are generated
 func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (bool, error) {
 	properties := cs.Properties
 
-	setOrchestratorDefaults(cs)
+	setOrchestratorDefaults(cs, isUpgrade || isScale)
 
 	setMasterNetworkDefaults(properties, isUpgrade)
 
@@ -406,7 +241,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 }
 
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(cs *api.ContainerService) {
+func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 	location := cs.Location
 	a := cs.Properties
 
@@ -417,7 +252,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	o := a.OrchestratorProfile
 	o.OrchestratorVersion = common.GetValidPatchVersion(
 		o.OrchestratorType,
-		o.OrchestratorVersion, a.HasWindows())
+		o.OrchestratorVersion, isUpdate, a.HasWindows())
 
 	switch o.OrchestratorType {
 	case api.Kubernetes:
@@ -444,82 +279,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
 
-		// Add default addons specification, if no user-provided spec exists
-		if o.KubernetesConfig.Addons == nil {
-			o.KubernetesConfig.Addons = []api.KubernetesAddon{
-				DefaultTillerAddonsConfig,
-				DefaultACIConnectorAddonsConfig,
-				DefaultClusterAutoscalerAddonsConfig,
-				DefaultKeyVaultFlexVolumeAddonsConfig,
-				DefaultDashboardAddonsConfig,
-				DefaultReschedulerAddonsConfig,
-				DefaultMetricsServerAddonsConfig,
-				DefaultNVIDIADevicePluginAddonsConfig,
-				DefaultContainerMonitoringAddonsConfig,
-				DefaultAzureCNINetworkMonitorAddonsConfig,
-				DefaultAzureNetworkPolicyAddonsConfig,
-			}
-			enforceK8sAddonOverrides(o.KubernetesConfig.Addons, o)
-		} else {
-			// For each addon, provide default configuration if user didn't provide its own config
-			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
-			if t < 0 {
-				// Provide default acs-engine config for Tiller
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
-			}
-			a := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
-			if a < 0 {
-				// Provide default acs-engine config for ACI Connector
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
-			}
-			s := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
-			if s < 0 {
-				// Provide default acs-engine config for cluster autoscaler
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonsConfig)
-			}
-			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
-			if d < 0 {
-				// Provide default acs-engine config for Dashboard
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultDashboardAddonsConfig)
-			}
-			r := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultReschedulerAddonName)
-			if r < 0 {
-				// Provide default acs-engine config for Rescheduler
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultReschedulerAddonsConfig)
-			}
-			m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-			if m < 0 {
-				// Provide default acs-engine config for Metrics Server
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultMetricsServerAddonsConfig)
-				m = getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-				o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
-			}
-			n := getAddonsIndexByName(o.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
-			if n < 0 {
-				// Provide default acs-engine config for NVIDIA Device Plugin
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultNVIDIADevicePluginAddonsConfig)
-			}
-			cm := getAddonsIndexByName(o.KubernetesConfig.Addons, ContainerMonitoringAddonName)
-			if cm < 0 {
-				// Provide default acs-engine config for Container Monitoring
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultContainerMonitoringAddonsConfig)
-			}
-			aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-			if aN < 0 {
-				// Provide default acs-engine config for Azure CNI containernetworking Device Plugin
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureCNINetworkMonitorAddonsConfig)
-			}
-			aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
-			if aNP < 0 {
-				// Provide default acs-engine config for Azure NetworkPolicy addon
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultAzureNetworkPolicyAddonsConfig)
-			}
-			kv := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
-			if kv < 0 {
-				// Provide default acs-engine config for KeyVault FlexVolume
-				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonsConfig)
-			}
-		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
 			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		}
@@ -562,24 +321,24 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		if o.KubernetesConfig.CloudProviderBackoff {
-			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
-			}
-			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
-			}
-			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
-			}
-			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
-			}
+		o.KubernetesConfig.CloudProviderBackoff = true
+		if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+			o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+		}
+		if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+			o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+		}
+		if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+			o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+		}
+		if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+			o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 		}
 		k8sSemVer, _ := semver.Make(k8sVersion)
 		minVersion, _ := semver.Make("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
+		o.KubernetesConfig.CloudProviderRateLimit = true
 		if o.KubernetesConfig.CloudProviderRateLimit && k8sSemVer.GTE(minVersion) {
 			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
@@ -587,52 +346,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if o.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
-		}
-
-		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
-		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
-		}
-		c := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
-		}
-		s := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[s].IsEnabled(api.DefaultClusterAutoscalerAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[s] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[s], DefaultClusterAutoscalerAddonsConfig)
-		}
-		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
-		}
-		r := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[r].IsEnabled(api.DefaultReschedulerAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultReschedulerAddonsConfig)
-		}
-		m := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultMetricsServerAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
-		}
-		n := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[n].IsEnabled(api.DefaultNVIDIADevicePluginAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[n] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[n], DefaultNVIDIADevicePluginAddonsConfig)
-		}
-		cm := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, ContainerMonitoringAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[cm].IsEnabled(api.DefaultContainerMonitoringAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[cm] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[cm], DefaultContainerMonitoringAddonsConfig)
-		}
-		aN := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[aN].IsEnabled(api.DefaultAzureCNINetworkMonitoringAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[aN] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aN], DefaultAzureCNINetworkMonitorAddonsConfig)
-		}
-		aNP := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[aNP].IsEnabled(a.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[aNP] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[aNP], DefaultAzureNetworkPolicyAddonsConfig)
-		}
-		kv := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[kv].IsEnabled(api.DefaultKeyVaultFlexVolumeAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[kv] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[kv], DefaultKeyVaultFlexVolumeAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
@@ -686,6 +399,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
+			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
+		}
+
+		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
+			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+		}
+
+		// Configure addons
+		setAddonsConfig(cs)
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager
@@ -1063,62 +786,6 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 	return subnet.IP.String()
 }
 
-func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
-	for i := range addons {
-		if addons[i].Name == name {
-			return i
-		}
-	}
-	return -1
-}
-
-func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
-	for i := range containers {
-		if containers[i].Name == name {
-			return i
-		}
-	}
-	return -1
-}
-
-// assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
-func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
-	if addon.Enabled == nil {
-		addon.Enabled = defaults.Enabled
-	}
-	for i := range defaults.Containers {
-		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
-		if c < 0 {
-			addon.Containers = append(addon.Containers, defaults.Containers[i])
-		} else {
-			if addon.Containers[c].Image == "" {
-				addon.Containers[c].Image = defaults.Containers[i].Image
-			}
-			if addon.Containers[c].CPURequests == "" {
-				addon.Containers[c].CPURequests = defaults.Containers[i].CPURequests
-			}
-			if addon.Containers[c].MemoryRequests == "" {
-				addon.Containers[c].MemoryRequests = defaults.Containers[i].MemoryRequests
-			}
-			if addon.Containers[c].CPULimits == "" {
-				addon.Containers[c].CPULimits = defaults.Containers[i].CPULimits
-			}
-			if addon.Containers[c].MemoryLimits == "" {
-				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
-			}
-		}
-	}
-	for key, val := range defaults.Config {
-		if addon.Config == nil {
-			addon.Config = make(map[string]string)
-		}
-		if v, ok := addon.Config[key]; !ok || v == "" {
-			addon.Config[key] = val
-		}
-	}
-	return addon
-}
-
 // combine user-provided --feature-gates vals with defaults
 // a minimum k8s version may be declared as required for defaults assignment
 func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
@@ -1165,27 +832,6 @@ func mapToString(valueMap map[string]string) string {
 		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
 	}
 	return strings.TrimSuffix(buf.String(), ",")
-}
-
-func enforceK8sAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
-	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
-	aNP := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureNetworkPolicyAddonName)
-	o.KubernetesConfig.Addons[aNP].Enabled = azureNetworkPolicyAddonEnabled(o)
-	aN := getAddonsIndexByName(o.KubernetesConfig.Addons, AzureCNINetworkMonitoringAddonName)
-	o.KubernetesConfig.Addons[aN].Enabled = azureCNINetworkMonitorAddonEnabled(o)
-}
-
-func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
-}
-
-func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
-}
-
-func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
-	return helpers.PointerToBool(o.IsAzureCNI())
 }
 
 func generateEtcdEncryptionKey() string {

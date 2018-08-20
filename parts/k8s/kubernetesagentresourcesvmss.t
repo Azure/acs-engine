@@ -20,8 +20,8 @@
     ],
     "tags":
     {
-      "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
-      "resourceNameSuffix" : "[variables('nameSuffix')]",
+      "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
+      "resourceNameSuffix" : "[parameters('nameSuffix')]",
       "orchestrator" : "[variables('orchestratorNameVersionTag')]",
       "poolName" : "{{.Name}}"
     },
@@ -78,7 +78,7 @@
 {{if HasCustomNodesDNS}}
                  ,"dnsSettings": {
                     "dnsServers": [
-                        "[variables('dnsServer')]"
+                        "[parameters('dnsServer')]"
                     ]
                 }
 {{end}}
@@ -90,7 +90,7 @@
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
+          "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
           {{GetKubernetesAgentCustomData .}}
           "linuxConfiguration": {

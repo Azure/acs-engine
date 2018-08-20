@@ -99,7 +99,7 @@ func ConvertV20170701ContainerService(v20170701 *v20170701.ContainerService) *Co
 }
 
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
-func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
+func ConvertVLabsContainerService(vlabs *vlabs.ContainerService, isUpdate bool) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
 	c.Location = helpers.NormalizeAzureRegion(vlabs.Location)
@@ -114,7 +114,7 @@ func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerServi
 	}
 	c.Type = vlabs.Type
 	c.Properties = &Properties{}
-	convertVLabsProperties(vlabs.Properties, c.Properties)
+	convertVLabsProperties(vlabs.Properties, c.Properties, isUpdate)
 	return c
 }
 
@@ -346,11 +346,11 @@ func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties
 	}
 }
 
-func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
+func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate bool) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	if vlabs.OrchestratorProfile != nil {
 		api.OrchestratorProfile = &OrchestratorProfile{}
-		convertVLabsOrchestratorProfile(vlabs, api.OrchestratorProfile)
+		convertVLabsOrchestratorProfile(vlabs, api.OrchestratorProfile, isUpdate)
 	}
 	if vlabs.MasterProfile != nil {
 		api.MasterProfile = &MasterProfile{}
@@ -575,7 +575,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	}
 }
 
-func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProfile) {
+func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProfile, isUpdate bool) {
 	vlabscs := vp.OrchestratorProfile
 	api.OrchestratorType = vlabscs.OrchestratorType
 	switch api.OrchestratorType {
@@ -595,6 +595,7 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 				vlabscs.OrchestratorType,
 				vlabscs.OrchestratorRelease,
 				vlabscs.OrchestratorVersion,
+				isUpdate,
 				false)
 		} else {
 			api.OrchestratorVersion = vlabscs.OrchestratorVersion
@@ -609,6 +610,7 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 			vlabscs.OrchestratorType,
 			vlabscs.OrchestratorRelease,
 			vlabscs.OrchestratorVersion,
+			isUpdate,
 			vp.HasWindows())
 	case DCOS:
 		if vlabscs.DcosConfig != nil {
@@ -619,6 +621,7 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 			vlabscs.OrchestratorType,
 			vlabscs.OrchestratorRelease,
 			vlabscs.OrchestratorVersion,
+			isUpdate,
 			false)
 	}
 }
@@ -691,6 +694,8 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.UseCloudControllerManager = vlabs.UseCloudControllerManager
 	api.CustomWindowsPackageURL = vlabs.CustomWindowsPackageURL
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
+	api.LoadBalancerSku = vlabs.LoadBalancerSku
+	api.ExcludeMasterFromStandardLB = vlabs.ExcludeMasterFromStandardLB
 	api.EnableRbac = vlabs.EnableRbac
 	api.EnableSecureKubelet = vlabs.EnableSecureKubelet
 	api.EnableAggregatedAPIs = vlabs.EnableAggregatedAPIs

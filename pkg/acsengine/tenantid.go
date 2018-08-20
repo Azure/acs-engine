@@ -1,10 +1,12 @@
 package acsengine
 
 import (
+	"context"
 	"net/http"
 	"regexp"
+	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-06-01/subscriptions"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,14 +16,16 @@ import (
 // the value from WWW-Authenticate header.
 func GetTenantID(resourceManagerEndpoint string, subscriptionID string) (string, error) {
 	const hdrKey = "WWW-Authenticate"
-	c := subscriptions.NewGroupClientWithBaseURI(resourceManagerEndpoint)
+	c := subscriptions.NewClientWithBaseURI(resourceManagerEndpoint)
 
 	log.Debugf("Resolving tenantID for subscriptionID: %s", subscriptionID)
 
 	// we expect this request to fail (err != nil), but we are only interested
 	// in headers, so surface the error if the Response is not present (i.e.
 	// network error etc)
-	subs, err := c.Get(subscriptionID)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+	subs, err := c.Get(ctx, subscriptionID)
 	if subs.Response.Response == nil {
 		return "", errors.Wrap(err, "Request failed")
 	}

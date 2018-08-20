@@ -1,6 +1,7 @@
 package kubernetesupgrade
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -76,7 +77,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
+func (kan *UpgradeAgentNode) CreateNode(ctx context.Context, poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount := poolCountParameter["value"]

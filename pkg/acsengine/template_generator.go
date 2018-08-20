@@ -20,15 +20,13 @@ import (
 
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
-	ClassicMode bool
-	Translator  *i18n.Translator
+	Translator *i18n.Translator
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(ctx Context) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
-		ClassicMode: classicMode,
-		Translator:  ctx.Translator,
+		Translator: ctx.Translator,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -99,7 +97,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode, acsengineVersion); err != nil {
+	if parametersMap, err = getParameters(containerService, generatorCode, acsengineVersion); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -277,7 +275,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubeConfig": func() string {
 			kubeConfig, err := GenerateKubeConfig(cs.Properties, cs.Location)
 			if err != nil {
-				return ""
+				panic(err)
 			}
 			return escapeSingleLine(kubeConfig)
 		},
@@ -290,6 +288,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
+		},
+		"LoadBalancerSku": func() string {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku
+		},
+		"ExcludeMasterFromStandardLB": func() bool {
+			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB)
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
@@ -426,17 +430,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return agentPreprovisionExtensionParameters
 		},
 		"GetMasterAllowedSizes": func() string {
-			if t.ClassicMode {
-				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
+			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 				return GetDCOSMasterAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
 		},
 		"GetAgentAllowedSizes": func() string {
-			if t.ClassicMode {
-				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
+			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
 				return GetKubernetesAgentAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
@@ -448,13 +448,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
-			if t.ClassicMode {
-				return GetClassicSizeMap()
-			}
 			return GetSizeMap()
-		},
-		"GetClassicMode": func() bool {
-			return t.ClassicMode
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))
@@ -465,8 +459,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
-				fmt.Printf("%#v\n", e)
-				return ""
+				panic(e)
 			}
 
 			// add manifests
@@ -509,7 +502,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 
 			if e != nil {
-				return ""
+				panic(e)
 			}
 
 			// add artifacts
@@ -526,7 +519,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
 
 			if err != nil {
-				return ""
+				panic(err)
 			}
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
@@ -541,6 +534,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesB64ProvisionSource": func() string {
 			return getBase64CustomScript(kubernetesProvisionSourceScript)
 		},
+		"GetKubernetesB64Installs": func() string {
+			return getBase64CustomScript(kubernetesInstalls)
+		},
+		"GetKubernetesB64Configs": func() string {
+			return getBase64CustomScript(kubernetesConfigurations)
+		},
 		"GetKubernetesB64Mountetcd": func() string {
 			return getBase64CustomScript(kubernetesMountetcd)
 		},
@@ -549,6 +548,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesB64GenerateProxyCerts": func() string {
 			return getBase64CustomScript(kubernetesMasterGenerateProxyCertsScript)
+		},
+		"GetB64sshdConfig": func() string {
+			return getBase64CustomScript(sshdConfig)
 		},
 		"GetKubernetesMasterPreprovisionYaml": func() string {
 			str := ""
@@ -604,7 +606,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1, cs, profile)
 			if e != nil {
-				return ""
+				panic(e)
 			}
 			preprovisionCmd := ""
 			if profile.PreprovisionExtension != nil {
@@ -637,6 +639,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"WrapAsVariable": func(s string) string {
 			return fmt.Sprintf("',variables('%s'),'", s)
+		},
+		"WrapAsParameter": func(s string) string {
+			return fmt.Sprintf("',parameters('%s'),'", s)
+		},
+		"WrapAsParameterObject": func(o, p string) string {
+			return fmt.Sprintf("',parameters('%s').%s,'", o, p)
 		},
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
@@ -740,387 +748,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterEtcdClientPort": func() int {
 			return DefaultMasterEtcdClientPort
-		},
-		"PopulateClassicModeDefaultValue": func(attr string) string {
-			var val string
-			if !t.ClassicMode {
-				val = ""
-			} else {
-				k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
-				cloudSpecConfig := getCloudSpecConfig(cs.Location)
-				tillerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
-				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
-				aciConnectorAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
-				aC := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
-				clusterAutoscalerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultClusterAutoscalerAddonName)
-				aS := getAddonContainersIndexByName(clusterAutoscalerAddon.Containers, DefaultClusterAutoscalerAddonName)
-				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
-				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
-				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
-				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
-				metricsServerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
-				mC := getAddonContainersIndexByName(metricsServerAddon.Containers, DefaultMetricsServerAddonName)
-				nvidiaDevicePluginAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, NVIDIADevicePluginAddonName)
-				nC := getAddonContainersIndexByName(nvidiaDevicePluginAddon.Containers, NVIDIADevicePluginAddonName)
-				kvFlexVolumeAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultKeyVaultFlexVolumeAddonName)
-				kC := getAddonContainersIndexByName(kvFlexVolumeAddon.Containers, DefaultKeyVaultFlexVolumeAddonName)
-				switch attr {
-				case "kubernetesHyperkubeSpec":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
-					if cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
-						val = cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
-					}
-				case "dockerEngineVersion":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dockerEngineVersion"]
-					if cs.Properties.OrchestratorProfile.KubernetesConfig.DockerEngineVersion != "" {
-						val = cs.Properties.OrchestratorProfile.KubernetesConfig.DockerEngineVersion
-					}
-				case "kubernetesAddonManagerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["addonmanager"]
-				case "kubernetesAddonResizerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["addonresizer"]
-				case "kubernetesDashboardSpec":
-					if dC > -1 {
-						if dashboardAddon.Containers[dC].Image != "" {
-							val = dashboardAddon.Containers[dC].Image
-						}
-					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultDashboardAddonName]
-					}
-				case "kubernetesDashboardCPURequests":
-					if dC > -1 {
-						val = dashboardAddon.Containers[dC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesDashboardMemoryRequests":
-					if dC > -1 {
-						val = dashboardAddon.Containers[dC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesDashboardCPULimit":
-					if dC > -1 {
-						val = dashboardAddon.Containers[dC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesDashboardMemoryLimit":
-					if dC > -1 {
-						val = dashboardAddon.Containers[dC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesDNSMasqSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dnsmasq"]
-				case "kubernetesExecHealthzSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["exechealthz"]
-				case "kubernetesDNSSidecarSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["k8s-dns-sidecar"]
-				case "kubernetesHeapsterSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
-				case "kubernetesACIConnectorSpec":
-					if aC > -1 {
-						if aciConnectorAddon.Containers[aC].Image != "" {
-							val = aciConnectorAddon.Containers[aC].Image
-						} else {
-							val = cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase + KubeConfigs[k8sVersion][DefaultACIConnectorAddonName]
-						}
-					}
-				case "kubernetesACIConnectorNodeName":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["nodeName"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorOS":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["os"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorTaint":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["taint"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorRegion":
-					if aC > -1 {
-						val = aciConnectorAddon.Config["region"]
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorCPURequests":
-					if aC > -1 {
-						val = aciConnectorAddon.Containers[aC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorMemoryRequests":
-					if aC > -1 {
-						val = aciConnectorAddon.Containers[aC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorCPULimit":
-					if aC > -1 {
-						val = aciConnectorAddon.Containers[aC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesACIConnectorMemoryLimit":
-					if aC > -1 {
-						val = aciConnectorAddon.Containers[aC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerSpec":
-					if aS > -1 {
-						if clusterAutoscalerAddon.Containers[aS].Image != "" {
-							val = clusterAutoscalerAddon.Containers[aS].Image
-						} else {
-							val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName]
-						}
-					}
-				case "kubernetesClusterAutoscalerAzureCloud":
-					if aS > -1 {
-						val = cloudSpecConfig.CloudName
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerCPURequests":
-					if aS > -1 {
-						val = clusterAutoscalerAddon.Containers[aC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerMemoryRequests":
-					if aS > -1 {
-						val = clusterAutoscalerAddon.Containers[aC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerCPULimit":
-					if aS > -1 {
-						val = clusterAutoscalerAddon.Containers[aC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerMemoryLimit":
-					if aS > -1 {
-						val = clusterAutoscalerAddon.Containers[aC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesClusterAutoscalerUseManagedIdentity":
-					if aS > -1 {
-						if cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
-							val = strings.ToLower(strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity))
-						} else {
-							val = "false"
-						}
-					}
-				case "kubernetesKeyVaultFlexVolumeInstallerCPURequests":
-					if kC > -1 {
-						val = kvFlexVolumeAddon.Containers[kC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests":
-					if kC > -1 {
-						val = kvFlexVolumeAddon.Containers[kC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesKeyVaultFlexVolumeInstallerCPULimit":
-					if kC > -1 {
-						val = kvFlexVolumeAddon.Containers[kC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit":
-					if kC > -1 {
-						val = kvFlexVolumeAddon.Containers[kC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesTillerSpec":
-					if tC > -1 {
-						if tillerAddon.Containers[tC].Image != "" {
-							val = tillerAddon.Containers[tC].Image
-						} else {
-							val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
-						}
-					}
-				case "kubernetesTillerCPURequests":
-					if tC > -1 {
-						val = tillerAddon.Containers[tC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesTillerMemoryRequests":
-					if tC > -1 {
-						val = tillerAddon.Containers[tC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesTillerCPULimit":
-					if tC > -1 {
-						val = tillerAddon.Containers[tC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesTillerMemoryLimit":
-					if tC > -1 {
-						val = tillerAddon.Containers[tC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesTillerMaxHistory":
-					if tC > -1 {
-						if _, ok := tillerAddon.Config["max-history"]; ok {
-							val = tillerAddon.Config["max-history"]
-						} else {
-							val = "0"
-						}
-					} else {
-						val = "0"
-					}
-				case "kubernetesMetricsServerSpec":
-					if mC > -1 {
-						if metricsServerAddon.Containers[mC].Image != "" {
-							val = metricsServerAddon.Containers[mC].Image
-						}
-					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultMetricsServerAddonName]
-					}
-				case "kubernetesNVIDIADevicePluginSpec":
-					if nC > -1 {
-						if nvidiaDevicePluginAddon.Containers[nC].Image != "" {
-							val = nvidiaDevicePluginAddon.Containers[nC].Image
-						}
-					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase + KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName]
-					}
-				case "kubernetesNVIDIADevicePluginCPURequests":
-					if nC > -1 {
-						val = nvidiaDevicePluginAddon.Containers[aC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesNVIDIADevicePluginMemoryRequests":
-					if nC > -1 {
-						val = nvidiaDevicePluginAddon.Containers[aC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesNVIDIADevicePluginCPULimit":
-					if nC > -1 {
-						val = nvidiaDevicePluginAddon.Containers[aC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesNVIDIADevicePluginMemoryLimit":
-					if nC > -1 {
-						val = nvidiaDevicePluginAddon.Containers[aC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesReschedulerSpec":
-					if rC > -1 {
-						if reschedulerAddon.Containers[rC].Image != "" {
-							val = reschedulerAddon.Containers[rC].Image
-						}
-					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultReschedulerAddonName]
-					}
-				case "kubernetesReschedulerCPURequests":
-					if rC > -1 {
-						val = reschedulerAddon.Containers[rC].CPURequests
-					} else {
-						val = ""
-					}
-				case "kubernetesReschedulerMemoryRequests":
-					if rC > -1 {
-						val = reschedulerAddon.Containers[rC].MemoryRequests
-					} else {
-						val = ""
-					}
-				case "kubernetesReschedulerCPULimit":
-					if rC > -1 {
-						val = reschedulerAddon.Containers[rC].CPULimits
-					} else {
-						val = ""
-					}
-				case "kubernetesReschedulerMemoryLimit":
-					if rC > -1 {
-						val = reschedulerAddon.Containers[rC].MemoryLimits
-					} else {
-						val = ""
-					}
-				case "kubernetesKubeDNSSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
-				case "kubernetesPodInfraContainerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"]
-				case "cloudProviderBackoff":
-					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff)
-				case "cloudProviderBackoffRetries":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries)
-				case "cloudProviderBackoffExponent":
-					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64)
-				case "cloudProviderBackoffDuration":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration)
-				case "cloudProviderBackoffJitter":
-					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'f', -1, 64)
-				case "cloudProviderRatelimit":
-					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit)
-				case "cloudProviderRatelimitQPS":
-					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64)
-				case "cloudProviderRatelimitBucket":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket)
-				case "kubeBinariesSASURL":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
-				case "windowsPackageSASURLBase":
-					val = cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase
-				case "kubeClusterCidr":
-					val = DefaultKubernetesClusterSubnet
-				case "kubeDNSServiceIP":
-					val = DefaultKubernetesDNSServiceIP
-				case "kubeServiceCidr":
-					val = DefaultKubernetesServiceCIDR
-				case "kubeBinariesVersion":
-					val = cs.Properties.OrchestratorProfile.OrchestratorVersion
-				case "windowsTelemetryGUID":
-					val = cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID
-				case "caPrivateKey":
-					// The base64 encoded "NotAvailable"
-					val = "Tm90QXZhaWxhYmxlCg=="
-				case "dockerBridgeCidr":
-					val = DefaultDockerBridgeSubnet
-				case "gchighthreshold":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.GCHighThreshold)
-				case "gclowthreshold":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.GCLowThreshold)
-				case "generatorCode":
-					val = DefaultGeneratorCode
-				case "orchestratorName":
-					val = DefaultOrchestratorName
-				case "etcdImageBase":
-					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
-				case "etcdVersion":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
-				case "etcdEncryptionKey":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdEncryptionKey
-				case "etcdDiskSizeGB":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
-				case "jumpboxOSDiskSizeGB":
-					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB)
-				default:
-					val = ""
-				}
-			}
-			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
 		},
 		"UseCloudControllerManager": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager

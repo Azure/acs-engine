@@ -119,6 +119,18 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			},
 			expectedError: "enableEncryptionWithExternalKms is only available in Kubernetes version 1.10.0 or greater; unable to validate for Kubernetes version 1.6.6",
 		},
+		"should error when KubernetesConfig has Standard loadBalancerSku with invalid version": {
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType:    "Kubernetes",
+					OrchestratorVersion: "1.6.6",
+					KubernetesConfig: &KubernetesConfig{
+						LoadBalancerSku: "Standard",
+					},
+				},
+			},
+			expectedError: "loadBalancerSku is only available in Kubernetes version 1.11.0 or greater; unable to validate for Kubernetes version 1.6.6",
+		},
 		"should error when KubernetesConfig has enablePodSecurity enabled with invalid settings": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
@@ -204,7 +216,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 					OrchestratorVersion: "1.6.0",
 				},
 			},
-			expectedError: fmt.Sprint("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"Kubernetes\", OrchestratorRelease: \"\", OrchestratorVersion: \"1.6.0\". Please use one of the following versions: ", common.GetAllSupportedKubernetesVersions()),
+			expectedError: fmt.Sprint("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"Kubernetes\", OrchestratorRelease: \"\", OrchestratorVersion: \"1.6.0\". Please use one of the following versions: ", common.GetAllSupportedKubernetesVersions(false, false)),
 		},
 		"kubernetes should not fail on old patch version if update": {
 			properties: &Properties{
@@ -346,7 +358,7 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all versions
-	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
+	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions(true, false) {
 		c := KubernetesConfig{}
 		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
@@ -537,7 +549,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6 and later releases
-	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
+	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions(false, false) {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -549,7 +561,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 
 	trueVal := true
 	// Tests that apply to 1.8 and later releases
-	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(), "1.8.0", true, true) {
+	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(false, false), "1.8.0", true, true) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
@@ -1183,7 +1195,7 @@ func Test_Properties_ValidateAddons(t *testing.T) {
 }
 
 func TestWindowsVersions(t *testing.T) {
-	for _, version := range common.GetAllSupportedKubernetesVersionsWindows() {
+	for _, version := range common.GetAllSupportedKubernetesVersions(true, true) {
 		p := getK8sDefaultProperties(true)
 		p.OrchestratorProfile.OrchestratorVersion = version
 		if err := p.Validate(false); err != nil {
@@ -1218,7 +1230,7 @@ func TestWindowsVersions(t *testing.T) {
 }
 
 func TestLinuxVersions(t *testing.T) {
-	for _, version := range common.GetAllSupportedKubernetesVersions() {
+	for _, version := range common.GetAllSupportedKubernetesVersions(true, false) {
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorVersion = version
 		if err := p.Validate(false); err != nil {

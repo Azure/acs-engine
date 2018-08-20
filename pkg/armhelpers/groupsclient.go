@@ -1,19 +1,21 @@
 package armhelpers
 
 import (
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 )
 
 // EnsureResourceGroup ensures the named resouce group exists in the given location.
-func (az *AzureClient) EnsureResourceGroup(name, location string, managedBy *string) (resourceGroup *resources.Group, err error) {
-	var tags *map[string]*string
-	group, err := az.groupsClient.Get(name)
+func (az *AzureClient) EnsureResourceGroup(ctx context.Context, name, location string, managedBy *string) (resourceGroup *resources.Group, err error) {
+	var tags map[string]*string
+	group, err := az.groupsClient.Get(ctx, name)
 	if err == nil {
 		tags = group.Tags
 	}
 
-	response, err := az.groupsClient.CreateOrUpdate(name, resources.Group{
+	response, err := az.groupsClient.CreateOrUpdate(ctx, name, resources.Group{
 		Name:      &name,
 		Location:  &location,
 		ManagedBy: managedBy,
@@ -27,11 +29,21 @@ func (az *AzureClient) EnsureResourceGroup(name, location string, managedBy *str
 }
 
 // CheckResourceGroupExistence return if the resource group exists
-func (az *AzureClient) CheckResourceGroupExistence(name string) (result autorest.Response, err error) {
-	return az.groupsClient.CheckExistence(name)
+func (az *AzureClient) CheckResourceGroupExistence(ctx context.Context, name string) (result autorest.Response, err error) {
+	return az.groupsClient.CheckExistence(ctx, name)
 }
 
 // DeleteResourceGroup delete the named resource group
-func (az *AzureClient) DeleteResourceGroup(name string, cancel chan struct{}) (<-chan autorest.Response, <-chan error) {
-	return az.groupsClient.Delete(name, cancel)
+func (az *AzureClient) DeleteResourceGroup(ctx context.Context, name string) error {
+	future, err := az.groupsClient.Delete(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	if err = future.WaitForCompletion(ctx, az.groupsClient.Client); err != nil {
+		return err
+	}
+
+	_, err = future.Result(az.groupsClient)
+	return err
 }

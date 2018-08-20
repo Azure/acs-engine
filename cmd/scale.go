@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -37,7 +38,6 @@ type scaleCmd struct {
 	newDesiredAgentCount int
 	location             string
 	agentPoolToScale     string
-	classicMode          bool
 	masterFQDN           string
 
 	// derived
@@ -76,7 +76,6 @@ func newScaleCmd() *cobra.Command {
 	f.StringVarP(&sc.resourceGroupName, "resource-group", "g", "", "the resource group where the cluster is deployed")
 	f.StringVar(&sc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.IntVar(&sc.newDesiredAgentCount, "new-node-count", 0, "desired number of nodes")
-	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.StringVar(&sc.agentPoolToScale, "node-pool", "", "node pool to scale")
 	f.StringVar(&sc.masterFQDN, "master-FQDN", "", "FQDN for the master load balancer, Needed to scale down Kubernetes agent pools")
 
@@ -131,7 +130,9 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 		return errors.Wrap(err, "failed to get client")
 	}
 
-	_, err = sc.client.EnsureResourceGroup(sc.resourceGroupName, sc.location, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+	_, err = sc.client.EnsureResourceGroup(ctx, sc.resourceGroupName, sc.location, nil)
 	if err != nil {
 		return err
 	}
@@ -207,38 +208,40 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to load existing container service")
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex, index, winPoolIndex int
 	winPoolIndex = -1
 	indexes := make([]int, 0)
 	indexToVM := make(map[int]string)
 	if sc.agentPool.IsAvailabilitySets() {
-		//TODO handle when there is a nextLink in the response and get more nodes
-		vms, err := sc.client.ListVirtualMachines(sc.resourceGroupName)
-		if err != nil {
-			return errors.Wrap(err, "failed to get vms in the resource group")
-		} else if len(*vms.Value) < 1 {
-			return errors.New("The provided resource group does not contain any vms")
-		}
-		for _, vm := range *vms.Value {
-			vmTags := *vm.Tags
-			poolName := *vmTags["poolName"]
-			nameSuffix := *vmTags["resourceNameSuffix"]
-
-			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
-				continue
+		for vmsListPage, err := sc.client.ListVirtualMachines(ctx, sc.resourceGroupName); vmsListPage.NotDone(); err = vmsListPage.Next() {
+			if err != nil {
+				return errors.Wrap(err, "failed to get vms in the resource group")
+			} else if len(vmsListPage.Values()) < 1 {
+				return errors.New("The provided resource group does not contain any vms")
 			}
+			for _, vm := range vmsListPage.Values() {
+				vmTags := vm.Tags
+				poolName := *vmTags["poolName"]
+				nameSuffix := *vmTags["resourceNameSuffix"]
 
-			osPublisher := vm.StorageProfile.ImageReference.Publisher
-			if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
-				_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(*vm.Name)
-			} else {
-				_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
+				//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
+				if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+					continue
+				}
+
+				osPublisher := vm.StorageProfile.ImageReference.Publisher
+				if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
+					_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(*vm.Name)
+				} else {
+					_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
+				}
+
+				indexToVM[index] = *vm.Name
+				indexes = append(indexes, index)
 			}
-
-			indexToVM[index] = *vm.Name
-			indexes = append(indexes, index)
 		}
 		sortedIndexes := sort.IntSlice(indexes)
 		sortedIndexes.Sort()
@@ -260,7 +263,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 			vmsToDelete := make([]string, 0)
 			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
-				vmsToDelete = append(vmsToDelete, indexToVM[i])
+				index = indexes[i]
+				vmsToDelete = append(vmsToDelete, indexToVM[index])
 			}
 
 			switch orchestratorInfo.OrchestratorType {
@@ -309,37 +313,38 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 	} else {
-		vmssList, err := sc.client.ListVirtualMachineScaleSets(sc.resourceGroupName)
-		if err != nil {
-			return errors.Wrap(err, "failed to get vmss list in the resource group")
-		}
-		for _, vmss := range *vmssList.Value {
-			vmTags := *vmss.Tags
-			poolName := *vmTags["poolName"]
-			nameSuffix := *vmTags["resourceNameSuffix"]
-
-			//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
-				continue
+		for vmssListPage, err := sc.client.ListVirtualMachineScaleSets(ctx, sc.resourceGroupName); vmssListPage.NotDone(); vmssListPage.Next() {
+			if err != nil {
+				return errors.Wrap(err, "failed to get vmss list in the resource group")
 			}
+			for _, vmss := range vmssListPage.Values() {
+				vmTags := vmss.Tags
+				poolName := *vmTags["poolName"]
+				nameSuffix := *vmTags["resourceNameSuffix"]
 
-			osPublisher := *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
-			if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
-				_, _, winPoolIndex, err = utils.WindowsVMSSNameParts(*vmss.Name)
-				log.Errorln(err)
+				//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
+				if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+					continue
+				}
+
+				osPublisher := *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
+				if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
+					_, _, winPoolIndex, err = utils.WindowsVMSSNameParts(*vmss.Name)
+					log.Errorln(err)
+				}
+
+				currentNodeCount = int(*vmss.Sku.Capacity)
+				highestUsedIndex = 0
 			}
-
-			currentNodeCount = int(*vmss.Sku.Capacity)
-			highestUsedIndex = 0
 		}
 	}
 
-	ctx := acsengine.Context{
+	translator := acsengine.Context{
 		Translator: &i18n.Translator{
 			Locale: sc.locale,
 		},
 	}
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, sc.classicMode)
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(translator)
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize template generator")
 	}
@@ -368,7 +373,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "errror unmarshalling parameters")
 	}
 
-	transformer := transform.Transformer{Translator: ctx.Translator}
+	transformer := transform.Transformer{Translator: translator.Translator}
 	// Our templates generate a range of nodes based on a count and offset, it is possible for there to be holes in the template
 	// So we need to set the count in the template to get enough nodes for the range, if there are holes that number will be larger than the desired count
 	countForTemplate := sc.newDesiredAgentCount
@@ -410,11 +415,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	deploymentSuffix := random.Int31()
 
 	_, err = sc.client.DeployTemplate(
+		ctx,
 		sc.resourceGroupName,
 		fmt.Sprintf("%s-%d", sc.resourceGroupName, deploymentSuffix),
 		templateJSON,
-		parametersJSON,
-		nil)
+		parametersJSON)
 	if err != nil {
 		return err
 	}

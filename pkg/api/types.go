@@ -252,16 +252,15 @@ type PrivateJumpboxProfile struct {
 }
 
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
-// TODO use this when strict JSON checking accommodates struct embedding
 type CloudProviderConfig struct {
-	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	CloudProviderBackoff         bool   `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int    `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   string `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int    `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent string `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool   `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    string `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int    `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
 // KubernetesConfigDeprecated are properties that are no longer operable and will be ignored
@@ -326,6 +325,8 @@ type KubernetesConfig struct {
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -888,9 +889,8 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 }
 
 // IsContainerMonitoringEnabled checks if the container monitoring addon is enabled
-func (o *OrchestratorProfile) IsContainerMonitoringEnabled() bool {
+func (k *KubernetesConfig) IsContainerMonitoringEnabled() bool {
 	var containerMonitoringAddon KubernetesAddon
-	k := o.KubernetesConfig
 	for i := range k.Addons {
 		if k.Addons[i].Name == ContainerMonitoringAddonName {
 			containerMonitoringAddon = k.Addons[i]
@@ -943,6 +943,28 @@ func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
 	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
 }
 
+// IsBlobfuseFlexVolumeEnabled checks if the Blobfuse FlexVolume addon is enabled
+func (k *KubernetesConfig) IsBlobfuseFlexVolumeEnabled() bool {
+	var bfFlexVolumeAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultBlobfuseFlexVolumeAddonName {
+			bfFlexVolumeAddon = k.Addons[i]
+		}
+	}
+	return bfFlexVolumeAddon.IsEnabled(DefaultBlobfuseFlexVolumeAddonEnabled)
+}
+
+// IsSMBFlexVolumeEnabled checks if the SMB FlexVolume addon is enabled
+func (k *KubernetesConfig) IsSMBFlexVolumeEnabled() bool {
+	var smbFlexVolumeAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultSMBFlexVolumeAddonName {
+			smbFlexVolumeAddon = k.Addons[i]
+		}
+	}
+	return smbFlexVolumeAddon.IsEnabled(DefaultSMBFlexVolumeAddonEnabled)
+}
+
 // IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
 func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
 	var kvFlexVolumeAddon KubernetesAddon
@@ -965,7 +987,8 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }
 
-func isNSeriesSKU(p *Properties) bool {
+// IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
+func IsNSeriesSKU(p *Properties) bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
 			return true
@@ -989,7 +1012,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 	var addonEnabled bool
 	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
 		addonEnabled = false
-	} else if isNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	} else if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false

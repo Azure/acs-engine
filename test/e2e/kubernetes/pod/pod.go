@@ -52,14 +52,30 @@ type Container struct {
 	Resources Resources `json:"resources"`
 }
 
+// TerminatedContainerState shows terminated state of a container
+type TerminatedContainerState struct {
+	ContainerID string `json:"containerID"`
+	ExitCode    int    `json:"exitCode"`
+	FinishedAt  string `json:"finishedAt"`
+	Reason      string `json:"reason"`
+	StartedAt   string `json:"startedAt"`
+}
+
+// ContainerState has state of a container
+type ContainerState struct {
+	Terminated TerminatedContainerState `json:"terminated"`
+}
+
 // ContainerStatus has status of a container
 type ContainerStatus struct {
-	ContainerID  string `json:"containerID"`
-	Image        string `json:"image"`
-	ImageID      string `json:"imageID"`
-	Name         string `json:"name"`
-	Ready        bool   `json:"ready"`
-	RestartCount int    `json:"restartCount"`
+	ContainerID  string         `json:"containerID"`
+	Image        string         `json:"image"`
+	ImageID      string         `json:"imageID"`
+	Name         string         `json:"name"`
+	Ready        bool           `json:"ready"`
+	RestartCount int            `json:"restartCount"`
+	State        ContainerState `json:"state"`
+	LastState    ContainerState `json:"lastState"`
 }
 
 // EnvVar holds environment variables
@@ -118,6 +134,30 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 	return pod, nil
 }
 
+// RunLinuxPod will create a pod that runs a bash command
+// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
+	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
+	var out []byte
+	var err error
+	if printOutput {
+		out, err = util.RunAndLogCommand(cmd)
+	} else {
+		out, err = cmd.CombinedOutput()
+	}
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	p, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return p, nil
+}
+
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
 	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
@@ -137,6 +177,23 @@ func GetAll(namespace string) (*List, error) {
 
 // Get will return a pod with a given name and namespace
 func Get(podName, namespace string) (*Pod, error) {
+	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	p := Pod{}
+	err = json.Unmarshal(out, &p)
+	if err != nil {
+		log.Printf("Error unmarshalling pods json:%s\n", err)
+		return nil, err
+	}
+	return &p, nil
+}
+
+// GetTerminated will return a pod with a given name and namespace, including terminated pods
+func GetTerminated(podName, namespace string) (*Pod, error) {
 	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -208,6 +265,46 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	return true, nil
 }
 
+// AreAllPodsSucceeded returns true, false if all pods in a given namespace are in a Running State
+// returns false, true if any one pod is in a Failed state
+func AreAllPodsSucceeded(podPrefix, namespace string) (bool, bool, error) {
+	pl, err := GetAll(namespace)
+	if err != nil {
+		return false, false, err
+	}
+
+	var status []bool
+	for _, pod := range pl.Pods {
+		matched, err := regexp.MatchString(podPrefix, pod.Metadata.Name)
+		if err != nil {
+			log.Printf("Error trying to match pod name:%s\n", err)
+			return false, false, err
+		}
+		if matched {
+			if pod.Status.Phase == "Failed" {
+				return false, true, nil
+			}
+			if pod.Status.Phase != "Succeeded" {
+				status = append(status, false)
+			} else {
+				status = append(status, true)
+			}
+		}
+	}
+
+	if len(status) == 0 {
+		return false, false, nil
+	}
+
+	for _, s := range status {
+		if !s {
+			return false, false, nil
+		}
+	}
+
+	return true, false, nil
+}
+
 // WaitOnReady is used when you dont have a handle on a pod but want to wait until its in a Ready state.
 // successesNeeded is used to make sure we return the correct value even if the pod is in a CrashLoop
 func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, duration time.Duration) (bool, error) {
@@ -255,9 +352,51 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 	}
 }
 
+// WaitOnSucceeded is used when you dont have a handle on a pod but want to wait until its in a Succeeded state.
+func WaitOnSucceeded(podPrefix, namespace string, sleep, duration time.Duration) (bool, error) {
+	succeededCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to succeed in namespace (%s)", duration.String(), podPrefix, namespace)
+			default:
+				succeeded, failed, err := AreAllPodsSucceeded(podPrefix, namespace)
+				if err != nil {
+					errCh <- err
+					return
+				}
+				if failed {
+					errCh <- errors.New("At least one pod in a Failed state")
+				}
+				if succeeded {
+					succeededCh <- true
+				}
+				time.Sleep(sleep)
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return false, err
+		case ready := <-succeededCh:
+			return ready, nil
+		}
+	}
+}
+
 // WaitOnReady will call the static method WaitOnReady passing in p.Metadata.Name and p.Metadata.Namespace
 func (p *Pod) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 	return WaitOnReady(p.Metadata.Name, p.Metadata.Namespace, 2, sleep, duration)
+}
+
+// WaitOnSucceeded will call the static method WaitOnSucceeded passing in p.Metadata.Name and p.Metadata.Namespace
+func (p *Pod) WaitOnSucceeded(sleep, duration time.Duration) (bool, error) {
+	return WaitOnSucceeded(p.Metadata.Name, p.Metadata.Namespace, sleep, duration)
 }
 
 // Exec will execute the given command in the pod
@@ -382,6 +521,36 @@ func (p *Pod) ValidateCurlConnection(uri string, sleep, duration time.Duration) 
 	}
 }
 
+// ValidateOmsAgentLogs validates omsagent logs
+func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Duration) (bool, error) {
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for logs to be written by omsagent", duration.String())
+			default:
+				_, err := p.Exec("grep", "-i", execCmdString, "/var/opt/microsoft/omsagent/log/omsagent.log")
+				if err == nil {
+					readyCh <- true
+				}
+				time.Sleep(sleep)
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return false, err
+		case ready := <-readyCh:
+			return ready, nil
+		}
+	}
+}
+
 // CheckWindowsOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (bool, error) {
 	exp, err := regexp.Compile("(StatusCode\\s*:\\s*200)")
@@ -463,7 +632,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check azure file mounted", duration.String(), p.Metadata.Name)
 			default:
-				out, err := p.Exec("--", "powershell", "mkdir", mountPath+"\\"+testDir)
+				out, err := p.Exec("--", "powershell", "mkdir", "-force", mountPath+"\\"+testDir)
 				if err == nil && strings.Contains(string(out), testDir) {
 					out, err := p.Exec("--", "powershell", "ls", mountPath)
 					if err == nil && strings.Contains(string(out), testDir) {

@@ -5,14 +5,12 @@
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
     {{if .HasWindows}}
       "dcosBinariesURL": {
-        {{PopulateClassicModeDefaultValue "dcosBinariesURL"}}
         "metadata": {
           "description": "The download url for dcos/mesos windows binaries."
         },
         "type": "string"
       },
       "dcosBinariesVersion": {
-        {{PopulateClassicModeDefaultValue "dcosBinariesVersion"}}
         "metadata": {
           "description": "DCOS windows binaries version"
         },

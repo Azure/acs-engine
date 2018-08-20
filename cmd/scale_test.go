@@ -13,7 +13,7 @@ func TestNewScaleCmd(t *testing.T) {
 		t.Fatalf("scale command should have use %s equal %s, short %s equal %s and long %s equal to %s", output.Use, scaleName, output.Short, scaleShortDescription, output.Long, scaleLongDescription)
 	}
 
-	expectedFlags := []string{"location", "resource-group", "deployment-dir", "new-node-count", "classic-mode", "node-pool", "master-FQDN"}
+	expectedFlags := []string{"location", "resource-group", "deployment-dir", "new-node-count", "node-pool", "master-FQDN"}
 	for _, f := range expectedFlags {
 		if output.Flags().Lookup(f) == nil {
 			t.Fatalf("scale command should have flag %s", f)

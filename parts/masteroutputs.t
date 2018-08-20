@@ -6,23 +6,6 @@
       "value": ""
 {{end}}
     }
-{{if  GetClassicMode}}
-    ,
-    {{if RequiresFakeAgentOutput}}
-    "agentFQDN": {
-      "type": "string",
-      "value": ""
-    },
-    {{end}}
-    "diagnosticsStorageAccountUri": {
-      "type": "string",
-      "value": ""
-    },
-    "jumpboxFQDN": {
-      "type": "string",
-      "value": ""
-    }
-{{end}}
 {{if AnyAgentUsesAvailabilitySets}}
     ,
     "agentStorageAccountSuffix": {

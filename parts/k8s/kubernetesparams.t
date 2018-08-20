@@ -133,7 +133,6 @@
       "type": "string"
     },
     "caPrivateKey": {
-      {{PopulateClassicModeDefaultValue "caPrivateKey"}}
       "metadata": {
         "description": "The base 64 CA private key used on the master."
       },
@@ -165,14 +164,12 @@
     },
 {{end}}
     "generatorCode": {
-      {{PopulateClassicModeDefaultValue "generatorCode"}}
       "metadata": {
         "description": "The generator code used to identify the generator"
       },
       "type": "string"
     },
     "orchestratorName": {
-      {{PopulateClassicModeDefaultValue "orchestratorName"}}
       "metadata": {
         "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
       },
@@ -181,28 +178,24 @@
       "type": "string"
     },
     "dockerBridgeCidr": {
-      {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {
         "description": "Docker bridge network IP address and subnet"
       },
       "type": "string"
     },
     "kubeClusterCidr": {
-      {{PopulateClassicModeDefaultValue "kubeClusterCidr"}}
       "metadata": {
         "description": "Kubernetes cluster subnet"
       },
       "type": "string"
     },
     "kubeDNSServiceIP": {
-      {{PopulateClassicModeDefaultValue "kubeDNSServiceIP"}}
       "metadata": {
         "description": "Kubernetes DNS IP"
       },
       "type": "string"
     },
     "kubeServiceCidr": {
-      {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
       "metadata": {
         "description": "Kubernetes service address space"
       },
@@ -221,7 +214,6 @@
       "type": "string"
     },
     "kubernetesHyperkubeSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesHyperkubeSpec"}}
       "metadata": {
         "description": "The container spec for hyperkube."
       },
@@ -235,159 +227,146 @@
       "type": "string"
     },
     "kubernetesAddonManagerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesAddonManagerSpec"}}
       "metadata": {
         "description": "The container spec for hyperkube."
       },
       "type": "string"
     },
     "kubernetesAddonResizerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesAddonResizerSpec"}}
       "metadata": {
         "description": "The container spec for addon-resizer."
       },
       "type": "string"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
     "kubernetesDashboardSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesDashboardSpec"}}
       "metadata": {
         "description": "The container spec for kubernetes-dashboard-amd64."
       },
       "type": "string"
     },
     "kubernetesDashboardCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPURequests"}}
       "metadata": {
         "description": "Dashboard CPU Requests."
       },
       "type": "string"
     },
     "kubernetesDashboardMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryRequests"}}
       "metadata": {
         "description": "Dashboard Memory Requests."
       },
       "type": "string"
     },
     "kubernetesDashboardCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPULimit"}}
       "metadata": {
         "description": "Dashboard CPU Limit."
       },
       "type": "string"
     },
     "kubernetesDashboardMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryLimit"}}
       "metadata": {
         "description": "Dashboard Memory Limit."
       },
       "type": "string"
     },
+{{end}}
     "kubernetesExecHealthzSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesExecHealthzSpec"}}
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
       },
       "type": "string"
     },
     "kubernetesDNSSidecarSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesDNSSidecarSpec"}}
       "metadata": {
         "description": "The container spec for k8s-dns-sidecar-amd64."
       },
       "type": "string"
     },
     "kubernetesHeapsterSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesHeapsterSpec"}}
       "metadata": {
         "description": "The container spec for heapster."
       },
       "type": "string"
     },
+{{if .OrchestratorProfile.IsMetricsServerEnabled}}
     "kubernetesMetricsServerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesMetricsServerSpec"}}
       "metadata": {
         "description": "The container spec for Metrics Server."
       },
       "type": "string"
     },
+{{end}}
+{{if .IsNVIDIADevicePluginEnabled}}
     "kubernetesNVIDIADevicePluginSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginSpec"}}
       "metadata": {
         "description": "The container spec for NVIDIA Device Plugin."
       },
       "type": "string"
     },
     "kubernetesNVIDIADevicePluginCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPURequests"}}
       "metadata": {
         "description": "NVIDIA Device Plugin CPU Requests"
       },
       "type": "string"
     },
     "kubernetesNVIDIADevicePluginMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryRequests"}}
       "metadata": {
         "description": "NVIDIA Device Plugin Memory Requests"
       },
       "type": "string"
     },
     "kubernetesNVIDIADevicePluginCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginCPULimit"}}
       "metadata": {
         "description": "NVIDIA Device Plugin CPU Limit"
       },
       "type": "string"
     },
     "kubernetesNVIDIADevicePluginMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesNVIDIADevicePluginMemoryLimit"}}
       "metadata": {
         "description": "NVIDIA Device Plugin Memory Limit"
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
     "kubernetesTillerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {
         "description": "The container spec for Helm Tiller."
       },
       "type": "string"
     },
     "kubernetesTillerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerCPURequests"}}
       "metadata": {
         "description": "Helm Tiller CPU Requests."
       },
       "type": "string"
     },
     "kubernetesTillerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryRequests"}}
       "metadata": {
         "description": "Helm Tiller Memory Requests."
       },
       "type": "string"
     },
     "kubernetesTillerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerCPULimit"}}
       "metadata": {
         "description": "Helm Tiller CPU Limit."
       },
       "type": "string"
     },
     "kubernetesTillerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryLimit"}}
       "metadata": {
         "description": "Helm Tiller Memory Limit."
       },
       "type": "string"
     },
     "kubernetesTillerMaxHistory": {
-      {{PopulateClassicModeDefaultValue "kubernetesTillerMaxHistory"}}
       "metadata": {
         "description": "Helm Tiller Max History to Store. '0' for no limit."
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled}}
     "kubernetesAADPodIdentityEnabled": {
       "defaultValue": false,
       "metadata": {
@@ -395,281 +374,228 @@
       },
       "type": "bool"
     },
+{{end}}
     "kubernetesACIConnectorEnabled": {
-      "defaultValue": false,
       "metadata": {
         "description": "ACI Connector Status"
       },
       "type": "bool"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
     "kubernetesACIConnectorSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSpec"}}
       "metadata": {
         "description": "The container spec for ACI Connector."
       },
       "type": "string"
     },
     "kubernetesACIConnectorNodeName": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorNodeName"}}
       "metadata": {
         "description": "Node name for ACI Connector."
       },
       "type": "string"
     },
     "kubernetesACIConnectorOS": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorOS"}}
       "metadata": {
         "description": "OS for ACI Connector."
       },
       "type": "string"
     },
     "kubernetesACIConnectorTaint": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorTaint"}}
       "metadata": {
         "description": "Taint for ACI Connector."
       },
       "type": "string"
     },
     "kubernetesACIConnectorRegion": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorRegion"}}
       "metadata": {
         "description": "Region for ACI Connector."
       },
       "type": "string"
     },
     "kubernetesACIConnectorCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorCPURequests"}}
       "metadata": {
         "description": "ACI Connector CPU Requests"
       },
       "type": "string"
     },
     "kubernetesACIConnectorMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorMemoryRequests"}}
       "metadata": {
         "description": "ACI Connector Memory Requests"
       },
       "type": "string"
     },
     "kubernetesACIConnectorCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorCPULimit"}}
       "metadata": {
         "description": "ACI Connector CPU Limit"
       },
       "type": "string"
     },
     "kubernetesACIConnectorMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorMemoryLimit"}}
       "metadata": {
         "description": "ACI Connector Memory Limit"
       },
       "type": "string"
     },
+{{end}}
+    "kubernetesClusterAutoscalerEnabled": {
+      "metadata": {
+        "description": "Cluster autoscaler status"
+      },
+      "type": "bool"
+    },
+{{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
     "kubernetesClusterAutoscalerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerSpec"}}
       "metadata": {
         "description": "The container spec for the cluster autoscaler."
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerAzureCloud": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerAzureCloud"}}
       "metadata": {
         "description": "Name of the Azure cloud for the cluster autoscaler."
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPULimit"}}
       "metadata": {
         "description": "Cluster autoscaler cpu limit"
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryLimit"}}
       "metadata": {
         "description": "Cluster autoscaler memory limit"
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerCPURequests"}}
       "metadata": {
         "description": "Cluster autoscaler cpu requests"
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMemoryRequests"}}
       "metadata": {
         "description": "Cluster autoscaler memory requests"
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerMinNodes": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMinNodes"}}
       "metadata": {
         "description": "Cluster autoscaler min nodes"
       },
       "type": "string"
     },
     "kubernetesClusterAutoscalerMaxNodes": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerMaxNodes"}}
       "metadata": {
         "description": "Cluster autoscaler max nodes"
       },
       "type": "string"
     },
-    "kubernetesClusterAutoscalerEnabled": {
-      "defaultValue": false,
-      "metadata": {
-        "description": "Cluster autoscaler status"
-      },
-      "type": "bool"
-    },
     "kubernetesClusterAutoscalerUseManagedIdentity": {
-      {{PopulateClassicModeDefaultValue "kubernetesClusterAutoscalerUseManagedIdentity"}}
       "metadata": {
         "description": "Managed identity for the cluster autoscaler addon"
       },
       "type": "string"
     },
+{{end}}
+     "flexVolumeDriverConfig": {
+      "type": "object",
+      "defaultValue": {
+        "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPURequests": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryRequests": "10Mi",
+        "kubernetesSMBFlexVolumeInstallerCPULimit": "50m",
+        "kubernetesSMBFlexVolumeInstallerMemoryLimit": "10Mi"
+      }
+    },
+{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
     "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}
       "metadata": {
         "description": "Key Vault FlexVolume Installer CPU Requests"
       },
       "type": "string"
     },
     "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}
       "metadata": {
         "description": "Key Vault FlexVolume Installer Memory Requests"
       },
       "type": "string"
     },
     "kubernetesKeyVaultFlexVolumeInstallerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerCPULimit"}}
       "metadata": {
         "description": "Key Vault FlexVolume Installer CPU Limit"
       },
       "type": "string"
     },
     "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit"}}
       "metadata": {
         "description": "Key Vault FlexVolume Installer Memory Limit"
       },
       "type": "string"
     },
+{{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     "kubernetesReschedulerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
         "description": "The container spec for rescheduler."
       },
       "type": "string"
     },
     "kubernetesReschedulerCPURequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPURequests"}}
       "metadata": {
         "description": "Rescheduler CPU Requests."
       },
       "type": "string"
     },
     "kubernetesReschedulerMemoryRequests": {
-      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryRequests"}}
       "metadata": {
         "description": "Rescheduler Memory Requests."
       },
       "type": "string"
     },
     "kubernetesReschedulerCPULimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPULimit"}}
       "metadata": {
         "description": "Rescheduler CPU Limit."
       },
       "type": "string"
     },
     "kubernetesReschedulerMemoryLimit": {
-      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryLimit"}}
       "metadata": {
         "description": "Rescheduler Memory Limit."
       },
       "type": "string"
     },
+{{end}}
     "kubernetesPodInfraContainerSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {
         "description": "The container spec for pod infra."
       },
       "type": "string"
     },
-    "cloudProviderBackoff": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoff"}}
-      "metadata": {
-        "description": "Enable cloudprovider backoff?"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffRetries": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffRetries"}}
-      "metadata": {
-        "description": "If backoff enabled, how many times to retry"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffExponent": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffExponent"}}
-      "metadata": {
-        "description": "If backoff enabled, retry exponent"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffDuration": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffDuration"}}
-      "metadata": {
-        "description": "If backoff enabled, how long until timeout"
-      },
-      "type": "string"
-    },
-    "cloudProviderBackoffJitter": {
-      {{PopulateClassicModeDefaultValue "cloudProviderBackoffJitter"}}
-      "metadata": {
-        "description": "If backoff enabled, jitter factor between retries"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimit": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimit"}}
-      "metadata": {
-        "description": "Enable cloudprovider rate limiting?"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimitQPS": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitQPS"}}
-      "metadata": {
-        "description": "If rate limiting enabled, target maximum QPS"
-      },
-      "type": "string"
-    },
-    "cloudProviderRatelimitBucket": {
-      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitBucket"}}
-      "metadata": {
-        "description": "If rate limiting enabled, bucket size"
-      },
-      "type": "string"
+    "cloudproviderConfig": {
+      "type": "object",
+      "defaultValue": {
+        "cloudProviderBackoff": true,
+        "cloudProviderBackoffRetries": 10,
+        "cloudProviderBackoffJitter": "0",
+        "cloudProviderBackoffDuration": 0,
+        "cloudProviderBackoffExponent": "0",
+        "cloudProviderRateLimit": false,
+        "cloudProviderRateLimitQPS": "0",
+        "cloudProviderRateLimitBucket": 0
+      }
     },
     "kubernetesKubeDNSSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
       "metadata": {
         "description": "The container spec for kubedns-amd64."
       },
       "type": "string"
     },
     "kubernetesDNSMasqSpec": {
-      {{PopulateClassicModeDefaultValue "kubernetesDNSMasqSpec"}}
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."
       },
@@ -684,7 +610,6 @@
       "type": "string"
     },
     "dockerEngineVersion": {
-      {{PopulateClassicModeDefaultValue "dockerEngineVersion"}}
       "metadata": {
         "description": "The docker engine version to install."
       },
@@ -783,6 +708,14 @@
       },
       "type": "int"
     },
+    "kuberneteselbsvcname": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "elb service for standard lb"
+      },
+      "type": "string"
+    },
+{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     "omsAgentVersion": {
       "defaultValue": "",
       "metadata": {
@@ -846,6 +779,7 @@
       },
       "type": "string"
     },
+{{end}}
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
@@ -875,21 +809,18 @@
       "type": "int"
     },
     "etcdDiskSizeGB": {
-      {{PopulateClassicModeDefaultValue "etcdDiskSizeGB"}}
       "metadata": {
         "description": "Size in GB to allocate for etcd volume"
       },
       "type": "string"
     },
     "etcdDownloadURLBase": {
-      {{PopulateClassicModeDefaultValue "etcdDownloadURLBase"}}
       "metadata": {
         "description": "etcd image base URL"
       },
       "type": "string"
     },
     "etcdVersion": {
-      {{PopulateClassicModeDefaultValue "etcdVersion"}}
       "metadata": {
         "description": "etcd version"
       },
@@ -916,7 +847,6 @@
       "type": "string"
     },
     "jumpboxOSDiskSizeGB": {
-      {{PopulateClassicModeDefaultValue "jumpboxOSDiskSizeGB"}}
       "metadata": {
         "description": "Size in GB to allocate to the private cluster jumpbox VM OS."
       },

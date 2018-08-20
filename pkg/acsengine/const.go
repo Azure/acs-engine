@@ -110,8 +110,14 @@ const (
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultClusterAutoscalerAddonName is the name of the autoscaler addon deployment
 	DefaultClusterAutoscalerAddonName = "cluster-autoscaler"
+	// DefaultBlobfuseFlexVolumeAddonName is the name of the blobfuse flexvolume addon
+	DefaultBlobfuseFlexVolumeAddonName = "blobfuse-flexvolume"
+	// DefaultSMBFlexVolumeAddonName is the name of the smb flexvolume addon
+	DefaultSMBFlexVolumeAddonName = "smb-flexvolume"
 	// DefaultKeyVaultFlexVolumeAddonName is the name of the keyvault flexvolume addon deployment
 	DefaultKeyVaultFlexVolumeAddonName = "keyvault-flexvolume"
+	// DefaultELBSVCAddonName is the name of the elb service addon deployment
+	DefaultELBSVCAddonName = "elb-svc"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
@@ -201,6 +207,8 @@ const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
+	kubernetesInstalls                       = "k8s/kubernetesinstalls.sh"
+	kubernetesConfigurations                 = "k8s/kubernetesconfigs.sh"
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
 	kubernetesCustomSearchDomainsScript      = "k8s/setup-custom-search-domains.sh"
 	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
@@ -213,6 +221,7 @@ const (
 	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
 	openshift39NodeScript   = "openshift/release-3.9/openshiftnodescript.sh"
 	openshift39MasterScript = "openshift/release-3.9/openshiftmasterscript.sh"
+	sshdConfig              = "k8s/sshd_config"
 )
 
 const (
@@ -239,7 +248,6 @@ const (
 const (
 	agentOutputs                  = "agentoutputs.t"
 	agentParams                   = "agentparams.t"
-	classicParams                 = "classicparams.t"
 	dcosAgentResourcesVMAS        = "dcos/dcosagentresourcesvmas.t"
 	dcosWindowsAgentResourcesVMAS = "dcos/dcosWindowsAgentResourcesVmas.t"
 	dcosAgentResourcesVMSS        = "dcos/dcosagentresourcesvmss.t"
@@ -273,7 +281,6 @@ const (
 	swarmParams                   = "swarm/swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarm/swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS       = "swarm/swarmagentresourcesvmss.t"
-	swarmAgentResourcesClassic    = "swarm/swarmagentresourcesclassic.t"
 	swarmAgentVars                = "swarm/swarmagentvars.t"
 	swarmMasterResources          = "swarm/swarmmasterresources.t"
 	swarmMasterVars               = "swarm/swarmmastervars.t"

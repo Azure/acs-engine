@@ -29,7 +29,7 @@
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+        "accountType": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -50,14 +50,14 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[variables('vnetCidr')]"
+            "[parameters('vnetCidr')]"
           ]
         },
         "subnets": [
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnet')]"
+              "addressPrefix": "[parameters('masterSubnet')]"
 {{if not IsOpenShift}}
               ,
               "networkSecurityGroup": {
@@ -311,7 +311,7 @@
 {{if HasCustomNodesDNS}}
  ,"dnsSettings": {
           "dnsServers": [
-              "[variables('dnsServer')]"
+              "[parameters('dnsServer')]"
           ]
       }
 {{end}}
@@ -394,7 +394,7 @@
   {{if HasCustomNodesDNS}}
    ,"dnsSettings": {
           "dnsServers": [
-              "[variables('dnsServer')]"
+              "[parameters('dnsServer')]"
           ]
       }
   {{end}}
@@ -409,7 +409,7 @@
   {{if ProvisionJumpbox}}
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('jumpboxVMName')]",
+      "name": "[parameters('jumpboxVMName')]",
       {{if JumpboxIsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       {{else}}
@@ -419,22 +419,22 @@
       "properties": {
           "osProfile": {
             {{GetKubernetesJumpboxCustomData .}}
-              "computerName": "[variables('jumpboxVMName')]",
-              "adminUsername": "[variables('jumpboxUsername')]",
+              "computerName": "[parameters('jumpboxVMName')]",
+              "adminUsername": "[parameters('jumpboxUsername')]",
               "linuxConfiguration": {
                   "disablePasswordAuthentication": true,
                   "ssh": {
                       "publicKeys": [
                           {
-                              "path": "[concat('/home/', variables('jumpboxUsername'), '/.ssh/authorized_keys')]",
-                              "keyData": "[variables('jumpboxPublicKey')]"
+                              "path": "[concat('/home/', parameters('jumpboxUsername'), '/.ssh/authorized_keys')]",
+                              "keyData": "[parameters('jumpboxPublicKey')]"
                           }
                       ]
                   }
               }
           },
           "hardwareProfile": {
-              "vmSize": "[variables('jumpboxVMSize')]"
+              "vmSize": "[parameters('jumpboxVMSize')]"
           },
           "storageProfile": {
               "imageReference": {
@@ -446,16 +446,16 @@
             {{if JumpboxIsManagedDisks}}
               "osDisk": {
                   "createOption": "FromImage",
-                  "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
+                  "diskSizeGB": "[parameters('jumpboxOSDiskSizeGB')]",
                   "managedDisk": {
-                      "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                      "storageAccountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
                   }
               },
             {{else}}
               "osDisk": {
                 "createOption": "fromImage",
                 "vhd": {
-                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'jumpboxdisk.vhd')]"
+                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',parameters('jumpboxVMName'),'jumpboxdisk.vhd')]"
                 },
                 "name": "[variables('jumpboxOSDiskName')]"
               },
@@ -481,7 +481,7 @@
             "apiVersion": "[variables('apiVersionStorage')]",
             "location": "[variables('location')]",
             "properties": {
-                "accountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                "accountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
             }
     },
     {{end}}
@@ -602,7 +602,10 @@
               },
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp"
+              "protocol": "tcp",
+              "probe": {
+                "id": "[concat(variables('masterInternalLbID'),'/probes/tcpHTTPSProbe')]"
+              }
             }
           }
         ],
@@ -663,7 +666,7 @@
          "accessPolicies": [
            {
              "tenantId": "[variables('tenantID')]",
-             "objectId": "[variables('servicePrincipalObjectId')]",
+             "objectId": "[parameters('servicePrincipalObjectId')]",
              "permissions": {
                "keys": ["create", "encrypt", "decrypt", "get", "list"]
              }
@@ -710,7 +713,7 @@
          ],
  {{end}}
          "sku": {
-           "name": "[variables('clusterKeyVaultSku')]",
+           "name": "[parameters('clusterKeyVaultSku')]",
            "family": "A"
          }
        }
@@ -735,10 +738,10 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "creationSource" : "[concat(parameters('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+        "resourceNameSuffix" : "[parameters('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
-        "acsengineVersion" : "[variables('acsengineVersion')]",
+        "acsengineVersion" : "[parameters('acsengineVersion')]",
         "poolName" : "master"
       },
       "location": "[variables('location')]",
@@ -750,9 +753,9 @@
       {{end}}
       {{if and IsOpenShift (not UseMasterCustomImage)}}
       "plan": {
-        "name": "[variables('osImageSku')]",
-        "publisher": "[variables('osImagePublisher')]",
-        "product": "[variables('osImageOffer')]"
+        "name": "[parameters('osImageSku')]",
+        "publisher": "[parameters('osImagePublisher')]",
+        "product": "[parameters('osImageOffer')]"
       },
       {{end}}
       "properties": {
@@ -760,7 +763,7 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[variables('masterVMSize')]"
+          "vmSize": "[parameters('masterVMSize')]"
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -770,7 +773,7 @@
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
+          "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
           {{if not IsOpenShift}}
           {{GetKubernetesMasterCustomData .}}
@@ -780,7 +783,7 @@
             "ssh": {
               "publicKeys": [
                 {
-                  "keyData": "[variables('sshPublicKeyData')]",
+                  "keyData": "[parameters('sshRSAPublicKey')]",
                   "path": "[variables('sshKeyPath')]"
                 }
               ]
@@ -796,7 +799,7 @@
           "dataDisks": [
             {
               "createOption": "Empty"
-              ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
+              ,"diskSizeGB": "[parameters('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
               {{if .MasterProfile.IsStorageAccount}}
@@ -809,12 +812,12 @@
           {{end}}
           "imageReference": {
             {{if UseMasterCustomImage}}
-            "id": "[resourceId(variables('osImageResourceGroup'), 'Microsoft.Compute/images', variables('osImageName'))]"
+            "id": "[resourceId(parameters('osImageResourceGroup'), 'Microsoft.Compute/images', parameters('osImageName'))]"
             {{else}}
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSku')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[parameters('osImageOffer')]",
+            "publisher": "[parameters('osImagePublisher')]",
+            "sku": "[parameters('osImageSku')]",
+            "version": "[parameters('osImageVersion')]"
             {{end}}
           },
           "osDisk": {

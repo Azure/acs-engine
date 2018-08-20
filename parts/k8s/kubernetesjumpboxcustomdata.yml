@@ -9,7 +9,7 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-- path: "/home/{{WrapAsVariable "jumpboxUsername"}}/.kube/config"
+- path: "/home/{{WrapAsParameter "jumpboxUsername"}}/.kube/config"
   permissions: "0644"
   owner: "root"
   content: |

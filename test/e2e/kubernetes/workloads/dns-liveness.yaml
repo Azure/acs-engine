@@ -19,3 +19,5 @@ spec:
         - bbc.co.uk
       initialDelaySeconds: 5
       periodSeconds: 5
+  nodeSelector:
+        beta.kubernetes.io/os: linux 

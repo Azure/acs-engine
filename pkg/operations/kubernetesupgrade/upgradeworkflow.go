@@ -1,5 +1,7 @@
 package kubernetesupgrade
 
+import "context"
+
 // UpgradeWorkFlow outlines various individual high level steps
 // that need to be run (one or more times) in the upgrade workflow.
 type UpgradeWorkFlow interface {
@@ -20,7 +22,7 @@ type UpgradeNode interface {
 	DeleteNode(*string, bool) error
 
 	// CreateNode creates a new master/agent node with the targeted version of Kubernetes
-	CreateNode(string, int) error
+	CreateNode(context.Context, string, int) error
 
 	// Validate will verify the that master/agent node has been upgraded as expected.
 	Validate(*string) error

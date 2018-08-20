@@ -1,236 +1,309 @@
 package acsengine
 
 import (
-	"fmt"
-	"strings"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-type kubernetesFeatureSetting struct {
-	sourceFile      string
-	destinationFile string
-	isEnabled       bool
-}
-
-func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSetting {
-	return []kubernetesFeatureSetting{
-		{
-			"kubernetesmasteraddons-heapster-deployment.yaml",
-			"kube-heapster-deployment.yaml",
-			true,
+func setAddonsConfig(cs *api.ContainerService) {
+	o := cs.Properties.OrchestratorProfile
+	defaultTillerAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultTillerAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultTillerAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
 		},
-		{
-			"kubernetesmasteraddons-kube-dns-deployment.yaml",
-			"kube-dns-deployment.yaml",
-			true,
-		},
-		{
-			"kubernetesmasteraddons-kube-proxy-daemonset.yaml",
-			"kube-proxy-daemonset.yaml",
-			true,
-		},
-		{
-			"kubernetesmasteraddons-nvidia-device-plugin-daemonset.yaml",
-			"nvidia-device-plugin.yaml",
-			profile.IsNVIDIADevicePluginEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
-			"kubernetes-dashboard-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-unmanaged-azure-storage-classes.yaml",
-			"azure-storage-classes.yaml",
-			profile.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks,
-		},
-		{
-			"kubernetesmasteraddons-managed-azure-storage-classes.yaml",
-			"azure-storage-classes.yaml",
-			profile.AgentPoolProfiles[0].StorageProfile == api.ManagedDisks,
-		},
-		{
-			"kubernetesmasteraddons-tiller-deployment.yaml",
-			"kube-tiller-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-aad-pod-identity-deployment.yaml",
-			"aad-pod-identity-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-aci-connector-deployment.yaml",
-			"aci-connector-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-cluster-autoscaler-deployment.yaml",
-			"cluster-autoscaler-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
-			"kube-rescheduler-deployment.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-azure-npm-daemonset.yaml",
-			"azure-npm-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure && profile.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginAzure,
-		},
-		{
-			"kubernetesmasteraddons-calico-daemonset.yaml",
-			"calico-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCalico,
-		},
-		{
-			"kubernetesmasteraddons-cilium-daemonset.yaml",
-			"cilium-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == NetworkPolicyCilium,
-		},
-		{
-			"kubernetesmasteraddons-flannel-daemonset.yaml",
-			"flannel-daemonset.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.NetworkPlugin == NetworkPluginFlannel,
-		},
-		{
-			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",
-			"aad-default-admin-group-rbac.yaml",
-			profile.AADProfile != nil && profile.AADProfile.AdminGroupID != "",
-		},
-		{
-			"kubernetesmasteraddons-azure-cloud-provider-deployment.yaml",
-			"azure-cloud-provider-deployment.yaml",
-			true,
-		},
-		{
-			"kubernetesmasteraddons-metrics-server-deployment.yaml",
-			"kube-metrics-server-deployment.yaml",
-			profile.OrchestratorProfile.IsMetricsServerEnabled(),
-		},
-		{
-			"kubernetesmasteraddons-omsagent-daemonset.yaml",
-			"omsagent-daemonset.yaml",
-			profile.OrchestratorProfile.IsContainerMonitoringEnabled(),
-		},
-		{
-			"azure-cni-networkmonitor.yaml",
-			"azure-cni-networkmonitor.yaml",
-			profile.OrchestratorProfile.IsAzureCNI(),
-		},
-		{
-			"kubernetesmaster-audit-policy.yaml",
-			"audit-policy.yaml",
-			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
-		},
-		{
-			"kubernetesmasteraddons-keyvault-flexvolume-installer.yaml",
-			"keyvault-flexvolume-installer.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled(),
+		Config: map[string]string{
+			"max-history": strconv.Itoa(DefaultTillerMaxHistory),
 		},
 	}
-}
 
-func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeatureSetting {
-	return []kubernetesFeatureSetting{
-		{
-			"kubernetesmaster-kube-scheduler.yaml",
-			"kube-scheduler.yaml",
-			true,
+	defaultACIConnectorAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultACIConnectorAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Config: map[string]string{
+			"region":   "westus",
+			"nodeName": "aci-connector",
+			"os":       "Linux",
+			"taint":    "azure.com/aci",
 		},
-		{
-			"kubernetesmaster-kube-controller-manager.yaml",
-			"kube-controller-manager.yaml",
-			true,
-		},
-		{
-			"kubernetesmaster-cloud-controller-manager.yaml",
-			"cloud-controller-manager.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager,
-		},
-		{
-			"kubernetesmaster-pod-security-policy.yaml",
-			"pod-security-policy.yaml",
-			helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
-		},
-		{
-			"kubernetesmaster-kube-apiserver.yaml",
-			"kube-apiserver.yaml",
-			true,
-		},
-		{
-			"kubernetesmaster-kube-addon-manager.yaml",
-			"kube-addon-manager.yaml",
-			true,
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultACIConnectorAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
 		},
 	}
-}
 
-func kubernetesArtifactSettingsInitMaster(profile *api.Properties) []kubernetesFeatureSetting {
-	return []kubernetesFeatureSetting{
-		{
-			"kuberneteskubelet.service",
-			"kubelet.service",
-			true,
+	defaultClusterAutoscalerAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultClusterAutoscalerAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
+		Config: map[string]string{
+			"minNodes": "1",
+			"maxNodes": "5",
 		},
-		{
-			"kubernetesazurekms.service",
-			"kms.service",
-			true,
-		},
-	}
-}
-
-func kubernetesArtifactSettingsInitAgent(profile *api.Properties) []kubernetesFeatureSetting {
-	return []kubernetesFeatureSetting{
-		{
-			"kuberneteskubelet.service",
-			"kubelet.service",
-			true,
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultClusterAutoscalerAddonName,
+				CPURequests:    "100m",
+				MemoryRequests: "300Mi",
+				CPULimits:      "100m",
+				MemoryLimits:   "300Mi",
+			},
 		},
 	}
-}
 
-func substituteConfigString(input string, kubernetesFeatureSettings []kubernetesFeatureSetting, sourcePath string, destinationPath string, placeholder string, orchestratorVersion string) string {
-	var config string
+	defaultBlobfuseFlexVolumeAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultBlobfuseFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultBlobfuseFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultBlobfuseFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
 
-	versions := strings.Split(orchestratorVersion, ".")
-	for _, setting := range kubernetesFeatureSettings {
-		if setting.isEnabled {
-			config += buildConfigString(
-				setting.sourceFile,
-				setting.destinationFile,
-				sourcePath,
-				destinationPath,
-				versions[0]+"."+versions[1])
+	defaultSMBFlexVolumeAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultSMBFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultSMBFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultSMBFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
+	defaultKeyVaultFlexVolumeAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultKeyVaultFlexVolumeAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultKeyVaultFlexVolumeAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
+	defaultDashboardAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultDashboardAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultDashboardAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultDashboardAddonName,
+				CPURequests:    "300m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "300m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	defaultReschedulerAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultReschedulerAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultReschedulerAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultReschedulerAddonName,
+				CPURequests:    "10m",
+				MemoryRequests: "100Mi",
+				CPULimits:      "10m",
+				MemoryLimits:   "100Mi",
+			},
+		},
+	}
+
+	defaultMetricsServerAddonsConfig := api.KubernetesAddon{
+		Name:    DefaultMetricsServerAddonName,
+		Enabled: k8sVersionMetricsServerAddonEnabled(o),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: DefaultMetricsServerAddonName,
+			},
+		},
+	}
+
+	defaultNVIDIADevicePluginAddonsConfig := api.KubernetesAddon{
+		Name:    NVIDIADevicePluginAddonName,
+		Enabled: helpers.PointerToBool(api.IsNSeriesSKU(cs.Properties) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0")),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: NVIDIADevicePluginAddonName,
+				// from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/device-plugins/nvidia-gpu/daemonset.yaml#L44
+				CPURequests:    "50m",
+				MemoryRequests: "10Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "10Mi",
+			},
+		},
+	}
+
+	defaultContainerMonitoringAddonsConfig := api.KubernetesAddon{
+		Name:    ContainerMonitoringAddonName,
+		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
+		Config: map[string]string{
+			"omsAgentVersion":       "1.6.0-42",
+			"dockerProviderVersion": "2.0.0-3",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           "omsagent",
+				Image:          "microsoft/oms:acsenginelogfixnew",
+				CPURequests:    "50m",
+				MemoryRequests: "200Mi",
+				CPULimits:      "150m",
+				MemoryLimits:   "750Mi",
+			},
+		},
+	}
+
+	defaultAzureCNINetworkMonitorAddonsConfig := api.KubernetesAddon{
+		Name:    AzureCNINetworkMonitoringAddonName,
+		Enabled: azureCNINetworkMonitorAddonEnabled(o),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: AzureCNINetworkMonitoringAddonName,
+			},
+		},
+	}
+
+	defaultAzureNetworkPolicyAddonsConfig := api.KubernetesAddon{
+		Name:    AzureNetworkPolicyAddonName,
+		Enabled: azureNetworkPolicyAddonEnabled(o),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: AzureNetworkPolicyAddonName,
+			},
+		},
+	}
+
+	defaultAddons := []api.KubernetesAddon{
+		defaultTillerAddonsConfig,
+		defaultACIConnectorAddonsConfig,
+		defaultClusterAutoscalerAddonsConfig,
+		defaultBlobfuseFlexVolumeAddonsConfig,
+		defaultSMBFlexVolumeAddonsConfig,
+		defaultKeyVaultFlexVolumeAddonsConfig,
+		defaultDashboardAddonsConfig,
+		defaultReschedulerAddonsConfig,
+		defaultMetricsServerAddonsConfig,
+		defaultNVIDIADevicePluginAddonsConfig,
+		defaultContainerMonitoringAddonsConfig,
+		defaultAzureCNINetworkMonitorAddonsConfig,
+		defaultAzureNetworkPolicyAddonsConfig,
+	}
+	// Add default addons specification, if no user-provided spec exists
+	if o.KubernetesConfig.Addons == nil {
+		o.KubernetesConfig.Addons = defaultAddons
+	} else {
+		for _, addon := range defaultAddons {
+			i := getAddonsIndexByName(o.KubernetesConfig.Addons, addon.Name)
+			if i < 0 {
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, addon)
+			}
 		}
 	}
 
-	return strings.Replace(input, placeholder, config, -1)
+	for _, addon := range defaultAddons {
+		synthesizeAddonsConfig(o.KubernetesConfig.Addons, addon, false)
+	}
 }
 
-func buildConfigString(sourceFile string, destinationFile string, sourcePath string, destinationPath string, version string) string {
-	sourceFileFullPath := sourcePath + "/" + sourceFile
-	sourceFileFullPathVersioned := sourcePath + "/" + version + "/" + sourceFile
-
-	// Test to check if the versioned file can be read.
-	_, err := Asset(sourceFileFullPathVersioned)
-	if err == nil {
-		sourceFileFullPath = sourceFileFullPathVersioned
+func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
+	for i := range addons {
+		if addons[i].Name == name {
+			return i
+		}
 	}
+	return -1
+}
 
-	contents := []string{
-		fmt.Sprintf("- path: %s/%s", destinationPath, destinationFile),
-		"  permissions: \\\"0644\\\"",
-		"  encoding: gzip",
-		"  owner: \\\"root\\\"",
-		"  content: !!binary |",
-		fmt.Sprintf("    %s\\n\\n", getBase64CustomScript(sourceFileFullPath)),
+func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
+	for i := range containers {
+		if containers[i].Name == name {
+			return i
+		}
 	}
+	return -1
+}
 
-	return strings.Join(contents, "\\n")
+// assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
+func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
+	if addon.Enabled == nil {
+		addon.Enabled = defaults.Enabled
+	}
+	for i := range defaults.Containers {
+		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
+		if c < 0 {
+			addon.Containers = append(addon.Containers, defaults.Containers[i])
+		} else {
+			if addon.Containers[c].Image == "" {
+				addon.Containers[c].Image = defaults.Containers[i].Image
+			}
+			if addon.Containers[c].CPURequests == "" {
+				addon.Containers[c].CPURequests = defaults.Containers[i].CPURequests
+			}
+			if addon.Containers[c].MemoryRequests == "" {
+				addon.Containers[c].MemoryRequests = defaults.Containers[i].MemoryRequests
+			}
+			if addon.Containers[c].CPULimits == "" {
+				addon.Containers[c].CPULimits = defaults.Containers[i].CPULimits
+			}
+			if addon.Containers[c].MemoryLimits == "" {
+				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
+			}
+		}
+	}
+	for key, val := range defaults.Config {
+		if addon.Config == nil {
+			addon.Config = make(map[string]string)
+		}
+		if v, ok := addon.Config[key]; !ok || v == "" {
+			addon.Config[key] = val
+		}
+	}
+	return addon
+}
+
+func synthesizeAddonsConfig(addons []api.KubernetesAddon, addon api.KubernetesAddon, enableIfNil bool) {
+	i := getAddonsIndexByName(addons, addon.Name)
+	if i >= 0 {
+		if addons[i].IsEnabled(enableIfNil) {
+			addons[i] = assignDefaultAddonVals(addons[i], addon)
+		}
+	}
+}
+
+func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+}
+
+func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
+}
+
+func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
+	return helpers.PointerToBool(o.IsAzureCNI())
 }

@@ -71,14 +71,9 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate, isUpd
 		if isAgentPoolOnlyClusterJSON(contents) {
 			log.Info("No masterProfile: interpreting API model as agent pool only")
 			service, _, err := a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate, isUpdate, "", existingContainerService)
-			if service == nil || err != nil {
-				log.Infof("Error returned by LoadContainerServiceForAgentPoolOnlyCluster: %+v", err)
-			}
 			return service, version, err
 		}
-		log.Infof("Error returned by LoadContainerService: %+v", err)
 	}
-
 	return service, version, err
 }
 
@@ -210,7 +205,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e
 		}
-		unversioned := ConvertVLabsContainerService(containerService)
+		unversioned := ConvertVLabsContainerService(containerService, isUpdate)
 		if curOrchVersion != "" &&
 			(containerService.Properties.OrchestratorProfile == nil ||
 				(containerService.Properties.OrchestratorProfile.OrchestratorVersion == "" &&

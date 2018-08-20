@@ -57,11 +57,6 @@ func TestExpected(t *testing.T) {
 			addTestCertificateProfile(containerService.Properties.CertificateProfile)
 		}
 
-		isClassicMode := false
-		if strings.Contains(tuple.APIModelFilename, "_classicmode") {
-			isClassicMode = true
-		}
-
 		// test the output container service 3 times:
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
@@ -71,7 +66,7 @@ func TestExpected(t *testing.T) {
 				Locale: locale,
 			},
 		}
-		templateGenerator, e3 := InitializeTemplateGenerator(ctx, isClassicMode)
+		templateGenerator, e3 := InitializeTemplateGenerator(ctx)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
@@ -284,7 +279,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 		},
 	}
 
-	templateGenerator, err := InitializeTemplateGenerator(ctx, false)
+	templateGenerator, err := InitializeTemplateGenerator(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to initialize template generator: %v", err)

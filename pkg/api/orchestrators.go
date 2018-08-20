@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type orchestratorsFunc func(*OrchestratorProfile) ([]*OrchestratorVersionProfile, error)
+type orchestratorsFunc func(*OrchestratorProfile, bool) ([]*OrchestratorVersionProfile, error)
 
 var funcmap map[string]orchestratorsFunc
 var versionsMap map[string][]string
@@ -25,7 +25,7 @@ func init() {
 		OpenShift:  openShiftInfo,
 	}
 	versionsMap = map[string][]string{
-		Kubernetes: common.GetAllSupportedKubernetesVersions(),
+		Kubernetes: common.GetAllSupportedKubernetesVersions(true, false),
 		DCOS:       common.GetAllSupportedDCOSVersions(),
 		Swarm:      common.GetAllSupportedSwarmVersions(),
 		SwarmMode:  common.GetAllSupportedDockerCEVersions(),
@@ -103,14 +103,14 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 	if len(orchestrator) == 0 {
 		// return all orchestrators
 		for _, f := range funcmap {
-			arr, err := f(&OrchestratorProfile{})
+			arr, err := f(&OrchestratorProfile{}, false)
 			if err != nil {
 				return nil, err
 			}
 			orchs = append(orchs, arr...)
 		}
 	} else {
-		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}); err != nil {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}, false); err != nil {
 			return nil, err
 		}
 	}
@@ -118,19 +118,19 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 }
 
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service
-func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVersionProfile, error) {
+func GetOrchestratorVersionProfile(orch *OrchestratorProfile, hasWindows bool) (*OrchestratorVersionProfile, error) {
 	if orch.OrchestratorVersion == "" {
 		return nil, errors.New("Missing Orchestrator Version")
 	}
 	switch orch.OrchestratorType {
 	case Kubernetes, DCOS:
-		arr, err := funcmap[orch.OrchestratorType](orch)
+		arr, err := funcmap[orch.OrchestratorType](orch, hasWindows)
 		if err != nil {
 			return nil, err
 		}
 		// has to be exactly one element per specified orchestrator/version
 		if len(arr) != 1 {
-			return nil, errors.New("Umbiguous Orchestrator Versions")
+			return nil, errors.New("Ambiguous Orchestrator Versions")
 		}
 		return arr[0], nil
 	default:
@@ -138,12 +138,12 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 	}
 }
 
-func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+func kubernetesInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
-		for _, ver := range common.GetAllSupportedKubernetesVersions() {
-			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorVersion: ver})
+		for _, ver := range common.GetAllSupportedKubernetesVersions(false, hasWindows) {
+			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorVersion: ver}, hasWindows)
 			if err != nil {
 				return nil, err
 			}
@@ -153,7 +153,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 						OrchestratorType:    Kubernetes,
 						OrchestratorVersion: ver,
 					},
-					Default:  ver == common.GetDefaultKubernetesVersion(),
+					Default:  ver == common.GetDefaultKubernetesVersion(hasWindows),
 					Upgrades: upgrades,
 				})
 		}
@@ -162,7 +162,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 			return nil, errors.Errorf("Kubernetes version %s is not supported", csOrch.OrchestratorVersion)
 		}
 
-		upgrades, err := kubernetesUpgrades(csOrch)
+		upgrades, err := kubernetesUpgrades(csOrch, hasWindows)
 		if err != nil {
 			return nil, err
 		}
@@ -172,22 +172,22 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 					OrchestratorType:    Kubernetes,
 					OrchestratorVersion: csOrch.OrchestratorVersion,
 				},
-				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(),
+				Default:  csOrch.OrchestratorVersion == common.GetDefaultKubernetesVersion(hasWindows),
 				Upgrades: upgrades,
 			})
 	}
 	return orchs, nil
 }
 
-func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
+func kubernetesUpgrades(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
 
 	currentVer, err := semver.Make(csOrch.OrchestratorVersion)
 	if err != nil {
 		return nil, err
 	}
-	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0"
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
+	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
+	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
 	for _, ver := range upgradeableVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
@@ -197,7 +197,7 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	return ret, nil
 }
 
-func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+func dcosInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
@@ -252,7 +252,7 @@ func dcosUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
 	return ret, nil
 }
 
-func swarmInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+func swarmInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
 	if csOrch.OrchestratorVersion == "" {
 		return []*OrchestratorVersionProfile{
 			{
@@ -277,7 +277,7 @@ func swarmInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, erro
 	}, nil
 }
 
-func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+func dockerceInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
 
 	if csOrch.OrchestratorVersion == "" {
 		return []*OrchestratorVersionProfile{
@@ -303,7 +303,7 @@ func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, e
 	}, nil
 }
 
-func openShiftInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+func openShiftInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions

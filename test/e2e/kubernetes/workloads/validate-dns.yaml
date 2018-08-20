@@ -13,3 +13,5 @@ spec:
       - name: validate-google
         image: busybox
         command: ['sh', '-c', 'until nslookup google.com; do echo waiting for DNS resolution; sleep 1; done;']
+      nodeSelector:
+        beta.kubernetes.io/os: linux 
