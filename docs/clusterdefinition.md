@@ -28,10 +28,9 @@ Here are the valid values for the orchestrator types:
 4.  `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
 5.  `OpenShift` - this represents the [OpenShift orchestrator](openshift.md).
 
+To learn more about supported orchestrators and versions, run the orchestrators command:
+`/bin/acs-engine orchestrators`
 
-Examples for valid values for the orchestrator release: `1.9`, `1.10`, `1.11`, etc.
-
-Examples for valid values for the orchestrator version: `1.9.10`, `1.10.7`, `1.11.2`, etc.
 
 ### kubernetesConfig
 
