@@ -14,9 +14,11 @@ Here are the cluster definitions for apiVersion "vlabs":
 
 `orchestratorProfile` describes the orchestrator settings.
 
-| Name             | Required | Description                                     |
-| ---------------- | -------- | ----------------------------------------------- |
-| orchestratorType | yes      | Specifies the orchestrator type for the cluster |
+| Name                | Required | Description                                        |
+| ------------------- | -------- | -------------------------------------------------- |
+| orchestratorType    | yes      | Specifies the orchestrator type for the cluster    |
+| orchestratorRelease | no       | Specifies the orchestrator release for the cluster |
+| orchestratorVersion | no       | Specifies the orchestrator version for the cluster |
 
 Here are the valid values for the orchestrator types:
 
@@ -25,6 +27,11 @@ Here are the valid values for the orchestrator types:
 3.  `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4.  `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
 5.  `OpenShift` - this represents the [OpenShift orchestrator](openshift.md).
+
+To learn more about supported orchestrators and versions, run the orchestrators command:
+
+```/bin/acs-engine orchestrators```
+
 
 ### kubernetesConfig
 
