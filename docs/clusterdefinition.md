@@ -29,7 +29,8 @@ Here are the valid values for the orchestrator types:
 5.  `OpenShift` - this represents the [OpenShift orchestrator](openshift.md).
 
 To learn more about supported orchestrators and versions, run the orchestrators command:
-`/bin/acs-engine orchestrators`
+
+```/bin/acs-engine orchestrators```
 
 
 ### kubernetesConfig
