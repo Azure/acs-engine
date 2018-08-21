@@ -8,7 +8,7 @@ These are the common steps (unless described otherwise) you'll have to run after
 * Run `acs-engine generate --api-model _output/<clustername>/apimodel.json`. This wil update the `azuredeploy*` files needed for the new ARM deployment. These files are also located in the `_output` folder.
 * Apply the changes by manually starting an ARM deployment. From within the  `_output/<clustername>` run
 
-        az group deployment --template-file azuredeploy.json --parameters azuredeploy.parameters.json --resource-group "<my-resource-group>"
+        az group deployment create --template-file azuredeploy.json --parameters azuredeploy.parameters.json --resource-group "<my-resource-group>"
 
   To use the `az` CLI tools you have to login. More info can be found here: https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest
 
