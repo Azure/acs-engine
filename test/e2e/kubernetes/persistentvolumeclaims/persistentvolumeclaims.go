@@ -70,6 +70,18 @@ func Get(pvcName, namespace string) (*PersistentVolumeClaims, error) {
 	return &pvc, nil
 }
 
+// Delete will delete a PersistentVolumeClaims in a given namespace
+func (pvc *PersistentVolumeClaims) Delete() error {
+	cmd := exec.Command("kubectl", "delete", "pvc", "-n", pvc.Metadata.NameSpace, pvc.Metadata.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to delete PVC %s in namespace %s:%s\n", pvc.Metadata.Name, pvc.Metadata.NameSpace, string(out))
+		return err
+	}
+	return nil
+}
+
 // WaitOnReady will block until PersistentVolumeClaims is available
 func (pvc *PersistentVolumeClaims) WaitOnReady(namespace string, sleep, duration time.Duration) (bool, error) {
 	readyCh := make(chan bool, 1)

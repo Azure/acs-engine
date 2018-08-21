@@ -243,6 +243,20 @@ func (e *Engine) HasNetworkPolicy(name string) bool {
 	return false
 }
 
+// HasAllZonesAgentPools will return true if all of the agent pools have zones
+func (e *Engine) HasAllZonesAgentPools() bool {
+	count := 0
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
+		if ap.AvailabilityZones != nil && len(ap.AvailabilityZones) > 0 {
+			count++
+		}
+	}
+	if count == len(e.ExpandedDefinition.Properties.AgentPoolProfiles) {
+		return true
+	}
+	return false
+}
+
 // Write will write the cluster definition to disk
 func (e *Engine) Write() error {
 	json, err := helpers.JSONMarshal(e.ClusterDefinition, false)
