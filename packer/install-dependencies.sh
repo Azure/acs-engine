@@ -28,7 +28,7 @@ installContainerd
 
 installImg
 
-for KUBERNETES_VERSION in 1.8.15 1.9.10 1.10.6 1.11.2; do
+for KUBERNETES_VERSION in 1.8.15 1.9.10 1.10.7 1.11.2; do
     HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
     pullHyperkube
 done
