@@ -8,7 +8,7 @@ AZURE_CNI_TGZ_TMP="/tmp/azure_cni.tgz"
 CONTAINERNETWORKING_CNI_TGZ_TMP="/tmp/containernetworking_cni.tgz"
 
 function installEtcd() {
-    CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2)
+    CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2 | tr -d '[:space:]')
     if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
         echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
     else
