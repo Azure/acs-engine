@@ -9,9 +9,9 @@ spec:
   - name: dns-liveness
     image: microsoft/windowsservercore:1803
     args:
-    - cmd
-    - /k
-    - "FOR /L %N IN () DO timeout /t 60"
+    - powershell
+    - "-command"
+    - "while ($true){ Start-Sleep -s 5; echo 'sleeping'}"
     livenessProbe:
       exec:
         command:
