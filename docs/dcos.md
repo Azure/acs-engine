@@ -1,7 +1,7 @@
 # Microsoft Azure Container Service Engine - DC/OS Walkthrough
 
 ### `Note:`
-The support for DC/OS `1.11` and later has been continued in the forked project [dcos-engine](https://github.com/Azure/dcos-engine)
+Support for DC/OS `1.11` and later continues in the forked project [dcos-engine](https://github.com/Azure/dcos-engine).
 
 ## Deployment
 
