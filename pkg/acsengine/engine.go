@@ -1029,17 +1029,6 @@ write_files:
 	return fmt.Sprintf(clusterYamlFile, filelines)
 }
 
-// Identifies Master distro to use for master parameters
-func getMasterDistro(m *api.MasterProfile) api.Distro {
-	// Use Ubuntu distro if MasterProfile is not defined (e.g. agents-only)
-	if m == nil {
-		return api.Ubuntu
-	}
-
-	// MasterProfile.Distro configured by defaults#setMasterNetworkDefaults
-	return m.Distro
-}
-
 func getKubernetesSubnets(properties *api.Properties) string {
 	subnetString := `{
             "name": "podCIDR%d",
