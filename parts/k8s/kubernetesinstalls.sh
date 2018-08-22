@@ -105,10 +105,12 @@ function installNetworkPlugin() {
 }
 
 function downloadCNI() {
+    mkdir -p $CNI_DOWNLOADS_DIR
     retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function downloadAzureCNI() {
+    mkdir -p $CNI_DOWNLOADS_DIR
     retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
