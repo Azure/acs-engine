@@ -82,11 +82,11 @@ spec:
               fieldPath: metadata.namespace
         resources:
           requests:
-            cpu:
-            memory:
+            cpu: 100m
+            memory: 50Mi
           limits:
-            cpu:
-            memory:
+            cpu: 100m
+            memory: 50Mi
         volumeMounts:
         - name: run
           mountPath: /run

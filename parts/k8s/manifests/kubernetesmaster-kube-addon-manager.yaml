@@ -11,7 +11,7 @@ spec:
     image: <kubernetesAddonManagerSpec>
     resources:
       requests:
-        cpu: 5m
+        cpu: 3m
         memory: 50Mi
       limits:
         cpu:

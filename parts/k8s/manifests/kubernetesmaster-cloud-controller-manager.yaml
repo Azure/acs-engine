@@ -15,11 +15,8 @@ spec:
       args: [<kubernetesCloudControllerManagerConfig>]
       resources:
         requests:
-          cpu:
-          memory:
-        limits:
-          cpu:
-          memory:
+          cpu: 100m
+          memory: 50Mi
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

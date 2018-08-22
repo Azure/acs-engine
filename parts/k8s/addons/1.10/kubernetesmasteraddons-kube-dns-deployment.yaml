@@ -180,8 +180,8 @@ spec:
             cpu: 150m
             memory: 20Mi
           limits:
-            cpu:
-            memory:
+            cpu: 150m
+            memory: 20Mi
         volumeMounts:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny
@@ -207,8 +207,10 @@ spec:
           protocol: TCP
         resources:
           requests:
-            memory: 20Mi
             cpu: 10m
+            memory: 20Mi
+          limits:
+            memory: 40Mi
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
       nodeSelector:

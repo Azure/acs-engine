@@ -15,7 +15,7 @@ spec:
       args: [<kubernetesAPIServerConfig>]
       resources:
         requests:
-          cpu:
+          cpu: 125m
           memory:
         limits:
           cpu:
