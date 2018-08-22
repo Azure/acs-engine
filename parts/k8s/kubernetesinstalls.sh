@@ -106,16 +106,19 @@ function installNetworkPlugin() {
 
 function downloadCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
-    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
+    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function downloadAzureCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
+    CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
     retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function installCNI() {
-    if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" ]]; then
+    CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
+    if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadCNI
     fi
     mkdir -p $CNI_BIN_DIR
@@ -125,7 +128,8 @@ function installCNI() {
 }
 
 function installAzureCNI() {
-    if [[ ! -f "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ]]; then
+    CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
+    if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadAzureCNI
     fi
     mkdir -p $CNI_CONFIG_DIR
