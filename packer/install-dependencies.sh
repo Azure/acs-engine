@@ -36,4 +36,6 @@ for KUBERNETES_VERSION in ${K8S_VERSIONS}; do
     pullHyperkube
 done
 
+df -h
+
 echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
