@@ -4,8 +4,7 @@ CC_SERVICE_IN_TMP=/opt/azure/containers/cc-proxy.service.in
 CC_SOCKET_IN_TMP=/opt/azure/containers/cc-proxy.socket.in
 CNI_CONFIG_DIR="/etc/cni/net.d"
 CNI_BIN_DIR="/opt/cni/bin"
-AZURE_CNI_TGZ_TMP="/tmp/azure_cni.tgz"
-CONTAINERNETWORKING_CNI_TGZ_TMP="/tmp/containernetworking_cni.tgz"
+CNI_DOWNLOADS_DIR="/opt/cni/downloads"
 
 function installEtcd() {
     CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2 | tr -d '[:space:]')
@@ -99,36 +98,39 @@ function installClearContainersRuntime() {
 }
 
 function installNetworkPlugin() {
-    ls $CNI_BIN_DIR
-    if [ $? -eq 0 ]; then
-        echo "network plugin already installed, skipping download"
-    else
-        if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
-            installAzureCNI
-        elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
-            installCNI
-        elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
-            installCNI
-        fi
+    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
+        installAzureCNI
     fi
+    installCNI
+}
+
+function downloadCNI() {
+    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+}
+
+function downloadAzureCNI() {
+    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function installCNI() {
+    if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" ]]; then
+        downloadCNI
+    fi
     mkdir -p $CNI_BIN_DIR
-    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 }
 
 function installAzureCNI() {
+    if [[ ! -f "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ]]; then
+        downloadAzureCNI
+    fi
     mkdir -p $CNI_CONFIG_DIR
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
     mkdir -p $CNI_BIN_DIR
-    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
-    installCNI
+    tar -xzf "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" -C $CNI_BIN_DIR
 }
 
 function installContainerd() {
