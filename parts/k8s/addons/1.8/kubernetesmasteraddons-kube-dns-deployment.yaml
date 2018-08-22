@@ -170,10 +170,11 @@ spec:
         - containerPort: 8080
           protocol: TCP
         resources:
-          limits:
-            memory: 50Mi
           requests:
             cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu:
             memory: 50Mi
       dnsPolicy: Default
       serviceAccountName: kube-dns

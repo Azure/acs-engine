@@ -178,6 +178,9 @@ spec:
           requests:
             cpu: 150m
             memory: 20Mi
+          limits:
+            cpu:
+            memory:
         volumeMounts:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny

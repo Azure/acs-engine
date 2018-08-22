@@ -175,6 +175,13 @@ spec:
             - status
           initialDelaySeconds: 5
           periodSeconds: 5
+        resources:
+          requests:
+            cpu:
+            memory:
+          limits:
+            cpu:
+            memory:
         volumeMounts:
           - name: bpf-maps
             mountPath: /sys/fs/bpf

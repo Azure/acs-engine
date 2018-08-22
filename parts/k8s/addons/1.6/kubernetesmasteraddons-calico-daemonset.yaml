@@ -209,6 +209,10 @@ spec:
           resources:
             requests:
               cpu: 250m
+              memory:
+            limits:
+              cpu:
+              memory:
           livenessProbe:
             httpGet:
               path: /liveness
@@ -241,6 +245,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+          resources:
+            requests:
+              cpu:
+              memory:
+            limits:
+              cpu:
+              memory:
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir

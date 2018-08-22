@@ -13,6 +13,13 @@ spec:
       image: "<kubernetesHyperkubeSpec>"
       command: ["/hyperkube", "scheduler"]
       args: [<kubernetesSchedulerConfig>]
+      resources:
+        requests:
+          cpu:
+          memory:
+        limits:
+          cpu:
+          memory:
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
