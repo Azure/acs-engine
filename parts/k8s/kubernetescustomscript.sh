@@ -49,18 +49,19 @@ testOutboundConnection
 waitForCloudInit
 holdWALinuxAgent
 
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    installEtcd
+fi
+
 if $FULL_INSTALL_REQUIRED; then
-    if [[ ! -z "${MASTER_NODE}" ]]; then
-        installEtcd
-    fi
     installDeps
-    installContainerRuntime
-    installNetworkPlugin
-    installContainerd
 else 
     echo "Golden image; skipping dependencies installation"
 fi
-    
+
+installContainerRuntime
+installNetworkPlugin
+installContainerd
 extractHyperkube
 ensureRPC
 
