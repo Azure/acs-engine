@@ -893,6 +893,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.VMSize = vlabs.VMSize
 	api.OSDiskSizeGB = vlabs.OSDiskSizeGB
 	api.VnetSubnetID = vlabs.VnetSubnetID
+	api.AgentVnetSubnetID = vlabs.AgentVnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
 	api.VnetCidr = vlabs.VnetCidr
 	api.Subnet = vlabs.GetSubnet()
@@ -930,6 +931,8 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 		api.ImageRef.ResourceGroup = vlabs.ImageRef.ResourceGroup
 	}
 
+	api.AvailabilityProfile = vlabs.AvailabilityProfile
+	api.AgentSubnet = vlabs.AgentSubnet
 	convertCustomFilesToAPI(vlabs, api)
 }
 

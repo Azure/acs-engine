@@ -392,7 +392,41 @@ func TestTotalNodes(t *testing.T) {
 		}
 	}
 }
+func TestMasterAvailabilityProfile(t *testing.T) {
+	cases := []struct {
+		p              Properties
+		expectedISVMSS bool
+	}{
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{},
+			},
+			expectedISVMSS: false,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					AvailabilityProfile: AvailabilitySet,
+				},
+			},
+			expectedISVMSS: false,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedISVMSS: true,
+		},
+	}
 
+	for _, c := range cases {
+		if c.p.MasterProfile.IsVirtualMachineScaleSets() != c.expectedISVMSS {
+			t.Fatalf("expected MasterProfile.IsVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedISVMSS, c.p.MasterProfile.IsVirtualMachineScaleSets())
+		}
+	}
+}
 func TestAvailabilityProfile(t *testing.T) {
 	cases := []struct {
 		p               Properties

@@ -49,7 +49,11 @@
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
         {{end}}
     {{end}}
-    {{template "k8s/kubernetesmastervars.t" .}}
+    {{if IsMasterVirtualMachineScaleSets}}
+      {{template "k8s/kubernetesmastervarsvmss.t" .}}
+    {{else}}
+      {{template "k8s/kubernetesmastervars.t" .}}
+    {{end}}
   },
   "resources": [
     {{if UserAssignedIDEnabled}}
@@ -80,7 +84,11 @@
       {{end}}
     {{end}}
     {{if not IsHostedMaster}}
-      ,{{template "k8s/kubernetesmasterresources.t" .}}
+        {{if IsMasterVirtualMachineScaleSets}}
+          ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
+        {{else}}
+          ,{{template "k8s/kubernetesmasterresources.t" .}}
+        {{end}}
     {{else}}
       {{if not IsCustomVNET}}
       ,{

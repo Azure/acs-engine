@@ -316,6 +316,7 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
 				// When Azure CNI is enabled, all masters, agents and pods share the same large subnet.
+				// Except when master is VMSS, then masters and agents have separate subnets within the same large subnet.
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
@@ -496,6 +497,10 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 			a.MasterProfile.Distro = api.AKS
 		}
 	}
+	// set default to VMAS for now
+	if len(a.MasterProfile.AvailabilityProfile) == 0 {
+		a.MasterProfile.AvailabilityProfile = api.AvailabilitySet
+	}
 
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
@@ -504,13 +509,24 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
 				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-					a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
+					if a.MasterProfile.IsVirtualMachineScaleSets() {
+						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIPVMSS
+						a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+						a.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
+					} else {
+						a.MasterProfile.FirstConsecutiveStaticIP = a.MasterProfile.GetFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
+					}
 				}
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
 				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-					a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
+					if a.MasterProfile.IsVirtualMachineScaleSets() {
+						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIPVMSS
+						a.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
+					} else {
+						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIP
+					}
 				}
 			}
 		} else if a.OrchestratorProfile.OrchestratorType == api.OpenShift {
@@ -544,6 +560,11 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 		}
 	}
 
+	if a.MasterProfile.IsCustomVNET() && a.MasterProfile.IsVirtualMachineScaleSets() {
+		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+			a.MasterProfile.FirstConsecutiveStaticIP = a.MasterProfile.GetFirstConsecutiveStaticIPAddress(a.MasterProfile.VnetCidr)
+		}
+	}
 	// Set the default number of IP addresses allocated for masters.
 	if a.MasterProfile.IPAddressCount == 0 {
 		// Allocate one IP address for the node.
@@ -592,7 +613,9 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		for _, profile := range a.AgentPoolProfiles {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes ||
 				a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-				profile.Subnet = a.MasterProfile.Subnet
+				if !a.MasterProfile.IsVirtualMachineScaleSets() {
+					profile.Subnet = a.MasterProfile.Subnet
+				}
 			} else {
 				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
 			}
@@ -697,16 +720,23 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	}
 
 	ips := []net.IP{firstMasterIP}
-
 	// Add the Internal Loadbalancer IP which is always at at a known offset from the firstMasterIP
 	ips = append(ips, net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)})
-
 	// Include the Internal load balancer as well
-	for i := 1; i < a.MasterProfile.Count; i++ {
-		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
-		ips = append(ips, ip)
-	}
 
+	if a.MasterProfile.IsVirtualMachineScaleSets() {
+		// Include the Internal load balancer as well
+		for i := 1; i < a.MasterProfile.Count; i++ {
+			offset := i * a.MasterProfile.IPAddressCount
+			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
+			ips = append(ips, ip)
+		}
+	} else {
+		for i := 1; i < a.MasterProfile.Count; i++ {
+			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
+			ips = append(ips, ip)
+		}
+	}
 	if a.CertificateProfile == nil {
 		a.CertificateProfile = &api.CertificateProfile{}
 	}
@@ -801,31 +831,6 @@ func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
 		g["etcd"] = etcdPeer && len(c.EtcdClientCertificate) > 0 && len(c.EtcdClientPrivateKey) > 0 && len(c.EtcdServerCertificate) > 0 && len(c.EtcdServerPrivateKey) > 0
 	}
 	return g
-}
-
-// getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
-func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
-	_, subnet, err := net.ParseCIDR(subnetStr)
-	if err != nil {
-		return DefaultFirstConsecutiveKubernetesStaticIP
-	}
-
-	// Find the first and last octet of the host bits.
-	ones, bits := subnet.Mask.Size()
-	firstOctet := ones / 8
-	lastOctet := bits/8 - 1
-
-	// Set the remaining host bits in the first octet.
-	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
-
-	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
-	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
-	for i := firstOctet + 1; i < lastOctet; i++ {
-		subnet.IP[i] = 255
-	}
-	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
-
-	return subnet.IP.String()
 }
 
 // combine user-provided --feature-gates vals with defaults

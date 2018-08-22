@@ -32,6 +32,7 @@ import (
 const (
 	WorkloadDir = "workloads"
 	PolicyDir   = "workloads/policies"
+	SSHPort     = "50001"
 )
 
 var (
@@ -67,9 +68,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(err).NotTo(HaveOccurred())
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 			sshKeyPath := cfg.GetSSHKeyPath()
-
+			masterNodes, err := node.GetByPrefix("k8s-master")
+			Expect(err).NotTo(HaveOccurred())
+			masterName := masterNodes[0].Metadata.Name
 			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
-			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+
+			var cmd *exec.Cmd
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -78,7 +87,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			kernelVerCmd := fmt.Sprintf("cat /proc/version")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -186,8 +199,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 			sshKeyPath := cfg.GetSSHKeyPath()
 
+			masterNodes, err := node.GetByPrefix("k8s-master")
+			Expect(err).NotTo(HaveOccurred())
+			masterName := masterNodes[0].Metadata.Name
+
 			ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
-			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			var cmd *exec.Cmd
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -196,7 +218,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -206,7 +232,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we have a valid connection to our resolver")
 			digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -219,7 +249,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			for _, node := range nodeList.Nodes {
 				By("Ensuring that we get a DNS lookup answer response for each node hostname")
 				digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+
+				if strings.Contains(masterName, "vmss") {
+					cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				} else {
+					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				}
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
 				log.Printf("%s\n", out)
@@ -231,14 +266,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we get a DNS lookup answer response for external names")
 			digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			if err != nil {
 				log.Printf("Error while querying DNS: %s\n", out)
 			}
 			digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -248,7 +291,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
 			digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -256,7 +303,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				log.Printf("Error while querying DNS: %s\n", err)
 			}
 			digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
-			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			if strings.Contains(masterName, "vmss") {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			} else {
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			}
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -403,7 +454,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 
 					sshKeyPath := cfg.GetSSHKeyPath()
-
+					masterNodes, err := node.GetByPrefix("k8s-master")
+					Expect(err).NotTo(HaveOccurred())
+					masterName := masterNodes[0].Metadata.Name
 					if dashboardPort == 80 {
 						By("Ensuring that we can connect via HTTP to the dashboard on any one node")
 					} else {
@@ -421,7 +474,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 							Expect(address).NotTo(Equal(nil))
 							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-							cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+							var cmd *exec.Cmd
+							if strings.Contains(masterName, "vmss") {
+								cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+							} else {
+								cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+							}
 							util.PrintCommand(cmd)
 							out, err := cmd.CombinedOutput()
 							if err == nil {

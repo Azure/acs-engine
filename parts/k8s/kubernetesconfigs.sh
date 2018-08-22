@@ -1,4 +1,9 @@
 #!/bin/bash
+NODE_INDEX=$(hostname | tail -c 2)
+NODE_NAME=$(hostname)
+PRIVATE_IP=$(hostname -I | cut -d' ' -f1)
+ETCD_PEER_URL="https://${PRIVATE_IP}:2380"
+ETCD_CLIENT_URL="https://${PRIVATE_IP}:2379"
 
 function systemctlEnableAndStart() {
     systemctl_restart 100 5 30 $1
@@ -41,7 +46,7 @@ function configureEtcd() {
     chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
     chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
 
-    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
+    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${NODE_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
@@ -56,7 +61,7 @@ function configureEtcd() {
     chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
     chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
 
-    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
+    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${NODE_INDEX}.crt"
     touch "${ETCD_PEER_CERTIFICATE_PATH}"
     chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
     chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
@@ -85,7 +90,7 @@ function configureEtcd() {
     $MOUNT_ETCD_FILE || exit $ERR_ETCD_VOL_MOUNT_FAIL
     systemctlEnableAndStart etcd || exit $ERR_ETCD_START_TIMEOUT
     for i in $(seq 1 600); do
-        MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
+        MEMBER="$(sudo etcdctl member list | grep -E ${NODE_NAME} | cut -d':' -f 1)"
         if [ "$MEMBER" != "" ]; then
             break
         else

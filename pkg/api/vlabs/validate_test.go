@@ -1377,13 +1377,104 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 		})
 	}
 }
+func TestProperties_ValidateManagedIdentity(t *testing.T) {
+	tests := []struct {
+		name                string
+		orchestratorRelease string
+		useManagedIdentity  bool
+		userAssignedID      string
+		masterProfile       MasterProfile
+		expectedErr         string
+		agentPoolProfiles   []*AgentPoolProfile
+	}{
+		{
+			name:                "use managed identity with master vmss",
+			orchestratorRelease: "1.11",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "managed identity and VMSS masters can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+		{
+			name:                "use managed identity with master vmas",
+			orchestratorRelease: "1.11",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:   "agentpool",
+					VMSize: "Standard_DS2_v2",
+					Count:  1,
+				},
+			},
+		},
+		{
+			name:                "use user assigned identity with master vmas",
+			orchestratorRelease: "1.11",
+			useManagedIdentity:  true,
+			userAssignedID:      "acsenginetestid",
+			masterProfile: MasterProfile{
+				DNSPrefix: "dummy",
+				Count:     3,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:   "agentpool",
+					VMSize: "Standard_DS2_v2",
+					Count:  1,
+				},
+			},
+			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			properties := getK8sDefaultProperties(true)
+			properties.MasterProfile = &test.masterProfile
+			properties.MasterProfile.VMSize = "Standard_DS2_v2"
+			properties.OrchestratorProfile = &OrchestratorProfile{
+				OrchestratorRelease: test.orchestratorRelease,
+				OrchestratorType:    Kubernetes,
+				KubernetesConfig: &KubernetesConfig{
+					UseManagedIdentity: test.useManagedIdentity,
+					UserAssignedID:     test.userAssignedID,
+				},
+			}
+			properties.AgentPoolProfiles = test.agentPoolProfiles
+			err := properties.Validate(false)
+			if test.expectedErr == "" && err != nil ||
+				test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
+				t.Errorf("test %s: unexpected error %q\n", test.name, err)
+			}
+		})
+	}
+}
 
 func TestMasterProfileValidate(t *testing.T) {
 	tests := []struct {
-		name             string
-		orchestratorType string
-		masterProfile    MasterProfile
-		expectedErr      string
+		name                string
+		orchestratorType    string
+		orchestratorVersion string
+		orchestratorRelease string
+		useInstanceMetadata bool
+		masterProfile       MasterProfile
+		agentPoolProfiles   []*AgentPoolProfile
+		expectedErr         string
 	}{
 		{
 			name: "Master Profile with Invalid DNS Prefix",
@@ -1410,8 +1501,9 @@ func TestMasterProfileValidate(t *testing.T) {
 			name:             "Master Profile with valid DNS Prefix 3",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
-				DNSPrefix: "dummy",
-				Count:     1,
+				DNSPrefix:      "dummy",
+				Count:          1,
+				StorageProfile: ManagedDisks,
 			},
 		},
 		{
@@ -1427,8 +1519,9 @@ func TestMasterProfileValidate(t *testing.T) {
 			name:             "Master Profile with empty firstconsecutivestaticip and non-empty vnetsubnetid",
 			orchestratorType: OpenShift,
 			masterProfile: MasterProfile{
-				VnetSubnetID: "testvnetstring",
-				Count:        1,
+				VnetSubnetID:   "testvnetstring",
+				Count:          1,
+				StorageProfile: ManagedDisks,
 			},
 			expectedErr: "when specifying a vnetsubnetid the firstconsecutivestaticip is required",
 		},
@@ -1440,6 +1533,7 @@ func TestMasterProfileValidate(t *testing.T) {
 				VnetSubnetID:             "testvnetstring",
 				FirstConsecutiveStaticIP: "10.0.0.1",
 				Count:                    1,
+				StorageProfile:           ManagedDisks,
 			},
 		},
 		{
@@ -1455,17 +1549,65 @@ func TestMasterProfileValidate(t *testing.T) {
 			},
 			expectedErr: "imageName needs to be specified when imageResourceGroup is provided",
 		},
+		{
+			name:                "Master Profile with VMSS and Kubernetes v1.9.6",
+			orchestratorType:    Kubernetes,
+			orchestratorRelease: "1.9",
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			expectedErr: "VirtualMachineScaleSets are only available in Kubernetes version 1.10.0 or greater. Please set \"orchestratorVersion\" to 1.10.0 or above",
+		},
+		{
+			name:                "Master Profile with VMSS and storage account",
+			orchestratorType:    Kubernetes,
+			orchestratorRelease: "1.10",
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+				StorageProfile:      StorageAccount,
+			},
+			expectedErr: "VirtualMachineScaleSets does not support StorageAccount disks.  Please specify \"storageProfile\": \"ManagedDisks\" (recommended) or \"availabilityProfile\": \"AvailabilitySet\"",
+		},
+		{
+			name:                "Master Profile with VMSS and agent profiles with VMAS",
+			orchestratorType:    Kubernetes,
+			orchestratorRelease: "1.10",
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: AvailabilitySet,
+				},
+			},
+			expectedErr: "VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			properties := &Properties{}
+			properties := getK8sDefaultProperties(true)
 			properties.MasterProfile = &test.masterProfile
-			properties.MasterProfile.StorageProfile = ManagedDisks
+			properties.MasterProfile.StorageProfile = test.masterProfile.StorageProfile
 			properties.OrchestratorProfile = &OrchestratorProfile{
-				OrchestratorType: test.orchestratorType,
+				OrchestratorType:    test.orchestratorType,
+				OrchestratorVersion: test.orchestratorVersion,
+				OrchestratorRelease: test.orchestratorRelease,
+				KubernetesConfig: &KubernetesConfig{
+					UseInstanceMetadata: helpers.PointerToBool(test.useInstanceMetadata),
+				},
 			}
+			properties.AgentPoolProfiles = test.agentPoolProfiles
 			err := properties.validateMasterProfile()
 			if test.expectedErr == "" && err != nil ||
 				test.expectedErr != "" && (err == nil || test.expectedErr != err.Error()) {
@@ -1670,7 +1812,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)",
 		},
 		{
-			name: "Invalid MasterProfile FirstConsecutiveStaticIP",
+			name: "Invalid MasterProfile FirstConsecutiveStaticIP when master is VMAS",
 			masterProfile: &MasterProfile{
 				VnetSubnetID:             validVNetSubnetID,
 				Count:                    1,
@@ -1688,6 +1830,26 @@ func TestProperties_ValidateVNET(t *testing.T) {
 				},
 			},
 			expectedMsg: "MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '10.0.0.invalid' is an invalid IP address",
+		},
+		{
+			name: "Empty MasterProfile FirstConsecutiveStaticIP and empty agentVnetSubnetID when master is VMSS",
+			masterProfile: &MasterProfile{
+				VnetSubnetID:        validVNetSubnetID,
+				Count:               1,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_D2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					VnetSubnetID:        validVNetSubnetID,
+				},
+			},
+			expectedMsg: "when master profile is using VirtualMachineScaleSets and is custom vnet, set \"vnetsubnetid\" and \"agentVnetSubnetID\" for master profile",
 		},
 		{
 			name: "Invalid vnetcidr",
@@ -1716,6 +1878,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
+			p.OrchestratorProfile.OrchestratorRelease = "1.10"
 			p.MasterProfile = test.masterProfile
 			p.AgentPoolProfiles = test.agentPoolProfiles
 			err := p.Validate(true)

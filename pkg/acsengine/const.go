@@ -20,21 +20,17 @@ const (
 	// DefaultDCOSBootstrapStaticIP specifies the static IP address on bootstrap for a DCOS cluster
 	DefaultDCOSBootstrapStaticIP = "192.168.255.240"
 	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
+	// Except when master VMSS is used, this specifies the default subnet for masters.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
 	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
-	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
-	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
 	// when VNET integration is enabled.
 	DefaultKubernetesSubnet = "10.240.0.0/12"
-	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
-	// when VNET integration is enabled.
-	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
 	// DefaultKubernetesMaxPods is the maximum number of pods to run on a node.
 	DefaultKubernetesMaxPods = 110
 	// DefaultKubernetesMaxPodsVNETIntegrated is the maximum number of pods to run on a node when VNET integration is enabled.
@@ -196,6 +192,10 @@ const (
 	DefaultJumpboxUsername = "azureuser"
 	// DefaultKubeletPodMaxPIDs specifies the default max pid authorized by pods
 	DefaultKubeletPodMaxPIDs = 100
+	// DefaultKubernetesAgentSubnetVMSS specifies the default subnet for agents when master is VMSS
+	DefaultKubernetesAgentSubnetVMSS = "10.248.0.0/13"
+	// DefaultUserAssignedID specifies the default name for the user assigned identity
+	DefaultUserAssignedID = "acsenginetestid"
 )
 
 const (
@@ -229,6 +229,7 @@ const (
 
 const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomDataVMSSYaml       = "k8s/kubernetesmastercustomdatavmss.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
 	kubernetesHealthMonitorScript            = "k8s/health-monitor.sh"
@@ -294,8 +295,10 @@ const (
 	kubernetesAgentResourcesVMAS  = "k8s/kubernetesagentresourcesvmas.t"
 	kubernetesAgentResourcesVMSS  = "k8s/kubernetesagentresourcesvmss.t"
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
-	kubernetesMasterResources     = "k8s/kubernetesmasterresources.t"
-	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
+	kubernetesMasterResourcesVMAS = "k8s/kubernetesmasterresources.t"
+	kubernetesMasterResourcesVMSS = "k8s/kubernetesmasterresourcesvmss.t"
+	kubernetesMasterVarsVMAS      = "k8s/kubernetesmastervars.t"
+	kubernetesMasterVarsVMSS      = "k8s/kubernetesmastervarsvmss.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
 	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
