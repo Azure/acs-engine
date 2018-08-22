@@ -8,9 +8,7 @@ trigger: none
 
 phases:
 - phase: build_vhd
-  queue: 
-    name: Hosted Linux Preview
-    timeoutInMinutes: 120
+  queue: Hosted Linux Preview
   steps:
   - script: |
       docker run --rm \
