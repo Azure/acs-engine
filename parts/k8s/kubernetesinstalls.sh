@@ -102,6 +102,7 @@ function installNetworkPlugin() {
         installAzureCNI
     fi
     installCNI
+    rm -rf $CNI_DOWNLOADS_DIR
 }
 
 function downloadCNI() {
