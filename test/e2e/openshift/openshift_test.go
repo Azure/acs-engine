@@ -18,11 +18,8 @@ import (
 )
 
 var (
-	cfg         config.Config
-	eng         engine.Engine
-	ch          = make(chan os.Signal, 1)
-	failed      bool
-	interrupted bool
+	cfg config.Config
+	eng engine.Engine
 )
 
 var _ = BeforeSuite(func() {
@@ -99,12 +96,14 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 				common.OpenShift,
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+				false,
 				false)
 		} else {
 			expectedVersion = common.RationalizeReleaseAndVersion(
 				common.OpenShift,
 				eng.Config.OrchestratorRelease,
 				eng.Config.OrchestratorVersion,
+				false,
 				false)
 		}
 		expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes

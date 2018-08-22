@@ -47,7 +47,7 @@ sed -i -e "s#--loglevel=2#--loglevel=4#" /etc/sysconfig/${SERVICE_TYPE}-master-c
 
 rm -rf /etc/etcd/* /etc/origin/master/* /etc/origin/node/*
 
-MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE"
+MASTER_OREG_URL="$IMAGE_PREFIX/$IMAGE_TYPE-\${component}:\${version}"
 if [[ -f /etc/origin/oreg_url ]]; then
 	MASTER_OREG_URL=$(cat /etc/origin/oreg_url)
 fi

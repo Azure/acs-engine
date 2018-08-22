@@ -60,6 +60,30 @@ var _ = BeforeSuite(func() {
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
 	Describe("regardless of agent pool type", func() {
+		It("should display the installed Ubuntu version on the master node", func() {
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting Ubuntu image version: %s\n", err)
+			}
+
+			kernelVerCmd := fmt.Sprintf("cat /proc/version")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while getting LinuxKernel version: %s\n", err)
+			}
+		})
 
 		It("should have have the appropriate node count", func() {
 			nodeList, err := node.Get()
@@ -67,114 +91,222 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
-		It("should have functional DNS", func() {
-			if !eng.HasWindowsAgents() {
-				if !eng.HasNetworkPolicy("calico") {
-					var err error
-					var p *pod.Pod
-					p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
-					if cfg.SoakClusterName == "" {
-						Expect(err).NotTo(HaveOccurred())
-					} else {
-						if err != nil {
-							p, err = pod.Get("dns-liveness", "default")
-							Expect(err).NotTo(HaveOccurred())
-						}
-					}
-					running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(running).To(Equal(true))
-				}
-
-				kubeConfig, err := GetConfig()
-				Expect(err).NotTo(HaveOccurred())
-				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-				sshKeyPath := cfg.GetSSHKeyPath()
-
-				ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
-				cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
-				util.PrintCommand(cmd)
-				out, err := cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-
-				resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				log.Printf("%s\n", out)
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-
-				By("Ensuring that we have a valid connection to our resolver")
-				digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-
-				nodeList, err := node.Get()
-				Expect(err).NotTo(HaveOccurred())
-				for _, node := range nodeList.Nodes {
-					By("Ensuring that we get a DNS lookup answer response for each node hostname")
-					digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
-					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-					util.PrintCommand(cmd)
-					out, err = cmd.CombinedOutput()
-					if err != nil {
-						log.Printf("Error while querying DNS: %s\n", out)
-					}
-					Expect(err).NotTo(HaveOccurred())
-				}
-
-				By("Ensuring that we get a DNS lookup answer response for external names")
-				digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-				digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-
-				By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
-				digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-				digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				util.PrintCommand(cmd)
-				out, err = cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while querying DNS: %s\n", out)
-				}
-
-				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
-				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
+		It("should have stable external container networking", func() {
+			var successes int
+			attempts := cfg.StabilityIterations
+			for i := 0; i < attempts; i++ {
+				// Validate basic outbound networking
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", false)
 				}
 				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
+				if succeeded {
+					successes++
+				}
+				By("Cleaning up after ourselves")
+				err = p.Delete()
+				Expect(err).NotTo(HaveOccurred())
 			}
+			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
+		})
+
+		It("should have stable internal container networking", func() {
+			var successes int
+			attempts := cfg.StabilityIterations
+			for i := 0; i < attempts; i++ {
+				// Validate basic in-cluster networking
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", false)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
+				if succeeded {
+					successes++
+				}
+				By("Cleaning up after ourselves")
+				err = p.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			}
+			log.Printf("Container internal networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
+		})
+
+		It("should have functional DNS", func() {
+			if !eng.HasNetworkPolicy("calico") {
+				var err error
+				var p *pod.Pod
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+				if cfg.SoakClusterName == "" {
+					Expect(err).NotTo(HaveOccurred())
+				} else {
+					if err != nil {
+						p, err = pod.Get("dns-liveness", "default")
+						Expect(err).NotTo(HaveOccurred())
+					}
+				}
+				running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			}
+
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
+			cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			util.PrintCommand(cmd)
+			out, err := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			By("Ensuring that we have a valid connection to our resolver")
+			digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			nodeList, err := node.Get()
+			Expect(err).NotTo(HaveOccurred())
+			for _, node := range nodeList.Nodes {
+				By("Ensuring that we get a DNS lookup answer response for each node hostname")
+				digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
+				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+				util.PrintCommand(cmd)
+				out, err = cmd.CombinedOutput()
+				log.Printf("%s\n", out)
+				if err != nil {
+					log.Printf("Error while querying DNS: %s\n", err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			By("Ensuring that we get a DNS lookup answer response for external names")
+			digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", out)
+			}
+			digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
+			digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+			digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
+			cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
+			util.PrintCommand(cmd)
+			out, err = cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if err != nil {
+				log.Printf("Error while querying DNS: %s\n", err)
+			}
+
+			By("Ensuring that we have functional DNS resolution from a container")
+			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+			Expect(err).NotTo(HaveOccurred())
+			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
+			delErr := j.Delete()
+			if delErr != nil {
+				fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+				fmt.Println(delErr)
+			}
+			Expect(err).NotTo(HaveOccurred())
+			Expect(ready).To(Equal(true))
+
+			By("Ensuring that we have stable DNS resolution from a container")
+			var successes int
+			attempts := cfg.StabilityIterations
+			for i := 0; i < attempts; i++ {
+				// Validate basic outbound networking
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
+				var p *pod.Pod
+				var err error
+				if i < 1 {
+					// Print the first attempt
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", true)
+				} else {
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", false)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
+				out, err := util.RunAndLogCommand(cmd)
+				if err != nil {
+					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
+				} else {
+					log.Printf("%s\n", string(out[:]))
+				}
+				if succeeded {
+					successes++
+				}
+				By("Cleaning up after ourselves")
+				err = p.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			}
+			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
+			Expect(successes).To(Equal(attempts))
 		})
 
 		It("should have kube-dns running", func() {
@@ -280,7 +412,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					for _, node := range nodeList.Nodes {
 						success := false
 						for i := 0; i < 60; i++ {
-							dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+							address := node.Status.GetAddressByType("InternalIP")
+							if address == nil {
+								log.Printf("One of our nodes does not have an InternalIP value!: %s\n", node.Metadata.Name)
+							}
+							Expect(address).NotTo(Equal(nil))
+							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 							cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
 							util.PrintCommand(cmd)
@@ -347,13 +484,67 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have keyvault-flexvolume running", func() {
+			if hasKeyVaultFlexVolume, KeyVaultFlexVolumeAddon := eng.HasAddon("keyvault-flexvolume"); hasKeyVaultFlexVolume {
+				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("keyvault-flexvolume", "kv")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range KeyVaultFlexVolumeAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+			} else {
+				Skip("keyvault-flexvolume disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have blobfuse-flexvolume running", func() {
+			if hasBlobfuseFlexVolume, BlobfuseFlexVolumeAddon := eng.HasAddon("blobfuse-flexvolume"); hasBlobfuseFlexVolume {
+				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("blobfuse-flexvol-installer", "flex")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range BlobfuseFlexVolumeAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+			} else {
+				Skip("blobfuse-flexvolume disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have smb-flexvolume running", func() {
+			if hasSMBFlexVolume, SMBFlexVolumeAddon := eng.HasAddon("smb-flexvolume"); hasSMBFlexVolume {
+				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("smb-flexvol-installer", "flex")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range SMBFlexVolumeAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+			} else {
+				Skip("smb-flexvolume disabled for this cluster, will not test")
+			}
+		})
+
 		It("should have cluster-omsagent daemonset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
 				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
-				pods, err := pod.GetAllByPrefix("omsagent-", "kube-system")
+				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
 				for i, c := range clusterContainerMonitoringAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
@@ -389,8 +580,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the kubepodinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				_, err = pods[0].Exec("grep", "\"in_kube_podinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				pass, err := pods[0].ValidateOmsAgentLogs("kubePodInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
@@ -404,8 +596,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the kubenodeinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				_, err = pods[0].Exec("grep", "\"in_kube_nodeinventory::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				pass, err := pods[0].ValidateOmsAgentLogs("kubeNodeInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
@@ -413,14 +606,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running cadvisor_perf plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the cadvisor_perf plugin is writing data successfully")
-				pods, err := pod.GetAllByPrefix("omsagent-", "kube-system")
+				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				_, err = pods[0].Exec("grep", "\"in_cadvisor_perf::emit-stream : Success\"", "/var/opt/microsoft/omsagent/log/omsagent.log")
+				pass, err := pods[0].ValidateOmsAgentLogs("cAdvisorPerfEmitStreamSuccess", 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
 			} else {
 				Skip("container monitoring disabled for this cluster, will not test")
 			}
@@ -512,7 +706,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s-gcrio.azureedge.net/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
+				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -626,6 +820,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+					false,
 					eng.HasWindowsAgents())
 				if common.IsKubernetesVersionGe(version, "1.10.0") {
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
@@ -656,7 +851,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("after the cluster has been up for awhile", func() {
 		It("dns-liveness pod should not have any restarts", func() {
-			if !eng.HasWindowsAgents() && !eng.HasNetworkPolicy("calico") {
+			if !eng.HasNetworkPolicy("calico") {
 				pod, err := pod.Get("dns-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
 				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
@@ -794,24 +989,30 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a windows agent pool", func() {
 		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
+				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+
+				By("Creating a deployment with 1 pod running IIS")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, -1)
+				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Waiting on pod to be Ready")
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
+				By("Exposing a LoadBalancer for the pod")
 				err = iisDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
-
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Verifying that the service is reachable and returns the default IIS start page")
 				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
+				By("Checking that each pod can reach http://www.bing.com")
 				iisPods, err := iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
@@ -821,6 +1022,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(pass).To(BeTrue())
 				}
 
+				By("Verifying pods & services can be deleted")
 				err = iisDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()
@@ -844,14 +1046,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		// Windows Bug 16598869
+		// Windows Bug 18213017: Kubernetes Hostport mappings don't work
 		/*
 			It("should be able to reach hostport in an iis webserver", func() {
 				if eng.HasWindowsAgents() {
 					r := rand.New(rand.NewSource(time.Now().UnixNano()))
 					hostport := 8123
 					deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-					iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1803", deploymentName, "default", 80, hostport)
+					iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, hostport)
 					Expect(err).NotTo(HaveOccurred())
 
 					running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
@@ -881,10 +1083,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.11") {
-					// Failure in 1.11+ - https://github.com/kubernetes/kubernetes/issues/65845
-					Skip("Kubernetes 1.11 has a known issue creating Azure PersistentVolumeClaims")
-				} else if common.IsKubernetesVersionGe(eng.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion, "1.8") {
+				if eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion == "1.11.0" {
+					// Failure in 1.11.0 - https://github.com/kubernetes/kubernetes/issues/65845, fixed in 1.11.1
+					Skip("Kubernetes 1.11.0 has a known issue creating Azure PersistentVolumeClaims")
+				} else if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.8.0") {
+					By("Creating an AzureFile storage class")
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
 					Expect(err).NotTo(HaveOccurred())
@@ -892,6 +1095,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
+					By("Creating a persistent volume claim")
 					pvcName := "pvc-azurefile" // should be the same as in pvc-azurefile.yaml
 					pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-azurefile.yaml"), pvcName, "default")
 					Expect(err).NotTo(HaveOccurred())
@@ -899,13 +1103,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
-					podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
-					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default")
+					By("Launching an IIS pod using the volume claim")
+					podName := "iis-azurefile"                                                                                 // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default") // BUG: this should support OS versioning
 					Expect(err).NotTo(HaveOccurred())
 					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
+					By("Checking that the pod can access volume")
 					valid, err := iisPod.ValidateAzureFile("mnt\\azure", 10, 10*time.Second)
 					Expect(valid).To(BeTrue())
 					Expect(err).NotTo(HaveOccurred())

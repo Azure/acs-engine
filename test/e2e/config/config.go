@@ -18,19 +18,20 @@ import (
 
 // Config holds global test configuration
 type Config struct {
-	SkipTest          bool          `envconfig:"SKIP_TEST" default:"false"`
-	Orchestrator      string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
-	Name              string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
-	Location          string        `envconfig:"LOCATION"`                                                              // Location where you want to create the cluster
-	Regions           []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
-	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
-	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
-	CleanUpIfFail     bool          `envconfig:"CLEANUP_IF_FAIL" default:"true"`
-	RetainSSH         bool          `envconfig:"RETAIN_SSH" default:"true"`
-	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
-	CurrentWorkingDir string
-	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
-	ForceDeploy       bool   `envconfig:"FORCE_DEPLOY"`
+	SkipTest            bool          `envconfig:"SKIP_TEST" default:"false"`
+	Orchestrator        string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
+	Name                string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
+	Location            string        `envconfig:"LOCATION"`                                                              // Location where you want to create the cluster
+	Regions             []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
+	ClusterDefinition   string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
+	CleanUpOnExit       bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	CleanUpIfFail       bool          `envconfig:"CLEANUP_IF_FAIL" default:"true"`
+	RetainSSH           bool          `envconfig:"RETAIN_SSH" default:"true"`
+	StabilityIterations int           `envconfig:"STABILITY_ITERATIONS"`
+	Timeout             time.Duration `envconfig:"TIMEOUT" default:"10m"`
+	CurrentWorkingDir   string
+	SoakClusterName     string `envconfig:"SOAK_CLUSTER_NAME"`
+	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
 }
 
 const (

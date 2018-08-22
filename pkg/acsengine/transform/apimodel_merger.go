@@ -6,7 +6,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/Jeffail/gabs"
 	log "github.com/sirupsen/logrus"
@@ -23,43 +22,39 @@ type APIModelValue struct {
 }
 
 // MapValues converts an arraw of rwa ApiModel values (like ["masterProfile.count=4","linuxProfile.adminUsername=admin"]) to a map
-func MapValues(m map[string]APIModelValue, values []string) {
-	if values == nil || len(values) == 0 {
+func MapValues(m map[string]APIModelValue, setFlagValues []string) {
+	if setFlagValues == nil || len(setFlagValues) == 0 {
 		return
 	}
 
-	for _, value := range values {
-		splittedValues := strings.Split(value, ",")
-		if len(splittedValues) > 1 {
-			MapValues(m, splittedValues)
-		} else {
-			keyValueSplitted := strings.Split(value, "=")
-			key := keyValueSplitted[0]
-			stringValue := keyValueSplitted[1]
+	// regex to find array[index].property pattern in the key, like linuxProfile.ssh.publicKeys[0].keyData
+	re := regexp.MustCompile(`(.*?)\[(.*?)\]\.(.*?)$`)
 
+	for _, setFlagValue := range setFlagValues {
+		kvpMap := parseKeyValuePairs(setFlagValue)
+		for key, keyValue := range kvpMap {
 			flagValue := APIModelValue{}
-
-			if asInteger, err := strconv.ParseInt(stringValue, 10, 64); err == nil {
-				flagValue.intValue = asInteger
+			// try to parse the value as integer or fallback to string
+			if keyValueAsInteger, err := strconv.ParseInt(keyValue, 10, 64); err == nil {
+				flagValue.intValue = keyValueAsInteger
 			} else {
-				flagValue.stringValue = stringValue
+				flagValue.stringValue = keyValue
 			}
 
-			// use regex to find array[index].property pattern in the key
-			re := regexp.MustCompile(`(.*?)\[(.*?)\]\.(.*?)$`)
-			match := re.FindStringSubmatch(key)
+			// check if the key is an array property
+			keyArrayMatch := re.FindStringSubmatch(key)
 
 			// it's an array
-			if len(match) != 0 {
-				i, err := strconv.ParseInt(match[2], 10, 32)
+			if keyArrayMatch != nil {
+				i, err := strconv.ParseInt(keyArrayMatch[2], 10, 32)
 				if err != nil {
 					log.Warnln(fmt.Sprintf("array index is not specified for property %s", key))
 				} else {
 					arrayIndex := int(i)
 					flagValue.arrayValue = true
-					flagValue.arrayName = match[1]
+					flagValue.arrayName = keyArrayMatch[1]
 					flagValue.arrayIndex = arrayIndex
-					flagValue.arrayProperty = match[3]
+					flagValue.arrayProperty = keyArrayMatch[3]
 					m[key] = flagValue
 				}
 			} else {
@@ -87,7 +82,7 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	for key, flagValue := range m {
 		// working on an array
 		if flagValue.arrayValue {
-			log.Infoln(fmt.Sprintf("--set flag array value detected. Name: %s, Index: %b, PropertyName: %s", flagValue.arrayName, flagValue.arrayIndex, flagValue.arrayProperty))
+			log.Debugln(fmt.Sprintf("--set flag array value detected. Name: %s, Index: %b, PropertyName: %s", flagValue.arrayName, flagValue.arrayIndex, flagValue.arrayProperty))
 			arrayValue := jsonObj.Path(fmt.Sprint("properties.", flagValue.arrayName))
 			if flagValue.stringValue != "" {
 				arrayValue.Index(flagValue.arrayIndex).SetP(flagValue.stringValue, flagValue.arrayProperty)
@@ -116,4 +111,66 @@ func MergeValuesWithAPIModel(apiModelPath string, m map[string]APIModelValue) (s
 	}
 
 	return tmpFileName, nil
+}
+
+func parseKeyValuePairs(literal string) map[string]string {
+	log.Debugln(fmt.Sprintf("parsing --set flag key/value pairs from %s", literal))
+	inQuoteLiteral := false
+	inDblQuoteLiteral := false
+	inKey := true
+	kvpMap := map[string]string{}
+
+	currentKey := ""
+	currentValue := ""
+
+	for _, literalChar := range literal {
+		switch literalChar {
+		case '\'': // if we hit a ' char
+			if !inQuoteLiteral && !inDblQuoteLiteral { // and we are not already in a literal
+				inQuoteLiteral = true // start a new ' delimited literal value
+				inKey = false
+			} else if inQuoteLiteral { // we already are in a ' delimited literal value
+				inQuoteLiteral = false // stop it
+				inKey = true
+			}
+		case '"': // if we hit a " char
+			if !inDblQuoteLiteral && !inQuoteLiteral { // and we are not already in a literal
+				inDblQuoteLiteral = true // start a new " delimited literal value
+				inKey = false
+			} else if inDblQuoteLiteral { // we already are in a " delimited literal value
+				inDblQuoteLiteral = false // stop it
+				inKey = true
+			}
+		case ',': // if we hit a , char
+			if inQuoteLiteral || inDblQuoteLiteral { // we are in a literal
+				currentValue += string(literalChar)
+			} else {
+				log.Debugln(fmt.Sprintf("new key/value parsed: %s = %s", currentKey, currentValue))
+				kvpMap[currentKey] = currentValue
+				currentKey = ""
+				currentValue = ""
+				inKey = true
+			}
+		case '=': // if we hit a = char
+			if inQuoteLiteral || inDblQuoteLiteral || !inKey { // we are in a literal / value
+				currentValue += string(literalChar)
+			} else {
+				inKey = false
+			}
+		default: // we hit any other char
+			if inKey {
+				currentKey += string(literalChar)
+			} else {
+				currentValue += string(literalChar)
+			}
+		}
+	}
+
+	// push latest literal
+	if currentKey != "" {
+		log.Debugln(fmt.Sprintf("new key/value parsed: %s = %s", currentKey, currentValue))
+		kvpMap[currentKey] = currentValue
+	}
+
+	return kvpMap
 }

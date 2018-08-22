@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,6 +23,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	onode "github.com/Azure/acs-engine/test/e2e/openshift/node"
 	"github.com/Azure/acs-engine/test/e2e/remote"
+	"github.com/pkg/errors"
 )
 
 // CLIProvisioner holds the configuration needed to provision a clusters
@@ -65,7 +65,7 @@ func (cli *CLIProvisioner) Run() error {
 				cli.Point.RecordProvisionError()
 			} else if i == cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
-				return fmt.Errorf("Exceeded provision retry count: %s", err)
+				return errors.Errorf("Exceeded provision retry count: %s", err.Error())
 			}
 		} else {
 			cli.Point.RecordProvisionSuccess()
@@ -75,7 +75,7 @@ func (cli *CLIProvisioner) Run() error {
 			return err
 		}
 	}
-	return fmt.Errorf("Unable to run provisioner")
+	return errors.New("Unable to run provisioner")
 }
 
 func (cli *CLIProvisioner) provision() error {
@@ -92,19 +92,19 @@ func (cli *CLIProvisioner) provision() error {
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
+		return errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
 	if err != nil {
-		return fmt.Errorf("Error while trying to read public ssh key: %s", err)
+		return errors.Wrap(err, "Error while trying to read public ssh key")
 	}
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
 	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
 	if err != nil {
-		return fmt.Errorf("Error while trying to create resource group: %s", err)
+		return errors.Wrap(err, "Error while trying to create resource group")
 	}
 
 	subnetID := ""
@@ -113,7 +113,7 @@ func (cli *CLIProvisioner) provision() error {
 	if cli.CreateVNET {
 		err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
 		if err != nil {
-			return fmt.Errorf("Error trying to create vnet:%s", err)
+			return errors.Errorf("Error trying to create vnet:%s", err.Error())
 		}
 		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, subnetName)
 	}
@@ -121,31 +121,31 @@ func (cli *CLIProvisioner) provision() error {
 	// Lets modify our template and call acs-engine generate on it
 	eng, err := engine.Build(cli.Config, subnetID)
 	if err != nil {
-		return fmt.Errorf("Error while trying to build cluster definition:%s", err)
+		return errors.Wrap(err, "Error while trying to build cluster definition")
 	}
 	cli.Engine = eng
 
 	err = cli.Engine.Write()
 	if err != nil {
-		return fmt.Errorf("Error while trying to write Engine Template to disk:%s", err)
+		return errors.Wrap(err, "Error while trying to write Engine Template to disk:%s")
 	}
 
 	err = cli.Engine.Generate()
 	if err != nil {
-		return fmt.Errorf("Error while trying to generate acs-engine template:%s", err)
+		return errors.Wrap(err, "Error while trying to generate acs-engine template")
 	}
 
 	c, err := config.ParseConfig()
 	if err != nil {
-		return fmt.Errorf("unable to parse base config")
+		return errors.New("unable to parse base config")
 	}
 	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	if err != nil {
-		return fmt.Errorf("unable to parse config")
+		return errors.New("unable to parse config")
 	}
 	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
 	if err != nil {
-		return fmt.Errorf("unable to parse output")
+		return errors.New("unable to parse output")
 	}
 	cli.Engine.ExpandedDefinition = csGenerated
 
@@ -158,24 +158,26 @@ func (cli *CLIProvisioner) provision() error {
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
 	if err != nil {
-		return fmt.Errorf("Error while trying to create deployment:%s", err)
+		return errors.Wrap(err, "Error while trying to create deployment")
 	}
 
-	// Store the hosts for future introspection
-	hosts, err := cli.Account.GetHosts(cli.Config.Name)
-	if err != nil {
-		return err
-	}
-	var masters, agents []azure.VM
-	for _, host := range hosts {
-		if strings.Contains(host.Name, "master") {
-			masters = append(masters, host)
-		} else if strings.Contains(host.Name, "agent") {
-			agents = append(agents, host)
+	if cli.Config.IsKubernetes() {
+		// Store the hosts for future introspection
+		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+		if err != nil {
+			return err
 		}
+		var masters, agents []azure.VM
+		for _, host := range hosts {
+			if strings.Contains(host.Name, "master") {
+				masters = append(masters, host)
+			} else if strings.Contains(host.Name, "agent") {
+				agents = append(agents, host)
+			}
+		}
+		cli.Masters = masters
+		cli.Agents = agents
 	}
-	cli.Masters = masters
-	cli.Agents = agents
 
 	return nil
 }
@@ -230,7 +232,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		}
 		err = cluster.InstallDCOSClient()
 		if err != nil {
-			return fmt.Errorf("Error trying to install dcos client:%s", err)
+			return errors.Wrap(err, "Error trying to install dcos client")
 		}
 		ready := cluster.WaitForNodes(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 		if !ready {
@@ -253,7 +255,7 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	cmd := exec.Command("ssh-agent", "-s")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Error while trying to start ssh agent:%s\nOutput:%s", err, out)
+		return errors.Wrapf(err, "Error while trying to start ssh agent \nOutput:%s", out)
 	}
 	authSock := strings.Split(strings.Split(string(out), "=")[1], ";")
 	os.Setenv("SSH_AUTH_SOCK", authSock[0])
@@ -303,11 +305,11 @@ func (cli *CLIProvisioner) FetchActivityLog(acct *azure.Account, logPath string)
 	for _, rg := range cli.ResourceGroups {
 		log, err := acct.FetchActivityLog(rg)
 		if err != nil {
-			return fmt.Errorf("cannot fetch activity log for resource group %s: %v", rg, err)
+			return errors.Wrapf(err, "cannot fetch activity log for resource group %s", rg)
 		}
 		path := filepath.Join(logPath, fmt.Sprintf("activity-log-%s", rg))
 		if err := ioutil.WriteFile(path, []byte(log), 0644); err != nil {
-			return fmt.Errorf("cannot write activity log in file: %v", err)
+			return errors.Wrap(err, "cannot write activity log in file")
 		}
 	}
 	return nil

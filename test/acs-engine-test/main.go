@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -21,6 +20,7 @@ import (
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/promote"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -105,7 +105,7 @@ func (m *TestManager) Run() error {
 	// determine timeout
 	timeoutMin, err := strconv.Atoi(os.Getenv("STAGE_TIMEOUT_MIN"))
 	if err != nil {
-		return fmt.Errorf("Error [Atoi STAGE_TIMEOUT_MIN]: %v", err)
+		return errors.Wrap(err, "Error [Atoi STAGE_TIMEOUT_MIN]")
 	}
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
@@ -552,11 +552,11 @@ func mainInternal() error {
 
 	// validate environment
 	if !isValidEnv() {
-		return fmt.Errorf("environment is not set")
+		return errors.New("environment is not set")
 	}
 	// get test configuration
 	if configFile == "" {
-		return fmt.Errorf("test configuration is not provided")
+		return errors.New("test configuration is not provided")
 	}
 	testManager.config, err = config.GetTestConfig(configFile)
 	if err != nil {
@@ -576,7 +576,7 @@ func mainInternal() error {
 	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), logErrorFile)
 	// check root directory
 	if rootDir == "" {
-		return fmt.Errorf("acs-engine root directory is not provided")
+		return errors.New("acs-engine root directory is not provided")
 	}
 	testManager.rootDir = rootDir
 	if _, err = os.Stat(fmt.Sprintf("%s/%s", rootDir, script)); err != nil {

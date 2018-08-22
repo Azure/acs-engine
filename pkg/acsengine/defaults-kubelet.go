@@ -30,13 +30,19 @@ func setKubeletConfig(cs *api.ContainerService) {
 	for key, val := range staticLinuxKubeletConfig {
 		staticWindowsKubeletConfig[key] = val
 	}
+	staticWindowsKubeletConfig["--azure-container-registry-config"] = "c:\\k\\azure.json"
+	staticWindowsKubeletConfig["--pod-infra-container-image"] = "kubletwin/pause"
+	staticWindowsKubeletConfig["--kubeconfig"] = "c:\\k\\config"
+	staticWindowsKubeletConfig["--cloud-config"] = "c:\\k\\azure.json"
+	staticWindowsKubeletConfig["--cgroups-per-qos"] = "false"
+	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"\""
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
 		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
-		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated),
+		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPods),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
@@ -49,6 +55,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 		"--image-pull-progress-deadline":    "30m",
+	}
+
+	// Apply Azure CNI-specific --max-pods value
+	if o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure {
+		defaultKubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated)
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
@@ -65,18 +76,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		if o.KubernetesConfig.NetworkPolicy != NetworkPolicyCalico {
 			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		}
-		o.KubernetesConfig.KubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPods)
 	}
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
-	var overrideKubeletConfig map[string]string
-	if cs.Properties.HasWindows() {
-		overrideKubeletConfig = staticWindowsKubeletConfig
-	} else {
-		overrideKubeletConfig = staticLinuxKubeletConfig
-	}
-	for key, val := range overrideKubeletConfig {
+	for key, val := range staticLinuxKubeletConfig {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
 
@@ -90,6 +94,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Get rid of values not supported in v1.10 clusters
 	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		for _, key := range []string{"--pod-max-pids"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
+	// Get rid of values not supported in v1.12 and up
+	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.12.0-alpha.1") {
+		for _, key := range []string{"--cadvisor-port"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}
@@ -116,6 +127,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		if profile.KubernetesConfig == nil {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
+			if profile.OSType == "Windows" {
+				for key, val := range staticWindowsKubeletConfig {
+					profile.KubernetesConfig.KubeletConfig[key] = val
+				}
+			}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 

@@ -2,8 +2,9 @@ package vlabs
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -212,7 +213,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, OpenShift):
 		o.OrchestratorType = OpenShift
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }
@@ -257,19 +258,6 @@ type PrivateJumpboxProfile struct {
 	Username       string `json:"username,omitempty"`
 	PublicKey      string `json:"publicKey" validate:"required"`
 	StorageProfile string `json:"storageProfile,omitempty"`
-}
-
-// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
-// TODO use this when strict JSON checking accommodates struct embedding
-type CloudProviderConfig struct {
-	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -317,6 +305,8 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit          bool              `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS       float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	LoadBalancerSku                 string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB     *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -398,9 +388,6 @@ type ImageReference struct {
 	ResourceGroup string `json:"resourceGroup,omitempty"`
 }
 
-// ClassicAgentPoolProfileType represents types of classic profiles
-type ClassicAgentPoolProfileType string
-
 // ExtensionProfile represents an extension definition
 type ExtensionProfile struct {
 	Name                           string             `json:"name"`
@@ -440,7 +427,7 @@ type AgentPoolProfile struct {
 	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
 	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
 	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled bool                 `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
 
 	// subnet is internal
 	subnet string

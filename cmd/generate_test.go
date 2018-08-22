@@ -12,7 +12,7 @@ func TestNewGenerateCmd(t *testing.T) {
 		t.Fatalf("generate command should have use %s equal %s, short %s equal %s and long %s equal to %s", output.Use, generateName, output.Short, generateShortDescription, output.Long, generateLongDescription)
 	}
 
-	expectedFlags := []string{"api-model", "output-directory", "ca-certificate-path", "ca-private-key-path", "set", "classic-mode", "no-pretty-print", "parameters-only"}
+	expectedFlags := []string{"api-model", "output-directory", "ca-certificate-path", "ca-private-key-path", "set", "no-pretty-print", "parameters-only"}
 	for _, f := range expectedFlags {
 		if output.Flags().Lookup(f) == nil {
 			t.Fatalf("generate command should have flag %s", f)
@@ -77,6 +77,24 @@ func TestGenerateCmdMergeAPIModel(t *testing.T) {
 	g = &generateCmd{}
 	g.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
 	g.set = []string{"agentPoolProfiles[0].count=1"}
+	err = g.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())
+	}
+
+	// test with an ssh key that contains == sign
+	g = &generateCmd{}
+	g.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	g.set = []string{"linuxProfile.ssh.publicKeys[0].keyData=\"ssh-rsa AAAAB3NO8b9== azureuser@cluster.local\",servicePrincipalProfile.clientId=\"123a4321-c6eb-4b61-9d6f-7db123e14a7a\",servicePrincipalProfile.secret=\"=#msRock5!t=\""}
+	err = g.mergeAPIModel()
+	if err != nil {
+		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())
+	}
+
+	// test with simple quote
+	g = &generateCmd{}
+	g.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	g.set = []string{"servicePrincipalProfile.secret='=MsR0ck5!t='"}
 	err = g.mergeAPIModel()
 	if err != nil {
 		t.Fatalf("unexpected error calling mergeAPIModel with one --set flag to override an array property: %s", err.Error())

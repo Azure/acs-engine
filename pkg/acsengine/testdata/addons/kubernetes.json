@@ -53,6 +53,18 @@
             }
           },
           {
+            "name": "blobfuse-flexvolume",
+            "enabled": true
+          },
+          {
+            "name": "smb-flexvolume",
+            "enabled": true
+          },
+          {
+            "name": "keyvault-flexvolume",
+            "enabled": true
+          },
+          {
             "name": "rescheduler",
             "enabled": false,
             "containers": [

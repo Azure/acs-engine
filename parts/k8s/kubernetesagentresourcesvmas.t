@@ -1,6 +1,6 @@
     {
 {{if .AcceleratedNetworkingEnabled}}
-      "apiVersion": "[variables('apiVersionAcceleratedNetworking')]",
+      "apiVersion": "2018-04-01",
 {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
 {{end}}
@@ -168,10 +168,10 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+        "resourceNameSuffix" : "[parameters('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
-        "acsengineVersion" : "[variables('acsengineVersion')]",
+        "acsengineVersion" : "[parameters('acsengineVersion')]",
         "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",
@@ -203,7 +203,7 @@
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
+          "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
           {{if not IsOpenShift}}
           {{GetKubernetesAgentCustomData .}}
@@ -324,8 +324,9 @@
         {{end}}
         }
       }
-    },
-    {
+    }
+    {{if UseAksExtension}}
+    ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -346,4 +347,5 @@
         }
       }
     }
+    {{end}}
     

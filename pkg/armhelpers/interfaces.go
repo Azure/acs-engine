@@ -1,17 +1,40 @@
 package armhelpers
 
 import (
+	"context"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/authorization"
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/azure-sdk-for-go/arm/disk"
-	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 )
+
+// VirtualMachineListResultPage is an interface for compute.VirtualMachineListResultPage to aid in mocking
+type VirtualMachineListResultPage interface {
+	Next() error
+	NotDone() bool
+	Response() compute.VirtualMachineListResult
+	Values() []compute.VirtualMachine
+}
+
+// DeploymentOperationsListResultPage is an interface for resources.DeploymentOperationsListResultPage to aid in mocking
+type DeploymentOperationsListResultPage interface {
+	Next() error
+	NotDone() bool
+	Response() resources.DeploymentOperationsListResult
+	Values() []resources.DeploymentOperation
+}
+
+// RoleAssignmentListResultPage is an interface for authorization.RoleAssignmentListResultPage to aid in mocking
+type RoleAssignmentListResultPage interface {
+	Next() error
+	NotDone() bool
+	Response() authorization.RoleAssignmentListResult
+	Values() []authorization.RoleAssignment
+}
 
 // ACSEngineClient is the interface used to talk to an Azure environment.
 // This interface exposes just the subset of Azure APIs and clients needed for
@@ -24,79 +47,76 @@ type ACSEngineClient interface {
 	// RESOURCES
 
 	// DeployTemplate can deploy a template into Azure ARM
-	DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error)
+	DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (resources.DeploymentExtended, error)
 
 	// EnsureResourceGroup ensures the specified resource group exists in the specified location
-	EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error)
+	EnsureResourceGroup(ctx context.Context, resourceGroup, location string, managedBy *string) (*resources.Group, error)
 
 	//
 	// COMPUTE
 
 	// List lists VM resources
-	ListVirtualMachines(resourceGroup string) (compute.VirtualMachineListResult, error)
+	ListVirtualMachines(ctx context.Context, resourceGroup string) (VirtualMachineListResultPage, error)
 
 	// GetVirtualMachine retrieves the specified virtual machine.
-	GetVirtualMachine(resourceGroup, name string) (compute.VirtualMachine, error)
+	GetVirtualMachine(ctx context.Context, resourceGroup, name string) (compute.VirtualMachine, error)
 
 	// DeleteVirtualMachine deletes the specified virtual machine.
-	DeleteVirtualMachine(resourceGroup, name string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error)
+	DeleteVirtualMachine(ctx context.Context, resourceGroup, name string) error
 
 	// ListVirtualMachineScaleSets lists the vmss resources in the resource group
-	ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error)
+	ListVirtualMachineScaleSets(ctx context.Context, resourceGroup string) (compute.VirtualMachineScaleSetListResultPage, error)
 
 	// ListVirtualMachineScaleSetVMs lists the virtual machines contained in a vmss
-	ListVirtualMachineScaleSetVMs(resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResult, error)
+	ListVirtualMachineScaleSetVMs(ctx context.Context, resourceGroup, virtualMachineScaleSet string) (compute.VirtualMachineScaleSetVMListResultPage, error)
 
 	// DeleteVirtualMachineScaleSetVM deletes a VM in a VMSS
-	DeleteVirtualMachineScaleSetVM(resourceGroup, virtualMachineScaleSet, instanceID string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error)
+	DeleteVirtualMachineScaleSetVM(ctx context.Context, resourceGroup, virtualMachineScaleSet, instanceID string) error
 
 	// SetVirtualMachineScaleSetCapacity sets the VMSS capacity
-	SetVirtualMachineScaleSetCapacity(resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error)
+	SetVirtualMachineScaleSetCapacity(ctx context.Context, resourceGroup, virtualMachineScaleSet string, sku compute.Sku, location string) error
 
 	//
 	// STORAGE
 
 	// GetStorageClient uses SRP to retrieve keys, and then an authenticated client for talking to the specified storage
 	// account.
-	GetStorageClient(resourceGroup, accountName string) (ACSStorageClient, error)
+	GetStorageClient(ctx context.Context, resourceGroup, accountName string) (ACSStorageClient, error)
 
 	//
 	// NETWORK
 
 	// DeleteNetworkInterface deletes the specified network interface.
-	DeleteNetworkInterface(resourceGroup, nicName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error)
+	DeleteNetworkInterface(ctx context.Context, resourceGroup, nicName string) error
 
 	//
 	// GRAPH
 
 	// CreateGraphAppliction creates an application via the graphrbac client
-	CreateGraphApplication(applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error)
+	CreateGraphApplication(ctx context.Context, applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error)
 
 	// CreateGraphPrincipal creates a service principal via the graphrbac client
-	CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
-	CreateApp(applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
+	CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
+	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
 
 	// RBAC
-	CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
-	CreateRoleAssignmentSimple(applicationID, roleID string) error
-	DeleteRoleAssignmentByID(roleAssignmentNameID string) (authorization.RoleAssignment, error)
-	ListRoleAssignmentsForPrincipal(scope string, principalID string) (authorization.RoleAssignmentListResult, error)
+	CreateRoleAssignment(ctx context.Context, scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
+	CreateRoleAssignmentSimple(ctx context.Context, applicationID, roleID string) error
+	DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentNameID string) (authorization.RoleAssignment, error)
+	ListRoleAssignmentsForPrincipal(ctx context.Context, scope string, principalID string) (RoleAssignmentListResultPage, error)
 
 	// MANAGED DISKS
-	DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)
-	ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error)
+	DeleteManagedDisk(ctx context.Context, resourceGroupName string, diskName string) error
+	ListManagedDisksByResourceGroup(ctx context.Context, resourceGroupName string) (result compute.DiskListPage, err error)
 
 	GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error)
 
-	ListProviders() (resources.ProviderListResult, error)
+	ListProviders(ctx context.Context) (resources.ProviderListResultPage, error)
 
 	// DEPLOYMENTS
 
 	// ListDeploymentOperations gets all deployments operations for a deployment.
-	ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error)
-
-	// ListDeploymentOperationsNextResults retrieves the next set of results, if any.
-	ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error)
+	ListDeploymentOperations(ctx context.Context, resourceGroupName string, deploymentName string, top *int32) (result DeploymentOperationsListResultPage, err error)
 }
 
 // ACSStorageClient interface models the azure storage client

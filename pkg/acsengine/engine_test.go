@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -56,11 +57,6 @@ func TestExpected(t *testing.T) {
 			addTestCertificateProfile(containerService.Properties.CertificateProfile)
 		}
 
-		isClassicMode := false
-		if strings.Contains(tuple.APIModelFilename, "_classicmode") {
-			isClassicMode = true
-		}
-
 		// test the output container service 3 times:
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
@@ -70,28 +66,28 @@ func TestExpected(t *testing.T) {
 				Locale: locale,
 			},
 		}
-		templateGenerator, e3 := InitializeTemplateGenerator(ctx, isClassicMode)
+		templateGenerator, e3 := InitializeTemplateGenerator(ctx)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
+		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
 		if err != nil {
-			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
+			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
 		}
 
 		expectedPpArmTemplate, e1 := transform.PrettyPrintArmTemplate(armTemplate)
 		if e1 != nil {
 			t.Error(armTemplate)
-			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
+			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 			break
 		}
 
 		expectedPpParams, e2 := transform.PrettyPrintJSON(params)
 		if e2 != nil {
-			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
+			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 			continue
 		}
 
@@ -100,20 +96,20 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
 			if err != nil {
-				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
+				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
 			}
 			generatedPpArmTemplate, e1 := transform.PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
-				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
+				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 				continue
 			}
 
 			generatedPpParams, e2 := transform.PrettyPrintJSON(params)
 			if e2 != nil {
-				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
+				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 				continue
 			}
 
@@ -283,7 +279,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 		},
 	}
 
-	templateGenerator, err := InitializeTemplateGenerator(ctx, false)
+	templateGenerator, err := InitializeTemplateGenerator(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to initialize template generator: %v", err)
@@ -293,7 +289,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, TestACSEngineVersion)
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}

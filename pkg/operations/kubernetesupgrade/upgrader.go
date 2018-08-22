@@ -1,7 +1,10 @@
 package kubernetesupgrade
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -53,15 +56,17 @@ func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clus
 
 // RunUpgrade runs the upgrade pipeline
 func (ku *Upgrader) RunUpgrade() error {
-	if err := ku.upgradeMasterNodes(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Minute)
+	defer cancel()
+	if err := ku.upgradeMasterNodes(ctx); err != nil {
 		return err
 	}
 
-	if err := ku.upgradeAgentScaleSets(); err != nil {
+	if err := ku.upgradeAgentScaleSets(ctx); err != nil {
 		return err
 	}
 
-	return ku.upgradeAgentPools()
+	return ku.upgradeAgentPools(ctx)
 }
 
 // Validate will run validation post upgrade
@@ -69,7 +74,7 @@ func (ku *Upgrader) Validate() error {
 	return nil
 }
 
-func (ku *Upgrader) upgradeMasterNodes() error {
+func (ku *Upgrader) upgradeMasterNodes(ctx context.Context) error {
 	if ku.ClusterTopology.DataModel.Properties.MasterProfile == nil {
 		return nil
 	}
@@ -142,7 +147,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 			return err
 		}
 
-		err = upgradeMasterNode.CreateNode("master", masterIndex)
+		err = upgradeMasterNode.CreateNode(ctx, "master", masterIndex)
 		if err != nil {
 			ku.logger.Infof("Error creating upgraded master VM: %s", *vm.Name)
 			return err
@@ -177,7 +182,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 
 		ku.logger.Infof("Creating upgraded master VM with index: %d", masterIndexToCreate)
 
-		err = upgradeMasterNode.CreateNode("master", masterIndexToCreate)
+		err = upgradeMasterNode.CreateNode(ctx, "master", masterIndexToCreate)
 		if err != nil {
 			ku.logger.Infof("Error creating upgraded master VM with index: %d", masterIndexToCreate)
 			return err
@@ -196,7 +201,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	return nil
 }
 
-func (ku *Upgrader) upgradeAgentPools() error {
+func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
@@ -319,7 +324,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			}
 			ku.logger.Infof("Creating new agent node %s (index %d)", vmName, agentIndex)
 
-			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+			err = upgradeAgentNode.CreateNode(ctx, *agentPool.Name, agentIndex)
 			if err != nil {
 				ku.logger.Errorf("Error creating agent node %s (index %d): %v", vmName, agentIndex, err)
 				return err
@@ -359,7 +364,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.name, agentIndex)
 				delete(agentVMs, agentIndex)
 			} else {
-				err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+				err = upgradeAgentNode.CreateNode(ctx, *agentPool.Name, agentIndex)
 				if err != nil {
 					ku.logger.Errorf("Error creating upgraded agent VM %s: %v", vm.name, err)
 					return err
@@ -379,7 +384,44 @@ func (ku *Upgrader) upgradeAgentPools() error {
 	return nil
 }
 
-func (ku *Upgrader) upgradeAgentScaleSets() error {
+func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
+	if len(ku.ClusterTopology.AgentPoolScaleSetsToUpgrade) > 0 {
+		// need to apply the ARM template with target Kubernetes version to the VMSS first in order that the new VMSS instances
+		// created can get the expected Kubernetes version. Otherwise the new instances created still have old Kubernetes version
+		// if the topology doesn't have master nodes (so there are no ARM deployments in previous upgradeMasterNodes step)
+		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel, ku.ACSEngineVersion)
+		if err != nil {
+			ku.logger.Errorf("error generating upgrade template in upgradeAgentScaleSets: %v", err)
+			return err
+		}
+
+		transformer := &transform.Transformer{
+			Translator: ku.Translator,
+		}
+
+		if err := transformer.NormalizeForVMSSScaling(ku.logger, templateMap); err != nil {
+			ku.logger.Errorf("unable to update template, error: %v.", err)
+			return err
+		}
+
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		deploymentSuffix := random.Int31()
+		deploymentName := fmt.Sprintf("agentscaleset-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
+
+		ku.logger.Infof("Deploying the agent scale sets ARM template...")
+		_, err = ku.Client.DeployTemplate(
+			ctx,
+			ku.ClusterTopology.ResourceGroup,
+			deploymentName,
+			templateMap,
+			parametersMap)
+
+		if err != nil {
+			ku.logger.Errorf("error applying upgrade template in upgradeAgentScaleSets: %v", err)
+			return err
+		}
+	}
+
 	for _, vmssToUpgrade := range ku.ClusterTopology.AgentPoolScaleSetsToUpgrade {
 		ku.logger.Infof("Upgrading VMSS %s", vmssToUpgrade.Name)
 
@@ -399,21 +441,18 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 		*vmssToUpgrade.Sku.Capacity = newCapacity
 
 		for _, vmToUpgrade := range vmssToUpgrade.VMsToUpgrade {
-			success, failure := ku.Client.SetVirtualMachineScaleSetCapacity(
+			if err := ku.Client.SetVirtualMachineScaleSetCapacity(
+				ctx,
 				ku.ClusterTopology.ResourceGroup,
 				vmssToUpgrade.Name,
 				vmssToUpgrade.Sku,
 				vmssToUpgrade.Location,
-				make(chan struct{}),
-			)
-
-			select {
-			case <-success:
-				ku.logger.Infof("Successfully set capacity for VMSS %s", vmssToUpgrade.Name)
-			case err := <-failure:
+			); err != nil {
 				ku.logger.Errorf("Failure to set capacity for VMSS %s", vmssToUpgrade.Name)
 				return err
 			}
+
+			ku.logger.Infof("Successfully set capacity for VMSS %s", vmssToUpgrade.Name)
 
 			// Before we can delete the node we should safely and responsibly drain it
 			var kubeAPIServerURL string
@@ -455,28 +494,23 @@ func (ku *Upgrader) upgradeAgentScaleSets() error {
 
 			// At this point we have our buffer node that will replace the node to delete
 			// so we can just remove this current node then
-			res, failure := ku.Client.DeleteVirtualMachineScaleSetVM(
+			if err := ku.Client.DeleteVirtualMachineScaleSetVM(
+				ctx,
 				ku.ClusterTopology.ResourceGroup,
 				vmssToUpgrade.Name,
 				vmToUpgrade.InstanceID,
-				make(chan struct{}),
-			)
-
-			select {
-			case <-res:
-				ku.logger.Infof(
-					"Successfully deleted VM %s in VMSS %s",
-					vmToUpgrade.Name,
-					vmssToUpgrade.Name,
-				)
-			case err := <-failure:
+			); err != nil {
 				ku.logger.Errorf(
 					"Failed to delete VM %s in VMSS %s",
 					vmToUpgrade.Name,
-					vmssToUpgrade,
-				)
+					vmssToUpgrade)
 				return err
 			}
+
+			ku.logger.Infof(
+				"Successfully deleted VM %s in VMSS %s",
+				vmToUpgrade.Name,
+				vmssToUpgrade.Name)
 		}
 		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade)
 	}
@@ -491,14 +525,14 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 	ctx := acsengine.Context{
 		Translator: ku.Translator,
 	}
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, false)
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx)
 	if err != nil {
 		return nil, nil, ku.Translator.Errorf("failed to initialize template generator: %s", err.Error())
 	}
 
 	var templateJSON string
 	var parametersJSON string
-	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true, acsengineVersion); err != nil {
+	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true, false, acsengineVersion); err != nil {
 		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 

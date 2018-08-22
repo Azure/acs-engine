@@ -36,14 +36,14 @@ param(
     $AADClientSecret
 )
 
-$global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
-$global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
+$global:CACertificate = "{{WrapAsParameter "caCertificate"}}"
+$global:AgentCertificate = "{{WrapAsParameter "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
-$global:WindowsPackageSASURLBase = "{{WrapAsVariable "windowsPackageSASURLBase"}}"
-$global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
-$global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
+$global:KubeBinariesSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
+$global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"}}"
+$global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
+$global:WindowsTelemetryGUID = "{{WrapAsParameter "windowsTelemetryGUID"}}"
 $global:KubeletNodeLabels = "{{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
@@ -52,19 +52,21 @@ $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
 $global:VmType = "{{WrapAsVariable "vmType"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
-$global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
+$global:MasterSubnet = "{{WrapAsParameter "masterSubnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
 $global:PrimaryScaleSetName = "{{WrapAsVariable "primaryScaleSetName"}}"
-$global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
-$global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
+$global:KubeClusterCIDR = "{{WrapAsParameter "kubeClusterCidr"}}"
+$global:KubeServiceCIDR = "{{WrapAsParameter "kubeServiceCidr"}}"
 $global:KubeNetwork = "l2bridge"
 $global:KubeDnsSearchPath = "svc.cluster.local"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
+$global:LoadBalancerSku = "{{WrapAsVariable "loadBalancerSku"}}"
+$global:ExcludeMasterFromStandardLB = "{{WrapAsVariable "excludeMasterFromStandardLB"}}"
 
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
@@ -75,9 +77,9 @@ $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
 #azure cni
-$global:NetworkPolicy = "{{WrapAsVariable "networkPolicy"}}"
-$global:NetworkPlugin = "{{WrapAsVariable "networkPlugin"}}"
-$global:VNetCNIPluginsURL = "{{WrapAsVariable "vnetCniWindowsPluginsURL"}}"
+$global:NetworkPolicy = "{{WrapAsParameter "networkPolicy"}}"
+$global:NetworkPlugin = "{{WrapAsParameter "networkPlugin"}}"
+$global:VNetCNIPluginsURL = "{{WrapAsParameter "vnetCniWindowsPluginsURL"}}"
 
 $global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")
 $global:AzureCNIBinDir = [Io.path]::Combine("$global:AzureCNIDir", "bin")
@@ -183,7 +185,9 @@ Write-AzureConfig()
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
-    "useInstanceMetadata": $global:UseInstanceMetadata
+    "useInstanceMetadata": $global:UseInstanceMetadata,
+    "loadBalancerSku": "$global:LoadBalancerSku",
+    "excludeMasterFromStandardLB": $global:ExcludeMasterFromStandardLB
 }
 "@
 
@@ -227,14 +231,14 @@ New-InfraContainer()
     $computerInfo = Get-ComputerInfo
     $windowsBase = if ($computerInfo.WindowsVersion -eq "1709") {
         "microsoft/nanoserver:1709"
-    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) { 
+    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) {
         "microsoft/nanoserver:1803"
-    } else { 
+    } else {
         # This is a temporary workaround. As of May 2018, Windows Server Insider builds still report 1803 which is wrong.
         # Once that is fixed, add another elseif ( -eq "nnnn") instead and remove the StartsWith("17134") above
         "microsoft/nanoserver-insider"
     }
-    
+
     "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
     "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
     docker build -t kubletwin/pause .
@@ -284,7 +288,7 @@ Set-AzureCNIConfig()
     $fileName  = [Io.path]::Combine("$global:AzureCNIConfDir", "10-azure.conflist")
     $configJson = Get-Content $fileName | ConvertFrom-Json
     $configJson.plugins.dns.Nameservers[0] = $KubeDnsServiceIp
-    $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath 
+    $configJson.plugins.dns.Search[0] = $global:KubeDnsSearchPath
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[0] = $global:KubeClusterCIDR
     $configJson.plugins.AdditionalArgs[0].Value.ExceptionList[1] = $global:MasterSubnet
     $configJson.plugins.AdditionalArgs[1].Value.DestinationPrefix  = $global:KubeServiceCIDR
@@ -307,8 +311,8 @@ Set-NetworkConfig
 function
 Write-KubernetesStartFiles($podCIDR)
 {
-    mkdir $global:VolumePluginDir 
-    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")    
+    mkdir $global:VolumePluginDir
+    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
@@ -386,9 +390,31 @@ if (`$hnsNetwork)
 
     Write-Host "Cleaning up old HNS network found"
     Remove-HnsNetwork `$hnsNetwork
-    Start-Sleep 10
-    `$cnijson = "$global:KubeDir" + "\azure-vnet*"
-    remove-item `$cnijson  -ErrorAction SilentlyContinue
+    # Kill all cni instances & stale data left by cni
+    # Cleanup all files related to cni
+    `$cnijson = "$global:KubeDir" + "\azure-vnet-ipam.json"
+    if ((Test-Path `$cnijson))
+    {
+        Remove-Item `$cnijson
+    }
+    `$cnilock = "$global:KubeDir" + "\azure-vnet-ipam.lock"
+    if ((Test-Path `$cnilock))
+    {
+        Remove-Item `$cnilock
+    }
+    taskkill /IM azure-vnet-ipam.exe /f
+
+    `$cnijson = "$global:KubeDir" + "\azure-vnet.json"
+    if ((Test-Path `$cnijson))
+    {
+        Remove-Item `$cnijson
+    }
+    `$cnilock = "$global:KubeDir" + "\azure-vnet.lock"
+    if ((Test-Path `$cnilock))
+    {
+        Remove-Item `$cnilock
+    }
+    taskkill /IM azure-vnet.exe /f
 }
 
 # Restart Kubeproxy, which would wait, until the network is created

@@ -20,8 +20,8 @@
     ],
     "tags":
     {
-      "creationSource" : "[concat(variables('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
-      "resourceNameSuffix" : "[variables('nameSuffix')]",
+      "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'))]",
+      "resourceNameSuffix" : "[parameters('nameSuffix')]",
       "orchestrator" : "[variables('orchestratorNameVersionTag')]",
       "poolName" : "{{.Name}}"
     },
@@ -78,7 +78,7 @@
 {{if HasCustomNodesDNS}}
                  ,"dnsSettings": {
                     "dnsServers": [
-                        "[variables('dnsServer')]"
+                        "[parameters('dnsServer')]"
                     ]
                 }
 {{end}}
@@ -90,7 +90,7 @@
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
+          "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
           {{GetKubernetesAgentCustomData .}}
           "linuxConfiguration": {
@@ -145,8 +145,9 @@
                   "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
-            },
-            {
+            }
+            {{if UseAksExtension}}
+            ,{
               "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-computeAksLinuxBilling')]",
               "location": "[variables('location')]",
               "properties": {
@@ -157,6 +158,7 @@
                 "settings": {}
               }
             }
+            {{end}}
             {{if UseManagedIdentity}}
             ,{
               "name": "managedIdentityExtension",

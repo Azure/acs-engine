@@ -2,9 +2,10 @@ package v20170131
 
 import (
 	"encoding/json"
-	"fmt"
 	neturl "net/url"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -233,7 +234,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	case strings.EqualFold(orchestratorType, SwarmMode):
 		o.OrchestratorType = SwarmMode
 	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+		return errors.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
 	return nil
 }

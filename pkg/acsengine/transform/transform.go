@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/sirupsen/logrus"
 )
 
@@ -299,7 +299,7 @@ func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, t
 			delete(hardwareProfile, vmSizeFieldName)
 		}
 
-		if !t.removeCustomData(logger, resourceProperties) || !t.removeImageReference(logger, resourceProperties) {
+		if !t.removeCustomData(logger, resourceProperties) || !t.removeDataDisks(logger, resourceProperties) || !t.removeImageReference(logger, resourceProperties) {
 			continue
 		}
 	}
@@ -317,6 +317,19 @@ func (t *Transformer) removeCustomData(logger *logrus.Entry, resourceProperties 
 
 	if osProfile[customDataFieldName] != nil {
 		delete(osProfile, customDataFieldName)
+	}
+	return ok
+}
+
+func (t *Transformer) removeDataDisks(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
+	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
+	if !ok {
+		logger.Warnf("Template improperly formatted. Could not find: %s", storageProfileFieldName)
+		return ok
+	}
+
+	if storageProfile[dataDisksFieldName] != nil {
+		delete(storageProfile, dataDisksFieldName)
 	}
 	return ok
 }

@@ -8,7 +8,8 @@ import (
 	"github.com/blang/semver"
 )
 
-// AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
+// AllKubernetesSupportedVersions is a whitelist map of all supported Kubernetes version strings
+// The bool value indicates if creating new clusters with this version is allowed
 var AllKubernetesSupportedVersions = map[string]bool{
 	"1.6.6":          true,
 	"1.6.9":          true,
@@ -52,6 +53,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.9.7":          true,
 	"1.9.8":          true,
 	"1.9.9":          true,
+	"1.9.10":         true,
 	"1.10.0-beta.2":  true,
 	"1.10.0-beta.4":  true,
 	"1.10.0-rc.1":    true,
@@ -61,6 +63,8 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.10.3":         true,
 	"1.10.4":         true,
 	"1.10.5":         true,
+	"1.10.6":         true,
+	"1.10.7":         true,
 	"1.11.0-alpha.1": true,
 	"1.11.0-alpha.2": true,
 	"1.11.0-beta.1":  true,
@@ -69,28 +73,28 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	"1.11.0-rc.2":    true,
 	"1.11.0-rc.3":    true,
 	"1.11.0":         true,
+	"1.11.1":         true,
+	"1.11.2":         true,
+	"1.12.0-alpha.1": true,
 }
 
 // GetDefaultKubernetesVersion returns the default Kubernetes version, that is the latest patch of the default release
-func GetDefaultKubernetesVersion() string {
-	return GetLatestPatchVersion(KubernetesDefaultRelease, GetAllSupportedKubernetesVersions())
-}
-
-// GetDefaultKubernetesVersionWindows returns the default Kubernetes version for Windows, that is the latest patch of the default release
-func GetDefaultKubernetesVersionWindows() string {
-	return GetLatestPatchVersion(KubernetesDefaultReleaseWindows, GetAllSupportedKubernetesVersionsWindows())
+func GetDefaultKubernetesVersion(hasWindows bool) string {
+	defaultRelease := KubernetesDefaultRelease
+	if hasWindows {
+		defaultRelease = KubernetesDefaultReleaseWindows
+	}
+	return GetLatestPatchVersion(defaultRelease, GetAllSupportedKubernetesVersions(false, hasWindows))
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
 func GetSupportedKubernetesVersion(version string, hasWindows bool) string {
-	var k8sVersion string
+	k8sVersion := GetDefaultKubernetesVersion(hasWindows)
 	if hasWindows {
-		k8sVersion = GetDefaultKubernetesVersionWindows()
 		if AllKubernetesWindowsSupportedVersions[version] {
 			k8sVersion = version
 		}
 	} else {
-		k8sVersion = GetDefaultKubernetesVersion()
 		if AllKubernetesSupportedVersions[version] {
 			k8sVersion = version
 		}
@@ -99,10 +103,14 @@ func GetSupportedKubernetesVersion(version string, hasWindows bool) string {
 }
 
 // GetAllSupportedKubernetesVersions returns a slice of all supported Kubernetes versions
-func GetAllSupportedKubernetesVersions() []string {
+func GetAllSupportedKubernetesVersions(isUpdate, hasWindows bool) []string {
 	var versions []string
-	for ver, supported := range AllKubernetesSupportedVersions {
-		if supported {
+	allSupportedVersions := AllKubernetesSupportedVersions
+	if hasWindows {
+		allSupportedVersions = AllKubernetesWindowsSupportedVersions
+	}
+	for ver, supported := range allSupportedVersions {
+		if (!isUpdate && supported) || isUpdate {
 			versions = append(versions, ver)
 		}
 	}
@@ -230,34 +238,16 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.10.0-rc.1",
 		"1.11.0-alpha.1",
 		"1.11.0-alpha.2"} {
-		ret[version] = false
+		delete(ret, version)
 	}
 	return ret
 }
 
-// GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows
-func GetAllSupportedKubernetesVersionsWindows() []string {
-	var versions []string
-	for ver, supported := range AllKubernetesWindowsSupportedVersions {
-		if supported {
-			versions = append(versions, ver)
-		}
-	}
-	sort.Slice(versions, func(i, j int) bool {
-		return IsKubernetesVersionGe(versions[j], versions[i])
-	})
-	return versions
-}
-
 // GetSupportedVersions get supported version list for a certain orchestrator
-func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, defaultVersion string) {
+func GetSupportedVersions(orchType string, isUpdate, hasWindows bool) (versions []string, defaultVersion string) {
 	switch orchType {
 	case Kubernetes:
-		if hasWindows {
-			return GetAllSupportedKubernetesVersionsWindows(), GetDefaultKubernetesVersionWindows()
-		}
-		return GetAllSupportedKubernetesVersions(), GetDefaultKubernetesVersion()
-
+		return GetAllSupportedKubernetesVersions(isUpdate, hasWindows), GetDefaultKubernetesVersion(hasWindows)
 	case OpenShift:
 		return GetAllSupportedOpenShiftVersions(), string(OpenShiftDefaultVersion)
 
@@ -269,12 +259,13 @@ func GetSupportedVersions(orchType string, hasWindows bool) (versions []string, 
 }
 
 //GetValidPatchVersion gets the current valid patch version for the minor version of the passed in version
-func GetValidPatchVersion(orchType, orchVer string, hasWindows bool) string {
+func GetValidPatchVersion(orchType, orchVer string, isUpdate, hasWindows bool) string {
 	if orchVer == "" {
 		return RationalizeReleaseAndVersion(
 			orchType,
 			"",
 			"",
+			isUpdate,
 			hasWindows)
 	}
 
@@ -283,6 +274,7 @@ func GetValidPatchVersion(orchType, orchVer string, hasWindows bool) string {
 		orchType,
 		"",
 		orchVer,
+		isUpdate,
 		hasWindows)
 
 	if version == "" {
@@ -296,17 +288,18 @@ func GetValidPatchVersion(orchType, orchVer string, hasWindows bool) string {
 			orchType,
 			sr,
 			"",
+			isUpdate,
 			hasWindows)
 	}
 	return version
 }
 
 // RationalizeReleaseAndVersion return a version when it can be rationalized from the input, otherwise ""
-func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string, hasWindows bool) (version string) {
+func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string, isUpdate, hasWindows bool) (version string) {
 	// ignore "v" prefix in orchestrator version and release: "v1.8.0" is equivalent to "1.8.0", "v1.9" is equivalent to "1.9"
 	orchVer = strings.TrimPrefix(orchVer, "v")
 	orchRel = strings.TrimPrefix(orchRel, "v")
-	supportedVersions, defaultVersion := GetSupportedVersions(orchType, hasWindows)
+	supportedVersions, defaultVersion := GetSupportedVersions(orchType, isUpdate, hasWindows)
 	if supportedVersions == nil {
 		return ""
 	}

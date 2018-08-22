@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
-func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string, acsengineVersion string) (paramsMap, error) {
+func getParameters(cs *api.ContainerService, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
@@ -64,9 +64,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
-		if isClassicMode {
-			addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
-		}
 	}
 	if properties.HostedMasterProfile != nil {
 		addValue(parametersMap, "masterSubnet", properties.HostedMasterProfile.Subnet)

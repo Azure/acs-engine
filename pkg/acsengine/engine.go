@@ -25,12 +25,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
+var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
-var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
+var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
 	kubernetesTemplateFiles,
 	openshiftInfraResources,
@@ -77,7 +77,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	}
 	kubeconfig := string(b)
 	// variable replacement
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"parameters('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
 	if properties.OrchestratorProfile != nil &&
 		properties.OrchestratorProfile.KubernetesConfig != nil &&
 		properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
@@ -147,7 +147,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 }
 
 //getCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
-//for example: if the target is the public azure, then the default container image url should be k8s-gcrio.azureedge.net/...
+//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch getCloudTargetEnv(location) {
@@ -472,6 +472,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
 - mkdir -p %s
+- wait_for_file 900 1 /var/log/azure/docker-install.complete
 - cd %s`, dest, dest)
 
 	/*
@@ -483,7 +484,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
 - cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 - apt_get_update
-- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms
 - retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
 - sudo pkill -SIGHUP dockerd
 - mkdir -p %s
@@ -504,13 +505,14 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
 	*/
 	installScript += fmt.Sprintf(`
-- sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
+- sh nvidia-drivers-%s --silent --accept-license --no-drm --dkms --utility-prefix="%s" --opengl-prefix="%s"
 - echo "%s" > /etc/ld.so.conf.d/nvidia.conf
 - sudo ldconfig
-- umount /usr/lib/x86_64-linux-gnu
+- umount -l /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
 - sudo ldconfig
+- systemctl enable nvidia-modprobe
 - retrycmd_if_failure 5 10 60 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation

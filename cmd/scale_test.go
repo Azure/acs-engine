@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +13,7 @@ func TestNewScaleCmd(t *testing.T) {
 		t.Fatalf("scale command should have use %s equal %s, short %s equal %s and long %s equal to %s", output.Use, scaleName, output.Short, scaleShortDescription, output.Long, scaleLongDescription)
 	}
 
-	expectedFlags := []string{"location", "resource-group", "deployment-dir", "new-node-count", "classic-mode", "node-pool", "master-FQDN"}
+	expectedFlags := []string{"location", "resource-group", "deployment-dir", "new-node-count", "node-pool", "master-FQDN"}
 	for _, f := range expectedFlags {
 		if output.Flags().Lookup(f) == nil {
 			t.Fatalf("scale command should have flag %s", f)
@@ -37,7 +37,7 @@ func TestScaleCmdValidate(t *testing.T) {
 				newDesiredAgentCount: 5,
 				masterFQDN:           "test",
 			},
-			expectedErr: fmt.Errorf("--resource-group must be specified"),
+			expectedErr: errors.New("--resource-group must be specified"),
 		},
 		{
 			sc: &scaleCmd{
@@ -48,7 +48,7 @@ func TestScaleCmdValidate(t *testing.T) {
 				newDesiredAgentCount: 5,
 				masterFQDN:           "test",
 			},
-			expectedErr: fmt.Errorf("--location must be specified"),
+			expectedErr: errors.New("--location must be specified"),
 		},
 		{
 			sc: &scaleCmd{
@@ -58,7 +58,7 @@ func TestScaleCmdValidate(t *testing.T) {
 				agentPoolToScale:    "agentpool1",
 				masterFQDN:          "test",
 			},
-			expectedErr: fmt.Errorf("--new-node-count must be specified"),
+			expectedErr: errors.New("--new-node-count must be specified"),
 		},
 		{
 			sc: &scaleCmd{
@@ -69,7 +69,7 @@ func TestScaleCmdValidate(t *testing.T) {
 				newDesiredAgentCount: 5,
 				masterFQDN:           "test",
 			},
-			expectedErr: fmt.Errorf("--deployment-dir must be specified"),
+			expectedErr: errors.New("--deployment-dir must be specified"),
 		},
 		{
 			sc: &scaleCmd{

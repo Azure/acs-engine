@@ -1,445 +1,552 @@
-# Microsoft Azure Container Service Engine - Kubernetes Windows Walkthrough
+# Microsoft ACS-Engine - Kubernetes Windows Walkthrough
 
-## Supported Windows versions
-Prior to acs-engine v0.9.2, Kubernetes Windows cluster uses Windows Server 2016. There are a few restrictions in Windows Networking for Kubernetes as documented in https://blogs.technet.microsoft.com/networking/2017/04/04/windows-networking-for-kubernetes/. Besides, Windows POD deployment performanace is limited due to the bottleneck of container image size and configuration at container start time. 
+<!-- TOC -->
 
-With the release of new Windows Server version 1709, acs-engine v0.9.2 and beyond has leveraged the new Windows version to deploy Kubernetes Windows cluster with signifcant improvement in Windows container and networking performance, as well as new features in storage. Specifically,
-1. Windows is now on par with Linux in terms of networking. New features including hostport have been implemented in kube-proxy and Windows platform and CNI to enhance networking performance. Please refer to http://blog.kubernetes.io/2017/09/windows-networking-at-parity-with-linux.html for details.
-2. Azure Files and Disks are now supported to mount on Kubernetes Windows cluster with the new SMB feature in Windows.
-3. Multiple containers in POD are now supported on Kubernetes Windows cluster.
+- [Quick Start](#quick-start)
+    - [Install Needed Tools](#install-needed-tools)
+        - [Windows](#windows)
+        - [Mac](#mac)
+        - [Linux](#linux)
+    - [Create a Resource Group and Service Principal](#create-a-resource-group-and-service-principal)
+        - [Create a Resource Group and Service Principal (Windows)](#create-a-resource-group-and-service-principal-windows)
+        - [Create a Resource Group and Service Principal (Mac+Linux)](#create-a-resource-group-and-service-principal-maclinux)
+    - [Create an acs-engine apimodel](#create-an-acs-engine-apimodel)
+        - [Filling out apimodel (Windows)](#filling-out-apimodel-windows)
+        - [Filling out apimodel (Mac & Linux)](#filling-out-apimodel-mac--linux)
+    - [Generate Azure Resource Manager template](#generate-azure-resource-manager-template)
+    - [Deploy the cluster](#deploy-the-cluster)
+        - [Check that the cluster is up](#check-that-the-cluster-is-up)
+    - [Deploy your first application](#deploy-your-first-application)
+    - [What was deployed](#what-was-deployed)
+- [Next Steps](#next-steps)
 
-Note, with the rollout of new Windows Server versions in acs-engine, the workload deployed on Windows cluster should match as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility . Both the containers being deployed,
-as well as the `kubletwin/pause` container must match the version of the Windows host. Otherwise, [pods may get stuck at ContainerCreating](https://docs.microsoft.com/en-us/virtualization/windowscontainers/kubernetes/common-problems#my-kubernetes-pods-are-stuck-at-containercreating) state.
+<!-- /TOC -->
 
-## Deployment
+## Quick Start
 
-Here are the steps to deploy a simple Kubernetes cluster with Windows:
+This guide will step through everything needed to build your first Kubernetes cluster and deploy a Windows web server on it. The steps include:
 
-1. [install acs-engine](../acsengine.md#downloading-and-building-acs-engine)
-2. [generate your ssh key](../ssh.md#ssh-key-generation)
-3. [generate your service principal](../serviceprincipal.md)
-4. edit the [Kubernetes windows example](../../examples/windows/kubernetes.json) and fill in the blank strings
-5. [generate the template](../acsengine.md#generating-a-template)
-6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
+- Getting the right tools
+- Completing an ACS-Engine apimodel which describes what you want to deploy
+- Running ACS-Engine to generate Azure Resource Model templates
+- Deploying your first Kubernetes cluster with Windows Server nodes
+- Managing the cluster from your Windows machine
+- Deploying your first app on the cluster
 
-### Common customizations
+All of these steps can be done from any OS platform, so some sections are split out by Windows, Mac or Linux to provide the most relevant samples and scripts. If you have a Windows machine but want to use the Linux tools - no problem! Set up the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) and you can follow the Linux instructions on this page.
 
-As part of step 4, edit the [Kubernetes windows example](../../examples/windows/kubernetes.json), you can also make some changes to how Windows is deployed.
+> Note: Windows support for Kubernetes is still in beta and under **active development**. If you run into problems, please be sure to check the [Troubleshooting](windows-details.md#troubleshooting) page and [active Windows issues](https://github.com/azure/acs-engine/issues?&q=is:issue+is:open+label:windows) in this repo, then help us by filing new issues for things that aren't already covered.
 
-#### Changing the OS disk size
+### Install Needed Tools
 
-The Windows Server deployments default to 30GB for the OS drive (C:), which may not be enough. You can change this size by adding `osDiskSizeGB` under the `agentPoolProfiles`, such as:
+This guide needs a few important tools, which are available on Windows, Mac, and Linux:
 
+- ACS-Engine - used to generate the Azure Resource Manager (ARM) template to automatically deploy a Kubernetes cluster
+- Azure CLI - used to log into Azure, create resource groups, and deploy a Kubernetes cluster from a template
+- Kubectl - "Kube control" tool used to manage Kubernetes clusters
+- SSH - A SSH public key is needed when you deploy a cluster. It's used to connect to the Linux VMs running the cluster if you need to do more  management or troubleshooting later.
+
+#### Windows
+
+##### Azure CLI (Windows)
+
+Click the [download](https://aka.ms/installazurecliwindows) link, and choose "Run". Click through the setup steps as needed.
+
+Once it's installed, make sure you can connect to Azure with it. Open a new PowerShell window, then run `az login`. It will have you log in to Azure in your web browser, then return back to the command line and show "You have logged in. Now let us find all the subscriptions to which you have access..." along with the list of subscriptions.
+
+> If you want other versions, check out the [official instructions](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). For more help, check out the Azure CLI [getting started](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest) page.
+
+##### ACS-Engine (Windows)
+
+Windows support is evolving rapidly, so be sure to use the latest ACS-Engine  version (v0.20 or later).
+
+1. Browse to the ACS-Engine [releases page](https://github.com/Azure/acs-engine/releases) on GitHub.
+
+2. Find the latest version, and download the file ending in `-windows-amd64.zip`.
+
+3. Extract the `acs-engine...-windows-amd64.zip` file to a working folder such as `c:\tools`
+
+4. Check that it runs with `.\acs-engine.exe version`
+
+```none
+PS C:\Users\patrick\acs-engine> .\acs-engine.exe version
+Version: v0.20.6
+GitCommit: 293adfda
+GitTreeState: clean
 ```
-"agentPoolProfiles": [
-      {
-        "name": "windowspool2",
-        "count": 2,
-        "vmSize": "Standard_D2_v3",
-        "availabilityProfile": "AvailabilitySet",
-        "osType": "Windows",
-        "osDiskSizeGB": 127
-     }
+
+5. Add the folder you created in step 3 to your path.
+
+```powershell
+$ENV:Path += ';c:\tools'
+# If you want to save the setting permanently, then run
+$oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::User)
+[Environment]::SetEnvironmentVariable('Path', $oldPath + ';c:\tools', [EnvironmentVariableTarget]::User)
 ```
 
-#### Choosing the Windows Server version
+##### Kubectl (Windows)
 
-If you want to deploy a specific Windows Server version, you can find available versions with `az vm image list --publisher MicrosoftWindowsServer --all -o table`
+The latest release of Kubernetes Control (kubectl) is available on the [Kubernetes release page](https://kubernetes.io/docs/imported/release/notes/). Look for `kubernetes-client-windows-amd64.tar.gz` and download it.
 
+Windows 10 version 1803 already includes `tar`, so extract the archive and move `kubectl.exe` to the same folder (such as `c:\tools`) that you put `acs-engine.exe`. If you don't already have `tar`, then [busybox-w32](https://frippery.org/busybox/) is a good alternative. Download [busybox.exe](https://frippery.org/files/busybox/busybox.exe), then copy it to `c:\tools\tar.exe`. It must be named to `tar.exe` for the next step to work.
+
+```powershell
+tar xvzf C:\Users\patrick\Downloads\kubernetes-client-windows-amd64.tar.gz
+Move-Item .\kubernetes\client\bin\kubectl.exe c:\tools
 ```
-$ az vm image list --publisher MicrosoftWindowsServer --all -o table                                                                                        
 
-Offer                    Publisher                      Sku                                             Urn                                                                                                            Version
------------------------  -----------------------------  ----------------------------------------------  -------------------------------------------------------------------------------------------------------------  -----------------
+##### SSH (Windows)
+
+Windows 10 version 1803 comes with the Secure Shell (SSH) client as an optional feature installed at `C:\Windows\system32\openssh`. If you have `ssh.exe` and `ssh-keygen.exe` there, skip forward to [Generate SSH key (Windows)](#generate-ssh-key-windows)
+
+1. Download the latest OpenSSH-Win64.zip file from [Win32-OpenSSH releases](https://github.com/PowerShell/Win32-OpenSSH/releases)
+2. Extract it to the same `c:\tools` folder or another folder in your path
+
+###### Generate SSH key (Windows)
+
+First, check if you already have a SSH key generated at `~\.ssh\id_rsa.pub`
+
+```powershell
+dir ~\.ssh\id_rsa.pub
+dir : Cannot find path 'C:\Users\patrick\.ssh\id_rsa.pub' because it does not exist.
+```
+
+If the file already exists, then you can skip forward to [Create a Resource Group and Service Principal](#create-a-resource-group-and-service-principal).
+
+If it does not exist, then run `ssh-keygen.exe`. Use the default file, and enter a passphrase if you wish to protect it. Be sure not to use a SSH key with blank passphrase in production.
+
+```powershell
+PS C:\Users\patrick\acs-engine> ssh-keygen.exe
+Generating public/private rsa key pair.
+Enter file in which to save the key (C:\Users\patrick/.ssh/id_rsa):
+Created directory 'C:\Users\patrick/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in C:\Users\patrick/.ssh/id_rsa.
+Your public key has been saved in C:\Users\patrick/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:... patrick@plang-g1
+The key's randomart image is:
++---[RSA 2048]----+
 ...
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
++----[SHA256]-----+
 ```
 
-You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `widndowsVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
+#### Mac
 
-```
-"windowsProfile": {
-            "adminUsername": "azureuser",
-            "adminPassword": "...",
-            "windowsPublisher": "MicrosoftWindowsServer",
-            "windowsOffer": "WindowsServerSemiAnnual",
-            "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk"
-     },
+Most of the needed tools are available with [Homebrew](https://brew.sh/). Use it or another package manager to install these:
+
+- `jq` - helpful JSON processor
+- `azure-cli` - for the `az` Azure command line tool
+- `kubernetes-cli` - for the `kubectl` "Kube Control" management tool
+
+Once you have those installed, make sure you can log into Azure. Open a new Terminal window, then run `az login`. It will have you log in to Azure in your web browser, then return back to the command line and show "You have logged in. Now let us find all the subscriptions to which you have access..." along with the list of subscriptions.
+
+##### ACS-Engine (Mac)
+
+Windows support is evolving rapidly, so be sure to use the latest ACS-Engine version (v0.20 or later).
+
+1. Browse to the ACS-Engine [releases page](https://github.com/Azure/acs-engine/releases) on GitHub.
+
+2. Find the latest version, and download the file ending in `-darwin-amd64.zip`.
+
+3. Extract the `acs-engine...-darwin-amd64.zip` file to a folder in your path such as `/usr/local/bin`
+
+4. Check that it runs with `acs-engine version`
+
+```bash
+$ acs-engine.exe version
+Version: v0.20.6
+GitCommit: 293adfda
+GitTreeState: clean
 ```
 
-## Walkthrough
+##### SSH (Mac)
+
+SSH is preinstalled, but you may need to generate an SSH key.
+
+###### Generate SSH key (Mac)
+
+Open up Terminal, and make sure you have a SSH public key
+
+```bash
+$ ls ~/.ssh/id_rsa.pub
+/home/patrick/.ssh/id_rsa.pub
+```
+
+If the file doesn't exist, run `ssh-keygen` to create one.
+
+#### Linux
+
+These tools are included in most distributions. Use your typical package manager to make sure they're installed: 
+
+- `jq` - helpful JSON processor
+- `curl` - to download files
+- `openssh` or another `ssh` client
+- `tar`
+
+##### Azure CLI (Linux)
+
+Packages for the `az` cli are available for most distributions. Please follow the right link for your package manager:
+[apt](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest),
+ [yum](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest),
+ [zypper](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-zypper?view=azure-cli-latest)
+
+Now, make sure you can log into Azure. Open a new Terminal window, then run `az login`. It will have you log in to Azure in your web browser, then return back to the command line and show "You have logged in. Now let us find all the subscriptions to which you have access..." along with the list of subscriptions.
+
+##### ACS-Engine (Linux)
+
+Windows support is evolving rapidly, so be sure to use the latest ACS-Engine version (v0.20 or later).
+
+1. Browse to the ACS-Engine [releases page](https://github.com/Azure/acs-engine/releases) on GitHub.
+
+2. Find the latest version, and download the file ending in `-linux-amd64.zip`.
+
+3. Extract the `acs-engine...-linux-amd64.zip` file to a folder in your path such as `/usr/local/bin`
+
+4. Check that it runs with `acs-engine version`
+
+```bash
+$ acs-engine.exe version
+Version: v0.20.6
+GitCommit: 293adfda
+GitTreeState: clean
+```
+
+##### Kubectl (Linux)
+
+The latest release of Kubernetes Control (kubectl) is available on the [Kubernetes release page](https://kubernetes.io/docs/imported/release/notes/). Look for `kubernetes-client-linux-....tar.gz` and copy the link to it.
+
+Download and extract it with curl & tar:
+```bash
+curl -L https://dl.k8s.io/v1.11.0/kubernetes-client-linux-amd64.tar.gz | tar xvzf -
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   161  100   161    0     0    304      0 --:--:-- --:--:-- --:--:--   304
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0kubernetes/
+kubernetes/client/
+kubernetes/client/bin/
+kubernetes/client/bin/kubectl
+100 13.2M  100 13.2M    0     0  5608k      0  0:00:02  0:00:02 --:--:-- 8034k
+```
+
+Then copy it to `/usr/local/bin` or another directory in your `PATH`
+```bash
+sudo cp kubernetes/client/bin/kubectl /usr/local/bin/
+```
+
+##### Generate SSH key (Linux)
+
+From a terminal, make sure you have a SSH public key
+
+```bash
+$ ls ~/.ssh/id_rsa.pub
+/home/patrick/.ssh/id_rsa.pub
+```
+
+If the file doesn't exist, run `ssh-keygen` to create one.
+
+### Create a Resource Group and Service Principal
+
+Now that we have the Azure CLI configured and a SSH key generated, it's time to create a resource group to hold the deployment.
+
+ACS-Engine and Kubernetes also need access to deploy resources inside that resource group to build the cluster, as well as configure more resources such as Azure Load Balancers once the cluster is running. This is done using an Azure Service Principal. It's safest to create one with access just to the resource group so that once your deployment is deleted, the service principal can't be used to make other changes in your subscription.
+
+#### Create a Resource Group and Service Principal (Windows)
+
+`az group create --location <location> --name <name>` will create a group for you. Be sure to use a unique name for each cluster. If you need a list of available locations, run `az account list-locations -o table`.
+
+```powershell
+PS C:\Users\patrick\acs-engine> az group create --location westus2 --name k8s-win1
+{
+  "id": "/subscriptions/df392461-0000-1111-2222-cd3aa2d911a6/resourceGroups/k8s-win1",
+  "location": "westus2",
+  "managedBy": null,
+  "name": "k8s-win1",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null
+}
+```
+
+Now that the group is created, create a service principal with Contributor access for that group only
+
+```powershell
+# Get the group id
+$groupId = (az group show --resource-group <group name> --query id).Replace("""","")
+
+# Create the service principal
+$sp = az ad sp create-for-rbac --role="Contributor" --scopes=$groupId | ConvertFrom-JSON
+```
+
+#### Create a Resource Group and Service Principal (Mac+Linux)
+
+`az group create --location <location> --name <name>` will create a group for you. Be sure to use a unique name for each cluster. If you need a list of available locations, run `az account list-locations -o table`.
+
+```bash
+export RESOURCEGROUP=k8s-win1
+export LOCATION=westus2
+az group create --location $LOCATION --name $RESOURCEGROUP
+```
+
+Now that the group is created, create a service principal with Contributor access for that group only
+
+```bash
+# Get the group id
+export RESOURCEGROUPID=$(az group show --resource-group $RESOURCEGROUP --query id | sed "s/\"//g")
+
+# Create the service principal
+export SERVICEPRINCIPAL=$(az ad sp create-for-rbac --role="Contributor" --scopes=$RESOURCEGROUPID)
+```
+
+
+### Create an acs-engine apimodel
+
+Multiple samples are available in this repo under [examples/windows](../../examples/windows/). This guide will use the [windows/kubernetes.json](../../examples/windows/kubernetes.json) sample to deploy 1 Linux VM to run Kubernetes services, and 2 Windows nodes to run your Windows containers.
+
+After downloading that file, you will need to
+
+1. Set windowsProfile.adminUsername and adminPassword. Be sure to check the Azure Windows VM [username](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/faq?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json#what-are-the-username-requirements-when-creating-a-vm) and [password](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/faq?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json#what-are-the-password-requirements-when-creating-a-vm) requirements first.
+2. Set a unique name for masterProfile.dnsPrefix. This will be the first part of the domain name you'll use to manage the Kubernetes cluster later
+3. Set the ssh public key that will be used to log into the Linux VM
+4. Set the Azure service principal for the deployments
+
+#### Filling out apimodel (Windows)
+
+You can use the same PowerShell window from earlier to run this next script to do all that for you. Be sure to replace `$dnsPrefix` with something unique and descriptive, `$windowsUser` and `$windowsPassword` to meet the requirements.
+
+```powershell
+# Be sure to change these next 3 lines for your deployment
+$dnsPrefix = "wink8s1"
+$windowsUser = "winuser"
+$windowsPassword = "Cr4shOverride!"
+
+# Download template
+Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/Azure/acs-engine/master/examples/windows/kubernetes.json -OutFile kubernetes-windows.json
+
+# Load template
+$inJson = Get-Content .\kubernetes-windows.json | ConvertFrom-Json
+
+# Set dnsPrefix
+$inJson.properties.masterProfile.dnsPrefix = $dnsPrefix
+
+# Set Windows username & password
+$inJson.properties.windowsProfile.adminPassword = $windowsUser
+$inJson.properties.windowsProfile.adminUsername = $windowsPassword
+
+# Copy in your SSH public key from `~/.ssh/id_rsa.pub` to linuxProfile.ssh.publicKeys.keyData
+$inJson.properties.linuxProfile.ssh.publicKeys[0].keyData = [string](Get-Content "~/.ssh/id_rsa.pub")
+
+# Set servicePrincipalProfile
+$inJson.properties.servicePrincipalProfile.clientId = $sp.appId
+$inJson.properties.servicePrincipalProfile.secret = $sp.password
+
+# Save file
+$inJson | ConvertTo-Json -Depth 5 | Out-File -Encoding ascii -FilePath "kubernetes-windows-complete.json"
+```
+
+#### Filling out apimodel (Mac & Linux)
+
+Using the same terminal as before, you can use this script to download the template and fill it out. Be sure to set DNSPREFIX, WINDOWSUSER, and WINDOWSPASSWORD to meet the requirements.
+
+```bash
+export DNSPREFIX="wink8s1"
+export WINDOWSUSER="winuser"
+export WINDOWSPASSWORD="Cr4shOverride!"
+
+curl -L https://raw.githubusercontent.com/Azure/acs-engine/master/examples/windows/kubernetes.json -o kubernetes.json
+
+cat kubernetes.json | \
+jq ".properties.masterProfile.dnsPrefix = \"$DNSPREFIX\"" | \
+jq ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"`cat ~/.ssh/id_rsa.pub`\"" | \
+jq ".properties.servicePrincipalProfile.clientId = `echo $SERVICEPRINCIPAL | jq .appId`" | \
+jq ".properties.servicePrincipalProfile.secret = `echo $SERVICEPRINCIPAL | jq .password`" | \
+jq ".properties.windowsProfile.adminPassword = \"$WINDOWSPASSWORD\"" | \
+jq ".properties.windowsProfile.adminUsername = \"$WINDOWSUSER\"" > kubernetes-windows-complete.json
+```
+
+### Generate Azure Resource Manager template
+
+Now that the ACS-Engine cluster definition is complete, generate the Azure templates with `acs-engine generate kubernetes-windows-complete.json`
+
+```none
+acs-engine.exe generate kubernetes-windows-complete.json
+INFO[0000] Generating assets into _output/plangk8swin1...
+```
+
+This will generate a `_output` directory with a subdirectory named after the dnsPrefix you set above. In this example, it's `_output/plangk8swin1`.
+
+It will also create a working Kubernetes client config file in `_output/<dnsprefix>/kubeconfig` folder. We'll come back to that in a bit.
+
+### Deploy the cluster
+
+Get the paths to `azuredeploy.json` and `azuredeploy.parameters.json` from the last step, and pass them into `az group deployment create --name <name for deployment> --resource-group <resource group name> --template-file <...azuredeploy.json> --parameters <...azuredeploy.parameters.json>`
+
+```powershell
+az group deployment create --name plangk8swin1-deploy --resource-group k8s-win1 --template-file "./_output/plangk8swin1/azuredeploy.json" --parameters "./_output/plangk8swin1/azuredeploy.parameters.json"
+```
+
+After several minutes, it will return the list of resources created in JSON. Look for `masterFQDN`.
+
+```json
+      "masterFQDN": {
+        "type": "String",
+        "value": "plangk8swin1.westus2.cloudapp.azure.com"
+      },
+```
+
+#### Check that the cluster is up
+
+As mentioned earlier, `acs-engine generate` also creates Kubernetes configuration files under `_output/<dnsprefix>/kubeconfig`. There will be one per possible region, so find the one matching the region you deployed in.
+
+In the example above with `dnsprefix`=`plangk8swin1` and the `westus2` region, the filename would be `_output/plangk8swin1/kubeconfig/kubeconfig.westus2.json`.
+
+
+##### Setting KUBECONFIG on Windows
+
+Set `$ENV:KUBECONFIG` to the full path to that file.
+
+```powershell
+$ENV:KUBECONFIG=(Get-Item _output\plangk8swin1\kubeconfig\kubeconfig.westus2.json).FullName
+```
+
+##### Setting KUBECONFIG on Mac or Linux
+
+```bash
+export KUBECONFIG=$(PWD)/_output/$DNSPREFIX/kubeconfig/kubeconfig.westus2.json
+```
+
+Once you have `KUBECONFIG` set, you can verify the cluster is up with `kubectl get node -o wide`.
+
+```powershell
+kubectl get node -o wide
+
+NAME                    STATUS    ROLES     AGE       VERSION   EXTERNAL-IP   OS-IMAGE                    KERNEL-VERSION   CONTAINER-RUNTIME
+40336k8s9000            Ready     <none>    21m       v1.9.10   <none>        Windows Server Datacenter   10.0.17134.112
+                        docker://17.6.2
+40336k8s9001            Ready     <none>    20m       v1.9.10   <none>    Windows Server Datacenter   10.0.17134.112
+                        docker://17.6.2
+k8s-master-40336153-0   Ready     master    22m       v1.9.10   <none>    Ubuntu 16.04.5 LTS   4.15.0-1018-azure   docker://1.13.1
+```
+
+##### SSH to the Linux master (optional)
+
+If you would like to manage the cluster over SSH, you can connect to the Linux master directly using the FQDN of the cluster:
+
+```none
+ssh azureuser@plangk8swin1.westus2.cloudapp.azure.com
+```
+
+### Deploy your first application
+
+Kubernetes deployments are typically written in YAML files. This one will create a pod with a container running the IIS web server, and tell Kubernetes to expose it as a service with the Azure Load Balancer on an external IP.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iis-1803
+  labels:
+    app: iis-1803
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: iis-1803
+      labels:
+        app: iis-1803
+    spec:
+      containers:
+      - name: iis
+        image: microsoft/iis:windowsservercore-1803
+        ports:
+          - containerPort: 80
+      nodeSelector:
+        "beta.kubernetes.io/os": windows
+  selector:
+    matchLabels:
+      app: iis-1803
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iis
+spec:
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+  selector:
+    app: iis-1803
+```
+
+Copy and paste that into a file called `iis.yaml`, then run `kubectl apply -f iis.yaml`. kubectl will show the deployment and service were created:
+
+```powershell
+kubectl apply -f .\iis.yaml
+
+deployment.apps/iis-1803 created
+service/iis created
+```
+
+Now, you can check the status of the pod and service with `kubectl get pod` and `kubectl get service` respectively.
+
+Initially, the pod will be in the `ContainerCreating` state, and eventually go to `Running`. The service will show `<pending>` under `EXTERNAL-IP`. Here's what the first progress will look like:
+
+```none
+kubectl get pod
+
+NAME                        READY     STATUS              RESTARTS   AGE
+iis-1803-6c49777598-h45cs   0/1       ContainerCreating   0          1m
+
+kubectl get service
+NAME         TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
+iis          LoadBalancer   10.0.9.47    <pending>     80:31240/TCP   1m
+kubernetes   ClusterIP      10.0.0.1     <none>        443/TCP        46m
+```
+
+Since this is the first deployment, it will probably take several minutes for the Windows node to download and run the container. Later deployments will be faster because the large `microsoft/windowsservercore` container will already be on disk.
+
+The service will eventually show an EXTERNAL-IP as well:
+```none
+kubectl get service
+NAME         TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
+iis          LoadBalancer   10.0.9.47    13.66.203.178 80:31240/TCP   1m
+kubernetes   ClusterIP      10.0.0.1     <none>        443/TCP        46m
+```
+
+Once the pod is in `Running` state, get the IP from `kubectl get service` then visit `http://<EXTERNAL-IP>` to test your web server.
+
+### What was deployed
+
 
 Once your Kubernetes cluster has been created you will have a resource group containing:
 
 1. 1 master accessible by SSH on port 22 or kubectl on port 443
 
-2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](../ssh.md#ssh-to-the-machine), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.0.4, 3391 to Windows Node 1, 10.240.0.5, and so on as shown in the following image:
-
-![Image of Windows RDP tunnels](../images/rdptunnels.png)
-
-The following image shows the architecture of a container service cluster with 1 master, and 2 agents:
+2. A set of Windows and/or Linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node, following these steps [Connecting to Windows Nodes](troubleshooting.md#connecting-to-windows-nodes).  
 
 ![Image of Kubernetes cluster on azure with Windows](../images/kubernetes-windows.png)
 
-In the image above, you can see the following parts:
+These parts were all automatically created using the Azure Resource Manager template created by ACS-Engine:
 
 1. **Master Components** - The master runs the Kubernetes scheduler, api server, and controller manager.  Port 443 is exposed for remote management with the kubectl cli.
 2. **Linux Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services.
 3. **Windows Nodes** - the Kubernetes windows nodes run in an availability set.
-3. **Common Components** - All VMs run a kubelet, Docker, and a Proxy.
-4. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network.  Each VM is assigned a /24 subnet for their pod CIDR enabling IP per pod.  The proxy running on each VM implements the service network 10.0.0.0/16.
+4. **Common Components** - All VMs run a kubelet, Docker, and a Proxy.
+5. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network and are fully accessible to each other.
 
-All VMs are in the same private VNET and are fully accessible to each other.
+## Next Steps
 
-## Create your First Kubernetes Service
+For more resources on Windows and ACS-Engine, continue reading:
 
-After completing this walkthrough you will know how to:
- * access Kubernetes cluster via SSH,
- * deploy a simple Windows Docker application and expose to the world,
- * and deploy a hybrid Windows / Linux Docker application.
- 
-1. After successfully deploying the template write down the master FQDN (Fully Qualified Domain Name).
-   1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
-   2. If using Portal, to get the output you need to:
-     1. navigate to "resource group"
-     2. click on the resource group you just created
-     3. then click on "Succeeded" under *last deployment*
-     4. then click on the "Microsoft.Template"
-     5. now you can copy the output FQDNs and sample SSH commands
+- [Customizing Windows Deployments](windows-details.md#customizing-windows-deployments)
+- [More Examples](windows-details.md#more-examples)
+- [Troubleshooting](windows-details.md#troubleshooting)
 
-   ![Image of docker scaling](../images/portal-kubernetes-outputs.png)
-
-2. SSH to the master FQDN obtained in step 1.
-
-3. Explore your nodes and running pods:
-  1. to see a list of your nodes type `kubectl get nodes`.  If you want full detail of the nodes, add `-o yaml` to become `kubectl get nodes -o yaml`.
-  2. to see a list of running pods type `kubectl get pods --all-namespaces`.  By default DNS, heapster, and the dashboard pods will be assigned to the Linux nodes.
-
-4. Start your first Docker image by editing a file named `simpleweb.yaml` filling in the contents below, and then apply by typing `kubectl apply -f simpleweb.yaml`.  This will start a windows simple web application and expose to the world.
-
-  ```yaml
-  apiVersion: v1
-  kind: Service
-  metadata:
-    name: win-webserver
-    labels:
-      app: win-webserver
-  spec:
-    ports:
-      # the port that this service should serve on
-    - port: 80
-      targetPort: 80
-    selector:
-      app: win-webserver
-    type: LoadBalancer
-  ---
-  apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    labels:
-      app: win-webserver
-    name: win-webserver
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: win-webserver
-        name: win-webserver
-      spec:
-        containers:
-        - name: windowswebserver
-          image: microsoft/windowsservercore:1803
-          command:
-          - powershell.exe
-          - -command
-          - "<#code used from https://gist.github.com/wagnerandrade/5424431#> ; $$listener = New-Object System.Net.HttpListener ; $$listener.Prefixes.Add('http://*:80/') ; $$listener.Start() ; $$callerCounts = @{} ; Write-Host('Listening at http://*:80/') ; while ($$listener.IsListening) { ;$$context = $$listener.GetContext() ;$$requestUrl = $$context.Request.Url ;$$clientIP = $$context.Request.RemoteEndPoint.Address ;$$response = $$context.Response ;Write-Host '' ;Write-Host('> {0}' -f $$requestUrl) ;  ;$$count = 1 ;$$k=$$callerCounts.Get_Item($$clientIP) ;if ($$k -ne $$null) { $$count += $$k } ;$$callerCounts.Set_Item($$clientIP, $$count) ;$$header='<html><body><H1>Windows Container Web Server</H1>' ;$$callerCountsString='' ;$$callerCounts.Keys | % { $$callerCountsString+='<p>IP {0} callerCount {1} ' -f $$_,$$callerCounts.Item($$_) } ;$$footer='</body></html>' ;$$content='{0}{1}{2}' -f $$header,$$callerCountsString,$$footer ;Write-Output $$content ;$$buffer = [System.Text.Encoding]::UTF8.GetBytes($$content) ;$$response.ContentLength64 = $$buffer.Length ;$$response.OutputStream.Write($$buffer, 0, $$buffer.Length) ;$$response.Close() ;$$responseStatus = $$response.StatusCode ;Write-Host('< {0}' -f $$responseStatus)  } ; "
-        nodeSelector:
-          beta.kubernetes.io/os: windows
-  ```
-
-5. Type `kubectl get pods -w` to watch the deployment of the service that takes about 30 seconds.  Once running, type `kubectl get svc` and curl the 10.x address to see the output, eg. `curl 10.244.1.4`
-
-6. Type `kubectl get svc -w` to watch the addition of the external IP address that will take about 2-5 minutes.  Once there, you can take the external IP and view in your web browser.
-
-## Example using Azure Files and Azure Disks
-### Create Azure File workload
-This example is modified after https://github.com/andyzhangx/Demo/tree/master/windows/azurefile/rs3
-
-#### 1. Create an azure file storage class
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/storageclass-azurefile.yaml```
-
-#### make sure storageclass is created successfully
-```
-kubectl get storageclass/azurefile -o wide
-```
-
-#### 2. Create a pvc for azure file
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/pvc-azurefile.yaml```
-
-#### make sure pvc is created successfully
-```
-kubectl get pvc/pvc-azurefile -o wide
-```
-
-#### 3. Create a pod with azure file pvc
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/iis-azurefile.yaml```
-
-#### watch the status of pod until its `STATUS` is `Running`
-```
-watch kubectl get po/iis-azurefile -o wide
-```
-
-#### 4. Enter the pod container to validate
-```
-kubectl exec -it iis-azurefile -- cmd
-```
-
-```
-C:\>dir c:\mnt\azure
- Volume in drive C has no label.
- Volume Serial Number is F878-8D74
-
- Directory of c:\mnt\azure
-
-11/16/2017  09:45 PM    <DIR>          .
-11/16/2017  09:45 PM    <DIR>          ..
-               0 File(s)              0 bytes
-               2 Dir(s)   5,368,709,120 bytes free
-
-```
-
-### Create Azure Disk workload
-This example is modified after https://github.com/andyzhangx/Demo/tree/master/windows/azuredisk/rs3
-
-#### 1. Create an azure disk storage class
-
-##### option#1: k8s agent pool is based on blob disk VM
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/storageclass-azuredisk.yaml```
-
-##### option#2: k8s agent pool is based on managed disk VM
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/storageclass-azuredisk-managed.yaml```
-
-#### make sure storageclass is created successfully
-```
-kubectl get storageclass/azuredisk -o wide
-```
-
-#### 2. Create a pvc for azure disk
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/pvc-azuredisk.yaml```
-
-#### make sure pvc is created successfully
-```
-kubectl get pvc/pvc-azuredisk -o wide
-```
-
-#### 3. Create a pod with azure disk pvc
-```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/iis-azuredisk.yaml```
-
-#### watch the status of pod until its `STATUS` is `Running`
-```
-watch kubectl get po/iis-azuredisk -o wide
-```
-
-#### 4. Enter the pod container to validate
-```
-kubectl exec -it iis-azuredisk -- cmd
-```
-
-
-## Example using multiple containers in a POD
-```yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: two-containers
-  name: two-containers
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: two-containers
-      name: two-containers
-    spec:
-      volumes:
-      - name: shared-data
-        emptyDir: {}
-
-      containers:
-
-        - name: iis-container
-          image: microsoft/iis:windowsservercore-1803
-          volumeMounts:
-          - name: shared-data
-            mountPath: /wwwcache
-          command: 
-          - powershell.exe
-          - -command 
-          - "while ($true) { Start-Sleep -Seconds 10; Copy-Item -Path C:\\wwwcache\\iisstart.htm -Destination C:\\inetpub\\wwwroot\\iisstart.htm; }"            
-
-        - name: servercore-container
-          image: microsoft/windowsservercore:1803
-          volumeMounts:
-          - name: shared-data
-            mountPath: /poddata
-          command: 
-          - powershell.exe
-          - -command 
-          - "$i=0; while ($true) { Start-Sleep -Seconds 10; $msg = 'Hello from the servercore container, count is {0}' -f $i; Set-Content -Path C:\\poddata\\iisstart.htm -Value $msg; $i++; }"
-
-      nodeSelector:
-        beta.kubernetes.io/os: windows
-```
-
-## Real-world Workload
-TODO
-
-
-## Windows-specific Troubleshooting
-
-Windows support is still in active development with many changes each week. Read on for more info on known per-version issues and troubleshooting if you run into problems.
-
-### Finding logs
-
-To connect to a Windows node using Remote Desktop and get logs, please read over this topic in the main [troubleshooting](troubleshooting.md#how-to-debug-cse-errors-windows) page first.
-
-### Checking versions
-
-Please be sure to include this info with any Windows bug reports.
-
-Kubernetes
-`kubectl version`
--	“Server Version”
-`kubectl describe node <windows node>`
--	“kernel version”
--	Also note the IP Address for the next step, but you don't need to share it
-
-The Azure CNI plugin version and configuration is stored in `C:\k\azurecni\netconf\10-azure.conflist`. Get
--	mode
--	dns.Nameservers
--	dns.Search
-
-Get the Azure CNI build by running `C:\k\azurecni\bin\azure-vnet.exe --help`. It will dump some errors, but the version such as ` v1.0.4-1-gf0f090e` will be listed.
-
-```
-...
-2018/05/23 01:28:57 "Start Flag false CniSucceeded false Name CNI Version v1.0.4-1-gf0f090e ErrorMessage required env variables missing vnet []
-...
-```
-
-### Known Issues per Version
-
-
-ACS-Engine | Windows Server |	Kubernetes | Azure CNI | Notes
------------|----------------|------------|-----------|----------
-V0.16.2	| Windows Server version 1709 (10.0.16299.____)	| V1.9.7 | ? | DNS resolution is not configured
-V0.17.0 | Windows Server version 1709	| V1.10.2 | v1.0.4 | Acs-engine version 0.17 defaults to Windows Server version 1803. You can override it to use 1709 instead [here](#choosing-the-windows-server-version). Manual workarounds needed on Windows for DNS Server list, DNS search suffix
-V0.17.0 | Windows Server version 1803 (10.0.17134.1) | V1.10.2 | v1.0.4 | Manual workarounds needed on Windows for DNS Server list, DNS search suffix, and dropped packets
-v0.17.1 | Windows Server version 1709 | v1.10.3 | v1.0.4-1-gf0f090e | Manual workarounds needed on Windows for DNS Server list and DNS search suffix. This ACS-Engine version defaults to Windows Server version 1803, but you can override it to use 1709 instead [here](#choosing-the-windows-server-version)
-v0.18.3 | Windows Server version 1803 | v1.10.3 | v1.0.6 | Manual workaround needed for DNS search suffix
-
-### Known problems
-
-#### Packets from Windows pods are dropped
-
-Affects: Windows Server version 1803 (10.0.17134.1)
-
-Issues: https://github.com/Azure/acs-engine/issues/3037 
-
-There is a problem with the “L2Tunnel” networking mode not forwarding packets correctly specific to Windows Server version 1803. Windows Server version 1709 is not affected.
-
-Workarounds:
-**Fixes are still in development.** A Windows hotfix is needed, and willbe deployed by ACS-Engine once it's ready. The hotfix will be removed later when it's in a future cumulative rollup.
-
-
-#### Pods cannot resolve public DNS names
-
-Affects: Some builds of Azure CNI
-
-Issues: https://github.com/Azure/azure-container-networking/issues/147
-
-Run `ipconfig /all` in a pod, and check that the first DNS server listed is within your cluster IP range (10.x.x.x). If it's not listed, or not the first in the list, then an azure-cni update is needed.
-
-Workaround:
-
-1.	Get the kube-dns service IP with `kubectl get svc -n kube-system kube-dns`
-2.  Cordon & drain the node
-3.	Modify `C:\k\azurecni\netconf\10-azure.conflist` and make it the first entry under Nameservers
-4.  Uncordon the node
-
-Example:
-```
-{
-    "cniVersion":  "0.3.0",
-    "name":  "azure",
-    "plugins":  [
-                    {
-                        "type":  "azure-vnet",
-                        "mode":  "tunnel",
-                        "bridge":  "azure0",
-                        "ipam":  {
-                                     "type":  "azure-vnet-ipam"
-                                 },
-                        "dns":  {
-                                    "Nameservers":  [
-                                                        "10.0.0.10",
-                                                        "168.63.129.16"
-                                                    ],
-                                    "Search":  [
-                                                   "default.svc.cluster.local"
-                                               ]
-                                },
-…
-```
-
-#### Pods cannot resolve cluster DNS names
-
-Affects: Azure CNI plugin <= 0.3.0
-
-Issues: https://github.com/Azure/azure-container-networking/issues/146
-
-If you can't resolve internal service names within the same namespace, run `ipconfig /all` in a pod, and check that the DNS Suffix Search List matches the form `<namespace>.svc.cluster.local`. An Azure CNI update is needed to set the right DNS suffix.
-
-Workaround:
-1.	Use the FQDN in DNS lookups such as `kubernetes.kube-system.svc.cluster.local`
-2.	Instead of DNS, use environment variables `* _SERVICE_HOST` and `*_SERVICE_PORT` to find service IPs and ports in the same namespace
-
-
-#### Pods cannot ping default route or internet IPs
-
-Affects: All acs-engine deployed clusters
-
-ICMP traffic is not routed between private Azure vNETs or to the internet.
-
-Workaround: test network connections with another protocol (TCP/UDP). For example `Invoke-WebRequest -UseBasicParsing https://www.azure.com` or `curl https://www.azure.com`.
-
-
-
-## Cluster Troubleshooting
-
-If your cluster is not reachable, you can run the following command to check for common failures.
-
-### Misconfigured Service Principal
-
-If your Service Principal is misconfigured, none of the Kubernetes components will come up in a healthy manner.
-You can check to see if this the problem:
-
-```shell
-ssh -i ~/.ssh/id_rsa USER@MASTERFQDN sudo journalctl -u kubelet | grep --text autorest
-```
-
-If you see output that looks like the following, then you have **not** configured the Service Principal correctly.
-You may need to check to ensure the credentials were provided accurately, and that the configured Service Principal has
-read and **write** permissions to the target Subscription.
-
-`Nov 10 16:35:22 k8s-master-43D6F832-0 docker[3177]: E1110 16:35:22.840688    3201 kubelet_node_status.go:69] Unable to construct api.Node object for kubelet: failed to get external ID from cloud provider: autorest#WithErrorUnlessStatusCode: POST https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/token?api-version=1.0 failed with 400 Bad Request: StatusCode=400`
-
-## Learning More
-
-Here are recommended links to learn more about Kubernetes:
+If you'd like to learn more about Kubernetes in general, check out these guides:
 
 1. [Kubernetes Bootcamp](https://kubernetesbootcamp.github.io/kubernetes-bootcamp/index.html) - shows you how to deploy, scale, update, and debug containerized applications.
 2. [Kubernetes Userguide](http://kubernetes.io/docs/user-guide/) - provides information on running programs in an existing Kubernetes cluster.

@@ -5,28 +5,24 @@
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
     {{if .HasWindows}}
       "kubeBinariesSASURL": {
-        {{PopulateClassicModeDefaultValue "kubeBinariesSASURL"}}
         "metadata": {
           "description": "The download url for kubernetes windows binaries."
         },
         "type": "string"
       },
       "windowsPackageSASURLBase": {
-        {{PopulateClassicModeDefaultValue "windowsPackageSASURLBase"}}
         "metadata": {
           "description": "The download url base for windows packages for kubernetes."
         },
         "type": "string"
       },
       "kubeBinariesVersion": {
-        {{PopulateClassicModeDefaultValue "kubeBinariesVersion"}}
         "metadata": {
           "description": "Kubernetes windows binaries version"
         },
         "type": "string"
       },
       "windowsTelemetryGUID": {
-        {{PopulateClassicModeDefaultValue "windowsTelemetryGUID"}}
         "metadata": {
           "description": "The GUID to set in windows agent to collect telemetry data."
         },
@@ -93,14 +89,14 @@
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
-              "[variables('vnetCidr')]"
+              "[parameters('vnetCidr')]"
             ]
           },
           "subnets": [
             {
               "name": "[variables('subnetName')]",
               "properties": {
-                "addressPrefix": "[variables('subnet')]",
+                "addressPrefix": "[parameters('masterSubnet')]",
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"
                 }

@@ -1,6 +1,7 @@
 package kubernetesupgrade
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +40,7 @@ func (kmn *UpgradeMasterNode) DeleteNode(vmName *string, drain bool) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
+func (kmn *UpgradeMasterNode) CreateNode(ctx context.Context, poolName string, masterNo int) error {
 	templateVariables := kmn.TemplateMap["variables"].(map[string]interface{})
 
 	templateVariables["masterOffset"] = masterNo
@@ -57,11 +59,11 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	deploymentName := fmt.Sprintf("master-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
 
 	_, err := kmn.Client.DeployTemplate(
+		ctx,
 		kmn.ResourceGroup,
 		deploymentName,
 		kmn.TemplateMap,
-		kmn.ParametersMap,
-		nil)
+		kmn.ParametersMap)
 	return err
 }
 
@@ -107,7 +109,7 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 			return nil
 		case <-time.After(kmn.timeout):
 			kmn.logger.Errorf("Node was not ready within %v", kmn.timeout)
-			return fmt.Errorf("Node was not ready within %v", kmn.timeout)
+			return errors.Errorf("Node was not ready within %v", kmn.timeout)
 		}
 	}
 }

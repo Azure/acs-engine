@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/operations"
+	"github.com/pkg/errors"
 )
 
 type nodeHealthReport struct {
@@ -63,7 +64,7 @@ bash ./dcos_node_upgrade.sh
 func (uc *UpgradeCluster) runUpgrade() error {
 	if uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig == nil ||
 		uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile == nil {
-		return fmt.Errorf("BootstrapProfile is not set")
+		return errors.New("BootstrapProfile is not set")
 	}
 	newVersion := uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
 	dashedVersion := strings.Replace(newVersion, ".", "-", -1)
@@ -161,7 +162,7 @@ func (uc *UpgradeCluster) upgradeBootstrapNode(masterDNS, bootstrapIP, bootstrap
 		}
 	}
 	if len(url) == 0 {
-		return "", fmt.Errorf("Undefined upgrade script URL")
+		return "", errors.New("Undefined upgrade script URL")
 	}
 	return url, nil
 }

@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +36,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "centralus",
 					timeoutInMinutes:    60,
 				},
-				expectedErr: fmt.Errorf("--resource-group must be specified"),
+				expectedErr: errors.New("--resource-group must be specified"),
 			},
 			{
 				uc: &upgradeCmd{
@@ -47,7 +46,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "",
 					timeoutInMinutes:    60,
 				},
-				expectedErr: fmt.Errorf("--location must be specified"),
+				expectedErr: errors.New("--location must be specified"),
 			},
 			{
 				uc: &upgradeCmd{
@@ -57,7 +56,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
 				},
-				expectedErr: fmt.Errorf("--upgrade-version must be specified"),
+				expectedErr: errors.New("--upgrade-version must be specified"),
 			},
 			{
 				uc: &upgradeCmd{
@@ -67,7 +66,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
 				},
-				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
+				expectedErr: errors.New("--deployment-dir must be specified"),
 			},
 			{
 				uc: &upgradeCmd{
@@ -77,7 +76,7 @@ var _ = Describe("the upgrade command", func() {
 					location:            "southcentralus",
 					timeoutInMinutes:    60,
 				},
-				expectedErr: fmt.Errorf("--deployment-dir must be specified"),
+				expectedErr: errors.New("--deployment-dir must be specified"),
 			},
 			{
 				uc: &upgradeCmd{

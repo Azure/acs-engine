@@ -33,4 +33,9 @@ pkg/openshift/translations/
 # test outputs
 cmd/_test_output
 
+# packer
+packer/settings.json
+packer/sp.json
+
 .idea
+.vs
