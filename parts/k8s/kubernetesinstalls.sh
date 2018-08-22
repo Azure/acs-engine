@@ -122,7 +122,7 @@ function installCNI() {
         downloadCNI
     fi
     mkdir -p $CNI_BIN_DIR
-    tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_PLUGINS_URL}" -C $CNI_BIN_DIR
+    tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 }
@@ -136,7 +136,7 @@ function installAzureCNI() {
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
     mkdir -p $CNI_BIN_DIR
-    tar -xzf "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" -C $CNI_BIN_DIR
+    tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" -C $CNI_BIN_DIR
 }
 
 function installContainerd() {
