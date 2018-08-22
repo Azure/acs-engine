@@ -127,13 +127,13 @@ spec:
         command:
         - /metrics-server
         - --source=kubernetes.summary_api:''
-        resources:
-          requests:
-            cpu:
-            memory:
-          limits:
-            cpu:
-            memory:
+        # resources:
+        #   requests:
+        #     cpu:
+        #     memory:
+        #   limits:
+        #     cpu:
+        #     memory:
       nodeSelector:
         beta.kubernetes.io/os: linux
 ---

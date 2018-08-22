@@ -17,6 +17,9 @@ spec:
         requests:
           cpu: 100m
           memory: 50Mi
+        # limits:
+        #   cpu:
+        #   memory:
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

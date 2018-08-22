@@ -38,13 +38,13 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          resources:
-            requests:
-              cpu:
-              memory:
-            limits:
-              cpu:
-              memory:
+          # resources:
+          #   requests:
+          #     cpu:
+          #     memory:
+          #   limits:
+          #     cpu:
+          #     memory:
           volumeMounts:
           - name: ebtables-rule-repo
             mountPath: /var/run

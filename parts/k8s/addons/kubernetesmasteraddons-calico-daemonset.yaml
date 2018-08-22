@@ -259,13 +259,13 @@ spec:
             path: /readiness
             port: 9098
           periodSeconds: 10
-        resources:
-          requests:
-            cpu:
-            memory:
-          limits:
-            cpu:
-            memory:
+        # resources:
+        #   requests:
+        #     cpu:
+        #     memory:
+        #   limits:
+        #     cpu:
+        #     memory:
 
 ---
 

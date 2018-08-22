@@ -101,7 +101,7 @@ spec:
           # guaranteed class. Currently, this container falls into the
           # "burstable" category so the kubelet doesn't backoff from restarting it.
           limits:
-            cpu:
+            # cpu:
             memory: 170Mi
           requests:
             cpu: 100m
@@ -181,9 +181,9 @@ spec:
           requests:
             cpu: 150m
             memory: 20Mi
-          limits:
-            cpu:
-            memory:
+          # limits:
+          #   cpu:
+          #   memory:
         volumeMounts:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny
@@ -211,9 +211,9 @@ spec:
           requests:
             memory: 20Mi
             cpu: 10m
-          limits:
-            memory:
-            cpu:
+          # limits:
+          #   memory:
+          #   cpu:
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
       nodeSelector:

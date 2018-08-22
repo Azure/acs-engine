@@ -16,10 +16,10 @@ spec:
       resources:
         requests:
           cpu: 40m
-          memory:
-        limits:
-          cpu:
-          memory:
+        #   memory:
+        # limits:
+        #   cpu:
+        #   memory:
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

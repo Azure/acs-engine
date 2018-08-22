@@ -31,10 +31,10 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory:
-          limits:
-            cpu:
-            memory:
+          #   memory:
+          # limits:
+          #   cpu:
+          #   memory:
         securityContext:
           privileged: true
         volumeMounts:
