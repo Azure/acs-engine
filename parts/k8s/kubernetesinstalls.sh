@@ -113,7 +113,7 @@ function downloadCNI() {
 function downloadAzureCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
     CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
-    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${VNET_CNI_PLUGINS_URL}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function installCNI() {
