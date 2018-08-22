@@ -23,7 +23,7 @@ for VNET_CNI_VERSION in $VNET_CNI_VERSIONS; do
     downloadAzureCNI
 done
 
-for CNI_PLUGIN_VERSIONS in $CNI_PLUGIN_VERSION; do
+for CNI_PLUGIN_VERSION in $CNI_PLUGIN_VERSIONS; do
     CNI_PLUGINS_URL="https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-v${CNI_PLUGIN_VERSION}.tgz"
     downloadCNI
 done
