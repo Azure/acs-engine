@@ -165,7 +165,6 @@ function pullHyperkube() {
         cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
         cp "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
     fi
-    rm -rf /tmp/hyperkube.tar "/tmp/img"
 }
 
 function extractHyperkube() {
