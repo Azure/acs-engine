@@ -61,7 +61,7 @@
         {
             "type": "shell",
             "inline": [
-                "sudo /bin/bash -eux /home/packer/install-dependencies.sh",
+                "sudo /bin/bash -ux /home/packer/install-dependencies.sh",
                 "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
                 "rm /home/packer/*.sh"
             ]
