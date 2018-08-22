@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-echo `date`,`hostname`, startscript>>/opt/m
+echo `date`,`hostname`, startcustomscript>>/opt/m
 source /opt/azure/containers/provision_source.sh
 source /opt/azure/containers/provision_installs.sh
 source /opt/azure/containers/provision_configs.sh
@@ -35,7 +35,9 @@ function testOutboundConnection() {
 }
 
 function waitForCloudInit() {
+    echo `date`,`hostname`, startwaitingforcloudinit>>/opt/m
     wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
+    echo `date`,`hostname`, finishwaitingforcloudinit>>/opt/m
 }
 
 function holdWALinuxAgent() {
@@ -125,6 +127,7 @@ fi
 
 echo "Custom script finished successfully"
 
+echo `date`,`hostname`, endcustomscript>>/opt/m
 mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
 ps auxfww > /opt/azure/provision-ps.log &
 
