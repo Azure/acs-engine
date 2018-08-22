@@ -8,8 +8,14 @@ AZURE_CNI_TGZ_TMP="/tmp/azure_cni.tgz"
 CONTAINERNETWORKING_CNI_TGZ_TMP="/tmp/containernetworking_cni.tgz"
 
 function installEtcd() {
-    retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
-    tar -xzvf /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1 || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+    CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2 | tr -d '[:space:]')
+    if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
+        echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
+    else
+        retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+        rm -rf /usr/bin/etcd
+        tar -xzvf /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1 || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+    fi
 }
 
 function installDeps() {
@@ -32,12 +38,17 @@ function installContainerRuntime() {
 }
 
 function installDocker() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
-    echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-    printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
+    if [[ "$CURRENT_VERSION" = ${DOCKER_ENGINE_VERSION} ]]; then
+        echo "docker version ${DOCKER_ENGINE_VERSION} is already installed, skipping download"
+    else
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
+        retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
+        echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+        printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+        apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+    fi
     touch /var/log/azure/docker-install.complete
 }
 
@@ -60,35 +71,45 @@ function installKataContainersRuntime() {
 }
 
 function installClearContainersRuntime() {
-	# Add Clear Containers repository key
-	echo "Adding Clear Containers repository key..."
-    CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
-    CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+    cc-runtime --version
+    if [ $? -eq 0 ]; then
+        echo "cc-runtime is already installed, skipping download"
+    else
+        # Add Clear Containers repository key
+        echo "Adding Clear Containers repository key..."
+        CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
+        CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+        retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
 
-	# Add Clear Container repository
-	echo "Adding Clear Containers repository..."
-	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
+        # Add Clear Container repository
+        echo "Adding Clear Containers repository..."
+        echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
 
-	# Install Clear Containers runtime
-	echo "Installing Clear Containers runtime..."
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 cc-runtime
+        # Install Clear Containers runtime
+        echo "Installing Clear Containers runtime..."
+        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+        apt_get_install 20 30 120 cc-runtime
 
-	# Install the systemd service and socket files.
-	local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+        # Install the systemd service and socket files.
+        local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
+        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+    fi
 }
 
 function installNetworkPlugin() {
-    if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
-        installAzureCNI
-    elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
-		installCNI
-	elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
-        installCNI
+    ls $CNI_BIN_DIR
+    if [ $? -eq 0 ]; then
+        echo "network plugin already installed, skipping download"
+    else
+        if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
+            installAzureCNI
+        elif [[ "${NETWORK_PLUGIN}" = "kubenet" ]]; then
+            installCNI
+        elif [[ "${NETWORK_PLUGIN}" = "flannel" ]]; then
+            installCNI
+        fi
     fi
 }
 
@@ -111,14 +132,19 @@ function installAzureCNI() {
 }
 
 function installContainerd() {
-	CRI_CONTAINERD_VERSION="1.1.0"
-	CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
-    CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-    retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
-	tar -xzf "$CONTAINERD_TGZ_TMP" -C /
-	rm -f "$CONTAINERD_TGZ_TMP"
-	sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
-	echo "Successfully installed cri-containerd..."
+    containerd --version
+    if [ $? -eq 0 ]; then
+        echo "containerd is already installed, skipping download"
+    else
+        CRI_CONTAINERD_VERSION="1.1.0"
+        CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
+        CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
+        retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
+        tar -xzf "$CONTAINERD_TGZ_TMP" -C /
+        rm -f "$CONTAINERD_TGZ_TMP"
+        sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
+        echo "Successfully installed cri-containerd..."
+    fi
 }
 
 function installImg() { 
