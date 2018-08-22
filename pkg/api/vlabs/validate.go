@@ -427,6 +427,10 @@ func (a *Properties) validateAgentPoolProfiles() error {
 					return errors.New("The node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more. ")
 				}
 			}
+
+			if a.AgentPoolProfiles[i].SinglePlacementGroup != nil && a.AgentPoolProfiles[i].AvailabilityProfile != VirtualMachineScaleSets {
+				return errors.New("SinglePlacementGroup is only supported with VirtualMachineScaleSets. ")
+			}
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == OpenShift {

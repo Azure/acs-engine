@@ -15,7 +15,7 @@
             "name": "agentpool",
             "count": 4,
             "vmSize": "Standard_DS2_v2",
-            "AvailabilityZones": [
+            "availabilityZones": [
                 "1",
                 "2"
             ]
