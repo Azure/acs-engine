@@ -483,7 +483,6 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	}
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
-		// Set default Distro to Ubuntu
 		if a.MasterProfile.Distro == "" {
 			a.MasterProfile.Distro = api.AKS
 		}
@@ -588,7 +587,6 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 
 		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
-			// Set default Distro to Ubuntu
 			if profile.Distro == "" {
 				profile.Distro = api.AKS
 			}
