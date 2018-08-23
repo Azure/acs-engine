@@ -22,17 +22,18 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 	addValue(parametersMap, "location", location)
 
 	// Identify Master distro
-	masterDistro := getMasterDistro(properties.MasterProfile)
-	if properties.MasterProfile != nil && properties.MasterProfile.ImageRef != nil {
-		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
-		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
+	if properties.MasterProfile != nil {
+		addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageOffer)
+		addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageSku)
+		addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImagePublisher)
+		addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageVersion)
+		if properties.MasterProfile.ImageRef != nil {
+			addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
+			addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
+		}
 	}
 	// TODO: Choose the correct image config based on the version
 	// for the openshift orchestrator
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[masterDistro].ImageVersion)
 
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", getCloudTargetEnv(location))

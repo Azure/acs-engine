@@ -97,7 +97,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.0.9",
+		ImageVersion:   "0.0.10",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
@@ -483,9 +483,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	}
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
-		// Set default Distro to Ubuntu
 		if a.MasterProfile.Distro == "" {
-			a.MasterProfile.Distro = api.Ubuntu
+			a.MasterProfile.Distro = api.AKS
 		}
 	}
 
@@ -588,9 +587,8 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 
 		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
-			// Set default Distro to Ubuntu
 			if profile.Distro == "" {
-				profile.Distro = api.Ubuntu
+				profile.Distro = api.AKS
 			}
 		}
 
