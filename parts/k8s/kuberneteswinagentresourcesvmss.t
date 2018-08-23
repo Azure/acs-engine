@@ -41,11 +41,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
-      {{if UseSinglePlacementGroup .}}
-      "singlePlacementGroup": true,
-      {{else}}
-      "singlePlacementGroup": false,
-      {{end}}
+      "singlePlacementGroup": {{UseSinglePlacementGroup .}},
       "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"

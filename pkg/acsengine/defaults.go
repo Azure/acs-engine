@@ -561,11 +561,6 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 }
 
 // setVMSSDefaults
-// singlePlacementGroup = false, the scale set can be composed of multiple placement groups and has a range of 0-1,000 VMs
-// singlePlacementGroup = true,, default value, a scale set is composed of a single placement group, and has a range of 0-100 VMs
-// Large scale sets require Azure Managed Disks.
-// https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-placement-groups
-// For availability zones, only standard load balancer is supported.
 func setVMSSDefaults(a *api.Properties) {
 	for _, profile := range a.AgentPoolProfiles {
 		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {

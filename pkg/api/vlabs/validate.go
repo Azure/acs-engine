@@ -196,8 +196,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				}
 
 				if sv.LT(minVersion) {
-					return errors.Errorf("availabilityZone is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-						minVersion.String(), version)
+					return errors.Errorf("availabilityZone is only available in Kubernetes version 1.12 or greater.")
 				}
 			}
 
@@ -424,12 +423,12 @@ func (a *Properties) validateAgentPoolProfiles() error {
 
 			if a.AgentPoolProfiles[i].AvailabilityZones != nil && len(a.AgentPoolProfiles[i].AvailabilityZones) > 0 {
 				if a.AgentPoolProfiles[i].Count < len(a.AgentPoolProfiles[i].AvailabilityZones)*2 {
-					return errors.New("The node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more. ")
+					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 				}
 			}
 
-			if a.AgentPoolProfiles[i].SinglePlacementGroup != nil && a.AgentPoolProfiles[i].AvailabilityProfile != VirtualMachineScaleSets {
-				return errors.New("SinglePlacementGroup is only supported with VirtualMachineScaleSets. ")
+			if a.AgentPoolProfiles[i].SinglePlacementGroup != nil && a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
+				return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")
 			}
 		}
 

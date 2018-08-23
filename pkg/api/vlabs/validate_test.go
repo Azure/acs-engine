@@ -917,7 +917,6 @@ func TestValidateKubernetesLabelKey(t *testing.T) {
 func Test_AadProfile_Validate(t *testing.T) {
 	properties := getK8sDefaultProperties(false)
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
-		t.Parallel()
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
@@ -937,7 +936,6 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 
 	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
-		t.Parallel()
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "1",
@@ -967,7 +965,6 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 
 	t.Run("aadProfiles should not be supported non-Kubernetes orchestrators", func(t *testing.T) {
-		t.Parallel()
 		properties.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: OpenShift,
 		}
@@ -1438,6 +1435,80 @@ func TestProperties_ValidateAddon(t *testing.T) {
 	if err.Error() != expectedMsg {
 		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
 	}
+}
+func TestProperties_ValidateZones(t *testing.T) {
+	p := getK8sDefaultProperties(true)
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Name:                "agentpool",
+			VMSize:              "Standard_DS2_v2",
+			Count:               4,
+			AvailabilityProfile: VirtualMachineScaleSets,
+			AvailabilityZones:   []string{"1", "2"},
+		},
+	}
+	p.OrchestratorProfile.OrchestratorVersion = "1.11.0"
+
+	err := p.validateOrchestratorProfile(false)
+	expectedMsg := "availabilityZone is only available in Kubernetes version 1.12 or greater."
+	if err.Error() != expectedMsg {
+		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	}
+
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Name:                "agentpool",
+			VMSize:              "Standard_DS2_v2",
+			Count:               2,
+			AvailabilityProfile: VirtualMachineScaleSets,
+			AvailabilityZones:   []string{"1", "2"},
+		},
+	}
+	p.OrchestratorProfile.OrchestratorVersion = "1.12.0-beta.0"
+
+	err = p.Validate(true)
+	expectedMsg = "the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more"
+	if err.Error() != expectedMsg {
+		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	}
+
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Name:                "agentpool",
+			VMSize:              "Standard_DS2_v2",
+			Count:               2,
+			AvailabilityProfile: AvailabilitySet,
+			AvailabilityZones:   []string{"1", "2"},
+		},
+	}
+	p.OrchestratorProfile.OrchestratorVersion = "1.12.0-beta.0"
+
+	err = p.Validate(true)
+	expectedMsg = "Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets"
+	if err.Error() != expectedMsg {
+		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	}
+}
+
+func TestProperties_ValidateSinglePlacementGroup(t *testing.T) {
+	p := getK8sDefaultProperties(true)
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Name:                 "agentpool",
+			VMSize:               "Standard_DS2_v2",
+			Count:                2,
+			AvailabilityProfile:  AvailabilitySet,
+			SinglePlacementGroup: helpers.PointerToBool(false),
+		},
+	}
+	p.OrchestratorProfile.OrchestratorVersion = "1.12.0-beta.0"
+
+	err := p.Validate(true)
+	expectedMsg := "singlePlacementGroup is only supported with VirtualMachineScaleSets"
+	if err.Error() != expectedMsg {
+		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	}
+
 }
 
 func TestProperties_ValidateVNET(t *testing.T) {
