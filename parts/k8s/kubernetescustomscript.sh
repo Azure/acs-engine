@@ -31,7 +31,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 1 3 nc -v www.google.com 443 || retrycmd_if_failure 20 1 3 nc -v www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
+    retrycmd_if_failure 20 1 3 nc -vz www.google.com 443 || retrycmd_if_failure 20 1 3 nc -vz www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function waitForCloudInit() {
@@ -122,7 +122,7 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENTs
+    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENT
 fi
 
 echo "Custom script finished successfully"
