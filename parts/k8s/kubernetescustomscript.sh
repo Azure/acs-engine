@@ -67,6 +67,7 @@ installNetworkPlugin
 installContainerd
 extractHyperkube
 ensureRPC
+createKubeManifestDir
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     configureEtcd

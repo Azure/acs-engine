@@ -263,6 +263,11 @@ function ensureEtcd() {
     retrycmd_if_failure 120 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
 }
 
+function createKubeManifestDir() {
+    KUBEMANIFESTDIR=/etc/kubernetes/manifests
+    mkdir -p $KUBEMANIFESTDIR
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
