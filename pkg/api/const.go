@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 // the orchestrators supported by vlabs
 const (
 	// Mesos is the string constant for MESOS orchestrator type
@@ -169,3 +171,5 @@ const (
 	// AgentPoolProfileRoleMaster is the master role
 	AgentPoolProfileRoleMaster AgentPoolProfileRole = "master"
 )
+
+const DefaultARMOperationTimeout = 150 * time.Minute

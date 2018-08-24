@@ -130,7 +130,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 		return errors.Wrap(err, "failed to get client")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), api.DefaultARMOperationTimeout)
 	defer cancel()
 	_, err = sc.client.EnsureResourceGroup(ctx, sc.resourceGroupName, sc.location, nil)
 	if err != nil {
@@ -208,7 +208,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to load existing container service")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), api.DefaultARMOperationTimeout)
 	defer cancel()
 	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
 	var currentNodeCount, highestUsedIndex, index, winPoolIndex int

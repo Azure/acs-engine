@@ -301,7 +301,7 @@ func autofillApimodel(dc *deployCmd) error {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), api.DefaultARMOperationTimeout)
 	defer cancel()
 	_, err = dc.client.EnsureResourceGroup(ctx, dc.resourceGroup, dc.location, nil)
 	if err != nil {
@@ -439,7 +439,7 @@ func (dc *deployCmd) run() error {
 	}
 
 	deploymentSuffix := dc.random.Int31()
-	cx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	cx, cancel := context.WithTimeout(context.Background(), api.DefaultARMOperationTimeout)
 	defer cancel()
 
 	if res, err := dc.client.DeployTemplate(
