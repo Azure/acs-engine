@@ -18,6 +18,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
@@ -51,6 +52,7 @@ type AzureClient struct {
 	authorizationClient             authorization.RoleAssignmentsClient
 	deploymentsClient               resources.DeploymentsClient
 	deploymentOperationsClient      resources.DeploymentOperationsClient
+	msiClient                       msi.UserAssignedIdentitiesClient
 	resourcesClient                 apimanagement.GroupClient
 	storageAccountsClient           storage.AccountsClient
 	interfacesClient                network.InterfacesClient
@@ -272,6 +274,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		authorizationClient:             authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentsClient:               resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentOperationsClient:      resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		msiClient:                       msi.NewUserAssignedIdentitiesClient(subscriptionID),
 		resourcesClient:                 apimanagement.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient:           storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:                network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -290,6 +293,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.authorizationClient.Authorizer = authorizer
 	c.deploymentsClient.Authorizer = authorizer
 	c.deploymentOperationsClient.Authorizer = authorizer
+	c.msiClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
 	c.storageAccountsClient.Authorizer = authorizer
 	c.interfacesClient.Authorizer = authorizer

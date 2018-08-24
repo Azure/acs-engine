@@ -28,6 +28,47 @@ const exampleAPIModel = `{
 }
 `
 
+const exampleSystemMSIModel = `{
+	"apiVersion": "vlabs",
+"properties": {
+	"orchestratorProfile": {
+		"orchestratorType": "Kubernetes",
+		"kubernetesConfig": {
+			"useManagedIdentity": true
+		}
+	},
+	"masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
+	"agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
+	"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	},
+	"servicePrincipalProfile": { "clientId": "", "secret": "" }
+}
+}
+`
+
+const exampleUserMSI = "/subscriptions/<subscription>/resourcegroups/<rg_name>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<identityName>"
+
+const exampleUserMSIModel = `{
+	"apiVersion": "vlabs",
+"properties": {
+	"orchestratorProfile": {
+		"orchestratorType": "Kubernetes",
+		"kubernetesConfig": {
+			"useManagedIdentity": true,
+			"userAssignedID": "` + exampleUserMSI + `"	
+		}
+	},
+	"masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
+	"agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
+	"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	},
+	"servicePrincipalProfile": { "clientId": "", "secret": "" }
+}
+}
+`
+
 func TestOSType(t *testing.T) {
 	p := Properties{
 		MasterProfile: &MasterProfile{
@@ -743,6 +784,38 @@ func TestCustomHyperkubeImageField(t *testing.T) {
 	actualCustomHyperkubeImage := apimodel.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
 	if actualCustomHyperkubeImage != exampleCustomHyperkubeImage {
 		t.Fatalf("kubernetesConfig->customHyperkubeImage field value was unexpected: got(%s), expected(%s)", actualCustomHyperkubeImage, exampleCustomHyperkubeImage)
+	}
+}
+
+func TestUserAssignedMSI(t *testing.T) {
+	// Test1: With just System MSI
+	log.Println(exampleSystemMSIModel)
+	apiloader := &Apiloader{
+		Translator: nil,
+	}
+	apiModel, _, err := apiloader.DeserializeContainerService([]byte(exampleSystemMSIModel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserailizing the example user msi api model: %s", err)
+	}
+	systemMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+	actualUserMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
+	if systemMSI != true || actualUserMSI != "" {
+		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
+	}
+
+	// Test2: With user assigned MSI
+	log.Println(exampleUserMSIModel)
+	apiloader = &Apiloader{
+		Translator: nil,
+	}
+	apiModel, _, err = apiloader.DeserializeContainerService([]byte(exampleUserMSIModel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserailizing the example user msi api model: %s", err)
+	}
+	systemMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+	actualUserMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
+	if systemMSI != true && actualUserMSI != exampleUserMSI {
+		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
 	}
 }
 

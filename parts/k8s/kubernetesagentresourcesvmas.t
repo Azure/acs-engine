@@ -146,10 +146,14 @@
     },
 {{end}}
   {
+    {{if UserAssignedIDEnabled}}
+     "apiVersion": "[variables('apiVersionUserMSI')]",
+    {{else}}
     {{if .IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
     {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+    {{end}}
     {{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
@@ -177,9 +181,18 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
       {{if UseManagedIdentity}}
+      {{if UserAssignedIDEnabled}}
+      "identity": {
+        "type": "userAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        }
+      },
+      {{else}}
       "identity": {
         "type": "systemAssigned"
       },
+      {{end}}
       {{end}}
       {{if and IsOpenShift (not (UseAgentCustomImage .))}}
       "plan": {
@@ -255,7 +268,8 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
-    {{if UseManagedIdentity}}
+    {{if UseManagedIdentity }}
+    {{if (not UserAssignedIDEnabled)}}
     {
       "apiVersion": "2014-10-01-preview",
       "copy": {
@@ -269,6 +283,7 @@
         "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
       }
     },
+    {{end}}
      {
        "type": "Microsoft.Compute/virtualMachines/extensions",
        "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
@@ -278,10 +293,16 @@
        },
        "apiVersion": "2015-05-01-preview",
        "location": "[resourceGroup().location]",
+       {{if UserAssignedIDEnabled}}
+       "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+       ],
+       {{else}}
        "dependsOn": [
          "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
        ],
+       {{end}}
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
          "type": "ManagedIdentityExtensionForLinux",
