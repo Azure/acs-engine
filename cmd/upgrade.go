@@ -122,7 +122,7 @@ func (uc *upgradeCmd) loadCluster(cmd *cobra.Command) error {
 		return errors.Wrap(err, "Failed to get client")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), api.DefaultARMOperationTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), armhelpers.DefaultARMOperationTimeout)
 	defer cancel()
 	_, err = uc.client.EnsureResourceGroup(ctx, uc.resourceGroupName, uc.location, nil)
 	if err != nil {
