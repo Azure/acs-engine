@@ -863,7 +863,7 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = common.AllKubernetesSupportedVersions
+	var backoffEnabledVersions = common.GetAllSupportedKubernetesVersions(true, false)
 	// at present all supported versions allow for cloudprovider backoff
 	// disallow backoff for future versions thusly:
 	// for version := range []string{"1.11.0", "1.11.1", "1.11.2"} {
