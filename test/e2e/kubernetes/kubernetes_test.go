@@ -1103,7 +1103,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
 				for _, iisPod := range iisPods {
-					pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
@@ -1116,6 +1116,89 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
+		})
+
+		It("should be able to resolve DNS across windows and linux deployments", func() {
+			iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+
+			By("Creating a deployment running IIS")
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			windowsDeploymentName := fmt.Sprintf("iis-dns-%s-%v", cfg.Name, r.Intn(99999))
+			windowsIISDeployment, err := deployment.CreateWindowsDeploy(iisImage, windowsDeploymentName, "default", 80, -1)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Creating a nginx deployment")
+			nginxDeploymentName := fmt.Sprintf("nginx-dns-%s-%v", cfg.Name, r.Intn(99999))
+			linuxNginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", nginxDeploymentName, "default", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Ensure there is a Running nginx pod")
+			running, err := pod.WaitOnReady(nginxDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			By("Ensure there is a Running iis pod")
+			running, err = pod.WaitOnReady(windowsDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			By("Exposing a internal service for the linux nginx deployment")
+			err = linuxNginxDeploy.Expose("ClusterIP", 80, 80)
+			Expect(err).NotTo(HaveOccurred())
+			linuxService, err := service.Get(nginxDeploymentName, "default")
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Exposing a internal service for the windows iis deployment")
+			err = windowsIISDeployment.Expose("ClusterIP", 80, 80)
+			Expect(err).NotTo(HaveOccurred())
+			windowsService, err := service.Get(windowsDeploymentName, "default")
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Connecting to Windows from another Windows deployment")
+			curlImage := "microsoft/iis:windowsservercore-1803"
+			windowsCurlDeploymentName := fmt.Sprintf("windows-curl-dns-%s-%v", cfg.Name, r.Intn(99999))
+			windowsCurlDeploy, err := deployment.CreateWindowsDeploy(curlImage, windowsCurlDeploymentName, "default", 80, -1)
+			Expect(err).NotTo(HaveOccurred())
+			running, err = pod.WaitOnReady(windowsCurlDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+			curlPods, err := windowsCurlDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			for _, curlPod := range curlPods {
+				pass, err := curlPod.CheckWindowsOutboundConnection("http://"+windowsService.Metadata.Name, 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
+			}
+
+			By("Connecting to Linux from Windows deployment")
+			curlPods, err = windowsCurlDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			for _, curlPod := range curlPods {
+				pass, err := curlPod.CheckWindowsOutboundConnection("http://"+linuxService.Metadata.Name, 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
+			}
+
+			By("Connecting to Windows from Linux deployment")
+			linuxPods, err := linuxNginxDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			for _, linuxPod := range linuxPods {
+				pass, err := linuxPod.ValidateCurlConnection("http://"+windowsService.Metadata.Name, 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pass).To(BeTrue())
+			}
+
+			By("Cleaning up after ourselves")
+			err = windowsCurlDeploy.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = windowsIISDeployment.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = linuxNginxDeploy.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = windowsService.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = linuxService.Delete()
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("Should not have any unready or crashing pods right after deployment", func() {
