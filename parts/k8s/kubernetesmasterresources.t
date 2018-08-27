@@ -1,3 +1,4 @@
+{{ $Context := . }}
 {{if .MasterProfile.IsManagedDisks}}
     {
       "apiVersion": "[variables('apiVersionCompute')]",
@@ -265,81 +266,120 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
+    {{/* allocate all static ips separately and BEFORE dynamic ips */}}
+      {{range $seq := loop 0 (subtract .MasterProfile.Count 1) }}
+         {{ $MasterProfile := $Context.MasterProfile }}
+        {
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "dependsOn": [
+            "[variables('nsgID')]"
+            {{if not $MasterProfile.IsCustomVNET}}
+            ,"[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),'{{$seq}}')]"
+            {{ end }}
+
+            ,"[variables('masterLbID')]"
+            {{if gt $MasterProfile.Count 1}}
+               ,"[variables('masterInternalLbID')]"
+            {{ end }}
+
+          ],
+          "location": "[variables('location')]",
+          "name": "[concat(variables('masterVMNamePrefix'), 'nic-{{$seq}}')]",
+          "properties": {
+            "ipConfigurations": [
+              {
+                "name": "ipconfig{{add $seq 1}}",
+                "properties": {
+                  {{/* the 1st static ip is primary and gets set for the balancer*/}}
+                  "loadBalancerBackendAddressPools": [
+                    {
+                      "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                    }
+                    {{if gt $MasterProfile.Count 1}}
+                    ,{
+                      "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                    }
+                    {{end}}
+                  ],
+                  "loadBalancerInboundNatRules": [
+                    {{if not $MasterProfile.IsCustomVNET}}
+                    {
+                      "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),'{{$seq}}')]"
+                    }
+                    {{ end }}
+                  ],
+                  "primary": true,
+                  "privateIPAddress": "[variables('masterPrivateIpAddrs')[{{$seq}}]]",
+                  "privateIPAllocationMethod": "Static",
+                  "subnet": {
+                    "id": "[variables('vnetSubnetID')]"
+                  }
+                }
+              }
+            ]
+
+          {{if not IsAzureCNI}}
+                  ,
+                      "enableIPForwarding": true
+          {{end}}
+          {{if HasCustomNodesDNS}}
+           ,"dnsSettings": {
+                    "dnsServers": [
+                        "[variables('dnsServer')]"
+                    ]
+                }
+          {{end}}
+          {{if or $MasterProfile.IsCustomVNET IsOpenShift}}
+                  ,"networkSecurityGroup": {
+                    "id": "[variables('nsgID')]"
+                  }
+          {{end}}
+            }
+          ,"type": "Microsoft.Network/networkInterfaces"
+        },
+    {{ end }}
+
+    {{/* the dynamic nics get created AFTER the static addresses are allocated azure cni case else there is a race condition */}}
+    {{if IsAzureCNI}}
+        {{ range $seq := loop 0 (subtract (subtract .MasterProfile.IPAddressCount .MasterProfile.Count) 1) }}
+        {{ $MasterProfile := $Context.MasterProfile }}
+        {{ $nicId := (add $MasterProfile.Count $seq)}}
     {
       "apiVersion": "[variables('apiVersionNetwork')]",
-      "copy": {
-        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
-        "name": "nicLoopNode"
-      },
       "dependsOn": [
 {{if not IsOpenShift}}
-{{if .MasterProfile.IsCustomVNET}}
+{{if $MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
 {{else}}
         "[variables('vnetID')]",
 {{end}}
 {{else}}
         "[variables('nsgID')]",
-{{if not .MasterProfile.IsCustomVNET}}
+{{if not $MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]",
 {{end}}
 {{end}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
-{{if gt .MasterProfile.Count 1}}
-        ,"[variables('masterInternalLbName')]"
-{{end}}
+        {{ range $seq2 := loop 0 (subtract $MasterProfile.Count 1) }}
+        {{/* key bit to make sure that ALL the static ips are allocated BEFORE dynamic address assignment */}}
+        {{ if gt $seq2 0}} , {{ end }}
+        "[concat(variables('masterVMNamePrefix'), 'nic-{{$seq2}}')]"
+        {{ end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), 'nic-{{ $nicId}}')]",
       "properties": {
         "ipConfigurations": [
           {
-            "name": "ipconfig1",
+            "name": "ipconfig{{ $nicId }}",
             "properties": {
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                }
-{{if gt .MasterProfile.Count 1}}
-                ,
-                {
-                   "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                }
-{{end}}
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
-                }
-              ],
-              "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "primary": true,
-              "privateIPAllocationMethod": "Static",
-              "subnet": {
-                "id": "[variables('vnetSubnetID')]"
-              }
-            }
-          }
-{{if IsAzureCNI}}
-          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
-          ,
-          {
-            "name": "ipconfig{{$seq}}",
-            "properties": {
-              "primary": false,
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
             }
           }
-          {{end}}
-{{end}}
         ]
-{{if not IsAzureCNI}}
-        ,
-        "enableIPForwarding": true
-{{end}}
 {{if HasCustomNodesDNS}}
  ,"dnsSettings": {
           "dnsServers": [
@@ -347,7 +387,7 @@
           ]
       }
 {{end}}
-{{if or .MasterProfile.IsCustomVNET IsOpenShift}}
+{{if or $MasterProfile.IsCustomVNET IsOpenShift}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         }
@@ -355,6 +395,8 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
+    {{ end }} {{/* range $MasterProfile.Count */}}
+    {{ end }} {{/*IsAzureCNI */}}
 {{else}}
       {
         "apiVersion": "[variables('apiVersionCompute')]",
@@ -387,11 +429,9 @@
               "name": "ipconfig1",
               "properties": {
                 "loadBalancerBackendAddressPools": [
-  {{if gt .MasterProfile.Count 1}}
                   {
                     "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                   }
-  {{end}}
                 ],
                 "loadBalancerInboundNatRules": [
                 ],
