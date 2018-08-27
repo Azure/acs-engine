@@ -24,14 +24,14 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 
 	// wait till future completes
 	e1 := future.WaitForCompletion(ctx, az.deploymentsClient.Client)
-	if err != nil && e1 != nil {
+	if e1 != nil {
 		log.Errorf("Wait for future to complete failed: %+v.", e1)
 		return resources.DeploymentExtended{}, err
 	}
 
 	// get future results
 	deploymentResult, e2 := future.Result(az.deploymentsClient)
-	if err != nil && e2 != nil {
+	if e2 != nil {
 		log.Errorf("Get future result failed: %+v.", e2)
 		return resources.DeploymentExtended{}, err
 	}
