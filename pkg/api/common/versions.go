@@ -241,6 +241,8 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.11.0-alpha.2"} {
 		delete(ret, version)
 	}
+	// 1.8.12 is the latest supported patch for Windows
+	ret["1.8.12"] = true
 	return ret
 }
 
