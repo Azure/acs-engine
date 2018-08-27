@@ -862,16 +862,6 @@ func (w *WindowsProfile) Validate(orchestratorType string) error {
 func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = common.GetAllSupportedKubernetesVersions(true, false)
-	// at present all supported versions allow for cloudprovider backoff
-	// disallow backoff for future versions thusly:
-	// for version := range []string{"1.11.0", "1.11.1", "1.11.2"} {
-	//     backoffEnabledVersions[version] = false
-	// }
-
-	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
-	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if k.ClusterSubnet != "" {
 		_, subnet, err := net.ParseCIDR(k.ClusterSubnet)
@@ -946,18 +936,6 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 		_, err := time.ParseDuration(k.ControllerManagerConfig["--route-reconciliation-period"])
 		if err != nil {
 			return errors.Errorf("--route-reconciliation-period '%s' is not a valid duration", k.ControllerManagerConfig["--route-reconciliation-period"])
-		}
-	}
-
-	if k.CloudProviderBackoff {
-		if !backoffEnabledVersions[k8sVersion] {
-			return errors.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
-		}
-	}
-
-	if k.CloudProviderRateLimit {
-		if !ratelimitEnabledVersions[k8sVersion] {
-			return errors.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
