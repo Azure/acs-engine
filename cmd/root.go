@@ -90,18 +90,6 @@ type authProvider interface {
 	getClient() (armhelpers.ACSEngineClient, error)
 }
 
-//MockAuthProvider implements AuthProvider and allows in particular to stub out getClient()
-type mockAuthProvider struct {
-	*authArgs
-}
-
-func (provider mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
-	return &armhelpers.MockACSEngineClient{}, nil
-}
-func (provider mockAuthProvider) getAuthArgs() *authArgs {
-	return provider.authArgs
-}
-
 type authArgs struct {
 	RawAzureEnvironment string
 	rawSubscriptionID   string

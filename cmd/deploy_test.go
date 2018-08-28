@@ -55,6 +55,18 @@ const ExampleAPIModelWithoutServicePrincipalProfile = `{
   }
   `
 
+//mockAuthProvider implements AuthProvider and allows in particular to stub out getClient()
+type mockAuthProvider struct {
+	*authArgs
+}
+
+func (provider mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
+	return &armhelpers.MockACSEngineClient{}, nil
+}
+func (provider mockAuthProvider) getAuthArgs() *authArgs {
+	return provider.authArgs
+}
+
 func getExampleAPIModel(useManagedIdentity bool, clientID, clientSecret string) string {
 	return getAPIModel(ExampleAPIModel, useManagedIdentity, clientID, clientSecret)
 }
