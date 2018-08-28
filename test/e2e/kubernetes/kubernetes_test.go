@@ -104,7 +104,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				var err error
 				if i < 1 {
 					// Print the first attempt
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", true)
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.8 53", true)
 				} else {
 					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", false)
 				}
@@ -1155,17 +1155,25 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Connecting to Windows from another Windows deployment")
-			// TODO
+			windowsCurl := fmt.Sprintf("windows-curl-%s", cfg.Name)
+			command := "curl http://" + windowsService.Metadata.Name
+			successes, err := pod.RunWindowsCommandMultipleTimes("microsoft/nanoserver:1803", windowsCurl, command, cfg.StabilityIterations)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Linux from Windows deployment")
-			alpinePodName := fmt.Sprintf("alpine-%s", cfg.Name)
-			command := "curl http://" + linuxService.Metadata.Name
-			successes, err := pod.RunLinuxPodMultipleTimes("alpine", alpinePodName, command, cfg.StabilityIterations)
+			windowsCurl = fmt.Sprintf("windows-curl-%s", cfg.Name)
+			command = "curl http://" + linuxService.Metadata.Name
+			successes, err = pod.RunWindowsCommandMultipleTimes("microsoft/nanoserver:1803", windowsCurl, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Windows from Linux deployment")
-			// TODO
+			linuxCurl := fmt.Sprintf("alpine-%s", cfg.Name)
+			command = "curl http://" + windowsService.Metadata.Name
+			successes, err = pod.RunLinuxCommandMultipleTimes("alpine", linuxCurl, command, cfg.StabilityIterations)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Cleaning up after ourselves")
 			err = windowsIISDeployment.Delete()

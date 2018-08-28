@@ -184,8 +184,8 @@ func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*P
 	return p, nil
 }
 
-// RunLinuxPodMultipleTimes runs the same command 'attempts' times
-func RunLinuxPodMultipleTimes(image, name, command string, attempts int) (int, error) {
+// RunLinuxCommandMultipleTimes runs the same command 'attempts' times
+func RunLinuxCommandMultipleTimes(image, name, command string, attempts int) (int, error) {
 	var successes int
 	for i := 0; i < attempts; i++ {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -197,6 +197,44 @@ func RunLinuxPodMultipleTimes(image, name, command string, attempts int) (int, e
 			p, err = RunLinuxPod(image, podName, "default", command, true)
 		} else {
 			p, err = RunLinuxPod(image, podName, "default", command, false)
+		}
+		if err != nil {
+			return successes, err
+		}
+		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
+		out, err := util.RunAndLogCommand(cmd)
+		if err != nil {
+			log.Printf("Unable to get logs from pod %s\n", podName)
+		} else {
+			log.Printf("%s\n", string(out[:]))
+		}
+		if succeeded {
+			successes++
+		}
+		err = p.Delete()
+		if err != nil {
+			return successes, err
+		}
+	}
+
+	log.Printf("Ran command successfully on %d of %d test attempts\n\n", successes, attempts)
+	return successes, nil
+}
+
+// RunWindowsCommandMultipleTimes runs the same command 'attempts' times
+func RunWindowsCommandMultipleTimes(image, name, command string, attempts int) (int, error) {
+	var successes int
+	for i := 0; i < attempts; i++ {
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		podName := fmt.Sprintf("%s-%d", name, r.Intn(99999))
+		var p *Pod
+		var err error
+		if i < 1 {
+			// Print the first attempt
+			p, err = RunWindowsPod(image, podName, "default", command, true)
+		} else {
+			p, err = RunWindowsPod(image, podName, "default", command, false)
 		}
 		if err != nil {
 			return successes, err
