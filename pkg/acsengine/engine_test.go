@@ -322,45 +322,6 @@ func TestTemplateOutputPresence(t *testing.T) {
 	}
 }
 
-func TestGetGPUDriversInstallScript(t *testing.T) {
-
-	// VMSize with GPU and NVIDIA agreement for drivers distribution
-	validSkus := []string{
-		"Standard_NC6",
-		"Standard_NC12",
-		"Standard_NC24",
-		"Standard_NC24r",
-		"Standard_NV6",
-		"Standard_NV12",
-		"Standard_NV24",
-		"Standard_NV24r",
-		"Standard_ND6s",
-		"Standard_ND12s",
-		"Standard_ND24s",
-		"Standard_ND24rs",
-		"Standard_NC6s_v2",
-		"Standard_NC12s_v2",
-		"Standard_NC24s_v2",
-		"Standard_NC24rs_v2",
-		"Standard_NC6s_v3",
-		"Standard_NC12s_v3",
-		"Standard_NC24s_v3",
-		"Standard_NC24rs_v3",
-	}
-
-	for _, sku := range validSkus {
-		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s == "" {
-			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
-		}
-	}
-
-	// VMSize without GPU
-	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"})
-	if s != "" {
-		t.Fatalf("VMSize without GPU should not receive a script, expected empty string, received %v", s)
-	}
-}
 func TestIsNSeriesSKU(t *testing.T) {
 	// VMSize with GPU
 	validSkus := []string{
@@ -383,6 +344,7 @@ func TestIsNSeriesSKU(t *testing.T) {
 		"Standard_NV12",
 		"Standard_NV24",
 		"Standard_NV6",
+		"Standard_NV24r",
 	}
 
 	invalidSkus := []string{

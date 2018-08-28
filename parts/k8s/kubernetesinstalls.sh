@@ -25,6 +25,48 @@ function installDeps() {
     apt_get_install 20 30 300 apt-transport-https ca-certificates iptables iproute2 ebtables socat util-linux mount ethtool init-system-helpers nfs-common ceph-common conntrack glusterfs-client ipset jq cgroup-lite git pigz xz-utils blobfuse fuse cifs-utils || exit $ERR_APT_INSTALL_TIMEOUT
 }
 
+function installGPUDrivers() {
+    # latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
+    DV=396.26
+    DEST=/usr/local/nvidia
+	NVIDIA_DOCKER_VERSION=2.0.3
+	DOCKER_VERSION=1.13.1-1
+	NVIDIA_CONTAINER_RUNTIME_VERSION=2.0.0
+    # First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
+	# We also installed needed dependencies.
+    rmmod nouveau
+    echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf
+    update-initramfs -u
+    mkdir -p $DEST
+    cd $DEST
+    # Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
+    retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
+    cat /tmp/aptnvidia.gpg | apt-key add -
+    retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
+    cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+    apt_get_update
+    retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms
+    retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=$NVIDIA_DOCKER_VERSION+docker$DOCKER_VERSION nvidia-container-runtime=$NVIDIA_CONTAINER_RUNTIME_VERSION+docker$DOCKER_VERSION
+    pkill -SIGHUP dockerd
+    mkdir -p $DEST
+    cd $DEST
+    # Download the .run file from NVIDIA.
+	# Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
+	# Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
+    retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$DV/NVIDIA-Linux-x86_64-$DV.run -o nvidia-drivers-$DV
+    mkdir -p lib64 overlay-workdir
+    mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu
+    sh nvidia-drivers-$DV --silent --accept-license --no-drm --dkms --utility-prefix="${DEST}" --opengl-prefix="${DEST}"
+    echo "${DEST}/lib64" > /etc/ld.so.conf.d/nvidia.conf
+    ldconfig
+    umount -l /usr/lib/x86_64-linux-gnu
+    nvidia-modprobe -u -c0
+    $DEST/bin/nvidia-smi
+    ldconfig
+    systemctlEnableAndStart nvidia-modprobe
+    retrycmd_if_failure 5 10 60 systemctl restart kubelet
+}
+
 function installContainerRuntime() {
     if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
         installDocker
@@ -48,7 +90,6 @@ function installDocker() {
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
         apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     fi
-    touch /var/log/azure/docker-install.complete
 }
 
 function installKataContainersRuntime() {
