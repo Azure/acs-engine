@@ -43,4 +43,6 @@ done
 
 df -h
 
-echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
+echo "Install completed successfully on " `date` >> /var/log/azure/golden-image-install.complete
+echo "\nBuild ID: ${BUILD_ID}" >> /var/log/azure/golden-image-install.complete
+echo "\nCommit: ${GIT_VERSION}" >> /var/log/azure/golden-image-install.complete
