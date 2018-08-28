@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -157,6 +158,68 @@ func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod
 		return nil, err
 	}
 	return p, nil
+}
+
+// RunWindowsPod will create a pod that runs a bash command
+// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}'
+func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
+	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", command)
+	var out []byte
+	var err error
+	if printOutput {
+		out, err = util.RunAndLogCommand(cmd)
+	} else {
+		out, err = cmd.CombinedOutput()
+	}
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	p, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return p, nil
+}
+
+// RunLinuxPodMultipleTimes runs the same command 'attempts' times
+func RunLinuxPodMultipleTimes(image, name, command string, attempts int) (int, error) {
+	var successes int
+	for i := 0; i < attempts; i++ {
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		podName := fmt.Sprintf("%s-%d", name, r.Intn(99999))
+		var p *Pod
+		var err error
+		if i < 1 {
+			// Print the first attempt
+			p, err = RunLinuxPod(image, podName, "default", command, true)
+		} else {
+			p, err = RunLinuxPod(image, podName, "default", command, false)
+		}
+		if err != nil {
+			return successes, err
+		}
+		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
+		out, err := util.RunAndLogCommand(cmd)
+		if err != nil {
+			log.Printf("Unable to get logs from pod %s\n", podName)
+		} else {
+			log.Printf("%s\n", string(out[:]))
+		}
+		if succeeded {
+			successes++
+		}
+		err = p.Delete()
+		if err != nil {
+			return successes, err
+		}
+	}
+
+	log.Printf("Ran command successfully on %d of %d test attempts\n\n", successes, attempts)
+	return successes, nil
 }
 
 // GetAll will return all pods in a given namespace
