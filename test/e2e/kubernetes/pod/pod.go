@@ -137,9 +137,9 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 }
 
 // RunLinuxPod will create a pod that runs a bash command
-// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+// --overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
-	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	var out []byte
 	var err error
@@ -161,9 +161,9 @@ func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod
 }
 
 // RunWindowsPod will create a pod that runs a bash command
-// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}'
+// --overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
-	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
+	overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", command)
 	var out []byte
 	var err error
