@@ -44,8 +44,7 @@ const (
 )
 
 type deployCmd struct {
-	authArgs
-
+	authProvider
 	apimodelPath      string
 	dnsPrefix         string
 	autoSuffix        bool
@@ -68,7 +67,9 @@ type deployCmd struct {
 }
 
 func newDeployCmd() *cobra.Command {
-	dc := deployCmd{}
+	dc := deployCmd{
+		authProvider: &authArgs{},
+	}
 
 	deployCmd := &cobra.Command{
 		Use:   deployName,
@@ -103,7 +104,7 @@ func newDeployCmd() *cobra.Command {
 	f.BoolVarP(&dc.forceOverwrite, "force-overwrite", "f", false, "automatically overwrite existing files in the output directory")
 	f.StringArrayVar(&dc.set, "set", []string{}, "set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 
-	addAuthFlags(&dc.authArgs, f)
+	addAuthFlags(dc.getAuthArgs(), f)
 
 	return deployCmd
 }
@@ -226,11 +227,11 @@ func (dc *deployCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
 		return errors.New("--location does not match api model location")
 	}
 
-	if err = dc.authArgs.validateAuthArgs(); err != nil {
+	if err = dc.getAuthArgs().validateAuthArgs(); err != nil {
 		return err
 	}
 
-	dc.client, err = dc.authArgs.getClient()
+	dc.client, err = dc.authProvider.getClient()
 	if err != nil {
 		return errors.Wrap(err, "failed to get client")
 	}
@@ -313,7 +314,7 @@ func autofillApimodel(dc *deployCmd) error {
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
-		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil && (dc.ClientID.String() == "" || dc.ClientID.String() == "00000000-0000-0000-0000-000000000000") && dc.ClientSecret == "" {
+		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil && (dc.getAuthArgs().ClientID.String() == "" || dc.getAuthArgs().ClientID.String() == "00000000-0000-0000-0000-000000000000") && dc.getAuthArgs().ClientSecret == "" {
 			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
@@ -356,10 +357,10 @@ func autofillApimodel(dc *deployCmd) error {
 				Secret:   secret,
 				ObjectID: servicePrincipalObjectID,
 			}
-		} else if (dc.containerService.Properties.ServicePrincipalProfile == nil || ((dc.containerService.Properties.ServicePrincipalProfile.ClientID == "" || dc.containerService.Properties.ServicePrincipalProfile.ClientID == "00000000-0000-0000-0000-000000000000") && dc.containerService.Properties.ServicePrincipalProfile.Secret == "")) && dc.ClientID.String() != "" && dc.ClientSecret != "" {
+		} else if (dc.containerService.Properties.ServicePrincipalProfile == nil || ((dc.containerService.Properties.ServicePrincipalProfile.ClientID == "" || dc.containerService.Properties.ServicePrincipalProfile.ClientID == "00000000-0000-0000-0000-000000000000") && dc.containerService.Properties.ServicePrincipalProfile.Secret == "")) && dc.getAuthArgs().ClientID.String() != "" && dc.getAuthArgs().ClientSecret != "" {
 			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
-				ClientID: dc.ClientID.String(),
-				Secret:   dc.ClientSecret,
+				ClientID: dc.getAuthArgs().ClientID.String(),
+				Secret:   dc.getAuthArgs().ClientSecret,
 			}
 		}
 	}
