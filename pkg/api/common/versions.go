@@ -369,3 +369,13 @@ func GetLatestPatchVersion(majorMinor string, versionsList []string) (version st
 	}
 	return version
 }
+
+// IsSupportedKubernetesVersion return true if the provided Kubernetes version is supported
+func IsSupportedKubernetesVersion(version string, isUpdate, hasWindows bool) bool {
+	for _, ver := range GetAllSupportedKubernetesVersions(isUpdate, hasWindows) {
+		if ver == version {
+			return true
+		}
+	}
+	return false
+}

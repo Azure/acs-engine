@@ -522,3 +522,15 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 		t.Errorf("It is not empty string")
 	}
 }
+
+func Test_IsSupportedKubernetesVersion(t *testing.T) {
+	for _, isUpdate := range []bool{true, false} {
+		for _, hasWindows := range []bool{true, false} {
+			for _, version := range GetAllSupportedKubernetesVersions(isUpdate, hasWindows) {
+				if !IsSupportedKubernetesVersion(version, isUpdate, hasWindows) {
+					t.Errorf("Expected version %s to be supported when isUpdate is %t and hasWindows is %t", version, isUpdate, hasWindows)
+				}
+			}
+		}
+	}
+}
