@@ -1157,21 +1157,21 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Connecting to Windows from another Windows deployment")
 			name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
-			command := "iwr -UseBasicParsing -TimeoutSec 60 " + windowsService.Metadata.Name
+			command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
 			successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Linux from Windows deployment")
 			name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
-			command = "iwr -UseBasicParsing -TimeoutSec 60 " + linuxService.Metadata.Name
+			command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
 			successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Windows from Linux deployment")
 			name = fmt.Sprintf("linux-2-windows-%s", cfg.Name)
-			command = "curl http://" + windowsService.Metadata.Name
+			command = fmt.Sprintf("curl %s", windowsService.Metadata.Name)
 			successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "radial/busyboxplus:curl", name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
