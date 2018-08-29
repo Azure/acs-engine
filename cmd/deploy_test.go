@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"os"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
@@ -57,11 +61,17 @@ const ExampleAPIModelWithoutServicePrincipalProfile = `{
 
 //mockAuthProvider implements AuthProvider and allows in particular to stub out getClient()
 type mockAuthProvider struct {
+	getClientMock armhelpers.ACSEngineClient
+	mock.Mock
 	*authArgs
 }
 
 func (provider mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
-	return &armhelpers.MockACSEngineClient{}, nil
+	if provider.getClientMock == nil {
+		return &armhelpers.MockACSEngineClient{}, nil
+	} else {
+		return provider.getClientMock, nil
+	}
 }
 func (provider mockAuthProvider) getAuthArgs() *authArgs {
 	return provider.authArgs
@@ -530,11 +540,23 @@ func TestDeployCmdMergeAPIModel(t *testing.T) {
 	}
 }
 
-func TestDeployCmdMLoadAPIModel(t *testing.T) {
+type mockAcsEngineClient struct {
+	armhelpers.MockACSEngineClient
+	mock.Mock
+}
+
+func (m *mockAcsEngineClient) DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (resources.DeploymentExtended, error) {
+	m.Called(ctx, resourceGroup, name, template, parameters)
+	return resources.DeploymentExtended{}, nil
+}
+
+func TestDeployCmdRun(t *testing.T) {
+	mockAcsEngineClient := new(mockAcsEngineClient)
 	d := &deployCmd{
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
-			authArgs: &authArgs{},
+			authArgs:      &authArgs{},
+			getClientMock: mockAcsEngineClient,
 		},
 		apimodelPath:    "./this/is/unused.json",
 		outputDirectory: "_test_output",
@@ -554,14 +576,18 @@ func TestDeployCmdMLoadAPIModel(t *testing.T) {
 	}
 
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
-	d.set = []string{"agentPoolProfiles[0].count=1"}
 	d.getAuthArgs().SubscriptionID = fakeSubscriptionID
 	d.getAuthArgs().rawSubscriptionID = fakeRawSubscriptionID
-
-	d.validateArgs(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
-	d.mergeAPIModel()
-	err = d.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	err = d.loadAPIModel(r, []string{})
 	if err != nil {
-		t.Fatalf("unexpected error loading api model: %s", err.Error())
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
 	}
+
+	mockAcsEngineClient.On("DeployTemplate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	err = d.run()
+	mockAcsEngineClient.AssertNumberOfCalls(t, "DeployTemplate", 1)
+	if err != nil {
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
+	}
+
 }
