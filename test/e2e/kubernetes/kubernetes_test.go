@@ -104,7 +104,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				var err error
 				if i < 1 {
 					// Print the first attempt
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.8 53", true)
+					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", true)
 				} else {
 					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", false)
 				}
