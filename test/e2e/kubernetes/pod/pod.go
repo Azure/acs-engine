@@ -137,7 +137,7 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 }
 
 // RunLinuxPod will create a pod that runs a bash command
-// --overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
+// --overrides := `"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
 	overrides := `{ "spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
@@ -160,11 +160,11 @@ func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod
 	return p, nil
 }
 
-// RunWindowsPod will create a pod that runs a bash command
-// --overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
+// RunWindowsPod will create a pod that runs a powershell command
+// --overrides := `"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
 	overrides := `{ "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "powershell", "iwr", "-UseBasicParsing", "-TimeoutSec", "60", command)
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "powershell", command)
 	var out []byte
 	var err error
 	if printOutput {
@@ -184,8 +184,10 @@ func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*P
 	return p, nil
 }
 
-// RunLinuxCommandMultipleTimes runs the same command 'attempts' times
-func RunLinuxCommandMultipleTimes(image, name, command string, attempts int) (int, error) {
+type podRunnerCmd func(string, string, string, string, bool) (*Pod, error)
+
+// RunCommandMultipleTimes runs the same command 'attempts' times
+func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command string, attempts int) (int, error) {
 	var successes int
 	for i := 0; i < attempts; i++ {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -194,47 +196,9 @@ func RunLinuxCommandMultipleTimes(image, name, command string, attempts int) (in
 		var err error
 		if i < 1 {
 			// Print the first attempt
-			p, err = RunLinuxPod(image, podName, "default", command, true)
+			p, err = podRunnerCmd(image, podName, "default", command, true)
 		} else {
-			p, err = RunLinuxPod(image, podName, "default", command, false)
-		}
-		if err != nil {
-			return successes, err
-		}
-		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
-		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
-		out, err := util.RunAndLogCommand(cmd)
-		if err != nil {
-			log.Printf("Unable to get logs from pod %s\n", podName)
-		} else {
-			log.Printf("%s\n", string(out[:]))
-		}
-		if succeeded {
-			successes++
-		}
-		err = p.Delete()
-		if err != nil {
-			return successes, err
-		}
-	}
-
-	log.Printf("Ran command successfully on %d of %d test attempts\n\n", successes, attempts)
-	return successes, nil
-}
-
-// RunWindowsCommandMultipleTimes runs the same command 'attempts' times
-func RunWindowsCommandMultipleTimes(image, name, command string, attempts int) (int, error) {
-	var successes int
-	for i := 0; i < attempts; i++ {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		podName := fmt.Sprintf("%s-%d", name, r.Intn(99999))
-		var p *Pod
-		var err error
-		if i < 1 {
-			// Print the first attempt
-			p, err = RunWindowsPod(image, podName, "default", command, true)
-		} else {
-			p, err = RunWindowsPod(image, podName, "default", command, false)
+			p, err = podRunnerCmd(image, podName, "default", command, false)
 		}
 		if err != nil {
 			return successes, err

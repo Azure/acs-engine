@@ -1120,6 +1120,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to resolve DNS across windows and linux deployments", func() {
 			iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+			windowsServerImage := "microsoft/windowsservercore:1803"
 
 			By("Creating a deployment running IIS")
 			r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -1155,21 +1156,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Connecting to Windows from another Windows deployment")
-			windowsCurl := fmt.Sprintf("windows-curl-%s", cfg.Name)
-			successes, err := pod.RunWindowsCommandMultipleTimes("microsoft/windowsservercore:1803", windowsCurl, windowsService.Metadata.Name, cfg.StabilityIterations)
+			name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
+			command := "iwr -UseBasicParsing -TimeoutSec 60 " + windowsService.Metadata.Name
+			successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Linux from Windows deployment")
-			windowsCurl = fmt.Sprintf("windows-curl-%s", cfg.Name)
-			successes, err = pod.RunWindowsCommandMultipleTimes("microsoft/windowsservercore:1803", windowsCurl, linuxService.Metadata.Name, cfg.StabilityIterations)
+			name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
+			command = "iwr -UseBasicParsing -TimeoutSec 60 " + linuxService.Metadata.Name
+			successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Windows from Linux deployment")
-			linuxCurl := fmt.Sprintf("alpine-%s", cfg.Name)
-			command := "curl http://" + windowsService.Metadata.Name
-			successes, err = pod.RunLinuxCommandMultipleTimes("radial/busyboxplus:curl", linuxCurl, command, cfg.StabilityIterations)
+			name = fmt.Sprintf("linux-2-windows-%s", cfg.Name)
+			command = "curl http://" + windowsService.Metadata.Name
+			successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "radial/busyboxplus:curl", name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
