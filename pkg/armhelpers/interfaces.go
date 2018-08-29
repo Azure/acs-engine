@@ -100,8 +100,8 @@ type ACSEngineClient interface {
 	CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
 	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
 
-	//Create
-	IsUserAssignedIDPresent(resourceGroup string, userAssignedID string) (bool, error)
+	// User Assigned MSI
+	//CreateUserAssignedID - Creates a user assigned msi.
 	CreateUserAssignedID(location string, resourceGroup string, userAssignedID string) (*msi.Identity, error)
 
 	// RBAC

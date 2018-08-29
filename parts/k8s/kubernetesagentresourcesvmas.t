@@ -268,7 +268,7 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
-    {{if UseManagedIdentity }}
+    {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
       "apiVersion": "2014-10-01-preview",
