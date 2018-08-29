@@ -66,14 +66,14 @@ type mockAuthProvider struct {
 	*authArgs
 }
 
-func (provider mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
+func (provider *mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
 	if provider.getClientMock == nil {
 		return &armhelpers.MockACSEngineClient{}, nil
-	} else {
-		return provider.getClientMock, nil
 	}
+	return provider.getClientMock, nil
+
 }
-func (provider mockAuthProvider) getAuthArgs() *authArgs {
+func (provider *mockAuthProvider) getAuthArgs() *authArgs {
 	return provider.authArgs
 }
 
