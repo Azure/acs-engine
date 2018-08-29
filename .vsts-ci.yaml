@@ -24,6 +24,7 @@ phases:
       -e AZURE_LOCATION=${AZURE_LOCATION} \
       -e GIT_VERSION=$(Build.SourceVersion) \
       -e BUILD_ID=$(Build.BuildId) \
+      -e BUILD_NUMBER=$(Build.BuildNumber) \
       ${DEIS_GO_DEV_IMAGE} make run-packer
     displayName: Building VHD
   - script: |
