@@ -1156,22 +1156,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Connecting to Windows from another Windows deployment")
 			windowsCurl := fmt.Sprintf("windows-curl-%s", cfg.Name)
-			command := "curl http://" + windowsService.Metadata.Name
-			successes, err := pod.RunWindowsCommandMultipleTimes("microsoft/nanoserver:1803", windowsCurl, command, cfg.StabilityIterations)
+			successes, err := pod.RunWindowsCommandMultipleTimes("microsoft/windowsservercore:1803", windowsCurl, windowsService.Metadata.Name, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Linux from Windows deployment")
 			windowsCurl = fmt.Sprintf("windows-curl-%s", cfg.Name)
-			command = "curl http://" + linuxService.Metadata.Name
-			successes, err = pod.RunWindowsCommandMultipleTimes("microsoft/nanoserver:1803", windowsCurl, command, cfg.StabilityIterations)
+			successes, err = pod.RunWindowsCommandMultipleTimes("microsoft/windowsservercore:1803", windowsCurl, linuxService.Metadata.Name, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 
 			By("Connecting to Windows from Linux deployment")
 			linuxCurl := fmt.Sprintf("alpine-%s", cfg.Name)
-			command = "curl http://" + windowsService.Metadata.Name
-			successes, err = pod.RunLinuxCommandMultipleTimes("alpine", linuxCurl, command, cfg.StabilityIterations)
+			command := "curl http://" + windowsService.Metadata.Name
+			successes, err = pod.RunLinuxCommandMultipleTimes("radial/busyboxplus:curl", linuxCurl, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 

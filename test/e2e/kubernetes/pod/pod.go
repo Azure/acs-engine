@@ -164,7 +164,7 @@ func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod
 // --overrides := `{ "apiVersion": "v1", "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
 	overrides := `{ "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
-	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", command)
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "powershell", "iwr", "-UseBasicParsing", "-TimeoutSec", "60", command)
 	var out []byte
 	var err error
 	if printOutput {
