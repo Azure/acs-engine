@@ -166,7 +166,7 @@ func (dc *deployCmd) mergeAPIModel() error {
 		// overrides the api model and generates a new file
 		dc.apimodelPath, err = transform.MergeValuesWithAPIModel(dc.apimodelPath, m)
 		if err != nil {
-			return errors.Wrapf(err, "error merging --set values with the api model: %s")
+			return errors.Wrapf(err, "error merging --set values with the api model: %s", dc.apimodelPath)
 		}
 
 		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
