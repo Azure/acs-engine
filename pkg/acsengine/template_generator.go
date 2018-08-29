@@ -679,9 +679,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
-		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
-			return getGPUDriversInstallScript(profile)
-		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
 		},

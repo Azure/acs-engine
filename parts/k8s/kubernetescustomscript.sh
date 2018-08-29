@@ -84,7 +84,6 @@ elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
     fi
 fi
 
-
 configureK8s
 configureCNI
 
@@ -110,6 +109,10 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
         ensureKubelet 
     fi
+fi
+
+if [[ "${GPU_NODE}" = true ]]; then
+    installGPUDrivers
 fi
 
 if $FULL_INSTALL_REQUIRED; then
