@@ -438,6 +438,8 @@ type AgentPoolProfile struct {
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
 	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
+	SinglePlacementGroup  *bool             `json:"singlePlacementGroup,omitempty"`
+	AvailabilityZones     []string          `json:"availabilityZones,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
@@ -492,6 +494,16 @@ type Distro string
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
+			return true
+		}
+	}
+	return false
+}
+
+// HasAvailabilityZones returns true if the cluster contains pools with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.HasAvailabilityZones() {
 			return true
 		}
 	}
@@ -596,6 +608,11 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// HasAvailabilityZones returns true if the agent pool has availability zones
+func (a *AgentPoolProfile) HasAvailabilityZones() bool {
+	return a.AvailabilityZones != nil && len(a.AvailabilityZones) > 0
 }
 
 // HasSearchDomain returns true if the customer specified secrets to install

@@ -700,6 +700,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
+		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
+			return *profile.SinglePlacementGroup
+		},
+		"HasAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
+			return profile.HasAvailabilityZones()
+		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
 		},

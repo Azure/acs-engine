@@ -26,6 +26,9 @@
       "poolName" : "{{.Name}}"
     },
     "location": "[variables('location')]",
+    {{ if HasAvailabilityZones .}}
+    "zones": "[parameters('{{.Name}}AvailabilityZones')]",
+    {{ end }}
     "name": "[variables('{{.Name}}VMNamePrefix')]",
     {{if UseManagedIdentity}}
     "identity": {
@@ -38,6 +41,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
+      "singlePlacementGroup": {{UseSinglePlacementGroup .}},
       "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"

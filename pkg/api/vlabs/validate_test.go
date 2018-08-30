@@ -915,9 +915,9 @@ func TestValidateKubernetesLabelKey(t *testing.T) {
 }
 
 func Test_AadProfile_Validate(t *testing.T) {
-	properties := getK8sDefaultProperties(false)
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
 		t.Parallel()
+		properties := getK8sDefaultProperties(false)
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
@@ -938,6 +938,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 
 	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
 		t.Parallel()
+		properties := getK8sDefaultProperties(false)
 		for _, aadProfile := range []*AADProfile{
 			{
 				ClientAppID: "1",
@@ -968,6 +969,7 @@ func Test_AadProfile_Validate(t *testing.T) {
 
 	t.Run("aadProfiles should not be supported non-Kubernetes orchestrators", func(t *testing.T) {
 		t.Parallel()
+		properties := getK8sDefaultProperties(false)
 		properties.OrchestratorProfile = &OrchestratorProfile{
 			OrchestratorType: OpenShift,
 		}
@@ -1438,6 +1440,99 @@ func TestProperties_ValidateAddon(t *testing.T) {
 	if err.Error() != expectedMsg {
 		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
 	}
+}
+func TestProperties_ValidateZones(t *testing.T) {
+	tests := []struct {
+		name                string
+		orchestratorVersion string
+		agentProfiles       []*AgentPoolProfile
+		expectedErr         string
+	}{
+		{
+			name:                "Agent profile with zones version",
+			orchestratorVersion: "1.11.0",
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater",
+		},
+		{
+			name:                "Agent profile with zones node count",
+			orchestratorVersion: "1.12.0-beta.0",
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               2,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more",
+		},
+		{
+			name:                "Agent profile with zones vmss",
+			orchestratorVersion: "1.12.0-beta.0",
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: AvailabilitySet,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := getK8sDefaultProperties(true)
+			p.AgentPoolProfiles = test.agentProfiles
+			p.OrchestratorProfile.OrchestratorVersion = test.orchestratorVersion
+
+			var err error
+			if test.orchestratorVersion == "1.11.0" {
+				err = p.validateOrchestratorProfile(false)
+			} else {
+				err = p.Validate(true)
+			}
+
+			expectedMsg := test.expectedErr
+			if err.Error() != expectedMsg {
+				t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+			}
+		})
+	}
+}
+
+func TestProperties_ValidateSinglePlacementGroup(t *testing.T) {
+	p := getK8sDefaultProperties(true)
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Name:                 "agentpool",
+			VMSize:               "Standard_DS2_v2",
+			Count:                2,
+			AvailabilityProfile:  AvailabilitySet,
+			SinglePlacementGroup: helpers.PointerToBool(false),
+		},
+	}
+	p.OrchestratorProfile.OrchestratorVersion = "1.12.0-beta.0"
+
+	err := p.Validate(true)
+	expectedMsg := "singlePlacementGroup is only supported with VirtualMachineScaleSets"
+	if err.Error() != expectedMsg {
+		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	}
+
 }
 
 func TestProperties_ValidateVNET(t *testing.T) {

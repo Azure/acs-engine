@@ -177,3 +177,17 @@ func TestAgentPoolProfile(t *testing.T) {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.AvailabilitySets != VirtualMachineScaleSets after unmarshal")
 	}
 }
+
+func TestContainerServiceProperties(t *testing.T) {
+	// Agent pool with availability zones
+	ContainerServicePropertiesText := `{"orchestratorProfile": {"orchestratorType": "Kubernetes","orchestratorRelease": "1.11"}, "agentPoolProfiles":[{ "name": "linuxpool1", "osType" : "Linux", "count": 1, "vmSize": "Standard_D2_v2", 
+		"availabilityProfile": "VirtualMachineScaleSets", "AvailabilityZones": ["1","2"]}]}`
+	prop := &Properties{}
+	if e := json.Unmarshal([]byte(ContainerServicePropertiesText), prop); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for ContainerServiceProperties, %+v", e)
+	}
+
+	if !prop.HasAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
+	}
+}

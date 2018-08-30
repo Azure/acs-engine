@@ -241,6 +241,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
+	setVMSSDefaults(properties)
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
@@ -556,6 +557,28 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 
 	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
 		a.MasterProfile.HTTPSourceAddressPrefix = "*"
+	}
+}
+
+// setVMSSDefaults
+func setVMSSDefaults(a *api.Properties) {
+	for _, profile := range a.AgentPoolProfiles {
+		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {
+			if profile.Count > 100 {
+				profile.SinglePlacementGroup = helpers.PointerToBool(false)
+			}
+			if profile.SinglePlacementGroup == nil {
+				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+			}
+			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
+				profile.StorageProfile = api.ManagedDisks
+			}
+			if profile.HasAvailabilityZones() {
+				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+			}
+		}
+
 	}
 }
 
