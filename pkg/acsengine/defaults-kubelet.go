@@ -26,16 +26,24 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--keep-terminated-pod-volumes": "false",
 	}
 
+	// Start with copy of Linux config
 	staticWindowsKubeletConfig := make(map[string]string)
 	for key, val := range staticLinuxKubeletConfig {
 		staticWindowsKubeletConfig[key] = val
 	}
+
+	// Add Windows-specific overrides
+	// Eventually paths should not be hardcoded here. They should be relative to $global:KubeDir in the PowerShell script
 	staticWindowsKubeletConfig["--azure-container-registry-config"] = "c:\\k\\azure.json"
 	staticWindowsKubeletConfig["--pod-infra-container-image"] = "kubletwin/pause"
 	staticWindowsKubeletConfig["--kubeconfig"] = "c:\\k\\config"
 	staticWindowsKubeletConfig["--cloud-config"] = "c:\\k\\azure.json"
 	staticWindowsKubeletConfig["--cgroups-per-qos"] = "false"
-	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"\""
+	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"\"\"\""
+	staticWindowsKubeletConfig["--client-ca-file"] = "c:\\k\\ca.crt"
+	staticWindowsKubeletConfig["--hairpin-mode"] = "promiscuous-bridge"
+	staticWindowsKubeletConfig["--image-pull-progress-deadline"] = "20m"
+	staticWindowsKubeletConfig["--resolv-conf"] = "\"\"\"\""
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
@@ -135,6 +143,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 			}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+
+		if profile.OSType == "Windows" {
+			// Remove Linux-specific values
+			delete(profile.KubernetesConfig.KubeletConfig, "--pod-manifest-path")
+		}
 
 		// For N Series (GPU) VMs
 		if strings.Contains(profile.VMSize, "Standard_N") {
