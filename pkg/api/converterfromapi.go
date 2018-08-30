@@ -728,6 +728,8 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CloudProviderRateLimitBucket = api.CloudProviderRateLimitBucket
 	vlabs.CloudProviderRateLimitQPS = api.CloudProviderRateLimitQPS
 	vlabs.UseManagedIdentity = api.UseManagedIdentity
+	vlabs.UserAssignedID = api.UserAssignedID
+	vlabs.UserAssignedClientID = api.UserAssignedClientID
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage
@@ -996,6 +998,8 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.FQDN = api.FQDN
 	p.CustomNodeLabels = map[string]string{}
 	p.AcceleratedNetworkingEnabled = api.AcceleratedNetworkingEnabled
+	p.AvailabilityZones = api.AvailabilityZones
+	p.SinglePlacementGroup = api.SinglePlacementGroup
 
 	for k, v := range api.CustomNodeLabels {
 		p.CustomNodeLabels[k] = v

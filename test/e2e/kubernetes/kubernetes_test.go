@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -17,6 +18,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/networkpolicy"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/persistentvolume"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/persistentvolumeclaims"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
@@ -843,6 +845,90 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 				}
+			}
+		})
+	})
+
+	Describe("with all zoned agent pools", func() {
+		It("should be labeled with zones for each node", func() {
+			if eng.HasAllZonesAgentPools() {
+				nodeList, err := node.Get()
+				Expect(err).NotTo(HaveOccurred())
+				for _, node := range nodeList.Nodes {
+					role := node.Metadata.Labels["kubernetes.io/role"]
+					if role == "agent" {
+						By("Ensuring that we get zones for each agent node")
+						zones := node.Metadata.Labels["failure-domain.beta.kubernetes.io/zone"]
+						contains := strings.Contains(zones, "-")
+						Expect(contains).To(Equal(true))
+					}
+				}
+			} else {
+				Skip("Availability zones was not configured for this Cluster Definition")
+			}
+		})
+
+		It("should create pv with zone labels and node affinity", func() {
+			if eng.HasAllZonesAgentPools() {
+				By("Creating a persistent volume claim")
+				pvcName := "azure-managed-disk" // should be the same as in pvc-premium.yaml
+				pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-premium.yaml"), pvcName, "default")
+				Expect(err).NotTo(HaveOccurred())
+				ready, err := pvc.WaitOnReady("default", 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
+
+				pvList, err := persistentvolume.Get()
+				Expect(err).NotTo(HaveOccurred())
+				pvZone := ""
+				for _, pv := range pvList.PersistentVolumes {
+					By("Ensuring that we get zones for the pv")
+					// zone is chosen by round-robin across all zones
+					pvZone = pv.Metadata.Labels["failure-domain.beta.kubernetes.io/zone"]
+					fmt.Printf("pvZone: %s\n", pvZone)
+					contains := strings.Contains(pvZone, "-")
+					Expect(contains).To(Equal(true))
+					// VolumeScheduling feature gate is set to true by default starting v1.10+
+					for _, expression := range pv.Spec.NodeAffinity.Required.NodeSelectorTerms[0].MatchExpressions {
+						if expression.Key == "failure-domain.beta.kubernetes.io/zone" {
+							By("Ensuring that we get nodeAffinity for each pv")
+							value := expression.Values[0]
+							fmt.Printf("NodeAffinity value: %s\n", value)
+							contains := strings.Contains(value, "-")
+							Expect(contains).To(Equal(true))
+						}
+					}
+				}
+
+				By("Launching a pod using the volume claim")
+				podName := "zone-pv-pod" // should be the same as in pod-pvc.yaml
+				testPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "pod-pvc.yaml"), podName, "default")
+				Expect(err).NotTo(HaveOccurred())
+				ready, err = testPod.WaitOnReady(5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
+
+				By("Checking that the pod can access volume")
+				valid, err := testPod.ValidatePVC("/mnt/azure", 10, 10*time.Second)
+				Expect(valid).To(BeTrue())
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring that attached volume pv has the same zone as the zone of the node")
+				nodeName := testPod.Spec.NodeName
+				nodeList, err := node.GetByPrefix(nodeName)
+				Expect(err).NotTo(HaveOccurred())
+				nodeZone := nodeList[0].Metadata.Labels["failure-domain.beta.kubernetes.io/zone"]
+				fmt.Printf("pvZone: %s\n", pvZone)
+				fmt.Printf("nodeZone: %s\n", nodeZone)
+				Expect(nodeZone == pvZone).To(Equal(true))
+
+				By("Cleaning up after ourselves")
+				err = testPod.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = pvc.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("Availability zones was not configured for this Cluster Definition")
 			}
 		})
 	})

@@ -282,6 +282,27 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
+		"UserAssignedIDEnabled": func() bool {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
+				return true
+			}
+			return false
+		},
+		"UserAssignedID": func() string {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
+				return cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
+			}
+			return ""
+		},
+		"UserAssignedClientID": func() string {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedClientID != "" {
+				return cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedClientID
+			}
+			return ""
+		},
 		"UseAksExtension": func() bool {
 			cloudSpecConfig := getCloudSpecConfig(cs.Location)
 			return cloudSpecConfig.CloudName == azurePublicCloud
@@ -678,6 +699,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
+		},
+		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
+			return *profile.SinglePlacementGroup
+		},
+		"HasAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
+			return profile.HasAvailabilityZones()
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()

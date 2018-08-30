@@ -64,6 +64,7 @@ $global:KubeNetwork = "l2bridge"
 $global:KubeDnsSearchPath = "svc.cluster.local"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+$global:UserAssignedClientID = "{{WrapAsVariable "userAssignedClientID"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 $global:LoadBalancerSku = "{{WrapAsVariable "loadBalancerSku"}}"
 $global:ExcludeMasterFromStandardLB = "{{WrapAsVariable "excludeMasterFromStandardLB"}}"
@@ -185,6 +186,7 @@ Write-AzureConfig()
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
+    "userAssignedIdentityID": $global:UserAssignedClientID,
     "useInstanceMetadata": $global:UseInstanceMetadata,
     "loadBalancerSku": "$global:LoadBalancerSku",
     "excludeMasterFromStandardLB": $global:ExcludeMasterFromStandardLB

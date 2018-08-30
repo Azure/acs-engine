@@ -1,4 +1,4 @@
-{{if UseManagedIdentity}}
+{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
     "apiVersion": "2014-10-01-preview",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
@@ -26,11 +26,23 @@
       "poolName" : "{{.Name}}"
     },
     "location": "[variables('location')]",
+    {{ if HasAvailabilityZones .}}
+    "zones": "[parameters('{{.Name}}AvailabilityZones')]",
+    {{ end }}
     "name": "[variables('{{.Name}}VMNamePrefix')]",
     {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+    "identity": {
+      "type": "userAssigned",
+        "identityIds": [
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
+      },
+    {{else}}
     "identity": {
       "type": "systemAssigned"
     },
+    {{end}}
     {{end}}
     "sku": {
       "tier": "Standard",
@@ -38,6 +50,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
+      "singlePlacementGroup": {{UseSinglePlacementGroup .}},
       "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"

@@ -52,6 +52,14 @@
     {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
+    {{if UserAssignedIDEnabled}}
+      {
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "name": "[variables('userAssignedID')]",
+        "apiVersion": "2015-08-31-PREVIEW",
+        "location": "[variables('location')]"
+      },
+    {{end}}
     {{if IsOpenShift}}
       {{template "openshift/infraresources.t" .}}
     {{end}}

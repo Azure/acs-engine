@@ -588,6 +588,48 @@ func TestIsAzureCNINetworkmonitorAddon(t *testing.T) {
 	}
 }
 
+// TestSetVMSSDefaults covers tests for setVMSSDefaults
+func TestSetVMSSDefaults(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10.3")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.AgentPoolProfiles[0].Count = 4
+	setPropertiesDefaults(&mockCS, false, false)
+	if !properties.AgentPoolProfiles[0].IsVirtualMachineScaleSets() {
+		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].AvailabilityProfile, api.VirtualMachineScaleSets)
+	}
+
+	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != api.DefaultSinglePlacementGroup {
+		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup default did not have the expected configuration, got %t, expected %t",
+			*properties.AgentPoolProfiles[0].SinglePlacementGroup, api.DefaultSinglePlacementGroup)
+	}
+
+	if properties.AgentPoolProfiles[0].HasAvailabilityZones() {
+		if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
+			t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
+				properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")
+		}
+		if properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB) {
+			t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",
+				*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, api.DefaultExcludeMasterFromStandardLB)
+		}
+	}
+
+	properties.AgentPoolProfiles[0].Count = 110
+	setPropertiesDefaults(&mockCS, false, false)
+	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != false {
+		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup did not have the expected configuration, got %t, expected %t",
+			*properties.AgentPoolProfiles[0].SinglePlacementGroup, false)
+	}
+
+	if *properties.AgentPoolProfiles[0].SinglePlacementGroup == false && properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
+		t.Fatalf("AgentPoolProfile[0].StorageProfile did not have the expected configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].StorageProfile, api.ManagedDisks)
+	}
+
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
