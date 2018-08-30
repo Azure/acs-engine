@@ -51,8 +51,8 @@ $global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsParameter "windowsTelemetryGUID"}}"
 $global:KubeletNodeLabels = "{{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}"
-$global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
-$global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
+$global:KubeletStartFile = [io.path]::Combine($global:KubeDir, "kubeletstart.ps1")
+$global:KubeProxyStartFile = [io.path]::Combine($global:KubeDir, "kubeproxystart.ps1")
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
@@ -175,7 +175,7 @@ Update-WindowsPackages()
 function
 Write-AzureConfig()
 {
-    $azureConfigFile = $global:KubeDir + "\azure.json"
+    $azureConfigFile = [io.path]::Combine($global:KubeDir, "azure.json")
 
     $azureConfig = @"
 {
@@ -202,10 +202,18 @@ Write-AzureConfig()
     $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"
 }
 
+
+function
+Write-CACert()
+{
+    $caFile = [io.path]::Combine($global:KubeDir, "ca.crt")
+    [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($global:CACertificate)) | Out-File -Encoding ascii $caFile
+}
+
 function
 Write-KubeConfig()
 {
-    $kubeConfigFile = $global:KubeDir + "\config"
+    $kubeConfigFile = [io.path]::Combine($global:KubeDir, "config")
 
     $kubeConfig = @"
 ---
@@ -401,24 +409,24 @@ if (`$hnsNetwork)
     Remove-HnsNetwork `$hnsNetwork
     # Kill all cni instances & stale data left by cni
     # Cleanup all files related to cni
-    `$cnijson = "$global:KubeDir" + "\azure-vnet-ipam.json"
+    `$cnijson = [io.path]::Combine("$global:KubeDir", "azure-vnet-ipam.json")
     if ((Test-Path `$cnijson))
     {
         Remove-Item `$cnijson
     }
-    `$cnilock = "$global:KubeDir" + "\azure-vnet-ipam.lock"
+    `$cnilock = [io.path]::Combine("$global:KubeDir", "azure-vnet-ipam.lock")
     if ((Test-Path `$cnilock))
     {
         Remove-Item `$cnilock
     }
     taskkill /IM azure-vnet-ipam.exe /f
 
-    `$cnijson = "$global:KubeDir" + "\azure-vnet.json"
+    `$cnijson = [io.path]::Combine("$global:KubeDir", "azure-vnet.json")
     if ((Test-Path `$cnijson))
     {
         Remove-Item `$cnijson
     }
-    `$cnilock = "$global:KubeDir" + "\azure-vnet.lock"
+    `$cnilock = [io.path]::Combine("$global:KubeDir", "azure-vnet.lock")
     if ((Test-Path `$cnilock))
     {
         Remove-Item `$cnilock
@@ -676,6 +684,9 @@ try
 
         Write-Log "Write azure config"
         Write-AzureConfig
+
+        Write-Log "Write ca root"
+        Write-CACert
 
         Write-Log "Write kube config"
         Write-KubeConfig
