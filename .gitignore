@@ -39,3 +39,6 @@ packer/sp.json
 
 .idea
 .vs
+
+# exclude vendor directory from gitignore
+!/vendor/**/*
