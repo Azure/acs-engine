@@ -80,7 +80,7 @@ $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
 $global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
 $global:CNIConfigPath = [Io.path]::Combine("$global:CNIPath", "config")
-$global:WindowsCNIKubeletOptions = @("--network-plugin=cni", "--cni-bin-dir=$global:CNIPath", "--cni-conf-dir=$global:CNIConfigPath")
+$global:WindowsCNIKubeletOptions = @("--cni-bin-dir=$global:CNIPath", "--cni-conf-dir=$global:CNIConfigPath")
 $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
@@ -92,7 +92,7 @@ $global:VNetCNIPluginsURL = "{{WrapAsParameter "vnetCniWindowsPluginsURL"}}"
 $global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")
 $global:AzureCNIBinDir = [Io.path]::Combine("$global:AzureCNIDir", "bin")
 $global:AzureCNIConfDir = [Io.path]::Combine("$global:AzureCNIDir", "netconf")
-$global:AzureCNIKubeletOptions = @("--network-plugin=cni", "--cni-bin-dir=$global:AzureCNIBinDir", "--cni-conf-dir=$global:AzureCNIConfDir")
+$global:AzureCNIKubeletOptions = @("--cni-bin-dir=$global:AzureCNIBinDir", "--cni-conf-dir=$global:AzureCNIConfDir")
 $global:AzureCNIEnabled = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
@@ -331,7 +331,6 @@ Write-KubernetesStartFiles($podCIDR)
     $KubeletArgList = $global:KubeletConfigArgs # This is the initial list passed in from acs-engine
     $KubeletArgList += "--node-labels=`$global:KubeletNodeLabels"
     $KubeletArgList += "--hostname-override=`$global:AzureHostname"
-    $KubeletArgList += "--cluster-dns=`$global:KubeDnsServiceIp"
     $KubeletArgList += "--volume-plugin-dir=`$global:VolumePluginDir"
     # If you are thinking about adding another arg here, you should be considering pkg/acsengine/defaults-kubelet.go first
     # Only args that need to be calculated or combined with other ones on the Windows agent should be added here.
