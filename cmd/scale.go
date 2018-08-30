@@ -327,8 +327,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 					continue
 				}
 
-				osPublisher := *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
-				if strings.EqualFold(osPublisher, "MicrosoftWindowsServer") {
+				osPublisher := vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
+				if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
 					_, _, winPoolIndex, err = utils.WindowsVMSSNameParts(*vmss.Name)
 					log.Errorln(err)
 				}
