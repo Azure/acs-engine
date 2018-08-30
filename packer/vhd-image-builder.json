@@ -19,6 +19,7 @@
             "capture_name_prefix": "acsengine-{{timestamp}}",
             "storage_account": "{{user `storage_account_name`}}",
             "os_type": "Linux",
+            "os_disk_size_gb": 100,
             "image_publisher": "Canonical",
             "image_offer": "UbuntuServer",
             "image_sku": "16.04-LTS",
@@ -61,7 +62,7 @@
         {
             "type": "shell",
             "inline": [
-                "sudo /bin/bash -eux /home/packer/install-dependencies.sh",
+                "sudo /bin/bash -ux /home/packer/install-dependencies.sh",
                 "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
                 "rm /home/packer/*.sh"
             ]

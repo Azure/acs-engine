@@ -333,8 +333,8 @@ $inJson = Get-Content .\kubernetes-windows.json | ConvertFrom-Json
 $inJson.properties.masterProfile.dnsPrefix = $dnsPrefix
 
 # Set Windows username & password
-$inJson.properties.windowsProfile.adminPassword = $windowsUser
-$inJson.properties.windowsProfile.adminUsername = $windowsPassword
+$inJson.properties.windowsProfile.adminPassword = $windowsPassword
+$inJson.properties.windowsProfile.adminUsername = $windowsUser
 
 # Copy in your SSH public key from `~/.ssh/id_rsa.pub` to linuxProfile.ssh.publicKeys.keyData
 $inJson.properties.linuxProfile.ssh.publicKeys[0].keyData = [string](Get-Content "~/.ssh/id_rsa.pub")
@@ -545,6 +545,7 @@ For more resources on Windows and ACS-Engine, continue reading:
 - [Customizing Windows Deployments](windows-details.md#customizing-windows-deployments)
 - [More Examples](windows-details.md#more-examples)
 - [Troubleshooting](windows-details.md#troubleshooting)
+- [Using Kubernetes ingress](mixed-cluster-ingress.md) for more flexibility in http and https routing
 
 If you'd like to learn more about Kubernetes in general, check out these guides:
 

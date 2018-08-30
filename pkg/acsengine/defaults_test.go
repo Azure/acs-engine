@@ -533,7 +533,7 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 			api.OrchestratorProfile{
 				OrchestratorType: api.Kubernetes,
 			},
-			api.Ubuntu,
+			api.AKS,
 		},
 		{
 			"rhel_openshift",

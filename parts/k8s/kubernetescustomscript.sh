@@ -31,13 +31,7 @@ else
 fi
 
 function testOutboundConnection() {
-    retrycmd_if_failure 20 1 3 nc -v www.google.com 443 || retrycmd_if_failure 20 1 3 nc -v www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
-}
-
-function waitForCloudInit() {
-    echo `date`,`hostname`, startwaitingforcloudinit>>/opt/m
-    wait_for_file 900 1 /var/log/azure/cloud-init.complete || exit $ERR_CLOUD_INIT_TIMEOUT
-    echo `date`,`hostname`, finishwaitingforcloudinit>>/opt/m
+    retrycmd_if_failure 20 1 3 nc -vz www.google.com 443 || retrycmd_if_failure 20 1 3 nc -vz www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
 }
 
 function holdWALinuxAgent() {
@@ -48,14 +42,14 @@ function holdWALinuxAgent() {
 }
 
 testOutboundConnection
-waitForCloudInit
-holdWALinuxAgent
+
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
 fi
 
 if $FULL_INSTALL_REQUIRED; then
+    holdWALinuxAgent
     installDeps
 else 
     echo "Golden image; skipping dependencies installation"
@@ -66,6 +60,7 @@ installNetworkPlugin
 installContainerd
 extractHyperkube
 ensureRPC
+createKubeManifestDir
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     configureEtcd
@@ -88,7 +83,6 @@ elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
         installKataContainersRuntime
     fi
 fi
-
 
 configureK8s
 configureCNI
@@ -117,12 +111,18 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     fi
 fi
 
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-    echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-    sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+if [[ "${GPU_NODE}" = true ]]; then
+    installGPUDrivers
+fi
 
-    retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENTs
+if $FULL_INSTALL_REQUIRED; then
+    if [[ $OS == $UBUNTU_OS_NAME ]]; then
+        # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+        echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+        sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+
+        retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENT
+    fi
 fi
 
 echo "Custom script finished successfully"

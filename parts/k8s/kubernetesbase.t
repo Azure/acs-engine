@@ -180,12 +180,10 @@
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}
     {{end}}
-    {{if IsHostedMaster}}
-      {{template "iaasoutputs.t" .}}
-    {{else}}
+    {{if not IsHostedMaster}}
       {{template "masteroutputs.t" .}} ,
-      {{template "iaasoutputs.t" .}}
     {{end}}
+    {{template "iaasoutputs.t" .}}
 
   }
 }

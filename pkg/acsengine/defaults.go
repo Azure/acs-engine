@@ -22,7 +22,7 @@ const (
 	// AzureCniPluginVerLinux specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVerLinux = "v1.0.10"
+	AzureCniPluginVerLinux = "v1.0.11"
 	// AzureCniPluginVerWindows specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-windows-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
@@ -97,7 +97,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.0.9",
+		ImageVersion:   "0.0.10",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
@@ -416,6 +416,11 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 		}
 
+		if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
+			// TODO make EnableAggregatedAPIs a pointer to bool so that a user can opt out of it
+			a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
+		}
+
 		// Configure addons
 		setAddonsConfig(cs)
 		// Configure kubelet
@@ -483,9 +488,8 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	}
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
-		// Set default Distro to Ubuntu
 		if a.MasterProfile.Distro == "" {
-			a.MasterProfile.Distro = api.Ubuntu
+			a.MasterProfile.Distro = api.AKS
 		}
 	}
 
@@ -588,9 +592,8 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 
 		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
-			// Set default Distro to Ubuntu
 			if profile.Distro == "" {
-				profile.Distro = api.Ubuntu
+				profile.Distro = api.AKS
 			}
 		}
 
