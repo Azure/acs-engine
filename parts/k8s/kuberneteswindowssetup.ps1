@@ -371,6 +371,7 @@ Write-KubernetesStartFiles($podCIDR)
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
 `$global:NetworkPlugin="$global:NetworkPlugin"
+`$global:KubeletNodeLabels="$global:KubeletNodeLabels"
 
 "@
 
