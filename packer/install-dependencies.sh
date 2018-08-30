@@ -3,10 +3,6 @@
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
 
-echo "\nVSTS Build NUMBER: ${BUILD_NUMBER}" >> /var/log/azure/golden-image-install.complete
-echo "\nVSTS Build ID: ${BUILD_ID}" >> /var/log/azure/golden-image-install.complete
-echo "\nCommit: ${COMMIT}" >> /var/log/azure/golden-image-install.complete
-
 ETCD_VERSION="3.2.23"
 ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
 installEtcd
@@ -47,4 +43,7 @@ done
 
 df -h
 
-echo "Install completed successfully on " `date` >> /var/log/azure/golden-image-install.complete
+echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
+echo "\nVSTS Build NUMBER: ${BUILD_NUMBER}" >> /var/log/azure/golden-image-install.complete
+echo "\nVSTS Build ID: ${BUILD_ID}" >> /var/log/azure/golden-image-install.complete
+echo "\nCommit: ${COMMIT}" >> /var/log/azure/golden-image-install.complete
