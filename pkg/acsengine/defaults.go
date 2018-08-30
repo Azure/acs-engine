@@ -416,6 +416,11 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 		}
 
+		if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
+			// TODO make EnableAggregatedAPIs a pointer to bool so that a user can opt out of it
+			a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
+		}
+
 		// Configure addons
 		setAddonsConfig(cs)
 		// Configure kubelet

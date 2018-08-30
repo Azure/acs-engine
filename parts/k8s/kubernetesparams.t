@@ -270,6 +270,13 @@
       "type": "string"
     },
 {{end}}
+    "enableAggregatedAPIs": {
+      "metadata": {
+        "description": "Enable aggregated API on master nodes"
+      },
+      "defaultValue": false,
+      "type": "bool"
+    },
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."

@@ -333,8 +333,8 @@ $inJson = Get-Content .\kubernetes-windows.json | ConvertFrom-Json
 $inJson.properties.masterProfile.dnsPrefix = $dnsPrefix
 
 # Set Windows username & password
-$inJson.properties.windowsProfile.adminPassword = $windowsUser
-$inJson.properties.windowsProfile.adminUsername = $windowsPassword
+$inJson.properties.windowsProfile.adminPassword = $windowsPassword
+$inJson.properties.windowsProfile.adminUsername = $windowsUser
 
 # Copy in your SSH public key from `~/.ssh/id_rsa.pub` to linuxProfile.ssh.publicKeys.keyData
 $inJson.properties.linuxProfile.ssh.publicKeys[0].keyData = [string](Get-Content "~/.ssh/id_rsa.pub")

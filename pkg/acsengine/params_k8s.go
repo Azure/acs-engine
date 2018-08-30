@@ -272,6 +272,8 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			if properties.OrchestratorProfile.KubernetesConfig.DockerEngineVersion != "" {
 				dockerEngineVersion = properties.OrchestratorProfile.KubernetesConfig.DockerEngineVersion
 			}
+
+			addValue(parametersMap, "enableAggregatedAPIs", properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs)
 		}
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
