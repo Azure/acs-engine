@@ -31,6 +31,9 @@ jobs:
           name: Run linting rules
           command: make test-style
       - run:
+          name: Check if imports, Gopkg.toml, and Gopkg.lock are in sync
+          command: make validate-dependencies
+      - run:
           name: Build cross-architectural binaries
           command: make build-cross
       - run:
