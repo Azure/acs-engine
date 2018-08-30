@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -98,6 +99,10 @@ type ACSEngineClient interface {
 	// CreateGraphPrincipal creates a service principal via the graphrbac client
 	CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
 	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
+
+	// User Assigned MSI
+	//CreateUserAssignedID - Creates a user assigned msi.
+	CreateUserAssignedID(location string, resourceGroup string, userAssignedID string) (*msi.Identity, error)
 
 	// RBAC
 	CreateRoleAssignment(ctx context.Context, scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)

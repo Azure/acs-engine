@@ -9,6 +9,7 @@
     "services/compute/mgmt/2018-04-01/compute",
     "services/graphrbac/1.6/graphrbac",
     "services/network/mgmt/2018-05-01/network",
+    "services/preview/msi/mgmt/2015-08-31-preview/msi",
     "services/resources/mgmt/2016-06-01/subscriptions",
     "services/resources/mgmt/2018-05-01/resources",
     "services/storage/mgmt/2018-02-01/storage",
@@ -541,6 +542,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "09d18a302df6f52ed3650b78ba636e968b3a0565df8afdf8d2de9399aa8196fc"
+  inputs-digest = "0a1c6d0a2c2a76181459f185f8123bf8dec75f28f69f1da21c147a688c06df70"
   solver-name = "gps-cdcl"
   solver-version = 1

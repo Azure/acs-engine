@@ -127,6 +127,7 @@ func (az *AzureClient) CreateRoleAssignmentSimple(ctx context.Context, resourceG
 				log.Debugf("Failed to create role assignment (will abort now): %q", err)
 				return err
 			}
+			// TODO: Should we handle 409 errors as well here ?
 			log.Debugf("Failed to create role assignment (will retry): %q", err)
 			time.Sleep(3 * time.Second)
 			continue

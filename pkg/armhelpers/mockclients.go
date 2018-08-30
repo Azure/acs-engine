@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	log "github.com/sirupsen/logrus"
@@ -528,6 +529,13 @@ func (mc *MockACSEngineClient) CreateGraphPrincipal(ctx context.Context, service
 // CreateApp is a simpler method for creating an application
 func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
 	return "app-id", "client-id", "client-secret", nil
+}
+
+// User Assigned MSI
+
+//CreateUserAssignedID - Creates a user assigned msi.
+func (mc *MockACSEngineClient) CreateUserAssignedID(location string, resourceGroup string, userAssignedID string) (*msi.Identity, error) {
+	return &msi.Identity{}, nil
 }
 
 // RBAC Mocks

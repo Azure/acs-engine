@@ -287,6 +287,8 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
+	UserAssignedClientID             string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager

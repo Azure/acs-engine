@@ -273,6 +273,8 @@ type KubernetesConfig struct {
 	MaxPods                         int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet              string            `json:"dockerBridgeSubnet,omitempty"`
 	UseManagedIdentity              bool              `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                  string            `json:"userAssignedID,omitempty"`
+	UserAssignedClientID            string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage            string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`

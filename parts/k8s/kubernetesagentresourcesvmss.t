@@ -1,4 +1,4 @@
-{{if UseManagedIdentity}}
+{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
     "apiVersion": "2014-10-01-preview",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
@@ -28,9 +28,18 @@
     "location": "[variables('location')]",
     "name": "[variables('{{.Name}}VMNamePrefix')]",
     {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+    "identity": {
+      "type": "userAssigned",
+        "identityIds": [
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
+      },
+    {{else}}
     "identity": {
       "type": "systemAssigned"
     },
+    {{end}}
     {{end}}
     "sku": {
       "tier": "Standard",
