@@ -247,7 +247,7 @@ func (e *Engine) HasNetworkPolicy(name string) bool {
 func (e *Engine) HasAllZonesAgentPools() bool {
 	count := 0
 	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
-		if ap.AvailabilityZones != nil && len(ap.AvailabilityZones) > 0 {
+		if ap.HasAvailabilityZones() {
 			count++
 		}
 	}

@@ -1460,7 +1460,7 @@ func TestProperties_ValidateZones(t *testing.T) {
 					AvailabilityZones:   []string{"1", "2"},
 				},
 			},
-			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater.",
+			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater",
 		},
 		{
 			name:                "Agent profile with zones node count",

@@ -567,15 +567,15 @@ func setVMSSDefaults(a *api.Properties) {
 			if profile.Count > 100 {
 				profile.SinglePlacementGroup = helpers.PointerToBool(false)
 			}
+			if profile.SinglePlacementGroup == nil {
+				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+			}
 			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
 				profile.StorageProfile = api.ManagedDisks
 			}
-			if profile.AvailabilityZones != nil && len(profile.AvailabilityZones) > 0 {
+			if profile.HasAvailabilityZones() {
 				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
-			}
-			if profile.SinglePlacementGroup == nil {
-				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
 			}
 		}
 

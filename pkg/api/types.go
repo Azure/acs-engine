@@ -787,6 +787,11 @@ func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
 }
 
+// HasAvailabilityZones returns true if the agent pool has availability zones
+func (a *AgentPoolProfile) HasAvailabilityZones() bool {
+	return a.AvailabilityZones != nil && len(a.AvailabilityZones) > 0
+}
+
 // HasSecrets returns true if the customer specified secrets to install
 func (w *WindowsProfile) HasSecrets() bool {
 	return len(w.Secrets) > 0

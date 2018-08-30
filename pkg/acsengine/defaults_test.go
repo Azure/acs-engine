@@ -605,7 +605,7 @@ func TestSetVMSSDefaults(t *testing.T) {
 			*properties.AgentPoolProfiles[0].SinglePlacementGroup, api.DefaultSinglePlacementGroup)
 	}
 
-	if properties.AgentPoolProfiles[0].AvailabilityZones != nil && len(properties.AgentPoolProfiles[0].AvailabilityZones) > 0 {
+	if properties.AgentPoolProfiles[0].HasAvailabilityZones() {
 		if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
 			t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
 				properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")

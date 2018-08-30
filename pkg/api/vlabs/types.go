@@ -501,7 +501,7 @@ func (p *Properties) HasWindows() bool {
 // HasAvailabilityZones returns true if the cluster contains pools with zones
 func (p *Properties) HasAvailabilityZones() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
-		if agentPoolProfile.AvailabilityZones != nil && len(agentPoolProfile.AvailabilityZones) > 0 {
+		if agentPoolProfile.HasAvailabilityZones() {
 			return true
 		}
 	}
@@ -606,6 +606,11 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// HasAvailabilityZones returns true if the agent pool has availability zones
+func (a *AgentPoolProfile) HasAvailabilityZones() bool {
+	return a.AvailabilityZones != nil && len(a.AvailabilityZones) > 0
 }
 
 // HasSearchDomain returns true if the customer specified secrets to install

@@ -196,7 +196,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				}
 
 				if sv.LT(minVersion) {
-					return errors.Errorf("availabilityZone is only available in Kubernetes version 1.12 or greater.")
+					return errors.New("availabilityZone is only available in Kubernetes version 1.12 or greater")
 				}
 			}
 
@@ -416,12 +416,12 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			}
 
 			if a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
-				if a.AgentPoolProfiles[i].AvailabilityZones != nil && len(a.AgentPoolProfiles[i].AvailabilityZones) > 0 {
+				if a.AgentPoolProfiles[i].HasAvailabilityZones() {
 					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
 				}
 			}
 
-			if a.AgentPoolProfiles[i].AvailabilityZones != nil && len(a.AgentPoolProfiles[i].AvailabilityZones) > 0 {
+			if a.AgentPoolProfiles[i].HasAvailabilityZones() {
 				if a.AgentPoolProfiles[i].Count < len(a.AgentPoolProfiles[i].AvailabilityZones)*2 {
 					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 				}
