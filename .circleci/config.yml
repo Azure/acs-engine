@@ -75,7 +75,7 @@ jobs:
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
-          echo 'export CLEANUP_IF_FAIL=false' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_LINUX}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -102,7 +102,7 @@ jobs:
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
-          echo 'export CLEANUP_IF_FAIL=false' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_LINUX}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -130,6 +130,7 @@ jobs:
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_LINUX}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -157,6 +158,7 @@ jobs:
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export ENABLE_KMS_ENCRYPTION=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_LINUX}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -183,7 +185,7 @@ jobs:
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
-          echo 'export CLEANUP_IF_FAIL=false' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_LINUX}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -208,6 +210,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_WINDOWS}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -232,6 +235,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_WINDOWS}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -256,6 +260,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.11' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_WINDOWS}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
@@ -280,6 +285,7 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.12' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/hybrid/definition.json' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=${CLEANUP_ON_EXIT}' >> $BASH_ENV
+          echo 'export CLEANUP_IF_FAIL=${CLEANUP_IF_FAIL_WINDOWS}' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
