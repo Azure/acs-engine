@@ -157,6 +157,26 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 }
 
+// NewAzureClientWithClientSecretExternalTenant returns an AzureClient via client_id and client_secret from a tenant
+func NewAzureClientWithClientSecretExternalTenant(env azure.Environment, subscriptionID, tenantID, clientID, clientSecret string) (*AzureClient, error) {
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	armSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.ServiceManagementEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	graphSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.GraphEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	graphSpt.Refresh()
+
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
+}
+
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
 func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
 	certificateData, err := ioutil.ReadFile(certificatePath)
