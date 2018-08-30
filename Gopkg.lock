@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:739f535db13b1e0acad1883fcb3cb76978584c9c1b3af52a351c87a9bae7b655"
+  digest = "1:f7ff1934e26ce1443f3895ce5d7c48b5ff9be0a1f267406a73f4ba62d41df549"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/apimanagement/mgmt/2017-03-01/apimanagement",
@@ -650,6 +650,7 @@
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network",
+    "github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-06-01/subscriptions",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
     "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage",
