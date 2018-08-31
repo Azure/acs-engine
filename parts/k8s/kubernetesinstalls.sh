@@ -93,6 +93,7 @@ function installDocker() {
 }
 
 function installKataContainersRuntime() {
+    # TODO incorporate this into packer CI so that it is pre-baked into the VHD image
     # Add Kata Containers repository key
     echo "Adding Kata Containers repository key..."
     KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
