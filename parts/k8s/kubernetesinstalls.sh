@@ -93,6 +93,7 @@ function installDocker() {
 }
 
 function installKataContainersRuntime() {
+    # TODO incorporate this into packer CI so that it is pre-baked into the VHD image
     # Add Kata Containers repository key
     echo "Adding Kata Containers repository key..."
     KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
@@ -226,4 +227,9 @@ function extractHyperkube() {
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
+}
+
+function pullImg() {
+    DOCKER_IMAGE_URL=$1
+    retrycmd_if_failure 75 1 60 img pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }

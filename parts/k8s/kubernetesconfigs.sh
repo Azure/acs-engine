@@ -242,7 +242,6 @@ function ensureDocker() {
     DOCKER_JSON_FILE=/etc/docker/daemon.json
     wait_for_file 1200 1 $DOCKER_JSON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
-    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
     DOCKER_HEALTH_PROBE_SYSTEMD_FILE=/etc/systemd/system/docker-health-probe.service
     wait_for_file 1200 1 $DOCKER_HEALTH_PROBE_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker-health-probe
