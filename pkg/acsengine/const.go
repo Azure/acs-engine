@@ -207,6 +207,7 @@ const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
+	kubernetesHealthMonitorScript            = "k8s/health-monitor.sh"
 	kubernetesInstalls                       = "k8s/kubernetesinstalls.sh"
 	kubernetesConfigurations                 = "k8s/kubernetesconfigs.sh"
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
