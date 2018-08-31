@@ -575,6 +575,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesB64ProvisionSource": func() string {
 			return getBase64CustomScript(kubernetesProvisionSourceScript)
 		},
+		"GetKubernetesB64HealthMonitorScript": func() string {
+			return getBase64CustomScript(kubernetesHealthMonitorScript)
+		},
 		"GetKubernetesB64Installs": func() string {
 			return getBase64CustomScript(kubernetesInstalls)
 		},

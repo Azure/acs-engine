@@ -71,7 +71,7 @@ function configureEtcd() {
     echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
     set -x
-    
+
     ETCD_SETUP_FILE=/opt/azure/containers/setup-etcd.sh
     wait_for_file 1200 1 $ETCD_SETUP_FILE || exit $ERR_ETCD_CONFIG_FAIL
     $ETCD_SETUP_FILE > /opt/azure/containers/setup-etcd.log 2>&1
@@ -205,7 +205,7 @@ function setupContainerd() {
     CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
     echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
     echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
-    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG" 
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
     echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
     echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
     echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
@@ -242,10 +242,9 @@ function ensureDocker() {
     DOCKER_JSON_FILE=/etc/docker/daemon.json
     wait_for_file 1200 1 $DOCKER_JSON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
-    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail
-    DOCKER_HEALTH_PROBE_SYSTEMD_FILE=/etc/systemd/system/docker-health-probe.service
-    wait_for_file 1200 1 $DOCKER_HEALTH_PROBE_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart docker-health-probe
+    DOCKER_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-health-monitor.service
+    wait_for_file 1200 1 $DOCKER_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart docker-health-monitor
 }
 function ensureKMS() {
     systemctlEnableAndStart kms
@@ -259,6 +258,10 @@ function ensureKubelet() {
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart kubelet
+    # Don't start the kubelet-health-monitor systemd unit (yet).
+    # KUBELET_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-health-monitor.service
+    # wait_for_file 1200 1 $KUBELET_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    # systemctlEnableAndStart kubelet-health-monitor
 }
 
 function ensureJournal(){
@@ -283,7 +286,7 @@ function ensureK8sControlPlane() {
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
     # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681 will remove once upstream is fixed
     if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
-        ensureKubelet 
+        ensureKubelet
         retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || ensureKubelet && retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     else
         retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
