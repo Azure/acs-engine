@@ -5,7 +5,10 @@
         "tenant_id": "{{env `AZURE_TENANT_ID`}}",
         "subscription_id": "{{env `AZURE_SUBSCRIPTION_ID`}}",
         "location": "{{env `AZURE_LOCATION`}}",
-        "vm_size": "{{env `AZURE_VM_SIZE`}}"
+        "vm_size": "{{env `AZURE_VM_SIZE`}}",
+        "build_number": "{{env `BUILD_NUMBER`}}",
+        "build_id": "{{env `BUILD_ID`}}",
+        "commit": "{{env `GIT_VERSION`}}"
     },
     "builders": [
         {
@@ -62,7 +65,7 @@
         {
             "type": "shell",
             "inline": [
-                "sudo /bin/bash -ux /home/packer/install-dependencies.sh",
+                "sudo BUILD_NUMBER={{user `build_number`}} BUILD_ID={{user `build_id`}} COMMIT={{user `commit`}} /bin/bash -ux /home/packer/install-dependencies.sh",
                 "sudo /bin/bash -eux /home/packer/cleanup-vhd.sh",
                 "rm /home/packer/*.sh"
             ]
