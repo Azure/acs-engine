@@ -79,8 +79,8 @@ for PAUSE_VERSION in ${PAUSE_VERSIONS}; do
 done
 
 TILLER_VERSIONS="2.8.1"
-for PAUSE_VERSION in ${PAUSE_VERSIONS}; do
-    pullImg "gcr.io/kubernetes-helm/tiller:v${PAUSE_VERSION}"
+for TILLER_VERSION in ${TILLER_VERSIONS}; do
+    pullImg "gcr.io/kubernetes-helm/tiller:v${TILLER_VERSION}"
 done
 
 RESCHEDULER_VERSIONS="0.4.0 0.3.1"
