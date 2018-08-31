@@ -62,7 +62,7 @@ func newGenerateCmd() *cobra.Command {
 	}
 
 	f := generateCmd.Flags()
-	f.StringVar(&gc.apimodelPath, "api-model", "", "")
+	f.StringVar(&gc.apimodelPath, "api-model", "", "path to the apimodel file")
 	f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&gc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
