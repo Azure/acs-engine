@@ -227,3 +227,8 @@ function extractHyperkube() {
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
 }
+
+function pullImg() {
+    DOCKER_IMAGE_URL=$1
+    retrycmd_if_failure 75 1 60 img pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+}

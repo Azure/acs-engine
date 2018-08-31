@@ -41,6 +41,86 @@ for KUBERNETES_VERSION in ${K8S_VERSIONS}; do
     pullHyperkube
 done
 
+DASHBOARD_VERSIONS="1.8.3 1.6.3"
+for DASHBOARD_VERSION in ${DASHBOARD_VERSIONS}
+    pullImg "k8s.gcr.io/kubernetes-dashboard-amd64:v${DASHBOARD_VERSION}"
+done
+
+EXECHEALTHZ_VERSIONS="1.2"
+for EXECHEALTHZ_VERSION in ${EXECHEALTHZ_VERSIONS}
+    pullImg "k8s.gcr.io/exechealthz-amd64:${EXECHEALTHZ_VERSION}"
+done
+
+ADDON_RESIZER_VERSIONS="1.8.1 1.7"
+for ADDON_RESIZER_VERSION in ${ADDON_RESIZER_VERSIONS}
+    pullImg "k8s.gcr.io/addon-resizer:${ADDON_RESIZER_VERSION}"
+done
+
+HEAPSTER_VERSIONS="1.5.3 1.5.1"
+for HEAPSTER_VERSION in ${HEAPSTER_VERSIONS}
+    pullImg "k8s.gcr.io/heapster-amd64:v${HEAPSTER_VERSION}"
+done
+
+METRICS_SERVER_VERSIONS="0.2.1"
+for METRICS_SERVER_VERSION in ${METRICS_SERVER_VERSIONS}
+    pullImg "k8s.gcr.io/metrics-server-amd64:v${METRICS_SERVER_VERSION}"
+done
+
+KUBE_DNS_VERSIONS="1.14.10 1.14.8 1.14.5"
+for KUBE_DNS_VERSION in ${KUBE_DNS_VERSIONS}
+    pullImg "k8s.gcr.io/k8s-dns-kube-dns-amd64:${KUBE_DNS_VERSION}"
+done
+
+KUBE_ADDON_MANAGER_VERSIONS="8.6"
+for KUBE_ADDON_MANAGER_VERSION in ${KUBE_ADDON_MANAGER_VERSIONS}
+    pullImg "k8s.gcr.io/kube-addon-manager-amd64:v${KUBE_ADDON_MANAGER_VERSION}"
+done
+
+KUBE_DNS_MASQ_VERSIONS="1.14.10 1.14.8 1.14.5"
+for KUBE_DNS_MASQ_VERSION in ${KUBE_DNS_MASQ_VERSIONS}
+    pullImg "k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:${KUBE_DNS_MASQ_VERSION}"
+done
+
+PAUSE_VERSIONS="3.1"
+for PAUSE_VERSION in ${PAUSE_VERSIONS}
+    pullImg "k8s.gcr.io/pause-amd64:${PAUSE_VERSION}"
+done
+
+TILLER_VERSIONS="2.8.1"
+for PAUSE_VERSION in ${PAUSE_VERSIONS}
+    pullImg "gcr.io/kubernetes-helm/tiller:v${PAUSE_VERSION}"
+done
+
+RESCHEDULER_VERSIONS="0.4.0 0.3.1"
+for RESCHEDULER_VERSION in ${RESCHEDULER_VERSIONS}
+    pullImg "k8s.gcr.io/rescheduler:v${RESCHEDULER_VERSION}"
+done
+
+VIRTUAL_KUBELET_VERSIONS="latest"
+for VIRTUAL_KUBELET_VERSION in ${VIRTUAL_KUBELET_VERSIONS}
+    pullImg "microsoft/virtual-kubelet:${VIRTUAL_KUBELET_VERSION}"
+done
+
+AZURE_CNI_NETWORKMONITOR_VERSIONS="0.0.4"
+for AZURE_CNI_NETWORKMONITOR_VERSION in ${AZURE_CNI_NETWORKMONITOR_VERSIONS}
+    pullImg "containernetworking/networkmonitor:v${AZURE_CNI_NETWORKMONITOR_VERSION}"
+done
+
+CLUSTER_AUTOSCALER_VERSIONS="1.3.1 1.3.0 1.2.2 1.1.2"
+for CLUSTER_AUTOSCALER_VERSION in ${CLUSTER_AUTOSCALER_VERSIONS}
+    pullImg "k8s.gcr.io/cluster-autoscaler:v${CLUSTER_AUTOSCALER_VERSION}"
+done
+
+K8S_DNS_SIDECAR_VERSIONS="1.14.10 1.14.8 1.14.7"
+for K8S_DNS_SIDECAR_VERSION in ${K8S_DNS_SIDECAR_VERSIONS}
+    pullImg "k8s.gcr.io/k8s-dns-sidecar-amd64:${K8S_DNS_SIDECAR_VERSION}"
+done
+
+NVIDIA_DEVICE_PLUGIN_VERSIONS="1.11 1.10"
+for NVIDIA_DEVICE_PLUGIN_VERSIONS in ${NVIDIA_DEVICE_PLUGIN_VERSIONS}
+    pullImg "nvidia/k8s-device-plugin:${NVIDIA_DEVICE_PLUGIN_VERSION}"
+done
+
 df -h
 
 echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
