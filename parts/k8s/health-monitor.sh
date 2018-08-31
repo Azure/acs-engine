@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Original source: https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/gci/health-monitor.sh
+
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
