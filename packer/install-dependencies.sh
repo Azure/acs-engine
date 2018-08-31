@@ -121,6 +121,8 @@ for NVIDIA_DEVICE_PLUGIN_VERSIONS in ${NVIDIA_DEVICE_PLUGIN_VERSIONS}
     pullImg "nvidia/k8s-device-plugin:${NVIDIA_DEVICE_PLUGIN_VERSION}"
 done
 
+pullImg "busybox"
+
 df -h
 
 echo "Install completed successfully on " `date` > /var/log/azure/golden-image-install.complete
