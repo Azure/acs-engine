@@ -63,8 +63,6 @@ function installGPUDrivers() {
     nvidia-modprobe -u -c0
     $DEST/bin/nvidia-smi
     ldconfig
-    systemctlEnableAndStart nvidia-modprobe
-    retrycmd_if_failure 5 10 60 systemctl restart kubelet
 }
 
 function installContainerRuntime() {

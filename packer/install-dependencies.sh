@@ -15,6 +15,8 @@ installDocker
 
 installClearContainersRuntime
 
+installGPUDrivers
+
 VNET_CNI_VERSIONS="1.0.10 1.0.11"
 CNI_PLUGIN_VERSIONS="0.7.1"
 
