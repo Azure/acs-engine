@@ -380,6 +380,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
     sed -i "s|<searchDomainRealmUser>|{{WrapAsParameter "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
     sed -i "s|<searchDomainRealmPassword>|{{WrapAsParameter "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainComputerOU>|{{WrapAsParameter "searchDomainComputerOU"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"    
 {{end}}
 {{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
     sed -i "s|<omsAgentVersion>|{{WrapAsParameter "omsAgentVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"

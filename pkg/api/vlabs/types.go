@@ -141,6 +141,7 @@ type CustomSearchDomain struct {
 	Name          string `json:"name,omitempty"`
 	RealmUser     string `json:"realmUser,omitempty"`
 	RealmPassword string `json:"realmPassword,omitempty"`
+	ComputerOU    string `json:"computerOU,omitempty"`
 }
 
 // CustomNodesDNS represents the Search Domain

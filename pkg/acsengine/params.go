@@ -43,6 +43,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		addValue(parametersMap, "searchDomainName", properties.LinuxProfile.CustomSearchDomain.Name)
 		addValue(parametersMap, "searchDomainRealmUser", properties.LinuxProfile.CustomSearchDomain.RealmUser)
 		addValue(parametersMap, "searchDomainRealmPassword", properties.LinuxProfile.CustomSearchDomain.RealmPassword)
+		addValue(parametersMap, "searchDomainComputerOU", properties.LinuxProfile.CustomSearchDomain.ComputerOU)
 	}
 	if properties.LinuxProfile.CustomNodesDNS != nil {
 		addValue(parametersMap, "dnsServer", properties.LinuxProfile.CustomNodesDNS.DNSServer)

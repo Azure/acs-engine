@@ -928,6 +928,13 @@
         "description": "Windows server AD user password to join the Linux Machines with active directory and be able to change dns registries."
       },
       "type": "securestring"
+    },
+    "searchDomainComputerOU": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional OU path to register acs-engine machines into Windows Server DNS"
+      },
+      "type": "string"
     }
 {{end}}
 {{if HasCustomNodesDNS}}
