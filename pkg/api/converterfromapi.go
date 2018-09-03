@@ -560,6 +560,7 @@ func convertLinuxProfileToVLabs(obj *LinuxProfile, vlabsProfile *vlabs.LinuxProf
 		vlabsProfile.CustomSearchDomain.Name = obj.CustomSearchDomain.Name
 		vlabsProfile.CustomSearchDomain.RealmUser = obj.CustomSearchDomain.RealmUser
 		vlabsProfile.CustomSearchDomain.RealmPassword = obj.CustomSearchDomain.RealmPassword
+		vlabsProfile.CustomSearchDomain.ComputerOU = obj.CustomSearchDomain.ComputerOU
 	}
 
 	if obj.CustomNodesDNS != nil {

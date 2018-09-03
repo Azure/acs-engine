@@ -484,6 +484,7 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		api.CustomSearchDomain.Name = vlabs.CustomSearchDomain.Name
 		api.CustomSearchDomain.RealmUser = vlabs.CustomSearchDomain.RealmUser
 		api.CustomSearchDomain.RealmPassword = vlabs.CustomSearchDomain.RealmPassword
+		api.CustomSearchDomain.ComputerOU = vlabs.CustomSearchDomain.ComputerOU
 	}
 
 	if vlabs.CustomNodesDNS != nil {
