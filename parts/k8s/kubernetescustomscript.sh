@@ -41,13 +41,12 @@ function holdWALinuxAgent() {
     fi
 }
 
-if [[ ! -z "${MASTER_NODE}" ]]; then
-    installEtcd
-fi
-
 if $FULL_INSTALL_REQUIRED; then
     testOutboundConnection
     holdWALinuxAgent
+    if [[ ! -z "${MASTER_NODE}" ]]; then
+        installEtcd
+    fi
     installDeps
 else 
     echo "Golden image; skipping dependencies installation"
