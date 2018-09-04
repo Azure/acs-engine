@@ -191,7 +191,7 @@ func teardown() {
 		log.Printf("cannot create directory for logs: %s", err)
 	}
 
-	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
+	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" && !cfg.SkipLogsCollection {
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
