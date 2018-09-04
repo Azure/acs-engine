@@ -44,20 +44,20 @@ function installGPUDrivers() {
         mkdir -p $DEST
         cd $DEST
         # Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
-        retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
+        retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
         cat /tmp/aptnvidia.gpg | apt-key add -
-        retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
+        retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list || exit  $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
         cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
         apt_get_update
-        retrycmd_if_failure 30 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms
-        retrycmd_if_failure 30 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=$NVIDIA_DOCKER_VERSION+docker$DOCKER_VERSION nvidia-container-runtime=$NVIDIA_CONTAINER_RUNTIME_VERSION+docker$DOCKER_VERSION
+        retrycmd_if_failure 30 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
+        retrycmd_if_failure 30 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=$NVIDIA_DOCKER_VERSION+docker$DOCKER_VERSION nvidia-container-runtime=$NVIDIA_CONTAINER_RUNTIME_VERSION+docker$DOCKER_VERSION || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
         pkill -SIGHUP dockerd
         mkdir -p $DEST
         cd $DEST
         # Download the .run file from NVIDIA.
         # Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
         # Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
-        retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$DV/NVIDIA-Linux-x86_64-$DV.run -o nvidia-drivers-$DV
+        retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$DV/NVIDIA-Linux-x86_64-$DV.run -o nvidia-drivers-$DV || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
         mkdir -p lib64 overlay-workdir
         mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu
         sh nvidia-drivers-$DV --silent --accept-license --no-drm --dkms --utility-prefix="${DEST}" --opengl-prefix="${DEST}"

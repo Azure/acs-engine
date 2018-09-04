@@ -32,6 +32,7 @@ ERR_KATA_APT_KEY_TIMEOUT=61 # Timeout waiting for kata apt-key
 ERR_KATA_INSTALL_TIMEOUT=62 # Timeout waiting for kata install
 ERR_CONTAINERD_DOWNLOAD_TIMEOUT=70 # Timeout waiting for containerd download(s)
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
+ERR_GPU_DRIVERS_INSTALL_TIMEOUT=85 # Timeout waiting for GPU drivers install
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
 ERR_CSE_PROVISION_SCRIPT_NOT_READY_TIMEOUT=100 # Timeout waiting for cloud-init to place this (!) script on the vm
