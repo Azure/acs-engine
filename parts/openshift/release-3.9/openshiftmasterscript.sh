@@ -31,6 +31,15 @@ else
 	COCKPIT_VERSION="latest"
 fi
 
+systemctl stop docker.service
+# the umount should go away.
+umount /mnt/resource || true
+mkfs.xfs -f /dev/sdb1
+echo '/dev/sdb1  /var/lib/docker  xfs  grpquota  0 0' >>/etc/fstab
+mount /var/lib/docker
+restorecon -R /var/lib/docker
+systemctl start docker.service
+
 echo "BOOTSTRAP_CONFIG_NAME=node-config-master" >>/etc/sysconfig/${SERVICE_TYPE}-node
 
 for dst in tcp,2379 tcp,2380 tcp,8443 tcp,8444 tcp,8053 udp,8053 tcp,9090; do
