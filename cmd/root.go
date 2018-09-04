@@ -85,6 +85,11 @@ func writeDefaultModel(out io.Writer) error {
 	return nil
 }
 
+type authProvider interface {
+	getAuthArgs() *authArgs
+	getClient() (armhelpers.ACSEngineClient, error)
+}
+
 type authArgs struct {
 	RawAzureEnvironment string
 	rawSubscriptionID   string
@@ -108,6 +113,11 @@ func addAuthFlags(authArgs *authArgs, f *flag.FlagSet) {
 	f.StringVar(&authArgs.CertificatePath, "certificate-path", "", "path to client certificate (used with --auth-method=client_certificate)")
 	f.StringVar(&authArgs.PrivateKeyPath, "private-key-path", "", "path to private key (used with --auth-method=client_certificate)")
 	f.StringVar(&authArgs.language, "language", "en-us", "language to return error messages in")
+}
+
+//this allows the authArgs to be stubbed behind the authProvider interface, and be its own provider when not in tests.
+func (authArgs *authArgs) getAuthArgs() *authArgs {
+	return authArgs
 }
 
 func (authArgs *authArgs) validateAuthArgs() error {
@@ -180,7 +190,7 @@ func getCloudSubFromAzConfig(cloud string, f *ini.File) (uuid.UUID, error) {
 	return uuid.FromString(sub.String())
 }
 
-func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
+func (authArgs *authArgs) getClient() (armhelpers.ACSEngineClient, error) {
 	var client *armhelpers.AzureClient
 	env, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {

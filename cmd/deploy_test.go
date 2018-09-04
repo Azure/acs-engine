@@ -55,6 +55,23 @@ const ExampleAPIModelWithoutServicePrincipalProfile = `{
   }
   `
 
+//mockAuthProvider implements AuthProvider and allows in particular to stub out getClient()
+type mockAuthProvider struct {
+	getClientMock armhelpers.ACSEngineClient
+	*authArgs
+}
+
+func (provider *mockAuthProvider) getClient() (armhelpers.ACSEngineClient, error) {
+	if provider.getClientMock == nil {
+		return &armhelpers.MockACSEngineClient{}, nil
+	}
+	return provider.getClientMock, nil
+
+}
+func (provider *mockAuthProvider) getAuthArgs() *authArgs {
+	return provider.authArgs
+}
+
 func getExampleAPIModel(useManagedIdentity bool, clientID, clientSecret string) string {
 	return getAPIModel(ExampleAPIModel, useManagedIdentity, clientID, clientSecret)
 }
@@ -222,6 +239,9 @@ func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
 
 	err = autofillApimodel(deployCmd)
@@ -263,9 +283,12 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
-	deployCmd.ClientID = TestClientIDInCmd
-	deployCmd.ClientSecret = TestClientSecretInCmd
+	deployCmd.getAuthArgs().ClientID = TestClientIDInCmd
+	deployCmd.getAuthArgs().ClientSecret = TestClientSecretInCmd
 
 	err = autofillApimodel(deployCmd)
 	if err != nil {
@@ -313,9 +336,12 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndClientIdAndSecretInCmd(t *te
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
-	deployCmd.ClientID = TestClientIDInCmd
-	deployCmd.ClientSecret = TestClientSecretInCmd
+	deployCmd.getAuthArgs().ClientID = TestClientIDInCmd
+	deployCmd.getAuthArgs().ClientSecret = TestClientSecretInCmd
 	err = autofillApimodel(deployCmd)
 	if err != nil {
 		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
@@ -356,6 +382,9 @@ func TestAPIModelWithoutServicePrincipalProfileAndWithoutClientIdAndSecretInCmd(
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
 	err = autofillApimodel(deployCmd)
 	if err != nil {
@@ -390,6 +419,9 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndWithoutClientIdAndSecretInCm
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
 	err = autofillApimodel(deployCmd)
 	if err != nil {
@@ -439,6 +471,9 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 		apiVersion:       ver,
 
 		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
 	}
 
 	err = autofillApimodel(deployCmd)
@@ -500,13 +535,23 @@ func TestDeployCmdMergeAPIModel(t *testing.T) {
 	}
 }
 
-func TestDeployCmdMLoadAPIModel(t *testing.T) {
-	t.Skip("FIXME: this test runs into an unexpected 404")
-	d := &deployCmd{}
+func TestDeployCmdRun(t *testing.T) {
+	d := &deployCmd{
+		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs:      &authArgs{},
+			getClientMock: &armhelpers.MockACSEngineClient{},
+		},
+		apimodelPath:    "./this/is/unused.json",
+		outputDirectory: "_test_output",
+		forceOverwrite:  true,
+		location:        "westus",
+	}
+
 	r := &cobra.Command{}
 	f := r.Flags()
 
-	addAuthFlags(&d.authArgs, f)
+	addAuthFlags(d.getAuthArgs(), f)
 
 	fakeRawSubscriptionID := "6dc93fae-9a76-421f-bbe5-cc6460ea81cb"
 	fakeSubscriptionID, err := uuid.FromString(fakeRawSubscriptionID)
@@ -515,14 +560,17 @@ func TestDeployCmdMLoadAPIModel(t *testing.T) {
 	}
 
 	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
-	d.set = []string{"agentPoolProfiles[0].count=1"}
-	d.SubscriptionID = fakeSubscriptionID
-	d.rawSubscriptionID = fakeRawSubscriptionID
+	d.getAuthArgs().SubscriptionID = fakeSubscriptionID
+	d.getAuthArgs().rawSubscriptionID = fakeRawSubscriptionID
 
-	d.validateArgs(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
-	d.mergeAPIModel()
-	err = d.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	err = d.loadAPIModel(r, []string{})
 	if err != nil {
-		t.Fatalf("unexpected error loading api model: %s", err.Error())
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
 	}
+
+	err = d.run()
+	if err != nil {
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
+	}
+
 }
