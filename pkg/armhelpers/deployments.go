@@ -10,7 +10,7 @@ import (
 )
 
 // DeployTemplate implements the TemplateDeployer interface for the AzureClient client
-func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) (de resources.DeploymentExtended, err error) {
+func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) (resources.DeploymentExtended, error) {
 	deployment := resources.Deployment{
 		Properties: &resources.DeploymentProperties{
 			Template:   &template,
@@ -21,25 +21,28 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 
 	log.Infof("Starting ARM Deployment (%s). This will take some time...", deploymentName)
 	future, err := az.deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, deploymentName, deployment)
-	if err != nil {
-		return de, err
+
+	// wait till future completes
+	e1 := future.WaitForCompletion(ctx, az.deploymentsClient.Client)
+	if e1 != nil {
+		log.Errorf("Wait for future to complete failed: %+v.", e1)
+		return resources.DeploymentExtended{}, err
+	}
+
+	// get future results
+	deploymentResult, e2 := future.Result(az.deploymentsClient)
+	if e2 != nil {
+		log.Errorf("Get future result failed: %+v.", e2)
+		return resources.DeploymentExtended{}, err
 	}
 
 	outcomeText := "Succeeded"
-	err = future.WaitForCompletion(ctx, az.deploymentsClient.Client)
-	if err != nil {
-		outcomeText = fmt.Sprintf("Error: %v", err)
-		log.Infof("Finished ARM Deployment (%s). %s", deploymentName, outcomeText)
-		return de, err
-	}
-
-	de, err = future.Result(az.deploymentsClient)
 	if err != nil {
 		outcomeText = fmt.Sprintf("Error: %v", err)
 	}
 
 	log.Infof("Finished ARM Deployment (%s). %s", deploymentName, outcomeText)
-	return de, err
+	return deploymentResult, err
 }
 
 // ValidateTemplate validate the template and parameters
