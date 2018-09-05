@@ -111,6 +111,7 @@ fi
 
 if [[ "${GPU_NODE}" = true ]]; then
     installGPUDrivers
+    ensureGPUDrivers
 fi
 
 if $FULL_INSTALL_REQUIRED; then

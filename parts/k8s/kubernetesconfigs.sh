@@ -390,3 +390,8 @@ configAddons() {
         configACIConnectorAddon
     fi
 }
+
+ensureGPUDrivers() {
+    systemctlEnableAndStart nvidia-modprobe
+    retrycmd_if_failure 5 10 60 systemctl restart kubelet
+}
