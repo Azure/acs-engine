@@ -352,11 +352,23 @@ Write-KubernetesStartFiles($podCIDR)
         $KubeletArgList += $global:AzureCNIKubeletOptions
     } else {
         $KubeletArgList += $global:WindowsCNIKubeletOptions
+        $KubeletArgList = $KubeletArgList -replace "kubenet", "cni"
     }
 
-    $KubeletArgListStr = $KubeletArgList -join " "
+    # Used in WinCNI version of kubeletstart.ps1
+    $KubeletArgListStr = ""
+    $KubeletArgList | Foreach-Object {
+        # Since generating new code to be written to a file, need to escape quotes again
+        if ($KubeletArgListStr.length -gt 0)
+        {
+            $KubeletArgListStr = $KubeletArgListStr + ", "
+        }
+        $KubeletArgListStr = $KubeletArgListStr + "`"" + $_.Replace("`"`"","`"`"`"`"") + "`""
+    }
+    $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
-    $KubeletCommandLine = "c:\k\kubelet.exe " + $KubeletArgListStr
+    # Used in Azure-CNI version of kubeletstart.ps1
+    $KubeletCommandLine = "c:\k\kubelet.exe " + ($KubeletArgList -join " ")
 
     $kubeStartStr = @"
 `$global:MasterIP = "$MasterIP"
