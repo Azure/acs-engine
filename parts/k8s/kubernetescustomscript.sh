@@ -62,6 +62,8 @@ createKubeManifestDir
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     configureEtcd
+else
+    removeEtcd
 fi
 
 if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
