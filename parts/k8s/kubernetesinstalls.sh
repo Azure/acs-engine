@@ -95,6 +95,14 @@ function installDocker() {
     fi
 }
 
+function removeDocker() {
+   DOCKER_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
+   if [[ ! -z "${DOCKER_VERSION}" ]]; then
+      apt_get_purge 20 30 120 docker-engine
+      rm -rf /var/lib/docker
+   fi
+}
+
 function installKataContainersRuntime() {
     # TODO incorporate this into packer CI so that it is pre-baked into the VHD image
     # Add Kata Containers repository key

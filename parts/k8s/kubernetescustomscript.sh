@@ -75,11 +75,13 @@ elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
         ensureCCProxy
 	fi
+	removeDocker
 elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
     # Ensure we can nest virtualization
     if grep -q vmx /proc/cpuinfo; then
         installKataContainersRuntime
     fi
+    removeDocker
 fi
 
 configureK8s
