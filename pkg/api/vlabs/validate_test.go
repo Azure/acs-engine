@@ -61,19 +61,19 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.6.6",
+					OrchestratorVersion: "1.6.9",
 					KubernetesConfig: &KubernetesConfig{
 						EnableAggregatedAPIs: true,
 					},
 				},
 			},
-			expectedError: "enableAggregatedAPIs is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.6",
+			expectedError: "enableAggregatedAPIs is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.9",
 		},
 		"should error when KubernetesConfig has enableAggregatedAPIs enabled and enableRBAC disabled": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.0",
+					OrchestratorVersion: "1.7.16",
 					KubernetesConfig: &KubernetesConfig{
 						EnableAggregatedAPIs: true,
 						EnableRbac:           &falseVal,
@@ -86,13 +86,13 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.6.6",
+					OrchestratorVersion: "1.6.9",
 					KubernetesConfig: &KubernetesConfig{
 						EnableDataEncryptionAtRest: &trueVal,
 					},
 				},
 			},
-			expectedError: "enableDataEncryptionAtRest is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.6",
+			expectedError: "enableDataEncryptionAtRest is only available in Kubernetes version 1.7.0 or greater; unable to validate for Kubernetes version 1.6.9",
 		},
 		"should error when KubernetesConfig has enableDataEncryptionAtRest enabled with invalid encryption key": {
 			properties: &Properties{
@@ -111,31 +111,31 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.6.6",
+					OrchestratorVersion: "1.6.9",
 					KubernetesConfig: &KubernetesConfig{
 						EnableEncryptionWithExternalKms: &trueVal,
 					},
 				},
 			},
-			expectedError: "enableEncryptionWithExternalKms is only available in Kubernetes version 1.10.0 or greater; unable to validate for Kubernetes version 1.6.6",
+			expectedError: "enableEncryptionWithExternalKms is only available in Kubernetes version 1.10.0 or greater; unable to validate for Kubernetes version 1.6.9",
 		},
 		"should error when KubernetesConfig has Standard loadBalancerSku with invalid version": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.6.6",
+					OrchestratorVersion: "1.6.9",
 					KubernetesConfig: &KubernetesConfig{
 						LoadBalancerSku: "Standard",
 					},
 				},
 			},
-			expectedError: "loadBalancerSku is only available in Kubernetes version 1.11.0 or greater; unable to validate for Kubernetes version 1.6.6",
+			expectedError: "loadBalancerSku is only available in Kubernetes version 1.11.0 or greater; unable to validate for Kubernetes version 1.6.9",
 		},
 		"should error when KubernetesConfig has enablePodSecurity enabled with invalid settings": {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.0",
+					OrchestratorVersion: "1.7.16",
 					KubernetesConfig: &KubernetesConfig{
 						EnablePodSecurityPolicy: &trueVal,
 					},
@@ -147,14 +147,14 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.0",
+					OrchestratorVersion: "1.7.16",
 					KubernetesConfig: &KubernetesConfig{
 						EnableRbac:              &trueVal,
 						EnablePodSecurityPolicy: &trueVal,
 					},
 				},
 			},
-			expectedError: "enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version 1.8.0 or greater; unable to validate for Kubernetes version 1.7.0",
+			expectedError: "enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version 1.8.0 or greater; unable to validate for Kubernetes version 1.7.16",
 		},
 		"should not error with empty object": {
 			properties: &Properties{
@@ -231,7 +231,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "v1.9.0",
+					OrchestratorVersion: "v1.9.10",
 				},
 			},
 		},
@@ -561,7 +561,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 
 	trueVal := true
 	// Tests that apply to 1.8 and later releases
-	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(false, false), "1.8.0", true, true) {
+	for _, k8sVersion := range common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(true, false), "1.8.0", true, true) {
 		c := KubernetesConfig{
 			UseCloudControllerManager: &trueVal,
 		}
@@ -724,7 +724,7 @@ func TestProperties_ValidateLinuxProfile(t *testing.T) {
 func TestProperties_ValidateInvalidExtensions(t *testing.T) {
 
 	p := getK8sDefaultProperties(true)
-	p.OrchestratorProfile.OrchestratorVersion = "1.10.0"
+	p.OrchestratorProfile.OrchestratorVersion = "1.10.7"
 
 	p.AgentPoolProfiles = []*AgentPoolProfile{
 		{
@@ -1195,7 +1195,7 @@ func Test_Properties_ValidateAddons(t *testing.T) {
 }
 
 func TestWindowsVersions(t *testing.T) {
-	for _, version := range common.GetAllSupportedKubernetesVersions(true, true) {
+	for _, version := range common.GetAllSupportedKubernetesVersions(false, true) {
 		p := getK8sDefaultProperties(true)
 		p.OrchestratorProfile.OrchestratorVersion = version
 		if err := p.Validate(false); err != nil {
@@ -1230,7 +1230,7 @@ func TestWindowsVersions(t *testing.T) {
 }
 
 func TestLinuxVersions(t *testing.T) {
-	for _, version := range common.GetAllSupportedKubernetesVersions(true, false) {
+	for _, version := range common.GetAllSupportedKubernetesVersions(false, false) {
 		p := getK8sDefaultProperties(false)
 		p.OrchestratorProfile.OrchestratorVersion = version
 		if err := p.Validate(false); err != nil {
@@ -1423,7 +1423,7 @@ func TestProperties_ValidateAddon(t *testing.T) {
 			AvailabilityProfile: AvailabilitySet,
 		},
 	}
-	p.OrchestratorProfile.OrchestratorVersion = "1.9.0"
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.10"
 	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
