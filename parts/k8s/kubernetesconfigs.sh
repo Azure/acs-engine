@@ -391,7 +391,7 @@ configAddons() {
     fi
 }
 
-ensureGPUDrivers() {
+configGPUDrivers() {
     sh nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}"
     echo "${GPU_DEST}/lib64" > /etc/ld.so.conf.d/nvidia.conf
     ldconfig
@@ -399,6 +399,10 @@ ensureGPUDrivers() {
     nvidia-modprobe -u -c0
     $GPU_DEST/bin/nvidia-smi
     ldconfig
+}
+
+ensureGPUDrivers() {
+    configGPUDrivers
     systemctlEnableAndStart nvidia-modprobe
     retrycmd_if_failure 5 10 60 systemctl restart kubelet
 }
