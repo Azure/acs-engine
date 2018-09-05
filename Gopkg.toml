@@ -100,11 +100,11 @@ required = [
 
 [[constraint]]
   name = "k8s.io/api"
-  version = "kubernetes-1.10.0"
+  revision = "73d903622b7391f3312dcbac6483fed484e185f8"
 
 [[constraint]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.10.0"
+  revision = "302974c03f7e50f16561ba237db776ab93594ef6"
 
 [[constraint]]
   name = "k8s.io/client-go"
