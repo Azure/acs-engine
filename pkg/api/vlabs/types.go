@@ -309,6 +309,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	LoadBalancerSku                 string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB     *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	AzureCNIVersion                 string            `json:"azureCNIVersion,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest

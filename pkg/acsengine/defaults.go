@@ -422,6 +422,14 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
 		}
 
+		if a.OrchestratorProfile.IsAzureCNI() {
+			if a.HasWindows() {
+				a.OrchestratorProfile.KubernetesConfig.AzureCNIVersion = AzureCniPluginVerWindows
+			} else {
+				a.OrchestratorProfile.KubernetesConfig.AzureCNIVersion = AzureCniPluginVerLinux
+			}
+		}
+
 		// Configure addons
 		setAddonsConfig(cs)
 		// Configure kubelet
