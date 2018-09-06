@@ -57,7 +57,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e := GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -69,7 +69,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -81,7 +81,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -93,7 +93,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -105,7 +105,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -117,7 +117,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: deployedVersion,
 	}
-	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(true, false), deployedVersion, nextNextMinorVersion, false, true)
+	v = common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, nextNextMinorVersion, false, true)
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -125,7 +125,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// The latest version is not upgradable
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: common.GetMaxVersion(common.GetAllSupportedKubernetesVersions(true, false), true),
+		OrchestratorVersion: common.GetMaxVersion(common.GetAllSupportedKubernetesVersions(false, false), true),
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
@@ -142,7 +142,7 @@ func TestGetOrchestratorVersionProfileListV20170930(t *testing.T) {
 
 	totalNumVersions := numSwarmVersions +
 		numDockerCEVersions +
-		len(common.GetAllSupportedKubernetesVersions(true, false)) +
+		len(common.GetAllSupportedKubernetesVersions(false, false)) +
 		len(common.AllDCOSSupportedVersions) +
 		len(common.GetAllSupportedOpenShiftVersions()) - 1
 
@@ -151,7 +151,7 @@ func TestGetOrchestratorVersionProfileListV20170930(t *testing.T) {
 	// v20170930 - kubernetes only
 	list, e = GetOrchestratorVersionProfileListV20170930(common.Kubernetes, "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(len(common.GetAllSupportedKubernetesVersions(true, false))))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(len(common.GetAllSupportedKubernetesVersions(false, false))))
 }
 
 func TestKubernetesInfo(t *testing.T) {
