@@ -35,7 +35,6 @@ const (
 	defaultTimeout            = time.Minute * 10
 	vmStatusUpgraded vmStatus = iota
 	vmStatusNotUpgraded
-	vmStatusIgnored
 )
 
 type vmInfo struct {
@@ -112,29 +111,19 @@ func (ku *Upgrader) upgradeMasterNodes(ctx context.Context) error {
 		upgradeMasterNode.timeout = *ku.stepTimeout
 	}
 
-	expectedMasterCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
-	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
-	mastersToUgradeCount := expectedMasterCount - mastersUpgradedCount
+	mastersToUpgradeCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
 
-	ku.logger.Infof("Total expected master count: %d", expectedMasterCount)
-	ku.logger.Infof("Master nodes that need to be upgraded: %d", mastersToUgradeCount)
-	ku.logger.Infof("Master nodes that have been upgraded: %d", mastersUpgradedCount)
+	ku.logger.Infof("Master nodes that need to be upgraded: %d", mastersToUpgradeCount)
 
 	ku.logger.Infof("Starting upgrade of master nodes...")
 
-	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
+	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs)
 	ku.logger.Infof("masterNodesInCluster: %d", masterNodesInCluster)
-	if masterNodesInCluster > expectedMasterCount {
-		return ku.Translator.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
+	if masterNodesInCluster > mastersToUpgradeCount {
+		return ku.Translator.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, mastersToUpgradeCount)
 	}
 
 	upgradedMastersIndex := make(map[int]bool)
-
-	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
-		ku.logger.Infof("Master VM: %s is upgraded to expected orchestrator version", *vm.Name)
-		masterIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-		upgradedMastersIndex[masterIndex] = true
-	}
 
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
 		ku.logger.Infof("Upgrading Master VM: %s", *vm.Name)
@@ -164,13 +153,13 @@ func (ku *Upgrader) upgradeMasterNodes(ctx context.Context) error {
 
 	// This condition is possible if the previous upgrade operation failed during master
 	// VM upgrade when a master VM was deleted but creation of upgraded master did not run.
-	if masterNodesInCluster < expectedMasterCount {
+	if masterNodesInCluster < mastersToUpgradeCount {
 		ku.logger.Infof(
 			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade...")
 	}
 
-	mastersToCreate := expectedMasterCount - masterNodesInCluster
-	ku.logger.Infof("Expected master count: %d, Creating %d more master VMs", expectedMasterCount, mastersToCreate)
+	mastersToCreate := mastersToUpgradeCount - masterNodesInCluster
+	ku.logger.Infof("Expected master count: %d, Creating %d more master VMs", mastersToUpgradeCount, mastersToCreate)
 
 	// NOTE: this is NOT completely idempotent because it assumes that
 	// the OS disk has been deleted
@@ -269,35 +258,34 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		//  - Deleting: Indicates that the virtual machine is being deleted.
 		//  - Failed: Indicates that the update operation on the Virtual Machine failed.
 		// Delete VMs in 'bad' state. Such VMs will be re-created later in this function.
-		upgradedCount := 0
-		for _, vm := range *agentPool.UpgradedAgentVMs {
-			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name)
-			var vmProvisioningState string
-			if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
-				vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
-			}
-			agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-
-			switch vmProvisioningState {
-			case "Creating", "Updating", "Succeeded":
-				agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusUpgraded}
-				upgradedCount++
-
-			case "Failed":
-				ku.logger.Infof("Deleting agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
-				err := upgradeAgentNode.DeleteNode(vm.Name, false)
-				if err != nil {
-					ku.logger.Errorf("Error deleting agent VM %s: %v", *vm.Name, err)
-					return err
-				}
-
-			case "Deleting":
-				fallthrough
-			default:
-				ku.logger.Infof("Ignoring agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
-				agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusIgnored}
-			}
-		}
+		//for _, vm := range *agentPool.AgentVMs {
+		//	ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name)
+		//	var vmProvisioningState string
+		//	if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
+		//		vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
+		//	}
+		//	agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+		//
+		//	switch vmProvisioningState {
+		//	case "Creating", "Updating", "Succeeded":
+		//		agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusUpgraded}
+		//		upgradedCount++
+		//
+		//	case "Failed":
+		//		ku.logger.Infof("Deleting agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
+		//		err := upgradeAgentNode.DeleteNode(vm.Name, false)
+		//		if err != nil {
+		//			ku.logger.Errorf("Error deleting agent VM %s: %v", *vm.Name, err)
+		//			return err
+		//		}
+		//
+		//	case "Deleting":
+		//		fallthrough
+		//	default:
+		//		ku.logger.Infof("Ignoring agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
+		//		agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusIgnored}
+		//	}
+		//}
 
 		for _, vm := range *agentPool.AgentVMs {
 			agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
@@ -312,8 +300,14 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		// If there are nodes that need to be upgraded, create one extra node, which will be used to take on the load from upgrading nodes.
 		if toBeUpgradedCount > 0 {
 			agentCount++
+		} else {
+			ku.logger.Infof("No nodes to upgrade")
+			return nil
 		}
-		for upgradedCount+toBeUpgradedCount < agentCount {
+
+		i := toBeUpgradedCount
+
+		for i < agentCount {
 			agentIndex := getAvailableIndex(agentVMs)
 
 			vmName, err := utils.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
@@ -337,16 +331,12 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 			}
 
 			agentVMs[agentIndex] = &vmInfo{vmName, vmStatusUpgraded}
-			upgradedCount++
-		}
 
-		if toBeUpgradedCount == 0 {
-			ku.logger.Infof("No nodes to upgrade")
-			return nil
+			i++
 		}
 
 		// Upgrade nodes in agent pool
-		upgradedCount = 0
+		upgradedCount := 0
 		for agentIndex, vm := range agentVMs {
 			if vm.status != vmStatusNotUpgraded {
 				continue
