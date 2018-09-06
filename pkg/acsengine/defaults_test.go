@@ -618,7 +618,7 @@ func TestSetVMSSDefaults(t *testing.T) {
 
 	properties.AgentPoolProfiles[0].Count = 110
 	setPropertiesDefaults(&mockCS, false, false)
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup {
+	if helpers.IsTrueBoolPointer(properties.AgentPoolProfiles[0].SinglePlacementGroup) {
 		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup did not have the expected configuration, got %t, expected %t",
 			*properties.AgentPoolProfiles[0].SinglePlacementGroup, false)
 	}
