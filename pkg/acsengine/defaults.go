@@ -672,11 +672,8 @@ func setHostedMasterOverrides(a *api.Properties) {
 	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 
 	for _, profile := range a.AgentPoolProfiles {
-		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
-			if profile.Distro == "" {
-				profile.Distro = api.Ubuntu
-			}
+			profile.Distro = api.Ubuntu
 		}
 	}
 }
