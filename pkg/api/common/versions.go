@@ -111,7 +111,7 @@ func GetAllSupportedKubernetesVersions(isUpdate, hasWindows bool) []string {
 		allSupportedVersions = AllKubernetesWindowsSupportedVersions
 	}
 	for ver, supported := range allSupportedVersions {
-		if (!isUpdate && supported) || isUpdate {
+		if isUpdate || supported {
 			versions = append(versions, ver)
 		}
 	}
