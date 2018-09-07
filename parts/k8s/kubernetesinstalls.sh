@@ -36,6 +36,7 @@ function installGPUDrivers() {
     echo blacklist nouveau >> /etc/modprobe.d/blacklist.conf
     update-initramfs -u
     mkdir -p $GPU_DEST
+    cd $GPU_DEST
     # Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
     retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     cat /tmp/aptnvidia.gpg | apt-key add -
@@ -45,6 +46,8 @@ function installGPUDrivers() {
     retrycmd_if_failure 30 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     retrycmd_if_failure 30 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=$NVIDIA_DOCKER_VERSION+docker$DOCKER_VERSION nvidia-container-runtime=$NVIDIA_CONTAINER_RUNTIME_VERSION+docker$DOCKER_VERSION || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     pkill -SIGHUP dockerd
+    mkdir -p $GPU_DEST
+    cd $GPU_DEST
     # Download the .run file from NVIDIA.
     # Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
     # Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
