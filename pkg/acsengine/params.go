@@ -185,7 +185,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
 		}
 
-		// Unless distro is defined, default distro is configured by defaults#setAgentNetworkDefaults
+		// Unless distro is defined, default distro is configured by defaults#setAgentProfileDefaults
 		//   Ignores Windows OS
 		if !(agentProfile.OSType == api.Windows) {
 			if agentProfile.ImageRef != nil {

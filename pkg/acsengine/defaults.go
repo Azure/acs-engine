@@ -233,15 +233,20 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 
 	setOrchestratorDefaults(cs, isUpgrade || isScale)
 
-	setMasterNetworkDefaults(properties, isUpgrade)
+	// Set master profile defaults if this cluster configuration includes master node(s)
+	if cs.Properties.MasterProfile != nil {
+		setMasterProfileDefaults(properties, isUpgrade)
+	}
 
-	setAgentNetworkDefaults(properties, isUpgrade, isScale)
+	setAgentProfileDefaults(properties, isUpgrade, isScale)
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
 	setVMSSDefaults(properties)
+
+	// Set hosted master profile defaults if this cluster configuration has a hosted control plane
 	if cs.Properties.HostedMasterProfile != nil {
-		setHostedMasterOverrides(properties)
+		setHostedMasterProfileDefaults(properties)
 	}
 
 	certsGenerated, e := setDefaultCerts(properties)
@@ -484,10 +489,7 @@ func setExtensionDefaults(a *api.Properties) {
 }
 
 // SetMasterNetworkDefaults for masters
-func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
-	if a.MasterProfile == nil {
-		return
-	}
+func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
 		if a.MasterProfile.Distro == "" {
@@ -583,8 +585,8 @@ func setVMSSDefaults(a *api.Properties) {
 	}
 }
 
-// SetAgentNetworkDefaults for agents
-func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
+// setAgentProfileDefaults sets defaults for agent profiles
+func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 	// configure the subnets if not in custom VNET
 	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
@@ -617,7 +619,11 @@ func setAgentNetworkDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
 			if profile.Distro == "" {
-				profile.Distro = api.AKS
+				if a.HostedMasterProfile != nil {
+					profile.Distro = api.Ubuntu
+				} else {
+					profile.Distro = api.AKS
+				}
 			}
 		}
 
@@ -668,14 +674,8 @@ func setStorageDefaults(a *api.Properties) {
 	}
 }
 
-func setHostedMasterOverrides(a *api.Properties) {
+func setHostedMasterProfileDefaults(a *api.Properties) {
 	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
-
-	for _, profile := range a.AgentPoolProfiles {
-		if !a.OrchestratorProfile.IsOpenShift() {
-			profile.Distro = api.Ubuntu
-		}
-	}
 }
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
