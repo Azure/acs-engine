@@ -286,6 +286,18 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	}
 }
 
+func TestAPIServerConfigDisableRbac(t *testing.T) {
+	// Test EnableRbac = false
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
+	setAPIServerConfig(cs)
+	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--authorization-mode"] != "" {
+		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
+			a["--authorization-mode"])
+	}
+}
+
 func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)

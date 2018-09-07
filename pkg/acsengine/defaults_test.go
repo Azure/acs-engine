@@ -666,6 +666,19 @@ func TestAzureCNIVersionString(t *testing.T) {
 	}
 }
 
+func TestDefaultDisableRbac(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10.3")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
+	setOrchestratorDefaults(&mockCS, true)
+
+	if properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
+		t.Fatalf("got unexpected EnableAggregatedAPIs config value for EnableRbac=false: %t",
+			properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
