@@ -235,13 +235,14 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 
 	setMasterNetworkDefaults(properties, isUpgrade)
 
-	setHostedMasterNetworkDefaults(properties)
-
 	setAgentNetworkDefaults(properties, isUpgrade, isScale)
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
 	setVMSSDefaults(properties)
+	if cs.Properties.HostedMasterProfile != nil {
+		setHostedMasterOverrides(properties)
+	}
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
@@ -482,14 +483,6 @@ func setExtensionDefaults(a *api.Properties) {
 	}
 }
 
-// SetHostedMasterNetworkDefaults for hosted masters
-func setHostedMasterNetworkDefaults(a *api.Properties) {
-	if a.HostedMasterProfile == nil {
-		return
-	}
-	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
-}
-
 // SetMasterNetworkDefaults for masters
 func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	if a.MasterProfile == nil {
@@ -671,6 +664,19 @@ func setStorageDefaults(a *api.Properties) {
 		}
 		if len(profile.ScaleSetEvictionPolicy) == 0 && profile.ScaleSetPriority == api.ScaleSetPriorityLow {
 			profile.ScaleSetEvictionPolicy = api.ScaleSetEvictionPolicyDelete
+		}
+	}
+}
+
+func setHostedMasterOverrides(a *api.Properties) {
+	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
+
+	for _, profile := range a.AgentPoolProfiles {
+		// don't default Distro for OpenShift
+		if !a.OrchestratorProfile.IsOpenShift() {
+			if profile.Distro == "" {
+				profile.Distro = api.Ubuntu
+			}
 		}
 	}
 }
