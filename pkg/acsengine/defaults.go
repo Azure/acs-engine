@@ -488,7 +488,6 @@ func setExtensionDefaults(a *api.Properties) {
 	}
 }
 
-// SetMasterNetworkDefaults for masters
 func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 	// don't default Distro for OpenShift
 	if !a.OrchestratorProfile.IsOpenShift() {
@@ -585,7 +584,6 @@ func setVMSSDefaults(a *api.Properties) {
 	}
 }
 
-// setAgentProfileDefaults sets defaults for agent profiles
 func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 	// configure the subnets if not in custom VNET
 	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
