@@ -11,68 +11,68 @@ import (
 // AllKubernetesSupportedVersions is a whitelist map of all supported Kubernetes version strings
 // The bool value indicates if creating new clusters with this version is allowed
 var AllKubernetesSupportedVersions = map[string]bool{
-	"1.6.6":          true,
-	"1.6.9":          true,
-	"1.6.11":         true,
-	"1.6.12":         true,
-	"1.6.13":         true,
-	"1.7.0":          true,
-	"1.7.1":          true,
-	"1.7.2":          true,
-	"1.7.4":          true,
-	"1.7.5":          true,
-	"1.7.7":          true,
-	"1.7.9":          true,
-	"1.7.10":         true,
-	"1.7.12":         true,
-	"1.7.13":         true,
-	"1.7.14":         true,
+	"1.6.6":          false,
+	"1.6.9":          true, // need to keep 1.6.9 version support for v20160930
+	"1.6.11":         false,
+	"1.6.12":         false,
+	"1.6.13":         false,
+	"1.7.0":          false,
+	"1.7.1":          false,
+	"1.7.2":          false,
+	"1.7.4":          false,
+	"1.7.5":          false,
+	"1.7.7":          false,
+	"1.7.9":          false,
+	"1.7.10":         false,
+	"1.7.12":         false,
+	"1.7.13":         false,
+	"1.7.14":         false,
 	"1.7.15":         true,
 	"1.7.16":         true,
-	"1.8.0":          true,
-	"1.8.1":          true,
-	"1.8.2":          true,
-	"1.8.4":          true,
-	"1.8.6":          true,
-	"1.8.7":          true,
-	"1.8.8":          true,
-	"1.8.9":          true,
-	"1.8.10":         true,
-	"1.8.11":         true,
-	"1.8.12":         true,
-	"1.8.13":         true,
+	"1.8.0":          false,
+	"1.8.1":          false,
+	"1.8.2":          false,
+	"1.8.4":          false,
+	"1.8.6":          false,
+	"1.8.7":          false,
+	"1.8.8":          false,
+	"1.8.9":          false,
+	"1.8.10":         false,
+	"1.8.11":         false,
+	"1.8.12":         false,
+	"1.8.13":         false,
 	"1.8.14":         true,
 	"1.8.15":         true,
-	"1.9.0":          true,
-	"1.9.1":          true,
-	"1.9.2":          true,
-	"1.9.3":          true,
-	"1.9.4":          true,
-	"1.9.5":          true,
-	"1.9.6":          true,
-	"1.9.7":          true,
-	"1.9.8":          true,
+	"1.9.0":          false,
+	"1.9.1":          false,
+	"1.9.2":          false,
+	"1.9.3":          false,
+	"1.9.4":          false,
+	"1.9.5":          false,
+	"1.9.6":          false,
+	"1.9.7":          false,
+	"1.9.8":          false,
 	"1.9.9":          true,
 	"1.9.10":         true,
-	"1.10.0-beta.2":  true,
-	"1.10.0-beta.4":  true,
-	"1.10.0-rc.1":    true,
-	"1.10.0":         true,
-	"1.10.1":         true,
-	"1.10.2":         true,
-	"1.10.3":         true,
-	"1.10.4":         true,
-	"1.10.5":         true,
+	"1.10.0-beta.2":  false,
+	"1.10.0-beta.4":  false,
+	"1.10.0-rc.1":    false,
+	"1.10.0":         false,
+	"1.10.1":         false,
+	"1.10.2":         false,
+	"1.10.3":         false,
+	"1.10.4":         false,
+	"1.10.5":         false,
 	"1.10.6":         true,
 	"1.10.7":         true,
-	"1.11.0-alpha.1": true,
-	"1.11.0-alpha.2": true,
-	"1.11.0-beta.1":  true,
-	"1.11.0-beta.2":  true,
-	"1.11.0-rc.1":    true,
-	"1.11.0-rc.2":    true,
-	"1.11.0-rc.3":    true,
-	"1.11.0":         true,
+	"1.11.0-alpha.1": false,
+	"1.11.0-alpha.2": false,
+	"1.11.0-beta.1":  false,
+	"1.11.0-beta.2":  false,
+	"1.11.0-rc.1":    false,
+	"1.11.0-rc.2":    false,
+	"1.11.0-rc.3":    false,
+	"1.11.0":         false,
 	"1.11.1":         true,
 	"1.11.2":         true,
 	"1.12.0-alpha.1": true,
@@ -241,6 +241,8 @@ func getAllKubernetesWindowsSupportedVersionsMap() map[string]bool {
 		"1.11.0-alpha.2"} {
 		delete(ret, version)
 	}
+	// 1.8.12 is the latest supported patch for Windows
+	ret["1.8.12"] = true
 	return ret
 }
 
@@ -366,4 +368,14 @@ func GetLatestPatchVersion(majorMinor string, versionsList []string) (version st
 		}
 	}
 	return version
+}
+
+// IsSupportedKubernetesVersion return true if the provided Kubernetes version is supported
+func IsSupportedKubernetesVersion(version string, isUpdate, hasWindows bool) bool {
+	for _, ver := range GetAllSupportedKubernetesVersions(isUpdate, hasWindows) {
+		if ver == version {
+			return true
+		}
+	}
+	return false
 }
