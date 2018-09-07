@@ -32,6 +32,7 @@ type Config struct {
 	CurrentWorkingDir   string
 	SoakClusterName     string `envconfig:"SOAK_CLUSTER_NAME"`
 	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
+	UseDeployCommand    bool   `envconfig:"USE_DEPLOY_COMMAND"`
 }
 
 const (

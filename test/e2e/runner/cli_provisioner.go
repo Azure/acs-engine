@@ -89,11 +89,14 @@ func (cli *CLIProvisioner) provision() error {
 	os.Mkdir(outputPath, 0755)
 
 	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
+
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
 	}
+
+	os.Chmod(cli.Config.GetSSHKeyPath(), 0600)
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
 	if err != nil {
@@ -130,9 +133,44 @@ func (cli *CLIProvisioner) provision() error {
 		return errors.Wrap(err, "Error while trying to write Engine Template to disk:%s")
 	}
 
-	err = cli.Engine.Generate()
+	err = cli.generateAndDeploy()
 	if err != nil {
-		return errors.Wrap(err, "Error while trying to generate acs-engine template")
+		return errors.Wrap(err, "Error in generateAndDeploy:%s")
+	}
+
+	if cli.Config.IsKubernetes() {
+		// Store the hosts for future introspection
+		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+		if err != nil {
+			return errors.Wrap(err, "GetHosts:%s")
+		}
+		var masters, agents []azure.VM
+		for _, host := range hosts {
+			if strings.Contains(host.Name, "master") {
+				masters = append(masters, host)
+			} else if strings.Contains(host.Name, "agent") {
+				agents = append(agents, host)
+			}
+		}
+		cli.Masters = masters
+		cli.Agents = agents
+	}
+
+	return nil
+}
+
+func (cli *CLIProvisioner) generateAndDeploy() error {
+	if cli.Config.UseDeployCommand {
+		fmt.Printf("Provisionning with the Deploy Command\n")
+		err := cli.Engine.Deploy(cli.Config.Location)
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to deploy acs-engine template")
+		}
+	} else {
+		err := cli.Engine.Generate()
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to generate acs-engine template")
+		}
 	}
 
 	c, err := config.ParseConfig()
@@ -155,31 +193,14 @@ func (cli *CLIProvisioner) provision() error {
 		cli.Config.SetKubeConfig()
 	}
 
-	// Lets start by just using the normal az group deployment cli for creating a cluster
-	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to create deployment")
-	}
-
-	if cli.Config.IsKubernetes() {
-		// Store the hosts for future introspection
-		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+	//if we use Generate, then we need to call CreateDeployment
+	if !cli.Config.UseDeployCommand {
+		err = cli.Account.CreateDeployment(cli.Config.Name, cli.Engine)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Error while trying to create deployment")
 		}
-		var masters, agents []azure.VM
-		for _, host := range hosts {
-			if strings.Contains(host.Name, "master") {
-				masters = append(masters, host)
-			} else if strings.Contains(host.Name, "agent") {
-				agents = append(agents, host)
-			}
-		}
-		cli.Masters = masters
-		cli.Agents = agents
 	}
-
-	return nil
+	return err
 }
 
 // GenerateName will generate a new name if one has not been set

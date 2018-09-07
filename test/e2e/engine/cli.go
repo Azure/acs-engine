@@ -24,11 +24,11 @@ func (e *Engine) Generate() error {
 // Deploy will run acs-engine deploy on a given cluster definition
 func (e *Engine) Deploy(location string) error {
 	cmd := exec.Command("./bin/acs-engine", "deploy",
-		"--location", e.ClusterDefinition.Location,
-		"--apimodel", e.Config.ClusterDefinitionPath,
+		"--location", location,
+		"--api-model", e.Config.ClusterDefinitionPath,
 		"--dns-prefix", e.Config.DefinitionName,
 		"--output-directory", e.Config.GeneratedDefinitionPath,
-		"--resource-group", e.ClusterDefinition.ContainerService.Properties.AzProfile.ResourceGroup,
+		"--resource-group", e.Config.DefinitionName,
 	)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
