@@ -34,6 +34,24 @@
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{end}}
+{{if UseMasterCustomVHD}}
+{
+    "type": "Microsoft.Compute/images",
+    "name": "vhd-image",
+    "apiVersion": "[variables('apiVersionDefault')]",
+    "location": "[parameters('location')]",
+    "properties": {
+        "storageProfile": {
+            "osDisk": {
+                "osType": "Linux",
+                "osState": "Generalized",
+                "blobUri": "[parameters('osDiskVhdURI')]",
+                "storageAccountType": "Standard_LRS"
+            }
+        }
+    }
+},
+{{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
       "apiVersion": "[variables('apiVersionDefault')]",

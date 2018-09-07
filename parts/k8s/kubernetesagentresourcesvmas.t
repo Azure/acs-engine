@@ -261,7 +261,7 @@
             "createOption": "Attach",
             "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]", 
             "vhd": {
-              "uri": "[parameters('{{.Name}}osDiskVhdUri')]"  
+              "uri": "[parameters('{{.Name}}osDiskVhdURI')]"  
             }
             {{else}} 
             "createOption": "FromImage"
