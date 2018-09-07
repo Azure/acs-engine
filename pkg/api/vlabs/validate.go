@@ -110,7 +110,7 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateMasterProfile(); e != nil {
 		return e
 	}
-	if e := a.validateAgentPoolProfiles(); e != nil {
+	if e := a.validateAgentPoolProfiles(isUpdate); e != nil {
 		return e
 	}
 	if e := a.validateLinuxProfile(); e != nil {
@@ -357,7 +357,7 @@ func (a *Properties) validateMasterProfile() error {
 	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
-func (a *Properties) validateAgentPoolProfiles() error {
+func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 
 	profileNames := make(map[string]bool)
 	for i, agentPoolProfile := range a.AgentPoolProfiles {
@@ -406,7 +406,7 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			return e
 		}
 
-		if e := agentPoolProfile.validateVMSS(a.OrchestratorProfile); agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets && e != nil {
+		if e := agentPoolProfile.validateVMSS(a.OrchestratorProfile, isUpdate); agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets && e != nil {
 			return e
 		}
 
@@ -438,7 +438,7 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			}
 		}
 
-		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile); agentPoolProfile.OSType == Windows && e != nil {
+		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile, isUpdate); agentPoolProfile.OSType == Windows && e != nil {
 			return e
 		}
 	}
@@ -734,13 +734,13 @@ func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) err
 	return nil
 }
 
-func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
+func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile, isUpdate bool) error {
 	if o.OrchestratorType == Kubernetes {
 		version := common.RationalizeReleaseAndVersion(
 			o.OrchestratorType,
 			o.OrchestratorRelease,
 			o.OrchestratorVersion,
-			false,
+			isUpdate,
 			false)
 		if version == "" {
 			return errors.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
@@ -774,7 +774,7 @@ func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
 	return nil
 }
 
-func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsProfile) error {
+func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsProfile, isUpdate bool) error {
 	switch o.OrchestratorType {
 	case DCOS:
 	case Swarm:
@@ -784,7 +784,7 @@ func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsPro
 			o.OrchestratorType,
 			o.OrchestratorRelease,
 			o.OrchestratorVersion,
-			false,
+			isUpdate,
 			true)
 		if version == "" {
 			return errors.Errorf("Orchestrator %s version %s does not support Windows", o.OrchestratorType, o.OrchestratorVersion)
