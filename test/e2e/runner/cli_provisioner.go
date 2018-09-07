@@ -137,15 +137,15 @@ func (cli *CLIProvisioner) provision() error {
 
 	c, err := config.ParseConfig()
 	if err != nil {
-		return errors.New("unable to parse base config")
+		return errors.Wrap(err, "unable to parse base config")
 	}
 	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	if err != nil {
-		return errors.New("unable to parse config")
+		return errors.Wrap(err, "unable to parse config")
 	}
 	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
 	if err != nil {
-		return errors.New("unable to parse output")
+		return errors.Wrap(err, "unable to parse output")
 	}
 	cli.Engine.ExpandedDefinition = csGenerated
 

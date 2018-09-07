@@ -3,6 +3,7 @@ package kubernetesupgrade
 import (
 	"context"
 	"fmt"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"strings"
 	"time"
 
@@ -92,46 +93,22 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	var upgrader UpgradeWorkFlow
+	var upgradeWorflow UpgradeWorkFlow
 	upgradeVersion := uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
 	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", upgradeVersion)
-	switch {
-	case strings.HasPrefix(upgradeVersion, "1.6."):
-		upgrader16 := &Kubernetes16upgrader{}
-		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader16
+	hasWindows := uc.DataModel.Properties.HasWindows()
 
-	case strings.HasPrefix(upgradeVersion, "1.7."):
-		upgrader17 := &Kubernetes17upgrader{}
-		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader17
+	isUpgradeVersionSupported := common.IsSupportedKubernetesVersion(upgradeVersion, false, hasWindows)
 
-	case strings.HasPrefix(upgradeVersion, "1.8."):
-		upgrader18 := &Kubernetes18upgrader{}
-		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-
-		upgrader = upgrader18
-
-	case strings.HasPrefix(upgradeVersion, "1.9."):
-		upgrader19 := &Upgrader{}
-		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader19
-
-	case strings.HasPrefix(upgradeVersion, "1.10."):
-		upgrader110 := &Upgrader{}
-		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader110
-
-	case strings.HasPrefix(upgradeVersion, "1.11."):
-		upgrader111 := &Upgrader{}
-		upgrader111.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader111
-
-	default:
+	if isUpgradeVersionSupported {
+		upgrader := &Upgrader{}
+		upgrader.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
+		upgradeWorflow = upgrader
+	} else {
 		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
 	}
 
-	if err := upgrader.RunUpgrade(); err != nil {
+	if err := upgradeWorflow.RunUpgrade(); err != nil {
 		return err
 	}
 

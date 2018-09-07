@@ -97,7 +97,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.0.10",
+		ImageVersion:   "0.12.0",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
@@ -397,8 +397,14 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.ManagedDisks
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
+		if !helpers.IsFalseBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableRbac) {
+			if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
+				// TODO make EnableAggregatedAPIs a pointer to bool so that a user can opt out of it
+				a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
+			}
+			if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
+				a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
+			}
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
@@ -415,11 +421,6 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 
 		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
 			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
-		}
-
-		if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
-			// TODO make EnableAggregatedAPIs a pointer to bool so that a user can opt out of it
-			a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
 		}
 
 		if a.OrchestratorProfile.IsAzureCNI() {

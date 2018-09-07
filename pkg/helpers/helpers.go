@@ -59,6 +59,14 @@ func IsTrueBoolPointer(b *bool) bool {
 	return false
 }
 
+// IsFalseBoolPointer is a simple boolean helper function for boolean pointers
+func IsFalseBoolPointer(b *bool) bool {
+	if b != nil && !*b {
+		return true
+	}
+	return false
+}
+
 // PointerToBool returns a pointer to a bool
 func PointerToBool(b bool) *bool {
 	p := b
