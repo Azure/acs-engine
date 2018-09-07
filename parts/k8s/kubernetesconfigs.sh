@@ -242,9 +242,9 @@ function ensureDocker() {
     DOCKER_JSON_FILE=/etc/docker/daemon.json
     wait_for_file 1200 1 $DOCKER_JSON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
-    DOCKER_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-health-monitor.service
+    DOCKER_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-monitor.service
     wait_for_file 1200 1 $DOCKER_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart docker-health-monitor
+    systemctlEnableAndStart docker-monitor
 }
 function ensureKMS() {
     systemctlEnableAndStart kms
@@ -258,9 +258,9 @@ function ensureKubelet() {
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart kubelet
-    KUBELET_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-health-monitor.service
+    KUBELET_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
     wait_for_file 1200 1 $KUBELET_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart kubelet-health-monitor
+    systemctlEnableAndStart kubelet-monitor
 }
 
 function ensureJournal(){
