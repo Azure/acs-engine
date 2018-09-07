@@ -662,11 +662,8 @@ func setStorageDefaults(a *api.Properties) {
 		}
 		if len(profile.AvailabilityProfile) == 0 {
 			profile.AvailabilityProfile = api.VirtualMachineScaleSets
-			// VMSS is not supported for k8s below 1.10.0
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.0") {
-				profile.AvailabilityProfile = api.AvailabilitySet
-				// VMSS is not supported with instance metadata for k8s below 1.10.2
-			} else if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata) && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.2") {
+			// VMSS is not supported for k8s below 1.10.6
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.6") {
 				profile.AvailabilityProfile = api.AvailabilitySet
 			}
 		}
