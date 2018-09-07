@@ -250,43 +250,6 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		}
 
 		agentVMs := make(map[int]*vmInfo)
-		// Go over upgraded VMs and verify provisioning state
-		// per https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state :
-		//  - Creating: Indicates the virtual Machine is being created.
-		//  - Updating: Indicates that there is an update operation in progress on the Virtual Machine.
-		//  - Succeeded: Indicates that the operation executed on the virtual machine succeeded.
-		//  - Deleting: Indicates that the virtual machine is being deleted.
-		//  - Failed: Indicates that the update operation on the Virtual Machine failed.
-		// Delete VMs in 'bad' state. Such VMs will be re-created later in this function.
-		//for _, vm := range *agentPool.AgentVMs {
-		//	ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name)
-		//	var vmProvisioningState string
-		//	if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
-		//		vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
-		//	}
-		//	agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-		//
-		//	switch vmProvisioningState {
-		//	case "Creating", "Updating", "Succeeded":
-		//		agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusUpgraded}
-		//		upgradedCount++
-		//
-		//	case "Failed":
-		//		ku.logger.Infof("Deleting agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
-		//		err := upgradeAgentNode.DeleteNode(vm.Name, false)
-		//		if err != nil {
-		//			ku.logger.Errorf("Error deleting agent VM %s: %v", *vm.Name, err)
-		//			return err
-		//		}
-		//
-		//	case "Deleting":
-		//		fallthrough
-		//	default:
-		//		ku.logger.Infof("Ignoring agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
-		//		agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusIgnored}
-		//	}
-		//}
-
 		for _, vm := range *agentPool.AgentVMs {
 			agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 			agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusNotUpgraded}

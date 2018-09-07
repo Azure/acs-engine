@@ -30,13 +30,14 @@ gometalinter \
   --enable deadcode \
   --enable gofmt \
   --enable goimports \
+  --enable gosimple \
   --enable ineffassign \
   --enable misspell \
   --enable unused \
   --enable vet \
   --tests \
   --vendor \
-  --deadline 60s \
+  --deadline 120s \
   --skip test/i18n \
   --skip pkg/test \
   --exclude pkg/i18n/i18n.go \

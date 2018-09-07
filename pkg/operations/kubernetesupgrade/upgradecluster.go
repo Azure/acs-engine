@@ -3,9 +3,10 @@ package kubernetesupgrade
 import (
 	"context"
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"strings"
 	"time"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"

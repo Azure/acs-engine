@@ -23,7 +23,7 @@ type APIModelValue struct {
 
 // MapValues converts an arraw of rwa ApiModel values (like ["masterProfile.count=4","linuxProfile.adminUsername=admin"]) to a map
 func MapValues(m map[string]APIModelValue, setFlagValues []string) {
-	if setFlagValues == nil || len(setFlagValues) == 0 {
+	if len(setFlagValues) == 0 {
 		return
 	}
 
