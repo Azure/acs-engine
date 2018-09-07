@@ -258,10 +258,9 @@ function ensureKubelet() {
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart kubelet
-    # Don't start the kubelet-health-monitor systemd unit (yet).
-    # KUBELET_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-health-monitor.service
-    # wait_for_file 1200 1 $KUBELET_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    # systemctlEnableAndStart kubelet-health-monitor
+    KUBELET_HEALTH_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-health-monitor.service
+    wait_for_file 1200 1 $KUBELET_HEALTH_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart kubelet-health-monitor
 }
 
 function ensureJournal(){
