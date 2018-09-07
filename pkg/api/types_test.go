@@ -56,7 +56,7 @@ const exampleUserMSIModel = `{
 		"orchestratorType": "Kubernetes",
 		"kubernetesConfig": {
 			"useManagedIdentity": true,
-			"userAssignedID": "` + exampleUserMSI + `"	
+			"userAssignedID": "` + exampleUserMSI + `"
 		}
 	},
 	"masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
@@ -799,7 +799,7 @@ func TestUserAssignedMSI(t *testing.T) {
 	}
 	systemMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 	actualUserMSI := apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
-	if systemMSI != true || actualUserMSI != "" {
+	if !systemMSI || actualUserMSI != "" {
 		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
 	}
 
@@ -814,7 +814,7 @@ func TestUserAssignedMSI(t *testing.T) {
 	}
 	systemMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 	actualUserMSI = apiModel.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
-	if systemMSI != true && actualUserMSI != exampleUserMSI {
+	if !systemMSI && actualUserMSI != exampleUserMSI {
 		t.Fatalf("found user msi: %t and usermsi: %s", systemMSI, actualUserMSI)
 	}
 }
@@ -853,8 +853,9 @@ func TestIsTillerEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsTillerEnabled()
-	if enabled != DefaultTillerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return %t when no tiller addon has been specified, instead returned %t", DefaultTillerAddonEnabled, enabled)
+	enabledDefault := DefaultTillerAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return %t when no tiller addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultTillerAddonName))
 	enabled = c.IsTillerEnabled()
@@ -883,8 +884,9 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsACIConnectorEnabled()
-	if enabled != DefaultACIConnectorAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return %t when no ACI connector addon has been specified, instead returned %t", DefaultACIConnectorAddonEnabled, enabled)
+	enabledDefault := DefaultACIConnectorAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return %t when no ACI connector addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultACIConnectorAddonName))
 	enabled = c.IsACIConnectorEnabled()
@@ -913,8 +915,9 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsClusterAutoscalerEnabled()
-	if enabled != DefaultClusterAutoscalerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", DefaultClusterAutoscalerAddonEnabled, enabled)
+	enabledDefault := DefaultClusterAutoscalerAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultClusterAutoscalerAddonName))
 	enabled = c.IsClusterAutoscalerEnabled()
@@ -995,8 +998,9 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 		},
 	}
 	enabled := o.KubernetesConfig.IsContainerMonitoringEnabled()
-	if enabled != DefaultContainerMonitoringAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", DefaultContainerMonitoringAddonEnabled, v, enabled)
+	enabledDefault := DefaultContainerMonitoringAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when no container-monitoring addon has been specified, instead returned %t", enabledDefault, v, enabled)
 	}
 
 	b := true
@@ -1004,7 +1008,7 @@ func TestIsContainerMonitoringEnabled(t *testing.T) {
 	cm.Enabled = &b
 	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, cm)
 	enabled = o.KubernetesConfig.IsContainerMonitoringEnabled()
-	if enabled != true {
+	if !enabled {
 		t.Fatalf("KubernetesConfig.IsContainerMonitoringEnabled() should return %t for kubernetes version %s when the container-monitoring addon has been specified, instead returned %t", true, v, enabled)
 	}
 
@@ -1033,8 +1037,9 @@ func TestIsDashboardEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsDashboardEnabled()
-	if enabled != DefaultDashboardAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return %t when no kubernetes-dashboard addon has been specified, instead returned %t", DefaultDashboardAddonEnabled, enabled)
+	enabledDefault := DefaultDashboardAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return %t when no kubernetes-dashboard addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultDashboardAddonName))
 	enabled = c.IsDashboardEnabled()
@@ -1063,8 +1068,9 @@ func TestIsReschedulerEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsReschedulerEnabled()
-	if enabled != DefaultReschedulerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return %t when no rescheduler addon has been specified, instead returned %t", DefaultReschedulerAddonEnabled, enabled)
+	enabledDefault := DefaultReschedulerAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return %t when no rescheduler addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultReschedulerAddonName))
 	enabled = c.IsReschedulerEnabled()
@@ -1097,14 +1103,16 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 		},
 	}
 	enabled := o.IsMetricsServerEnabled()
-	if enabled != DefaultMetricsServerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
+	enabledDefault := DefaultMetricsServerAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", enabledDefault, v, enabled)
 	}
 
 	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon(DefaultMetricsServerAddonName))
 	enabled = o.IsMetricsServerEnabled()
-	if enabled != DefaultMetricsServerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when the metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
+	enabledDefault = DefaultMetricsServerAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when the metrics-server addon has been specified, instead returned %t", enabledDefault, v, enabled)
 	}
 
 	b := true
