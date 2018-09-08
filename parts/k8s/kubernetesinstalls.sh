@@ -51,7 +51,7 @@ function installGPUDrivers() {
     # Download the .run file from NVIDIA.
     # Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
     # Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
-    retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$GPU_DV/NVIDIA-Linux-x86_64-$GPU_DV.run -o $GPU_DEST/nvidia-drivers-$GPU_DV || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
+    retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$GPU_DV/NVIDIA-Linux-x86_64-$GPU_DV.run -o nvidia-drivers-$GPU_DV || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     mkdir -p lib64 overlay-workdir
     mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu
 }
