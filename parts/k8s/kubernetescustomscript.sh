@@ -49,9 +49,6 @@ if $FULL_INSTALL_REQUIRED; then
     testOutboundConnection
     holdWALinuxAgent
     installDeps
-    if [[ "${GPU_NODE}" = true ]]; then
-        installGPUDrivers
-    fi
 else 
     echo "Golden image; skipping dependencies installation"
 fi
@@ -115,6 +112,9 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
 fi
 
 if [[ "${GPU_NODE}" = true ]]; then
+    if $FULL_INSTALL_REQUIRED; then
+        installGPUDrivers
+    fi
     ensureGPUDrivers
 fi
 
