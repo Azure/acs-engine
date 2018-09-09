@@ -260,7 +260,7 @@ function ensureKubelet() {
     systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
     # KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
     # wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    # systemctlEnableAndStart kubelet-monitor
+    # systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL 
 }
 
 function ensureJournal(){
