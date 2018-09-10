@@ -236,11 +236,7 @@ func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 
 // HasNetworkPolicy will return true if the specified network policy is enabled
 func (e *Engine) HasNetworkPolicy(name string) bool {
-	if strings.Contains(e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, name) {
-		return true
-	}
-
-	return false
+	return strings.Contains(e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, name)
 }
 
 // HasAllZonesAgentPools will return true if all of the agent pools have zones
@@ -251,10 +247,7 @@ func (e *Engine) HasAllZonesAgentPools() bool {
 			count++
 		}
 	}
-	if count == len(e.ExpandedDefinition.Properties.AgentPoolProfiles) {
-		return true
-	}
-	return false
+	return count == len(e.ExpandedDefinition.Properties.AgentPoolProfiles)
 }
 
 // Write will write the cluster definition to disk

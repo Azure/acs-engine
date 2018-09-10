@@ -50,7 +50,6 @@ func TestGetTenantID_UnexpectedResponse(t *testing.T) {
 
 	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	_, err := GetTenantID(server.URL, "foobarsubscription")
@@ -70,7 +69,6 @@ func TestGetTenantID_InvalidHeader(t *testing.T) {
 	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Header().Set("fookey", "bazvalue")
-		return
 	})
 
 	_, err := GetTenantID(server.URL, "foobarsubscription")

@@ -554,7 +554,7 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 
 // CheckWindowsOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (bool, error) {
-	exp, err := regexp.Compile("(StatusCode\\s*:\\s*200)")
+	exp, err := regexp.Compile(`(StatusCode\s*:\s*200)`)
 	if err != nil {
 		log.Printf("Error while trying to create regex for windows outbound check:%s\n", err)
 		return false, err

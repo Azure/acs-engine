@@ -519,7 +519,7 @@ func TestAgentPoolProfile(t *testing.T) {
 	}
 }
 
-// TestSetComponentsNetworkDefaults covers tests for setMasterNetworkDefaults and setAgentNetworkDefaults
+// TestSetComponentsNetworkDefaults covers tests for setMasterProfileDefaults and setAgentProfileDefaults
 // TODO: Currently this test covers only api.Distro setting. Extend test cases to cover network configuration too.
 func TestSetComponentsNetworkDefaults(t *testing.T) {
 
@@ -547,14 +547,14 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 	for _, test := range tests {
 		mockAPI := getMockAPIProperties("1.0.0")
 		mockAPI.OrchestratorProfile = &test.orchestratorProfile
-		setMasterNetworkDefaults(&mockAPI, false)
-		setAgentNetworkDefaults(&mockAPI, false, false)
+		setMasterProfileDefaults(&mockAPI, false)
+		setAgentProfileDefaults(&mockAPI, false, false)
 		if mockAPI.MasterProfile.Distro != test.expectedDistro {
-			t.Fatalf("setMasterNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, mockAPI.MasterProfile.Distro, test.expectedDistro)
+			t.Fatalf("setMasterProfileDefaults() test case %v did not return right Distro configurations %v != %v", test.name, mockAPI.MasterProfile.Distro, test.expectedDistro)
 		}
 		for _, agent := range mockAPI.AgentPoolProfiles {
 			if agent.Distro != test.expectedDistro {
-				t.Fatalf("setAgentNetworkDefaults() test case %v did not return right Distro configurations %v != %v", test.name, agent.Distro, test.expectedDistro)
+				t.Fatalf("setAgentProfileDefaults() test case %v did not return right Distro configurations %v != %v", test.name, agent.Distro, test.expectedDistro)
 			}
 		}
 	}
@@ -618,12 +618,12 @@ func TestSetVMSSDefaults(t *testing.T) {
 
 	properties.AgentPoolProfiles[0].Count = 110
 	setPropertiesDefaults(&mockCS, false, false)
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != false {
+	if helpers.IsTrueBoolPointer(properties.AgentPoolProfiles[0].SinglePlacementGroup) {
 		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup did not have the expected configuration, got %t, expected %t",
 			*properties.AgentPoolProfiles[0].SinglePlacementGroup, false)
 	}
 
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup == false && properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
+	if !*properties.AgentPoolProfiles[0].SinglePlacementGroup && properties.AgentPoolProfiles[0].StorageProfile != api.ManagedDisks {
 		t.Fatalf("AgentPoolProfile[0].StorageProfile did not have the expected configuration, got %s, expected %s",
 			properties.AgentPoolProfiles[0].StorageProfile, api.ManagedDisks)
 	}
