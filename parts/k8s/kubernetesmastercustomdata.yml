@@ -69,14 +69,14 @@ write_files:
       }
     }
 
-- path: "/opt/azure/containers/health-monitor.sh"
-  permissions: "0744"
+- path: "/usr/local/bin/health-monitor.sh"
+  permissions: "0544"
   encoding: gzip
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "healthMonitorScript"}}
 
-- path: "/etc/systemd/system/docker-health-monitor.service"
+- path: "/etc/systemd/system/docker-monitor.service"
   permissions: "0644"
   owner: "root"
   content: |
@@ -84,12 +84,14 @@ write_files:
     Description=a script that checks docker health and restarts if needed
     After=docker.service
     [Service]
-    ExecStart=/bin/bash -c "/opt/azure/containers/health-monitor.sh container-runtime"
     Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh container-runtime
     [Install]
     WantedBy=multi-user.target
 
-- path: "/etc/systemd/system/kubelet-health-monitor.service"
+- path: "/etc/systemd/system/kubelet-monitor.service"
   permissions: "0644"
   owner: "root"
   content: |
@@ -97,8 +99,10 @@ write_files:
     Description=a script that checks kubelet health and restarts if needed
     After=kubelet.service
     [Service]
-    ExecStart=/bin/bash -c "/opt/azure/containers/health-monitor.sh kubelet"
     Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh kubelet
     [Install]
     WantedBy=multi-user.target
 {{end}}

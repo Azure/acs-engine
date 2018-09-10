@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# Original source: https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/gci/health-monitor.sh
-
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +19,9 @@
 # in cluster/gce/gci/<master/node>.yaml. The env variables come from an env
 # file provided by the systemd service.
 
+# This script originated at https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/gci/health-monitor.sh
+# and has been modified for acs-engine.
+
 set -o nounset
 set -o pipefail
 
@@ -29,7 +30,7 @@ set -o pipefail
 function container_runtime_monitoring {
   local -r max_attempts=5
   local attempt=1
-  local -r circtl="/usr/local/bin/crictl"  #="${KUBE_HOME}/bin/crictl"
+  local -r crictl="${KUBE_HOME}/bin/crictl"
   local -r container_runtime_name="${CONTAINER_RUNTIME_NAME:-docker}"
   # We still need to use `docker ps` when container runtime is "docker". This is because
   # dockershim is still part of kubelet today. When kubelet is down, crictl pods
@@ -94,17 +95,16 @@ if [[ "$#" -ne 1 ]]; then
   exit 1
 fi
 
-# KUBE_HOME="/home/kubernetes"
-# KUBE_ENV="${KUBE_HOME}/kube-env"
-# if [[ ! -e "${KUBE_ENV}" ]]; then
-#   echo "The ${KUBE_ENV} file does not exist!! Terminate health monitoring"
-#   exit 1
-# fi
+KUBE_HOME="/usr/local/bin"
+KUBE_ENV="/etc/default/kube-env"
+if [[  -e "${KUBE_ENV}" ]]; then
+  source "${KUBE_ENV}"
+fi
 
 SLEEP_SECONDS=10
 component=$1
 echo "Start kubernetes health monitoring for ${component}"
-# source "${KUBE_ENV}"
+
 if [[ "${component}" == "container-runtime" ]]; then
   container_runtime_monitoring
 elif [[ "${component}" == "kubelet" ]]; then
