@@ -78,6 +78,25 @@ func (cli *CLIProvisioner) Run() error {
 	return errors.New("Unable to run provisioner")
 }
 
+func createSaveSSH(outputPath string, privateKeyName string) (string, error) {
+	os.Mkdir(outputPath, 0755)
+	keyPath := filepath.Join(outputPath, privateKeyName)
+	cmd := exec.Command("ssh-keygen", "-f", keyPath, "-q", "-N", "", "-b", "2048", "-t", "rsa")
+
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+	}
+
+	os.Chmod(keyPath, 0600)
+	publicSSHKeyBytes, err := ioutil.ReadFile(keyPath + ".pub")
+	if err != nil {
+		return "", errors.Wrap(err, "Error while trying to read public ssh key")
+	}
+	return string(publicSSHKeyBytes), nil
+}
+
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
 	if cli.Config.SoakClusterName != "" {
@@ -86,22 +105,11 @@ func (cli *CLIProvisioner) provision() error {
 	os.Setenv("NAME", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	os.Mkdir(outputPath, 0755)
-
-	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
-
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
+	publicSSHKey, err := createSaveSSH(outputPath, cli.Config.Name+"-ssh")
 	if err != nil {
-		return errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+		return errors.Wrap(err, "Error while generating ssh keys")
 	}
 
-	os.Chmod(cli.Config.GetSSHKeyPath(), 0600)
-
-	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to read public ssh key")
-	}
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
