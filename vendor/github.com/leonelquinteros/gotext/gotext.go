@@ -22,66 +22,110 @@ For quick/simple translations you can use the package level functions directly.
 */
 package gotext
 
+import (
+	"fmt"
+	"sync"
+)
+
 // Global environment variables
-var (
+type config struct {
+	sync.RWMutex
+
 	// Default domain to look at when no domain is specified. Used by package level functions.
-	domain = "default"
+	domain string
 
 	// Language set.
-	language = "en_US"
+	language string
 
 	// Path to library directory where all locale directories and translation files are.
-	library = "/usr/local/share/locale"
+	library string
 
 	// Storage for package level methods
 	storage *Locale
-)
+}
+
+var globalConfig *config
+
+// Init default configuration
+func init() {
+	globalConfig = &config{
+		domain:   "default",
+		language: "en_US",
+		library:  "/usr/local/share/locale",
+		storage:  nil,
+	}
+}
 
 // loadStorage creates a new Locale object at package level based on the Global variables settings.
 // It's called automatically when trying to use Get or GetD methods.
 func loadStorage(force bool) {
-	if storage == nil || force {
-		storage = NewLocale(library, language)
+	globalConfig.Lock()
+
+	if globalConfig.storage == nil || force {
+		globalConfig.storage = NewLocale(globalConfig.library, globalConfig.language)
 	}
 
-	if _, ok := storage.domains[domain]; !ok || force {
-		storage.AddDomain(domain)
+	if _, ok := globalConfig.storage.domains[globalConfig.domain]; !ok || force {
+		globalConfig.storage.AddDomain(globalConfig.domain)
 	}
+
+	globalConfig.Unlock()
 }
 
 // GetDomain is the domain getter for the package configuration
 func GetDomain() string {
-	return domain
+	globalConfig.RLock()
+	dom := globalConfig.domain
+	globalConfig.RUnlock()
+
+	return dom
 }
 
 // SetDomain sets the name for the domain to be used at package level.
 // It reloads the corresponding translation file.
 func SetDomain(dom string) {
-	domain = dom
+	globalConfig.Lock()
+	globalConfig.domain = dom
+	globalConfig.Unlock()
+
 	loadStorage(true)
 }
 
 // GetLanguage is the language getter for the package configuration
 func GetLanguage() string {
-	return language
+	globalConfig.RLock()
+	lang := globalConfig.language
+	globalConfig.RUnlock()
+
+	return lang
 }
 
 // SetLanguage sets the language code to be used at package level.
 // It reloads the corresponding translation file.
 func SetLanguage(lang string) {
-	language = lang
+	globalConfig.Lock()
+	globalConfig.language = lang
+	globalConfig.Unlock()
+
 	loadStorage(true)
 }
 
 // GetLibrary is the library getter for the package configuration
 func GetLibrary() string {
-	return library
+	globalConfig.RLock()
+	lib := globalConfig.library
+	globalConfig.RUnlock()
+
+	return lib
 }
 
 // SetLibrary sets the root path for the loale directories and files to be used at package level.
 // It reloads the corresponding translation file.
 func SetLibrary(lib string) {
-	library = lib
+	globalConfig.Lock()
+	globalConfig.library = lib
+	globalConfig.Unlock()
+
 	loadStorage(true)
 }
 
@@ -90,9 +134,13 @@ func SetLibrary(lib string) {
 // This function is recommended to be used when changing more than one setting,
 // as using each setter will introduce a I/O overhead because the translation file will be loaded after each set.
 func Configure(lib, lang, dom string) {
-	library = lib
-	language = lang
-	domain = dom
+	globalConfig.Lock()
+
+	globalConfig.library = lib
+	globalConfig.language = lang
+	globalConfig.domain = dom
+
+	globalConfig.Unlock()
 
 	loadStorage(true)
 }
@@ -100,13 +148,13 @@ func Configure(lib, lang, dom string) {
 // Get uses the default domain globally set to return the corresponding translation of a given string.
 // Supports optional parameters (vars... interface{}) to be inserted on the formatted string using the fmt.Printf syntax.
 func Get(str string, vars ...interface{}) string {
-	return GetD(domain, str, vars...)
+	return GetD(GetDomain(), str, vars...)
 }
 
-// GetN retrieves the (N)th plural form of translation for the given string in the "default" domain.
+// GetN retrieves the (N)th plural form of translation for the given string in the default domain.
 // Supports optional parameters (vars... interface{}) to be inserted on the formatted string using the fmt.Printf syntax.
 func GetN(str, plural string, n int, vars ...interface{}) string {
-	return GetND("default", str, plural, n, vars...)
+	return GetND(GetDomain(), str, plural, n, vars...)
 }
 
 // GetD returns the corresponding translation in the given domain for a given string.
@@ -122,19 +170,23 @@ func GetND(dom, str, plural string, n int, vars ...interface{}) string {
 	loadStorage(false)
 
 	// Return translation
-	return storage.GetND(dom, str, plural, n, vars...)
+	globalConfig.RLock()
+	tr := globalConfig.storage.GetND(dom, str, plural, n, vars...)
+	globalConfig.RUnlock()
+
+	return tr
 }
 
 // GetC uses the default domain globally set to return the corresponding translation of the given string in the given context.
 // Supports optional parameters (vars... interface{}) to be inserted on the formatted string using the fmt.Printf syntax.
 func GetC(str, ctx string, vars ...interface{}) string {
-	return GetDC(domain, str, ctx, vars...)
+	return GetDC(GetDomain(), str, ctx, vars...)
 }
 
-// GetNC retrieves the (N)th plural form of translation for the given string in the given context in the "default" domain.
+// GetNC retrieves the (N)th plural form of translation for the given string in the given context in the default domain.
 // Supports optional parameters (vars... interface{}) to be inserted on the formatted string using the fmt.Printf syntax.
 func GetNC(str, plural string, n int, ctx string, vars ...interface{}) string {
-	return GetNDC("default", str, plural, n, ctx, vars...)
+	return GetNDC(GetDomain(), str, plural, n, ctx, vars...)
 }
 
 // GetDC returns the corresponding translation in the given domain for the given string in the given context.
@@ -150,5 +202,18 @@ func GetNDC(dom, str, plural string, n int, ctx string, vars ...interface{}) str
 	loadStorage(false)
 
 	// Return translation
-	return storage.GetNDC(dom, str, plural, n, ctx, vars...)
+	globalConfig.RLock()
+	tr := globalConfig.storage.GetNDC(dom, str, plural, n, ctx, vars...)
+	globalConfig.RUnlock()
+
+	return tr
+}
+
+// printf applies text formatting only when needed to parse variables.
+func printf(str string, vars ...interface{}) string {
+	if len(vars) > 0 {
+		return fmt.Sprintf(str, vars...)
+	}
+
+	return str
 }

@@ -2,14 +2,14 @@ package gotext
 
 import (
 	"bufio"
-	"fmt"
-	"github.com/mattn/kinako/vm"
 	"io/ioutil"
 	"net/textproto"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/mattn/kinako/vm"
 )
 
 type translation struct {
@@ -427,12 +427,12 @@ func (po *Po) Get(str string, vars ...interface{}) string {
 
 	if po.translations != nil {
 		if _, ok := po.translations[str]; ok {
-			return po.printf(po.translations[str].get(), vars...)
+			return printf(po.translations[str].get(), vars...)
 		}
 	}
 
 	// Return the same we received by default
-	return po.printf(str, vars...)
+	return printf(str, vars...)
 }
 
 // GetN retrieves the (N)th plural form of translation for the given string.
@@ -444,14 +444,14 @@ func (po *Po) GetN(str, plural string, n int, vars ...interface{}) string {
 
 	if po.translations != nil {
 		if _, ok := po.translations[str]; ok {
-			return po.printf(po.translations[str].getN(po.pluralForm(n)), vars...)
+			return printf(po.translations[str].getN(po.pluralForm(n)), vars...)
 		}
 	}
 
 	if n == 1 {
-		return po.printf(str, vars...)
+		return printf(str, vars...)
 	}
-	return po.printf(plural, vars...)
+	return printf(plural, vars...)
 }
 
 // GetC retrieves the corresponding translation for a given string in the given context.
@@ -465,14 +465,14 @@ func (po *Po) GetC(str, ctx string, vars ...interface{}) string {
 		if _, ok := po.contexts[ctx]; ok {
 			if po.contexts[ctx] != nil {
 				if _, ok := po.contexts[ctx][str]; ok {
-					return po.printf(po.contexts[ctx][str].get(), vars...)
+					return printf(po.contexts[ctx][str].get(), vars...)
 				}
 			}
 		}
 	}
 
 	// Return the string we received by default
-	return po.printf(str, vars...)
+	return printf(str, vars...)
 }
 
 // GetNC retrieves the (N)th plural form of translation for the given string in the given context.
@@ -486,23 +486,14 @@ func (po *Po) GetNC(str, plural string, n int, ctx string, vars ...interface{}) 
 		if _, ok := po.contexts[ctx]; ok {
 			if po.contexts[ctx] != nil {
 				if _, ok := po.contexts[ctx][str]; ok {
-					return po.printf(po.contexts[ctx][str].getN(po.pluralForm(n)), vars...)
+					return printf(po.contexts[ctx][str].getN(po.pluralForm(n)), vars...)
 				}
 			}
 		}
 	}
 
 	if n == 1 {
-		return po.printf(str, vars...)
+		return printf(str, vars...)
 	}
-	return po.printf(plural, vars...)
-}
-
-// printf applies text formatting only when needed to parse variables.
-func (po *Po) printf(str string, vars ...interface{}) string {
-	if len(vars) > 0 {
-		return fmt.Sprintf(str, vars...)
-	}
-
-	return str
+	return printf(plural, vars...)
 }
