@@ -105,15 +105,17 @@ func (cli *CLIProvisioner) provision() error {
 	os.Setenv("NAME", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	publicSSHKey, err := createSaveSSH(outputPath, cli.Config.Name+"-ssh")
-	if err != nil {
-		return errors.Wrap(err, "Error while generating ssh keys")
+	if !cli.Config.UseDeployCommand {
+		publicSSHKey, err := createSaveSSH(outputPath, cli.Config.Name+"-ssh")
+		if err != nil {
+			return errors.Wrap(err, "Error while generating ssh keys")
+		}
+		os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	}
 
-	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
-	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
+	err := cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
 	if err != nil {
 		return errors.Wrap(err, "Error while trying to create resource group")
 	}
