@@ -112,7 +112,9 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
 fi
 
 if [[ "${GPU_NODE}" = true ]]; then
-    installGPUDrivers
+    if $FULL_INSTALL_REQUIRED; then
+        installGPUDrivers
+    fi
     ensureGPUDrivers
 fi
 

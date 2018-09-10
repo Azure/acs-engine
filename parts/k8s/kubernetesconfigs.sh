@@ -6,12 +6,12 @@ function systemctlEnableAndStart() {
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     if [ $RESTART_STATUS -ne 0 ]; then
         echo "$1 could not be started"
-        exit $ERR_SYSTEMCTL_START_FAIL
+        return 1
     fi
     retrycmd_if_failure 10 5 3 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
-        exit $ERR_SYSTEMCTL_ENABLE_FAIL
+        return 1
     fi
 }
 
@@ -83,7 +83,7 @@ function configureEtcd() {
     MOUNT_ETCD_FILE=/opt/azure/containers/mountetcd.sh
     wait_for_file 1200 1 $MOUNT_ETCD_FILE || exit $ERR_ETCD_CONFIG_FAIL
     $MOUNT_ETCD_FILE || exit $ERR_ETCD_VOL_MOUNT_FAIL
-    systemctlEnableAndStart etcd
+    systemctlEnableAndStart etcd || exit $ERR_ETCD_START_TIMEOUT
     for i in $(seq 1 600); do
         MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
         if [ "$MEMBER" != "" ]; then
@@ -96,8 +96,8 @@ function configureEtcd() {
 }
 
 function ensureRPC() {
-    systemctlEnableAndStart rpcbind
-    systemctlEnableAndStart rpc-statd
+    systemctlEnableAndStart rpcbind || exit $ERR_SYSTEMCTL_START_FAIL
+    systemctlEnableAndStart rpc-statd || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function runAptDaily() {
@@ -196,7 +196,7 @@ function ensureCCProxy() {
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
     # Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	systemctlEnableAndStart cc-proxy
+	systemctlEnableAndStart cc-proxy || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function setupContainerd() {
@@ -228,7 +228,7 @@ function ensureContainerd() {
         # Enable and start cri-containerd service
         # Make sure this is done after networking plugins are installed
         echo "Enabling and starting cri-containerd service..."
-        systemctlEnableAndStart containerd
+        systemctlEnableAndStart containerd || exit $ERR_SYSTEMCTL_START_FAIL
     fi
 }
 
@@ -244,10 +244,10 @@ function ensureDocker() {
     systemctlEnableAndStart docker
     DOCKER_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-monitor.service
     wait_for_file 1200 1 $DOCKER_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart docker-monitor
+    systemctlEnableAndStart docker-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 function ensureKMS() {
-    systemctlEnableAndStart kms
+    systemctlEnableAndStart kms || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensureKubelet() {
@@ -257,10 +257,10 @@ function ensureKubelet() {
     wait_for_file 1200 1 $KUBECONFIG_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart kubelet
+    systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
     # KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
     # wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    # systemctlEnableAndStart kubelet-monitor
+    # systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL 
 }
 
 function ensureJournal(){
@@ -268,7 +268,7 @@ function ensureJournal(){
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    systemctlEnableAndStart systemd-journald
+    systemctlEnableAndStart systemd-journald || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensurePodSecurityPolicy() {
@@ -391,7 +391,7 @@ configAddons() {
 }
 
 configGPUDrivers() {
-    sh nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}"
+    sh $GPU_DEST/nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}" || exit $ERR_GPU_DRIVERS_START_FAIL
     echo "${GPU_DEST}/lib64" > /etc/ld.so.conf.d/nvidia.conf
     ldconfig
     umount -l /usr/lib/x86_64-linux-gnu
@@ -402,6 +402,6 @@ configGPUDrivers() {
 
 ensureGPUDrivers() {
     configGPUDrivers
-    systemctlEnableAndStart nvidia-modprobe
+    systemctlEnableAndStart nvidia-modprobe || exit $ERR_GPU_DRIVERS_START_FAIL
     retrycmd_if_failure 5 10 60 systemctl restart kubelet
 }
