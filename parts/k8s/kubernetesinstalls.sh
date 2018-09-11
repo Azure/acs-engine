@@ -215,7 +215,8 @@ function extractHyperkube() {
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
 }
 
-function pullImg() {
-    DOCKER_IMAGE_URL=$1
-    retrycmd_if_failure 75 1 60 img pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+function pullContainerImage() {
+    CLI_TOOL=$1
+    DOCKER_IMAGE_URL=$2
+    retrycmd_if_failure 75 1 60 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
