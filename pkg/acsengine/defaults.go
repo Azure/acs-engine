@@ -618,7 +618,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		// don't default Distro for OpenShift
 		if !a.OrchestratorProfile.IsOpenShift() {
 			if profile.Distro == "" {
-				if a.HostedMasterProfile != nil {
+				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
 				} else {
 					profile.Distro = api.AKS

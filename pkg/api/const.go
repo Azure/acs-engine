@@ -172,3 +172,8 @@ const (
 	// AgentPoolProfileRoleMaster is the master role
 	AgentPoolProfileRoleMaster AgentPoolProfileRole = "master"
 )
+
+const (
+	// VHDDiskSizeAKS maps to the OSDiskSizeGB for AKS VHD image
+	VHDDiskSizeAKS = 100
+)
