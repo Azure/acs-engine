@@ -485,8 +485,8 @@ func (az *AzureClient) addAuxiliaryTokens() autorest.PrepareDecorator {
 	}
 }
 
-// AddAuxillaryTokens sets the list of aux tokens to accept on this request
-func (az *AzureClient) AddAuxillaryTokens(tokens []string) {
+// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
+func (az *AzureClient) AddAuxiliaryTokens(tokens []string) {
 	az.auxiliaryTokens = tokens
 	az.authorizationClient.Client.RequestInspector = az.addAuxiliaryTokens()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
