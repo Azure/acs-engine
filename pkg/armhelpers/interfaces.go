@@ -45,8 +45,8 @@ type ACSEngineClient interface {
 	//AddAcceptLanguages sets the list of languages to accept on this request
 	AddAcceptLanguages(languages []string)
 
-	// AddAuxillaryTokens sets the list of aux tokens to accept on this request
-	AddAuxillaryTokens(tokens []string)
+	// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
+	AddAuxiliaryTokens(tokens []string)
 
 	// RESOURCES
 

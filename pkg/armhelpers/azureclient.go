@@ -464,7 +464,7 @@ func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
 	}
 }
 
-func (az *AzureClient) addAuxiliaryTokens() autorest.PrepareDecorator {
+func (az *AzureClient) setAuxiliaryTokens() autorest.PrepareDecorator {
 	return func(p autorest.Preparer) autorest.Preparer {
 		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
 			r, err := p.Prepare(r)
@@ -488,20 +488,22 @@ func (az *AzureClient) addAuxiliaryTokens() autorest.PrepareDecorator {
 // AddAuxiliaryTokens sets the list of aux tokens to accept on this request
 func (az *AzureClient) AddAuxiliaryTokens(tokens []string) {
 	az.auxiliaryTokens = tokens
-	az.authorizationClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.deploymentOperationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.deploymentsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.deploymentsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.deploymentOperationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.resourcesClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.storageAccountsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.interfacesClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.groupsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.providersClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.virtualMachinesClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.virtualMachineScaleSetsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.disksClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	requestWithTokens := az.setAuxiliaryTokens()
 
-	az.applicationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
-	az.servicePrincipalsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.authorizationClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.resourcesClient.Client.RequestInspector = requestWithTokens
+	az.storageAccountsClient.Client.RequestInspector = requestWithTokens
+	az.interfacesClient.Client.RequestInspector = requestWithTokens
+	az.groupsClient.Client.RequestInspector = requestWithTokens
+	az.providersClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachinesClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachineScaleSetsClient.Client.RequestInspector = requestWithTokens
+	az.disksClient.Client.RequestInspector = requestWithTokens
+
+	az.applicationsClient.Client.RequestInspector = requestWithTokens
+	az.servicePrincipalsClient.Client.RequestInspector = requestWithTokens
 }
