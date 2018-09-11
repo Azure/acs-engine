@@ -46,6 +46,7 @@ var (
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
 	acceptLanguages []string
+	auxiliaryTokens []string
 	environment     azure.Environment
 	subscriptionID  string
 
@@ -461,4 +462,46 @@ func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
 			return r, nil
 		})
 	}
+}
+
+func (az *AzureClient) addAuxiliaryTokens() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if az.auxiliaryTokens != nil {
+				for _, token := range az.auxiliaryTokens {
+					if token == "" {
+						continue
+					}
+
+					r.Header.Set("x-ms-authorization-auxiliary", fmt.Sprintf("Bearer %s", token))
+				}
+			}
+			return r, nil
+		})
+	}
+}
+
+// AddAuxillaryTokens sets the list of aux tokens to accept on this request
+func (az *AzureClient) AddAuxillaryTokens(tokens []string) {
+	az.auxiliaryTokens = tokens
+	az.authorizationClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.deploymentOperationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.deploymentsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.deploymentsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.deploymentOperationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.resourcesClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.storageAccountsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.interfacesClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.groupsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.providersClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.virtualMachinesClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.virtualMachineScaleSetsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.disksClient.Client.RequestInspector = az.addAuxiliaryTokens()
+
+	az.applicationsClient.Client.RequestInspector = az.addAuxiliaryTokens()
+	az.servicePrincipalsClient.Client.RequestInspector = az.addAuxiliaryTokens()
 }
