@@ -788,6 +788,7 @@
             }
           ]
         },
+        {{if not UseMasterCustomVHD}} 
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
@@ -810,6 +811,7 @@
           "secrets": "[variables('linuxProfileSecrets')]"
           {{end}}
         },
+        {{end}}
         "storageProfile": {
           {{if and (and (not UseMasterCustomImage) (not UseMasterCustomVHD)) (not IsOpenShift)}} 
           "dataDisks": [
