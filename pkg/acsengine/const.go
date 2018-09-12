@@ -98,6 +98,8 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+	// DefaultKubeProxyAddonName is the name kube-proxy config addon
+	DefaultKubeProxyAddonName = "kube-proxy-daemonset"
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultTillerMaxHistory limits the maximum number of revisions saved per release. Use 0 for no limit.

@@ -234,6 +234,7 @@ type KubernetesAddon struct {
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
 	Config     map[string]string         `json:"config,omitempty"`
+	Data       string                    `json:"data,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled

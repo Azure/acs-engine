@@ -520,7 +520,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				profile.OrchestratorProfile.OrchestratorVersion)
 
 			// add addons
-			str = substituteConfigString(str,
+			str = substituteAddonConfigString(str,
 				kubernetesAddonSettingsInit(profile),
 				"k8s/addons",
 				"/etc/kubernetes/addons",

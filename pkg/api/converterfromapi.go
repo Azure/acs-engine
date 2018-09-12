@@ -833,6 +833,7 @@ func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 			Name:    a.Addons[i].Name,
 			Enabled: a.Addons[i].Enabled,
 			Config:  map[string]string{},
+			Data:    a.Addons[i].Data,
 		})
 		for j := range a.Addons[i].Containers {
 			v.Addons[i].Containers = append(v.Addons[i].Containers, vlabs.KubernetesContainerSpec{
