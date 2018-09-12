@@ -124,6 +124,14 @@ func TestCreateSSH(t *testing.T) {
 		t.Fatalf("Private Key did not start with expected header")
 	}
 
+	if privateKey.N.BitLen() != SSHKeySize {
+		t.Fatalf("Private Key was of length %d but %d was expected", privateKey.N.BitLen(), SSHKeySize)
+	}
+
+	if err := privateKey.Validate(); err != nil {
+		t.Fatalf("Private Key failed validation: %v", err)
+	}
+
 	if !strings.HasPrefix(publicKey, "ssh-rsa ") {
 		t.Fatalf("Public Key did not start with expected header")
 	}
