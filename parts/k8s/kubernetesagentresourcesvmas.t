@@ -387,7 +387,7 @@
 {{if UseAgentCustomVHD .}}
   ,{
     "type": "Microsoft.Compute/disks",
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "2018-04-01",
     "name": "aks-vhd-agent",
     "location": "[variables('location')]",
     "properties": {
