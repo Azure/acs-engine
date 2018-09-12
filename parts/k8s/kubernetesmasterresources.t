@@ -840,14 +840,20 @@
             {{end}}
           },
           {{end}}
-          "osDisk": {
           {{if UseMasterCustomVHD}}
-            "osType": "Linux",
-            "createOption": "Attach",
-            "managedDisk": {
-              "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
+          "dataDisks": [
+            {
+              "name": "aks-vhd-master-1",
+              "lun": 0,
+              "vhd": {
+                "uri": "[parameters('osDiskVhdUri')]"
+              },
+              "caching": "ReadWrite",
+              "createOption": "Attach"
             }
-          {{else}} 
+          ]
+          {{end}} 
+          "osDisk": {
             "caching": "ReadWrite",
             "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
             "createOption": "FromImage"
@@ -859,7 +865,6 @@
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}
-          {{end}} 
           }
         }
       },
