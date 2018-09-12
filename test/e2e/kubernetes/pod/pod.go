@@ -186,10 +186,16 @@ func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*P
 
 type podRunnerCmd func(string, string, string, string, bool) (*Pod, error)
 
-// RunCommandMultipleTimes runs the same command 'attempts' times
-func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command string, attempts int) (int, error) {
-	var successes int
-	for i := 0; i < attempts; i++ {
+// RunCommandMultipleTimes runs the same command 'desiredAttempts' times
+func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command string, desiredAttempts int) (int, error) {
+	var successfulAttempts int
+	var actualAttempts int
+	logResults := func() {
+		log.Printf("Ran command on %d of %d desired attempts with %d successes\n\n", actualAttempts, desiredAttempts, successfulAttempts)
+	}
+	defer logResults()
+	for i := 0; i < desiredAttempts; i++ {
+		actualAttempts++
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		podName := fmt.Sprintf("%s-%d", name, r.Intn(99999))
 		var p *Pod
@@ -200,8 +206,9 @@ func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command str
 		} else {
 			p, err = podRunnerCmd(image, podName, "default", command, false)
 		}
+
 		if err != nil {
-			return successes, err
+			return successfulAttempts, err
 		}
 		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
 		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
@@ -211,17 +218,18 @@ func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command str
 		} else {
 			log.Printf("%s\n", string(out[:]))
 		}
-		if succeeded {
-			successes++
-		}
+
 		err = p.Delete()
 		if err != nil {
-			return successes, err
+			return successfulAttempts, err
+		}
+
+		if succeeded {
+			successfulAttempts++
 		}
 	}
 
-	log.Printf("Ran command successfully on %d of %d test attempts\n\n", successes, attempts)
-	return successes, nil
+	return successfulAttempts, nil
 }
 
 // GetAll will return all pods in a given namespace
