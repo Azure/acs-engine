@@ -886,115 +886,67 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	return ""
 }
 
-// IsMetricsServerEnabled checks if the metrics server addon is enabled
-func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
-	var metricsServerAddon KubernetesAddon
-	k := o.KubernetesConfig
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultMetricsServerAddonName {
-			metricsServerAddon = k.Addons[i]
+// isAddonEnabled checks whether a k8s addon with name "addonName" is enabled or not based on the Enabled field of KubernetesAddon.
+// If the value of Enabled in nil, the "defaultValue" is returned.
+func (k *KubernetesConfig) isAddonEnabled(addonName string, defaultValue bool) bool {
+	var kubeAddon KubernetesAddon
+	for _, addon := range k.Addons {
+		if addon.Name == addonName {
+			kubeAddon = addon
 		}
 	}
-	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+	return kubeAddon.IsEnabled(defaultValue)
+}
+
+// IsMetricsServerEnabled checks if the metrics server addon is enabled
+func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
+	return o.KubernetesConfig.isAddonEnabled(DefaultMetricsServerAddonName,
+		common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
 // IsContainerMonitoringEnabled checks if the container monitoring addon is enabled
 func (k *KubernetesConfig) IsContainerMonitoringEnabled() bool {
-	var containerMonitoringAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == ContainerMonitoringAddonName {
-			containerMonitoringAddon = k.Addons[i]
-		}
-	}
-	return containerMonitoringAddon.IsEnabled(DefaultContainerMonitoringAddonEnabled)
+	return k.isAddonEnabled(ContainerMonitoringAddonName, DefaultContainerMonitoringAddonEnabled)
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsTillerEnabled() bool {
-	var tillerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultTillerAddonName {
-			tillerAddon = k.Addons[i]
-		}
-	}
-	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+	return k.isAddonEnabled(DefaultTillerAddonName, DefaultTillerAddonEnabled)
 }
 
 // IsAADPodIdentityEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
-	var aadPodIdentityAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultAADPodIdentityAddonName {
-			aadPodIdentityAddon = k.Addons[i]
-		}
-	}
-	return aadPodIdentityAddon.IsEnabled(DefaultAADPodIdentityAddonEnabled)
+	return k.isAddonEnabled(DefaultAADPodIdentityAddonName, DefaultAADPodIdentityAddonEnabled)
 }
 
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
-	var aciConnectorAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultACIConnectorAddonName {
-			aciConnectorAddon = k.Addons[i]
-		}
-	}
-	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
+	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultAADPodIdentityAddonEnabled)
 }
 
 // IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
 func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
-	var clusterAutoscalerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
-			clusterAutoscalerAddon = k.Addons[i]
-		}
-	}
-	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
+	return k.isAddonEnabled(DefaultClusterAutoscalerAddonName, DefaultClusterAutoscalerAddonEnabled)
 }
 
 // IsBlobfuseFlexVolumeEnabled checks if the Blobfuse FlexVolume addon is enabled
 func (k *KubernetesConfig) IsBlobfuseFlexVolumeEnabled() bool {
-	var bfFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultBlobfuseFlexVolumeAddonName {
-			bfFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return bfFlexVolumeAddon.IsEnabled(DefaultBlobfuseFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultBlobfuseFlexVolumeAddonName, DefaultBlobfuseFlexVolumeAddonEnabled)
 }
 
 // IsSMBFlexVolumeEnabled checks if the SMB FlexVolume addon is enabled
 func (k *KubernetesConfig) IsSMBFlexVolumeEnabled() bool {
-	var smbFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultSMBFlexVolumeAddonName {
-			smbFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return smbFlexVolumeAddon.IsEnabled(DefaultSMBFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultSMBFlexVolumeAddonName, DefaultSMBFlexVolumeAddonEnabled)
 }
 
 // IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
 func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
-	var kvFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultKeyVaultFlexVolumeAddonName {
-			kvFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return kvFlexVolumeAddon.IsEnabled(DefaultKeyVaultFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultKeyVaultFlexVolumeAddonName, DefaultKeyVaultFlexVolumeAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
 func (k *KubernetesConfig) IsDashboardEnabled() bool {
-	var dashboardAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultDashboardAddonName {
-			dashboardAddon = k.Addons[i]
-		}
-	}
-	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
+	return k.isAddonEnabled(DefaultDashboardAddonName, DefaultDashboardAddonEnabled)
 }
 
 // IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
@@ -1010,36 +962,24 @@ func IsNSeriesSKU(p *Properties) bool {
 // IsNVIDIADevicePluginEnabled checks if the NVIDIA Device Plugin addon is enabled
 // It is enabled by default if agents contain a GPU and Kubernetes version is >= 1.10.0
 func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
-	var nvidiaDevicePluginAddon KubernetesAddon
 	k := p.OrchestratorProfile.KubernetesConfig
-	o := p.OrchestratorProfile
-	for i := range k.Addons {
-		if k.Addons[i].Name == NVIDIADevicePluginAddonName {
-			nvidiaDevicePluginAddon = k.Addons[i]
-		}
-	}
+	return k.isAddonEnabled(NVIDIADevicePluginAddonName, getDefaultNVIDIADevicePluginEnabled(p))
+}
 
+func getDefaultNVIDIADevicePluginEnabled(p *Properties) bool {
+	o := p.OrchestratorProfile
 	var addonEnabled bool
-	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
-		addonEnabled = false
-	} else if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false
 	}
-
-	return nvidiaDevicePluginAddon.IsEnabled(addonEnabled)
+	return addonEnabled
 }
 
 // IsReschedulerEnabled checks if the rescheduler addon is enabled
 func (k *KubernetesConfig) IsReschedulerEnabled() bool {
-	var reschedulerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultReschedulerAddonName {
-			reschedulerAddon = k.Addons[i]
-		}
-	}
-	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
+	return k.isAddonEnabled(DefaultReschedulerAddonName, DefaultReschedulerAddonEnabled)
 }
 
 // PrivateJumpboxProvision checks if a private cluster has jumpbox auto-provisioning

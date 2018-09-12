@@ -877,6 +877,37 @@ func TestIsTillerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsAADPodIdentityEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsAADPodIdentityEnabled()
+	enabledDefault := DefaultAADPodIdentityAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsAADPodIdentityEnabled() should return %t when no aad pod identity addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultAADPodIdentityAddonName))
+	enabled = c.IsAADPodIdentityEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsAADPodIdentityEnabled() should return true when aad pod identity addon has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultAADPodIdentityAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsAADPodIdentityEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsAADPodIdentityEnabled() should return false when aad pod identity addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestIsACIConnectorEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{
@@ -917,7 +948,7 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 	enabled := c.IsClusterAutoscalerEnabled()
 	enabledDefault := DefaultClusterAutoscalerAddonEnabled
 	if enabled != enabledDefault {
-		t.Fatalf("KubernetesConfig.IsAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", enabledDefault, enabled)
+		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return %t when no cluster autoscaler addon has been specified, instead returned %t", enabledDefault, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultClusterAutoscalerAddonName))
 	enabled = c.IsClusterAutoscalerEnabled()
@@ -936,6 +967,99 @@ func TestIsClusterAutoscalerEnabled(t *testing.T) {
 	enabled = c.IsClusterAutoscalerEnabled()
 	if !enabled {
 		t.Fatalf("KubernetesConfig.IsClusterAutoscalerEnabled() should return false when cluster autoscaler addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
+func TestIsBlobfuseFlexVolumeEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsBlobfuseFlexVolumeEnabled()
+	enabledDefault := DefaultBlobfuseFlexVolumeAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsBlobfuseFlexVolumeEnabled() should return %t when no blob fuse flex volume addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultBlobfuseFlexVolumeAddonName))
+	enabled = c.IsBlobfuseFlexVolumeEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsBlobfuseFlexVolumeEnabled() should return true when blob fuse flex volume has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultBlobfuseFlexVolumeAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsBlobfuseFlexVolumeEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsBlobfuseFlexVolumeEnabled() should return false when blob fuse flex volume addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
+func TestIsSMBFlexVolumeEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsSMBFlexVolumeEnabled()
+	enabledDefault := DefaultSMBFlexVolumeAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsSMBFlexVolumeEnabled() should return %t when no SMB flex volume addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultSMBFlexVolumeAddonName))
+	enabled = c.IsSMBFlexVolumeEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsSMBFlexVolumeEnabled() should return true when SMB flex volume has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultSMBFlexVolumeAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsSMBFlexVolumeEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsSMBFlexVolumeEnabled() should return false when SMB flex volume addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
+func TestIsKeyVaultFlexVolumeEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsKeyVaultFlexVolumeEnabled()
+	enabledDefault := DefaultKeyVaultFlexVolumeAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return %t when no key vault flex volume addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultKeyVaultFlexVolumeAddonName))
+	enabled = c.IsKeyVaultFlexVolumeEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return true when no keyvault flex volume has been specified, instead returned %t", enabled)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultKeyVaultFlexVolumeAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsKeyVaultFlexVolumeEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return false when no keyvault flex volume addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
