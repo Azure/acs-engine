@@ -1379,7 +1379,7 @@ func TestMasterProfileValidate(t *testing.T) {
 				DNSPrefix:                "dummy",
 				VnetSubnetID:             "testvnetstring",
 				FirstConsecutiveStaticIP: "10.0.0.1",
-				Count: 1,
+				Count:                    1,
 			},
 		},
 		{
@@ -1612,10 +1612,10 @@ func TestProperties_ValidateVNET(t *testing.T) {
 		{
 			name: "Invalid MasterProfile FirstConsecutiveStaticIP",
 			masterProfile: &MasterProfile{
-				VnetSubnetID: validVNetSubnetID,
-				Count:        1,
-				DNSPrefix:    "foo",
-				VMSize:       "Standard_DS2_v2",
+				VnetSubnetID:             validVNetSubnetID,
+				Count:                    1,
+				DNSPrefix:                "foo",
+				VMSize:                   "Standard_DS2_v2",
 				FirstConsecutiveStaticIP: "10.0.0.invalid",
 			},
 			agentPoolProfiles: []*AgentPoolProfile{
@@ -1632,10 +1632,10 @@ func TestProperties_ValidateVNET(t *testing.T) {
 		{
 			name: "Invalid vnetcidr",
 			masterProfile: &MasterProfile{
-				VnetSubnetID: validVNetSubnetID,
-				Count:        1,
-				DNSPrefix:    "foo",
-				VMSize:       "Standard_DS2_v2",
+				VnetSubnetID:             validVNetSubnetID,
+				Count:                    1,
+				DNSPrefix:                "foo",
+				VMSize:                   "Standard_DS2_v2",
 				FirstConsecutiveStaticIP: "10.0.0.1",
 				VnetCidr:                 "10.1.0.0/invalid",
 			},

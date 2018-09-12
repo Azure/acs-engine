@@ -106,7 +106,7 @@ func (c *Config) PrepareMasterKubeConfigs() error {
 				{
 					Name: externalEndpointName,
 					Cluster: ClusterInfo{
-						Server: fmt.Sprintf("https://%s", externalEndpoint),
+						Server:                   fmt.Sprintf("https://%s", externalEndpoint),
 						CertificateAuthorityData: base64.StdEncoding.EncodeToString(cacert),
 					},
 				},
@@ -139,7 +139,7 @@ func (c *Config) PrepareMasterKubeConfigs() error {
 				{
 					Name: localhostEndpointName,
 					Cluster: ClusterInfo{
-						Server: fmt.Sprintf("https://%s", localhostEndpoint),
+						Server:                   fmt.Sprintf("https://%s", localhostEndpoint),
 						CertificateAuthorityData: base64.StdEncoding.EncodeToString(cacert),
 					},
 				},
@@ -172,7 +172,7 @@ func (c *Config) PrepareMasterKubeConfigs() error {
 				{
 					Name: endpointName,
 					Cluster: ClusterInfo{
-						Server: fmt.Sprintf("https://%s", endpoint),
+						Server:                   fmt.Sprintf("https://%s", endpoint),
 						CertificateAuthorityData: base64.StdEncoding.EncodeToString(cacert),
 					},
 				},
@@ -231,7 +231,7 @@ func (c *Config) PrepareBootstrapKubeConfig() error {
 			{
 				Name: epName,
 				Cluster: ClusterInfo{
-					Server: fmt.Sprintf("https://%s", ep),
+					Server:                   fmt.Sprintf("https://%s", ep),
 					CertificateAuthorityData: base64.StdEncoding.EncodeToString(cacert),
 				},
 			},
