@@ -841,8 +841,6 @@
           },
           {{end}}
           "osDisk": {
-          "caching": "ReadWrite",
-          "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
           {{if UseMasterCustomVHD}}
             "osType": "Linux",
             "createOption": "Attach",
@@ -850,6 +848,8 @@
               "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
             }
           {{else}} 
+            "caching": "ReadWrite",
+            "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
             "createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
             ,"vhd": {
