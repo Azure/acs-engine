@@ -974,6 +974,6 @@
       },
       "osType": "Linux"
     }
-  },
+  }
 {{end}}
     {{WriteLinkedTemplatesForExtensions}}
