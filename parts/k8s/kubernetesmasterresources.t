@@ -851,7 +851,7 @@
               "caching": "ReadWrite",
               "createOption": "Attach"
             }
-          ]
+          ],
           {{end}} 
           "osDisk": {
             "caching": "ReadWrite",
