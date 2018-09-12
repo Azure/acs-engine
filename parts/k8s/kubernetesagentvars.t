@@ -36,4 +36,4 @@
     "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]",
     "{{.Name}}osImageName": "[parameters('{{.Name}}osImageName')]",
     "{{.Name}}osImageResourceGroup": "[parameters('{{.Name}}osImageResourceGroup')]",
-    "{{.Name}}osDiskVhdURI": "[parameters('{{.Name}}osDiskVhdURI')]",
+    "{{.Name}}osDiskVhdUri": "[parameters('{{.Name}}osDiskVhdUri')]",

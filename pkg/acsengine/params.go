@@ -32,7 +32,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
 		}
 		if properties.MasterProfile != nil && properties.MasterProfile.CustomVHD != "" {
-			addValue(parametersMap, "osDiskVhdURI", properties.MasterProfile.CustomVHD)
+			addValue(parametersMap, "osDiskVhdUri", properties.MasterProfile.CustomVHD)
 		}
 	}
 	// TODO: Choose the correct image config based on the version
@@ -196,7 +196,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 				addValue(parametersMap, fmt.Sprintf("%sosImageResourceGroup", agentProfile.Name), agentProfile.ImageRef.ResourceGroup)
 			}
 			if agentProfile.CustomVHD != "" {
-				addValue(parametersMap, fmt.Sprintf("%sosDiskVhdURI", agentProfile.Name), agentProfile.CustomVHD)
+				addValue(parametersMap, fmt.Sprintf("%sosDiskVhdUri", agentProfile.Name), agentProfile.CustomVHD)
 			}
 			addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageOffer)
 			addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageSku)

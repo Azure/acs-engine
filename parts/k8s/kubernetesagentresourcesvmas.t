@@ -259,9 +259,8 @@
             {{if UseAgentCustomVHD .}}
             "osType": "Linux", 
             "createOption": "Attach",
-            "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]", 
-            "vhd": {
-              "uri": "[parameters('{{.Name}}osDiskVhdURI')]"  
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-agent')]"
             }
             {{else}} 
             "createOption": "FromImage"
@@ -382,4 +381,18 @@
       }
     }
     {{end}}
-    
+{{if UseAgentCustomVHD .}}
+  ,{
+    "type": "Microsoft.Compute/disks",
+    "apiVersion": "[variables('apiVersionDefault')]",
+    "name": "aks-vhd-agent",
+    "location": "[parameters('location')]",
+    "properties": {
+      "creationData": {
+        "createOption": "Import",
+        "sourceUri": "[parameters('{{.Name}}osDiskVhdUri')]"
+      },
+      "osType": "Linux"
+    }
+  },
+{{end}}

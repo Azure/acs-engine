@@ -128,7 +128,7 @@
       },
       "type": "string"
     },
-    "osDiskVhdURI": {
+    "osDiskVhdUri": {
       "defaultValue": "",
       "metadata": {
         "description": "OS image URL for using custom VHD."

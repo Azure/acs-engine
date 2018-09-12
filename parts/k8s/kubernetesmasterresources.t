@@ -34,24 +34,6 @@
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{end}}
-{{if UseMasterCustomVHD}}
-{
-    "type": "Microsoft.Compute/images",
-    "name": "vhd-image",
-    "apiVersion": "[variables('apiVersionDefault')]",
-    "location": "[parameters('location')]",
-    "properties": {
-        "storageProfile": {
-            "osDisk": {
-                "osType": "Linux",
-                "osState": "Generalized",
-                "blobUri": "[parameters('osDiskVhdURI')]",
-                "storageAccountType": "Standard_LRS"
-            }
-        }
-    }
-},
-{{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -857,10 +839,10 @@
           "caching": "ReadWrite",
           "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
           {{if UseMasterCustomVHD}}
-            "osType": "Linux", 
+            "osType": "Linux",
             "createOption": "Attach",
-            "vhd": {
-              "uri": "[parameters('osDiskVhdUri')]"
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
             }
           {{else}} 
             "createOption": "FromImage"
@@ -979,4 +961,19 @@
       }
     }
     {{end}}
+{{if UseMasterCustomVHD}}
+  ,{
+    "type": "Microsoft.Compute/disks",
+    "apiVersion": "[variables('apiVersionDefault')]",
+    "name": "aks-vhd-master",
+    "location": "[parameters('location')]",
+    "properties": {
+      "creationData": {
+        "createOption": "Import",
+        "sourceUri": "[parameters('osDiskVhdUri')]"
+      },
+      "osType": "Linux"
+    }
+  },
+{{end}}
     {{WriteLinkedTemplatesForExtensions}}
