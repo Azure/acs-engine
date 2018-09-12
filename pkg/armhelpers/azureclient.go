@@ -432,7 +432,6 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.authorizationClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.resourcesClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.storageAccountsClient.Client.RequestInspector = az.addAcceptLanguages()
@@ -492,7 +491,6 @@ func (az *AzureClient) AddAuxiliaryTokens(tokens []string) {
 
 	az.authorizationClient.Client.RequestInspector = requestWithTokens
 	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
-	az.deploymentsClient.Client.RequestInspector = requestWithTokens
 	az.deploymentsClient.Client.RequestInspector = requestWithTokens
 	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
 	az.resourcesClient.Client.RequestInspector = requestWithTokens
