@@ -969,7 +969,7 @@
     "type": "Microsoft.Compute/disks",
     "apiVersion": "[variables('apiVersionDefault')]",
     "name": "aks-vhd-master",
-    "location": "[parameters('location')]",
+    "location": "[variables('location')]",
     "properties": {
       "creationData": {
         "createOption": "Import",

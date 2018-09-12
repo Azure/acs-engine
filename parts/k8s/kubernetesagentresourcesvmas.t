@@ -389,7 +389,7 @@
     "type": "Microsoft.Compute/disks",
     "apiVersion": "[variables('apiVersionDefault')]",
     "name": "aks-vhd-agent",
-    "location": "[parameters('location')]",
+    "location": "[variables('location')]",
     "properties": {
       "creationData": {
         "createOption": "Import",
