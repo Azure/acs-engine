@@ -739,6 +739,9 @@
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}
+{{if UseAgentCustomVHD .}}
+        ,"[concat('Microsoft.Compute/disks/', 'aks-vhd-master')]"
+{{end}}
       ],
       "tags":
       {
