@@ -213,7 +213,7 @@
     {
       "apiVersion": "2014-10-01-preview",
       "copy": {
-         "count": "[variables('{{.Name}}Count')]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
        },
       "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(),'vmidentity'))]",
@@ -227,7 +227,7 @@
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
         "copy": {
-          "count": "[variables('{{.Name}}Count')]",
+          "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
           "name": "vmLoopNode"
         },
         "apiVersion": "2015-05-01-preview",
