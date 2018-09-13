@@ -186,6 +186,8 @@ Finally, the `addons.enabled` boolean property was omitted above; that's by desi
 
 We also support external yaml scripts for these supported addons. In order to do this, you will need to pass in a base64 encoded string of the kubernetes addon YAML file that you wish to use to `addons.Data` property. When `addons.Data` is provided with a value, the `containers` and `config` are required to be empty.
 
+CAVEAT: Please note that this is an experimental feature. Since Addon.Data allows you to provide your own scripts, you face the risk of any unintended/undesirable consequences of the errors and failures from running that script.
+ 
 ```
 "kubernetesConfig": {
     "addons": [
