@@ -184,6 +184,20 @@ Additionally above, we specified a custom docker image for tiller, let's say we 
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
+We also support external yaml scripts for these supported addons. In order to do this, you will need to pass in a base64 encoded string of the kubernetes addon YAML file that you wish to use to `addons.Data` property. When `addons.Data` is provided with a value, the `containers` and `config` are required to be empty.
+
+```
+"kubernetesConfig": {
+    "addons": [
+        {
+            "name": "kube-proxy-daemonset",
+            "enabled" : true,
+            "data" : <base64 encoded string of your k8s addon YAML>,
+        }
+    ]
+}
+```
+
 <a name="feat-kubelet-config"></a>
 
 #### kubeletConfig
