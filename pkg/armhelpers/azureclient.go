@@ -470,6 +470,9 @@ func (az *AzureClient) setAuxiliaryTokens() autorest.PrepareDecorator {
 			if err != nil {
 				return r, err
 			}
+			if r.Header == nil {
+				r.Header = make(http.Header)
+			}
 			if az.auxiliaryTokens != nil {
 				for _, token := range az.auxiliaryTokens {
 					if token == "" {
