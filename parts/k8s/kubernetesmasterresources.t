@@ -788,7 +788,6 @@
             }
           ]
         },
-        {{if not UseMasterCustomVHD}} 
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
@@ -811,9 +810,8 @@
           "secrets": "[variables('linuxProfileSecrets')]"
           {{end}}
         },
-        {{end}}
         "storageProfile": {
-          {{if and (not UseMasterCustomImage) (not IsOpenShift)}} 
+          {{if and (not UseMasterCustomImage) (not IsOpenShift)}}
           "dataDisks": [
             {
               "createOption": "Empty"
@@ -826,9 +824,17 @@
               }
               {{end}}
             }
+            {{if UseMasterCustomVHD}}
+            ,{
+              "lun": 1,
+              "createOption": "Attach",
+              "managedDisk": {
+                "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
+              }
+            }
+            {{end}}
           ],
           {{end}}
-          {{if not UseMasterCustomVHD}} 
           "imageReference": {
             {{if UseMasterCustomImage}}
             "id": "[resourceId(parameters('osImageResourceGroup'), 'Microsoft.Compute/images', parameters('osImageName'))]"
@@ -839,19 +845,11 @@
             "version": "[parameters('osImageVersion')]"
             {{end}}
           },
-          {{end}}
           "osDisk": {
-          {{if UseMasterCustomVHD}}
-            "osType": "Linux",
-            "createOption": "Attach",
-            "managedDisk": {
-              "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
-            }
-          {{else}} 
-            "caching": "ReadWrite",
-            "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
-            "createOption": "FromImage"
+            "caching": "ReadWrite"
+            ,"createOption": "FromImage"
 {{if .MasterProfile.IsStorageAccount}}
+            ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
@@ -859,7 +857,6 @@
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}
-          {{end}} 
           }
         }
       },

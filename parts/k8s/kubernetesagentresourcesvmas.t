@@ -168,7 +168,7 @@
   {{end}}
 {{end}}
 {{if UseAgentCustomVHD .}}
-        "[concat('Microsoft.Compute/disks/', 'aks-vhd-agent')]",
+        "[concat('Microsoft.Compute/disks/', 'aks-vhd-agent-', copyIndex(variables('{{.Name}}Offset')))]",
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
@@ -197,7 +197,7 @@
       },
       {{end}}
       {{end}}
-      {{if and IsOpenShift (and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .)))}} 
+      {{if and IsOpenShift (not (UseAgentCustomImage .))}}
       "plan": {
         "name": "[variables('{{.Name}}osImageSKU')]",
         "publisher": "[variables('{{.Name}}osImagePublisher')]",
@@ -218,7 +218,6 @@
             }
           ]
         },
-        {{if not (UseAgentCustomVHD .)}} 
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
@@ -241,12 +240,10 @@
               "secrets": "[variables('linuxProfileSecrets')]"
             {{end}}
         },
-        {{end}} 
         "storageProfile": {
-          {{if and (not (UseAgentCustomVHD .)) (not (UseAgentCustomImage .))}} 
+          {{if not (UseAgentCustomImage .)}}
           {{GetDataDisks .}}
           {{end}}
-          {{if not (UseAgentCustomVHD .)}} 
           "imageReference": {
             {{if UseAgentCustomImage .}}
             "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
@@ -257,15 +254,7 @@
             "version": "[variables('{{.Name}}osImageVersion')]"
             {{end}}
           },
-          {{end}} 
           "osDisk": {
-            {{if UseAgentCustomVHD .}}
-            "osType": "Linux", 
-            "createOption": "Attach",
-            "managedDisk": {
-              "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-agent')]"
-            }
-            {{else}} 
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}
@@ -276,7 +265,6 @@
           {{end}}
           {{if ne .OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.OSDiskSizeGB}}
-          {{end}}
           {{end}}
           }
         }
@@ -388,7 +376,11 @@
   ,{
     "type": "Microsoft.Compute/disks",
     "apiVersion": "2018-04-01",
-    "name": "aks-vhd-agent",
+    "copy": {
+      "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+      "name": "vmLoopNode"
+    },
+    "name": "[concat('aks-vhd-agent-', copyIndex(variables('{{.Name}}Offset')))]",
     "location": "[variables('location')]",
     "properties": {
       "creationData": {

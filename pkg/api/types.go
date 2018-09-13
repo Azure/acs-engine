@@ -789,7 +789,7 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
-	return len(a.DiskSizesGB) > 0
+	return len(a.DiskSizesGB) > 0 || len(a.CustomVHD) > 0
 }
 
 // HasAvailabilityZones returns true if the agent pool has availability zones
