@@ -100,7 +100,7 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultKubeHeapsterDeploymentAddonName is the name of the kube-heapster-deployment addon
 	DefaultKubeHeapsterDeploymentAddonName = "kube-heapster-deployment"
-	// DefaultKubeDNSDeploymentName is the name of the kube-dns-deployment addon
+	// DefaultKubeDNSDeploymentAddonName is the name of the kube-dns-deployment addon
 	DefaultKubeDNSDeploymentAddonName = "kube-dns-deployment"
 	// DefaultKubeProxyAddonName is the name of the kube-proxy config addon
 	DefaultKubeProxyAddonName = "kube-proxy-daemonset"

@@ -37,7 +37,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 				"kube-dns-deployment.yaml",
 				true,
 			},
-			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDnsDeploymentAddonName),
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDNSDeploymentAddonName),
 		},
 		{
 			kubernetesFeatureSetting{
