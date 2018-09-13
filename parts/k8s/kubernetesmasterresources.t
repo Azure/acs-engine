@@ -813,7 +813,7 @@
         },
         {{end}}
         "storageProfile": {
-          {{if and (and (not UseMasterCustomImage) (not UseMasterCustomVHD)) (not IsOpenShift)}} 
+          {{if and (not UseMasterCustomImage) (not IsOpenShift)}} 
           "dataDisks": [
             {
               "createOption": "Empty"
