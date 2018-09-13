@@ -97,7 +97,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aksbase",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "0.12.0",
+		ImageVersion:   "0.13.0",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.

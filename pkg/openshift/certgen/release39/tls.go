@@ -226,7 +226,7 @@ func (c *Config) PrepareMasterCerts() error {
 			NotAfter:              now.AddDate(5, 0, 0),
 			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,
 			BasicConstraintsValid: true,
-			IsCA: true,
+			IsCA:                  true,
 		}
 		template.Subject = cacert.template.Subject
 

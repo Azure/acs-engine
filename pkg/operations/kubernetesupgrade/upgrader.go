@@ -503,7 +503,7 @@ func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
 				ku.logger.Errorf(
 					"Failed to delete VM %s in VMSS %s",
 					vmToUpgrade.Name,
-					vmssToUpgrade)
+					vmssToUpgrade.Name)
 				return err
 			}
 
@@ -512,7 +512,7 @@ func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
 				vmToUpgrade.Name,
 				vmssToUpgrade.Name)
 		}
-		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade)
+		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade.Name)
 	}
 
 	ku.logger.Infoln("Completed upgrading all VMSS")
