@@ -754,6 +754,7 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 			Name:    v.Addons[i].Name,
 			Enabled: v.Addons[i].Enabled,
 			Config:  map[string]string{},
+			Data:    v.Addons[i].Data,
 		})
 		for j := range v.Addons[i].Containers {
 			a.Addons[i].Containers = append(a.Addons[i].Containers, KubernetesContainerSpec{

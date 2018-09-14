@@ -475,6 +475,16 @@ func (a *Properties) validateAddons() error {
 		}
 
 		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+
+			if addon.Data != "" {
+				if len(addon.Config) > 0 || len(addon.Containers) > 0 {
+					return errors.New("Config and containers should be empty when addon.Data is specified")
+				}
+				if _, err := base64.StdEncoding.DecodeString(addon.Data); err != nil {
+					return errors.Errorf("Addon %s's data should be base64 encoded", addon.Name)
+				}
+			}
+
 			switch addon.Name {
 			case "cluster-autoscaler":
 				if helpers.IsTrueBoolPointer(addon.Enabled) && isAvailabilitySets {

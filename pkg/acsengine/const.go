@@ -98,6 +98,30 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+	// DefaultKubeHeapsterDeploymentAddonName is the name of the kube-heapster-deployment addon
+	DefaultKubeHeapsterDeploymentAddonName = "kube-heapster-deployment"
+	// DefaultKubeDNSDeploymentAddonName is the name of the kube-dns-deployment addon
+	DefaultKubeDNSDeploymentAddonName = "kube-dns-deployment"
+	// DefaultKubeProxyAddonName is the name of the kube-proxy config addon
+	DefaultKubeProxyAddonName = "kube-proxy-daemonset"
+	// DefaultAzureStorageClassesAddonName is the name of the azure storage classes addon
+	DefaultAzureStorageClassesAddonName = "azure-storage-classes"
+	// DefaultAzureNpmDaemonSetAddonName is the name of the azure npm daemon set addon
+	DefaultAzureNpmDaemonSetAddonName = "azure-npm-daemonset"
+	// DefaultCalicoDaemonSetAddonName is the name of calico daemonset addon
+	DefaultCalicoDaemonSetAddonName = "calico-daemonset"
+	// DefaultCiliumDaemonSetAddonName is the name of cilium daemonset addon
+	DefaultCiliumDaemonSetAddonName = "cilium-daemonset"
+	// DefaultFlannelDaemonSetAddonName is the name of flannel plugin daemonset addon
+	DefaultFlannelDaemonSetAddonName = "flannel-daemonset"
+	// DefaultAADAdminGroupRBACAddonName is the name of the default admin group RBAC addon
+	DefaultAADAdminGroupRBACAddonName = "aad-default-admin-group-rbac"
+	// DefaultAzureCloudProviderDeploymentAddonName is the name of the azure cloud provider deployment addon
+	DefaultAzureCloudProviderDeploymentAddonName = "azure-cloud-provider-deployment"
+	// DefaultAzureCNINetworkMonitorAddonName is the name of the azure cni network monitor addon
+	DefaultAzureCNINetworkMonitorAddonName = "azure-cni-networkmonitor"
+	// DefaultAuditPolicyAddonName is the name of the audit policy addon
+	DefaultAuditPolicyAddonName = "audit-policy"
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultTillerMaxHistory limits the maximum number of revisions saved per release. Use 0 for no limit.

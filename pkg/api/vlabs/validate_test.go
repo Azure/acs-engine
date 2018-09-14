@@ -1194,6 +1194,66 @@ func Test_Properties_ValidateAddons(t *testing.T) {
 			"should not error on nvidia-device-plugin with k8s >= 1.10",
 		)
 	}
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name: "kube-proxy-daemonset",
+				Data: "asdasdasdasda",
+				Config: map[string]string{
+					"foo": "bar",
+				},
+			},
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"expected error for non-empty Config with non-empty Data",
+		)
+	}
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name: "kube-proxy-daemonset",
+				Data: "asdasdasdasda",
+				Containers: []KubernetesContainerSpec{
+					{
+						Name: "FooContainerSpec",
+					},
+				},
+			},
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"expected error for non-empty Containers with non-empty Data",
+		)
+	}
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name: "kube-proxy-daemonset",
+				Data: "foodata",
+			},
+		},
+	}
+	if err := p.validateAddons(); err == nil {
+		t.Errorf(
+			"expected error for invalid base64",
+		)
+	}
+	p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name: "kube-proxy-daemonset",
+				Data: "Zm9vZGF0YQ==",
+			},
+		},
+	}
+	if err := p.validateAddons(); err != nil {
+		t.Errorf(
+			"should not error on providing valid addon.Data",
+		)
+	}
 }
 
 func TestWindowsVersions(t *testing.T) {
