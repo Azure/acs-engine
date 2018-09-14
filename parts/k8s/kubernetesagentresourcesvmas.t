@@ -167,6 +167,9 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
   {{end}}
 {{end}}
+{{if UseAgentCustomVHD .}}
+        "[concat('Microsoft.Compute/disks/', 'aks-vhd-agent-', copyIndex(variables('{{.Name}}Offset')))]",
+{{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
       ],
@@ -369,4 +372,22 @@
       }
     }
     {{end}}
-    
+{{if UseAgentCustomVHD .}}
+  ,{
+    "type": "Microsoft.Compute/disks",
+    "apiVersion": "2018-04-01",
+    "copy": {
+      "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+      "name": "vmLoopNode"
+    },
+    "name": "[concat('aks-vhd-agent-', copyIndex(variables('{{.Name}}Offset')))]",
+    "location": "[variables('location')]",
+    "properties": {
+      "creationData": {
+        "createOption": "Import",
+        "sourceUri": "[parameters('{{.Name}}osDiskVhdUri')]"
+      },
+      "osType": "Linux"
+    }
+  }
+{{end}}

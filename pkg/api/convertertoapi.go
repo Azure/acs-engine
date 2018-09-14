@@ -900,6 +900,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.StorageProfile = vlabs.StorageProfile
 	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
 	api.OAuthEnabled = vlabs.OAuthEnabled
+	api.CustomVHD = vlabs.CustomVHD
 	// by default vlabs will use managed disks as it has encryption at rest
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
@@ -1005,6 +1006,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.ScaleSetPriority = vlabs.ScaleSetPriority
 	api.ScaleSetEvictionPolicy = vlabs.ScaleSetEvictionPolicy
 	api.StorageProfile = vlabs.StorageProfile
+	api.CustomVHD = vlabs.CustomVHD
 	api.DiskSizesGB = []int{}
 	api.DiskSizesGB = append(api.DiskSizesGB, vlabs.DiskSizesGB...)
 	api.VnetSubnetID = vlabs.VnetSubnetID

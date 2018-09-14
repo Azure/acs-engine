@@ -724,6 +724,20 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 			buf.WriteString(fmt.Sprintf(managedDataDisks, diskSize, i))
 		}
 	}
+	if len(a.CustomVHD) > 0 {
+		vhdDisk := `
+		{
+			"lun": %d,
+			"createOption": "Attach",
+			"managedDisk": {
+			"id": "[resourceId('Microsoft.Compute/disks', concat('aks-vhd-agent-', copyIndex(variables('%sOffset'))))]"
+			}
+		}`
+		if len(a.DiskSizesGB) > 0 {
+			buf.WriteString(",")
+		}
+		buf.WriteString(fmt.Sprintf(vhdDisk, len(a.DiskSizesGB), a.Name))
+	}
 	buf.WriteString("\n          ],")
 	return buf.String()
 }

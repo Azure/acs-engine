@@ -739,6 +739,9 @@
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}
+{{if UseMasterCustomVHD}}
+        ,"[concat('Microsoft.Compute/disks/', 'aks-vhd-master')]"
+{{end}}
       ],
       "tags":
       {
@@ -821,6 +824,15 @@
               }
               {{end}}
             }
+            {{if UseMasterCustomVHD}}
+            ,{
+              "lun": 1,
+              "createOption": "Attach",
+              "managedDisk": {
+                "id": "[resourceId('Microsoft.Compute/disks', 'aks-vhd-master')]"
+              }
+            }
+            {{end}}
           ],
           {{end}}
           "imageReference": {
@@ -845,7 +857,6 @@
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
             ,"diskSizeGB": {{.MasterProfile.OSDiskSizeGB}}
 {{end}}
-
           }
         }
       },
@@ -952,4 +963,19 @@
       }
     }
     {{end}}
+{{if UseMasterCustomVHD}}
+  ,{
+    "type": "Microsoft.Compute/disks",
+    "apiVersion": "2018-04-01",
+    "name": "aks-vhd-master",
+    "location": "[variables('location')]",
+    "properties": {
+      "creationData": {
+        "createOption": "Import",
+        "sourceUri": "[parameters('osDiskVhdUri')]"
+      },
+      "osType": "Linux"
+    }
+  }
+{{end}}
     {{WriteLinkedTemplatesForExtensions}}

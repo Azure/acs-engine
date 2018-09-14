@@ -128,6 +128,13 @@
       },
       "type": "string"
     },
+    "osDiskVhdUri": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "OS image URL for using custom VHD."
+      }, 
+      "type": "string" 
+    },
     "fqdnEndpointSuffix":{
       "defaultValue": "cloudapp.azure.com",
       "metadata": {

@@ -406,6 +406,7 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	CustomVHD                string            `json:"customVHD,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -469,6 +470,7 @@ type AgentPoolProfile struct {
 	EnableAutoScaling            *bool                `json:"enableAutoScaling,omitempty"`
 	AvailabilityZones            []string             `json:"availabilityZones,omitempty"`
 	SinglePlacementGroup         *bool                `json:"singlePlacementGroup,omitempty"`
+	CustomVHD                    string               `json:"customVHD,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
@@ -787,7 +789,7 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
-	return len(a.DiskSizesGB) > 0
+	return len(a.DiskSizesGB) > 0 || len(a.CustomVHD) > 0
 }
 
 // HasAvailabilityZones returns true if the agent pool has availability zones
