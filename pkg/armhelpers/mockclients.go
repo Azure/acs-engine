@@ -248,6 +248,9 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 //AddAcceptLanguages mock
 func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {}
 
+// AddAuxiliaryTokens mock
+func (mc *MockACSEngineClient) AddAuxiliaryTokens(tokens []string) {}
+
 //DeployTemplate mock
 func (mc *MockACSEngineClient) DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (de resources.DeploymentExtended, err error) {
 	switch {

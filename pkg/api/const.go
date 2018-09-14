@@ -99,7 +99,7 @@ const (
 	// DefaultSMBFlexVolumeAddonEnabled determines the acs-engine provided default for enabling smb flexvolume addon
 	DefaultSMBFlexVolumeAddonEnabled = true
 	// DefaultKeyVaultFlexVolumeAddonEnabled determines the acs-engine provided default for enabling key vault flexvolume addon
-	DefaultKeyVaultFlexVolumeAddonEnabled = false
+	DefaultKeyVaultFlexVolumeAddonEnabled = true
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
 	DefaultDashboardAddonEnabled = true
 	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon

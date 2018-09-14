@@ -1045,10 +1045,10 @@ func TestIsKeyVaultFlexVolumeEnabled(t *testing.T) {
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultKeyVaultFlexVolumeAddonName))
 	enabled = c.IsKeyVaultFlexVolumeEnabled()
-	if enabled {
+	if !enabled {
 		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return true when no keyvault flex volume has been specified, instead returned %t", enabled)
 	}
-	b := true
+	b := false
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
@@ -1058,8 +1058,8 @@ func TestIsKeyVaultFlexVolumeEnabled(t *testing.T) {
 		},
 	}
 	enabled = c.IsKeyVaultFlexVolumeEnabled()
-	if !enabled {
-		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return false when no keyvault flex volume addon has been specified as disabled, instead returned %t", enabled)
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsKeyVaultFlexVolumeEnabled() should return false when keyvault flex volume addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 

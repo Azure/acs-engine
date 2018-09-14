@@ -44,7 +44,10 @@ type ACSEngineClient interface {
 
 	//AddAcceptLanguages sets the list of languages to accept on this request
 	AddAcceptLanguages(languages []string)
-	//
+
+	// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
+	AddAuxiliaryTokens(tokens []string)
+
 	// RESOURCES
 
 	// DeployTemplate can deploy a template into Azure ARM

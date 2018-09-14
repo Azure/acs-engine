@@ -98,7 +98,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.0",
+					OrchestratorVersion: "1.7.16",
 					KubernetesConfig: &KubernetesConfig{
 						EnableDataEncryptionAtRest: &trueVal,
 						EtcdEncryptionKey:          "fakeEncryptionKey",
