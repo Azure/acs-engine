@@ -887,26 +887,28 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	return ""
 }
 
-// GetAddonScript retrieves the raw script data specified as input for the k8s addon with name "addonName".
-func (k *KubernetesConfig) GetAddonScript(addonName string) string {
+// getAddonFromName returns the KubernetesAddon instance with name `addonName`
+func (k *KubernetesConfig) getAddonFromName(addonName string) KubernetesAddon {
 	var kubeAddon KubernetesAddon
 	for _, addon := range k.Addons {
 		if addon.Name == addonName {
 			kubeAddon = addon
+			break
 		}
 	}
+	return kubeAddon
+}
+
+// GetAddonScript retrieves the raw script data specified as input for the k8s addon with name "addonName".
+func (k *KubernetesConfig) GetAddonScript(addonName string) string {
+	kubeAddon := k.getAddonFromName(addonName)
 	return kubeAddon.Data
 }
 
 // isAddonEnabled checks whether a k8s addon with name "addonName" is enabled or not based on the Enabled field of KubernetesAddon.
 // If the value of Enabled in nil, the "defaultValue" is returned.
 func (k *KubernetesConfig) isAddonEnabled(addonName string, defaultValue bool) bool {
-	var kubeAddon KubernetesAddon
-	for _, addon := range k.Addons {
-		if addon.Name == addonName {
-			kubeAddon = addon
-		}
-	}
+	kubeAddon := k.getAddonFromName(addonName)
 	return kubeAddon.IsEnabled(defaultValue)
 }
 
