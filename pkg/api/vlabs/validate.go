@@ -271,6 +271,17 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 							minVersion.String(), o.OrchestratorVersion)
 					}
 				}
+				// If the user assigned identity is enabled, then make sure the version is higher than v1.12.0-alpha.1
+				if o.KubernetesConfig.UseManagedIdentity && o.KubernetesConfig.UserAssignedID != "" {
+					minVersion, err := semver.Make("1.12.0-alpha.1")
+					if err != nil {
+						return errors.Errorf("could not validate the version")
+					}
+					if sv.LT(minVersion) {
+						return errors.Errorf("user assigned msi is only available in kubernetes version %s or greater. current version used is %s",
+							minVersion.String(), o.OrchestratorVersion)
+					}
+				}
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
@@ -502,6 +513,10 @@ func (a *Properties) validateAddons() error {
 					if IsNSeriesSKU && sv.LT(minVersion) {
 						return errors.New("NVIDIA Device Plugin add-on can only be used Kubernetes 1.10 or above. Please specify \"orchestratorRelease\": \"1.10\"")
 					}
+				}
+			case "aad-pod-identity":
+				if helpers.IsTrueBoolPointer(addon.Enabled) && !isAvailabilitySets {
+					return errors.Errorf("aad-pod-identity supports only availablity sets as of now. Please specify \"availabilityProfile\": \"%s\"", AvailabilitySet)
 				}
 			}
 		}
