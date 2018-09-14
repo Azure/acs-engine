@@ -46,6 +46,7 @@ var (
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
 	acceptLanguages []string
+	auxiliaryTokens []string
 	environment     azure.Environment
 	subscriptionID  string
 
@@ -431,7 +432,6 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.authorizationClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.resourcesClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.storageAccountsClient.Client.RequestInspector = az.addAcceptLanguages()
@@ -461,4 +461,50 @@ func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
 			return r, nil
 		})
 	}
+}
+
+func (az *AzureClient) setAuxiliaryTokens() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if r.Header == nil {
+				r.Header = make(http.Header)
+			}
+			if az.auxiliaryTokens != nil {
+				for _, token := range az.auxiliaryTokens {
+					if token == "" {
+						continue
+					}
+
+					r.Header.Set("x-ms-authorization-auxiliary", fmt.Sprintf("Bearer %s", token))
+				}
+			}
+			return r, nil
+		})
+	}
+}
+
+// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
+func (az *AzureClient) AddAuxiliaryTokens(tokens []string) {
+	az.auxiliaryTokens = tokens
+	requestWithTokens := az.setAuxiliaryTokens()
+
+	az.authorizationClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.resourcesClient.Client.RequestInspector = requestWithTokens
+	az.storageAccountsClient.Client.RequestInspector = requestWithTokens
+	az.interfacesClient.Client.RequestInspector = requestWithTokens
+	az.groupsClient.Client.RequestInspector = requestWithTokens
+	az.providersClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachinesClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachineScaleSetsClient.Client.RequestInspector = requestWithTokens
+	az.disksClient.Client.RequestInspector = requestWithTokens
+
+	az.applicationsClient.Client.RequestInspector = requestWithTokens
+	az.servicePrincipalsClient.Client.RequestInspector = requestWithTokens
 }
