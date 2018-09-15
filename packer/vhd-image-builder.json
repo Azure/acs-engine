@@ -22,7 +22,7 @@
             "capture_name_prefix": "acsengine-{{timestamp}}",
             "storage_account": "{{user `storage_account_name`}}",
             "os_type": "Linux",
-            "os_disk_size_gb": 100,
+            "os_disk_size_gb": 30,
             "image_publisher": "Canonical",
             "image_offer": "UbuntuServer",
             "image_sku": "16.04-LTS",
