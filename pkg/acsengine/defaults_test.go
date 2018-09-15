@@ -497,6 +497,132 @@ func TestStorageProfile(t *testing.T) {
 
 }
 
+// TestMasterProfileDefaults covers tests for setMasterProfileDefaults
+func TestMasterProfileDefaults(t *testing.T) {
+	// this validates default masterProfile configuration
+	mockCS := getMockBaseContainerService("1.10.3")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet = ""
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	properties.MasterProfile.AvailabilityProfile = ""
+	properties.MasterProfile.Count = 3
+	mockCS.Properties = properties
+	setPropertiesDefaults(&mockCS, false, false)
+	if properties.MasterProfile.IsVirtualMachineScaleSets() {
+		t.Fatalf("Master VMAS, AzureCNI: MasterProfile AvailabilityProfile did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.AvailabilityProfile, api.AvailabilitySet)
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet != DefaultKubernetesSubnet {
+		t.Fatalf("Master VMAS, AzureCNI: MasterProfile ClusterSubnet did not have the expected default configuration, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet, DefaultKubernetesSubnet)
+	}
+	if properties.MasterProfile.Subnet != properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet {
+		t.Fatalf("Master VMAS, AzureCNI: MasterProfile Subnet did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.Subnet, properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
+	}
+	if properties.AgentPoolProfiles[0].Subnet != properties.MasterProfile.Subnet {
+		t.Fatalf("Master VMAS, AzureCNI: AgentPoolProfiles Subnet did not have the expected default configuration, got %s, expected %s",
+			properties.AgentPoolProfiles[0].Subnet, properties.MasterProfile.Subnet)
+	}
+	if properties.MasterProfile.FirstConsecutiveStaticIP != "10.255.255.5" {
+		t.Fatalf("Master VMAS, AzureCNI: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, "10.255.255.5")
+	}
+
+	// this validates default vmss masterProfile configuration
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet = ""
+	properties.MasterProfile.AvailabilityProfile = api.VirtualMachineScaleSets
+	setPropertiesDefaults(&mockCS, false, true)
+	if !properties.MasterProfile.IsVirtualMachineScaleSets() {
+		t.Fatalf("Master VMSS, AzureCNI: MasterProfile AvailabilityProfile did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.AvailabilityProfile, api.VirtualMachineScaleSets)
+	}
+	if properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet != DefaultKubernetesSubnet {
+		t.Fatalf("Master VMSS, AzureCNI: MasterProfile ClusterSubnet did not have the expected default configuration, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet, DefaultKubernetesSubnet)
+	}
+	if properties.MasterProfile.FirstConsecutiveStaticIP != api.DefaultFirstConsecutiveKubernetesStaticIPVMSS {
+		t.Fatalf("Master VMSS, AzureCNI: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, api.DefaultFirstConsecutiveKubernetesStaticIPVMSS)
+	}
+	if properties.MasterProfile.Subnet != DefaultKubernetesMasterSubnet {
+		t.Fatalf("Master VMSS, AzureCNI: MasterProfile Subnet did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.Subnet, DefaultKubernetesMasterSubnet)
+	}
+	if properties.MasterProfile.AgentSubnet != DefaultKubernetesAgentSubnetVMSS {
+		t.Fatalf("Master VMSS, AzureCNI: MasterProfile AgentSubnet did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.AgentSubnet, DefaultKubernetesAgentSubnetVMSS)
+	}
+
+	// this validates default masterProfile configuration and kubenet
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet = ""
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "kubenet"
+	properties.MasterProfile.AvailabilityProfile = api.VirtualMachineScaleSets
+	setPropertiesDefaults(&mockCS, false, true)
+	if properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet != DefaultKubernetesClusterSubnet {
+		t.Fatalf("Master VMSS, kubenet: MasterProfile ClusterSubnet did not have the expected default configuration, got %s, expected %s",
+			properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet, DefaultKubernetesClusterSubnet)
+	}
+	if properties.MasterProfile.Subnet != DefaultKubernetesMasterSubnet {
+		t.Fatalf("Master VMSS, kubenet: MasterProfile Subnet did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.Subnet, DefaultKubernetesMasterSubnet)
+	}
+	if properties.MasterProfile.FirstConsecutiveStaticIP != api.DefaultFirstConsecutiveKubernetesStaticIPVMSS {
+		t.Fatalf("Master VMSS, kubenet: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, api.DefaultFirstConsecutiveKubernetesStaticIPVMSS)
+	}
+	if properties.MasterProfile.AgentSubnet != DefaultKubernetesAgentSubnetVMSS {
+		t.Fatalf("Master VMSS, kubenet: MasterProfile AgentSubnet did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.AgentSubnet, DefaultKubernetesAgentSubnetVMSS)
+	}
+	properties.MasterProfile.AvailabilityProfile = api.AvailabilitySet
+	setPropertiesDefaults(&mockCS, false, true)
+	if properties.MasterProfile.FirstConsecutiveStaticIP != api.DefaultFirstConsecutiveKubernetesStaticIP {
+		t.Fatalf("Master VMAS, kubenet: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, api.DefaultFirstConsecutiveKubernetesStaticIP)
+	}
+
+	// this validates default vmas masterProfile configuration, AzureCNI, and custom vnet
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.VnetSubnetID = "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet"
+	properties.MasterProfile.VnetCidr = "10.239.0.0/16"
+	properties.MasterProfile.FirstConsecutiveStaticIP = "10.239.255.239"
+	properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet = ""
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	properties.MasterProfile.AvailabilityProfile = api.AvailabilitySet
+	setPropertiesDefaults(&mockCS, false, true)
+	if properties.MasterProfile.FirstConsecutiveStaticIP != "10.239.255.239" {
+		t.Fatalf("Master VMAS, AzureCNI, customvnet: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, "10.239.255.239")
+	}
+
+	// this validates default vmss masterProfile configuration, AzureCNI, and custom vnet
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.VnetSubnetID = "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet"
+	properties.MasterProfile.VnetCidr = "10.239.0.0/16"
+	properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet = ""
+	properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = "azure"
+	properties.MasterProfile.AvailabilityProfile = api.VirtualMachineScaleSets
+	setPropertiesDefaults(&mockCS, false, true)
+	if properties.MasterProfile.FirstConsecutiveStaticIP != "10.239.0.4" {
+		t.Fatalf("Master VMSS, AzureCNI, customvnet: MasterProfile FirstConsecutiveStaticIP did not have the expected default configuration, got %s, expected %s",
+			properties.MasterProfile.FirstConsecutiveStaticIP, "10.239.0.4")
+	}
+
+}
+
 func TestAgentPoolProfile(t *testing.T) {
 	mockCS := getMockBaseContainerService("1.10")
 	properties := mockCS.Properties

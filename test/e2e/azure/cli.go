@@ -243,6 +243,25 @@ func (a *Account) CreateVnet(vnet, addressPrefixes, subnetName, subnetPrefix str
 	return nil
 }
 
+// CreateSubnet will create a subnet in a vnet in a resource group
+func (a *Account) CreateSubnet(vnet, subnetName, subnetPrefix string) error {
+	var cmd *exec.Cmd
+	if a.TimeoutCommands {
+		cmd = exec.Command("timeout", "60", "az", "network", "vnet", "subnet", "create", "-g",
+			a.ResourceGroup.Name, "--vnet-name", vnet, "--name", subnetName, "--address-prefix", subnetPrefix)
+	} else {
+		cmd = exec.Command("az", "network", "vnet", "subnet", "create", "-g",
+			a.ResourceGroup.Name, "--vnet-name", vnet, "--name", subnetName, "--address-prefix", subnetPrefix)
+	}
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to create subnet in vnet with the following command:\n az network vnet subnet create -g %s --vnet-name %s --name %s --address-prefix %s \n Output:%s\n", a.ResourceGroup.Name, vnet, subnetName, subnetPrefix, out)
+		return err
+	}
+	return nil
+}
+
 // RouteTable holds information from running az network route-table list
 type RouteTable struct {
 	ID                string `json:"id"`

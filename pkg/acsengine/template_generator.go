@@ -156,9 +156,55 @@ func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]
 	return files, baseFile, nil
 }
 
+func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFilename string, profile *api.Properties) string {
+	str, e := t.getSingleLineForTemplate(textFilename, cs, profile)
+	if e != nil {
+		panic(e)
+	}
+
+	// add manifests
+	str = substituteConfigString(str,
+		kubernetesManifestSettingsInit(profile),
+		"k8s/manifests",
+		"/etc/kubernetes/manifests",
+		"MASTER_MANIFESTS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add artifacts
+	str = substituteConfigString(str,
+		kubernetesArtifactSettingsInitMaster(profile),
+		"k8s/artifacts",
+		"/etc/systemd/system",
+		"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add addons
+	str = substituteAddonConfigString(str,
+		kubernetesAddonSettingsInit(profile),
+		"k8s/addons",
+		"/etc/kubernetes/addons",
+		"MASTER_ADDONS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add custom files
+	customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
+	if err != nil {
+		log.Fatalf("Could not read custom files: %s", err.Error())
+	}
+	str = substituteConfigStringCustomFiles(str,
+		customFilesReader,
+		"MASTER_CUSTOM_FILES_PLACEHOLDER")
+
+	// return the custom data
+	return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
+		"IsMasterVirtualMachineScaleSets": func() bool {
+			return cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.IsVirtualMachineScaleSets()
+		},
 		"IsHostedMaster": func() bool {
 			return cs.Properties.HostedMasterProfile != nil
 		},
@@ -498,46 +544,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return DefaultInternalLbStaticIPOffset
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
-			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
-			if e != nil {
-				panic(e)
-			}
-
-			// add manifests
-			str = substituteConfigString(str,
-				kubernetesManifestSettingsInit(profile),
-				"k8s/manifests",
-				"/etc/kubernetes/manifests",
-				"MASTER_MANIFESTS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add artifacts
-			str = substituteConfigString(str,
-				kubernetesArtifactSettingsInitMaster(profile),
-				"k8s/artifacts",
-				"/etc/systemd/system",
-				"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add addons
-			str = substituteAddonConfigString(str,
-				kubernetesAddonSettingsInit(profile),
-				"k8s/addons",
-				"/etc/kubernetes/addons",
-				"MASTER_ADDONS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add custom files
-			customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
-			if err != nil {
-				log.Fatalf("Could not read custom files: %s", err.Error())
-			}
-			str = substituteConfigStringCustomFiles(str,
-				customFilesReader,
-				"MASTER_CUSTOM_FILES_PLACEHOLDER")
-
-			// return the custom data
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataYaml, profile)
+			return str
+		},
+		"GetKubernetesMasterCustomDataVMSS": func(profile *api.Properties) string {
+			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataVMSSYaml, profile)
+			return str
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)

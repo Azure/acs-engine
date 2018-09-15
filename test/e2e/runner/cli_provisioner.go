@@ -31,6 +31,7 @@ type CLIProvisioner struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	ProvisionRetries  int    `envconfig:"PROVISION_RETRIES" default:"0"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
+	MasterVMSS        bool   `envconfig:"MASTER_VMSS" default:"false"`
 	Config            *config.Config
 	Account           *azure.Account
 	Point             *metrics.Point
@@ -110,16 +111,44 @@ func (cli *CLIProvisioner) provision() error {
 	subnetID := ""
 	vnetName := fmt.Sprintf("%sCustomVnet", cli.Config.Name)
 	subnetName := fmt.Sprintf("%sCustomSubnet", cli.Config.Name)
+	masterSubnetID := ""
+	agentSubnetID := ""
+
 	if cli.CreateVNET {
-		err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
-		if err != nil {
-			return errors.Errorf("Error trying to create vnet:%s", err.Error())
+		if cli.MasterVMSS {
+			masterSubnetName := fmt.Sprintf("%sCustomSubnetMaster", cli.Config.Name)
+			agentSubnetName := fmt.Sprintf("%sCustomSubnetAgent", cli.Config.Name)
+			err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", masterSubnetName, "10.239.0.0/17")
+			if err != nil {
+				return errors.Errorf("Error trying to create vnet:%s", err.Error())
+			}
+
+			masterSubnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, masterSubnetName)
+
+			err = cli.Account.CreateSubnet(vnetName, agentSubnetName, "10.239.128.0/17")
+			if err != nil {
+				return errors.Errorf("Error trying to create subnet in vnet:%s", err.Error())
+			}
+
+			agentSubnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, agentSubnetName)
+		} else {
+			err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
+			if err != nil {
+				return errors.Errorf("Error trying to create vnet:%s", err.Error())
+			}
+			subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, subnetName)
 		}
-		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, subnetName)
 	}
 
 	// Lets modify our template and call acs-engine generate on it
-	eng, err := engine.Build(cli.Config, subnetID)
+	var eng *engine.Engine
+
+	if cli.CreateVNET && cli.MasterVMSS {
+		eng, err = engine.Build(cli.Config, masterSubnetID, agentSubnetID, true)
+	} else {
+		eng, err = engine.Build(cli.Config, subnetID, subnetID, false)
+	}
+
 	if err != nil {
 		return errors.Wrap(err, "Error while trying to build cluster definition")
 	}

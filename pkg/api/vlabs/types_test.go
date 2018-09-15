@@ -81,6 +81,64 @@ func TestOrchestratorProfile(t *testing.T) {
 	}
 }
 
+func TestMasterProfile(t *testing.T) {
+	// With osType not specified
+	MasterProfileText := `{"count" : 0, "storageProfile" : "StorageAccount", "vnetSubnetID" : "1234", "agentVnetSubnetID" : "5678"}`
+	mp := &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 0 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 1 after unmarshal")
+	}
+
+	if !mp.IsCustomVNET() {
+		t.Fatalf("unexpectedly detected nil MasterProfile.VNetSubNetID after unmarshal")
+	}
+
+	if !mp.IsStorageAccount() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	// With vmas
+	MasterProfileText = `{  "count": 1, "vmSize": "Standard_D2_v2", "storageProfile" : "ManagedDisks", "diskSizesGB" : [750, 250, 600, 1000] }`
+	mp = &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 1 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 1 after unmarshal")
+	}
+
+	if !mp.IsManagedDisks() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	if mp.IsVirtualMachineScaleSets() {
+		t.Fatalf("unexpectedly detected MasterProfile.AvailabilitySets == VirtualMachineScaleSets after unmarshal")
+	}
+
+	// With vmss
+	MasterProfileText = `{  "count": 3, "vmSize": "Standard_D2_v2", "availabilityProfile": "VirtualMachineScaleSets", "storageProfile" : "ManagedDisks", "diskSizesGB" : [750, 250, 600, 1000] }`
+	mp = &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 3 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 3 after unmarshal")
+	}
+
+	if !mp.IsManagedDisks() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	if !mp.IsVirtualMachineScaleSets() {
+		t.Fatalf("unexpectedly detected MasterProfile.AvailabilitySets != VirtualMachineScaleSets after unmarshal")
+	}
+}
 func TestAgentPoolProfile(t *testing.T) {
 	// With osType not specified
 	AgentPoolProfileText := `{"count" : 0, "storageProfile" : "StorageAccount", "vnetSubnetID" : "1234"}`

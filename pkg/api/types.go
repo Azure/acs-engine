@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net"
 	neturl "net/url"
 	"strconv"
 	"strings"
@@ -395,6 +396,7 @@ type MasterProfile struct {
 	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
 	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	AgentVnetSubnetID        string            `json:"agentVnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string            `json:"subnet"`
 	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
@@ -407,6 +409,8 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	AvailabilityProfile      string            `json:"availabilityProfile"`
+	AgentSubnet              string            `json:"agentSubnet,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -734,6 +738,40 @@ func (m *MasterProfile) IsRHEL() bool {
 // IsCoreOS returns true if the master specified a CoreOS distro
 func (m *MasterProfile) IsCoreOS() bool {
 	return m.Distro == CoreOS
+}
+
+// IsVirtualMachineScaleSets returns true if the master availability profile is VMSS
+func (m *MasterProfile) IsVirtualMachineScaleSets() bool {
+	return m.AvailabilityProfile == VirtualMachineScaleSets
+}
+
+// GetFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
+func (m *MasterProfile) GetFirstConsecutiveStaticIPAddress(subnetStr string) string {
+	_, subnet, err := net.ParseCIDR(subnetStr)
+	if err != nil {
+		return DefaultFirstConsecutiveKubernetesStaticIP
+	}
+
+	// Find the first and last octet of the host bits.
+	ones, bits := subnet.Mask.Size()
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	if m.IsVirtualMachineScaleSets() {
+		subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS
+	} else {
+		// Set the remaining host bits in the first octet.
+		subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
+
+		// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
+		// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
+		for i := firstOctet + 1; i < lastOctet; i++ {
+			subnet.IP[i] = 255
+		}
+		subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
+	}
+
+	return subnet.IP.String()
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

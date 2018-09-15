@@ -129,6 +129,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 		return e
 	}
 
+	if e := a.validateManagedIdentity(); e != nil {
+		return e
+	}
+
 	if e := a.validateAADProfile(); e != nil {
 		return e
 	}
@@ -354,6 +358,17 @@ func (a *Properties) validateMasterProfile() error {
 			return err
 		}
 	}
+
+	if m.IsVirtualMachineScaleSets() && a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		e := validateVMSS(a.OrchestratorProfile, false, m.StorageProfile)
+		if e != nil {
+			return e
+		}
+		if !a.IsAllVirtualMachineScaleSets() {
+			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
+		}
+	}
+
 	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
@@ -406,8 +421,11 @@ func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 			return e
 		}
 
-		if e := agentPoolProfile.validateVMSS(a.OrchestratorProfile, isUpdate); agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets && e != nil {
-			return e
+		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
+			e := validateVMSS(a.OrchestratorProfile, isUpdate, agentPoolProfile.StorageProfile)
+			if e != nil {
+				return e
+			}
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
@@ -550,6 +568,10 @@ func (a *Properties) validateVNET() error {
 		}
 	}
 	if isCustomVNET {
+		if a.MasterProfile.IsVirtualMachineScaleSets() && a.MasterProfile.AgentVnetSubnetID == "" {
+			return errors.New("when master profile is using VirtualMachineScaleSets and is custom vnet, set \"vnetsubnetid\" and \"agentVnetSubnetID\" for master profile")
+		}
+
 		subscription, resourcegroup, vnetname, _, e := common.GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
@@ -568,7 +590,7 @@ func (a *Properties) validateVNET() error {
 		}
 
 		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
-		if masterFirstIP == nil {
+		if masterFirstIP == nil && !a.MasterProfile.IsVirtualMachineScaleSets() {
 			return errors.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 
@@ -614,6 +636,43 @@ func (a *Properties) validateServicePrincipalProfile() error {
 					return errors.Errorf("service principal client keyvault secret reference is of incorrect format")
 				}
 			}
+		}
+	}
+	return nil
+}
+
+func (a *Properties) validateManagedIdentity() error {
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		useManagedIdentity := a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+
+		if useManagedIdentity {
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false,
+				false)
+			if version == "" {
+				return errors.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+			sv, err := semver.Make(version)
+			if err != nil {
+				return errors.Errorf("could not validate version %s", version)
+			}
+			minVersion, err := semver.Make("1.12.0-beta.0")
+			if err != nil {
+				return errors.New("could not validate version")
+			}
+
+			if a.MasterProfile.IsVirtualMachineScaleSets() {
+				if sv.LT(minVersion) {
+					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+				}
+			} else if a.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" && sv.LT(minVersion) {
+				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+			}
+
 		}
 	}
 	return nil
@@ -744,7 +803,7 @@ func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) err
 	return nil
 }
 
-func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile, isUpdate bool) error {
+func validateVMSS(o *OrchestratorProfile, isUpdate bool, storageProfile string) error {
 	if o.OrchestratorType == Kubernetes {
 		version := common.RationalizeReleaseAndVersion(
 			o.OrchestratorType,
@@ -777,7 +836,7 @@ func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile, isUpdate bool) e
 				return errors.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 			}
 		}
-		if (a.AvailabilityProfile == VirtualMachineScaleSets || len(a.AvailabilityProfile) == 0) && a.StorageProfile == StorageAccount {
+		if storageProfile == StorageAccount {
 			return errors.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
 		}
 	}

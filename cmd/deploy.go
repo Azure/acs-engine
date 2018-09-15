@@ -314,6 +314,9 @@ func autofillApimodel(dc *deployCmd) error {
 	useManagedIdentity := k8sConfig != nil &&
 		k8sConfig.UseManagedIdentity
 
+	if dc.containerService.Properties.MasterProfile.IsVirtualMachineScaleSets() {
+		k8sConfig.UserAssignedID = acsengine.DefaultUserAssignedID
+	}
 	userAssignedID := k8sConfig != nil &&
 		k8sConfig.UseManagedIdentity &&
 		k8sConfig.UserAssignedID != ""

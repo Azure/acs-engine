@@ -32,11 +32,26 @@
       },
       "type": "string"
     },
+    {{if .MasterProfile.IsVirtualMachineScaleSets}}
+    "agentVnetSubnetID": {
+      "metadata": {
+        "description": "Sets the vnet subnet of the agent."
+      },
+      "type": "string"
+    },
+    {{end}}
   {{else}}
     "masterSubnet": {
       "defaultValue": "{{.MasterProfile.Subnet}}",
       "metadata": {
         "description": "Sets the subnet of the master node(s)."
+      },
+      "type": "string"
+    },
+    "agentSubnet": {
+      "defaultValue": "{{.MasterProfile.AgentSubnet}}",
+      "metadata": {
+        "description": "Sets the subnet of the agent node(s)."
       },
       "type": "string"
     },
