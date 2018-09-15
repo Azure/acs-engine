@@ -894,7 +894,36 @@ func (w *WindowsProfile) Validate(orchestratorType string) error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return errors.New("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
+	if validatePasswordComplexity(w.AdminUsername, w.AdminPassword) == false {
+		return errors.New("WindowsProfile.AdminPassword complexity not met. Check https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements for requirements")
+	}
 	return validateKeyVaultSecrets(w.Secrets, true)
+}
+
+func validatePasswordComplexity(name string, password string) (out bool) {
+
+	if strings.EqualFold(name, password) {
+		return false
+	}
+
+	if len(password) == 0 {
+		return false
+	}
+
+	hits := 0
+	if regexp.MustCompile(`[0-9]+`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[A-Z]+`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[a-z]`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[~!@#\$%\^&\*_\-\+=\x60\|\(\){}\[\]:;"'<>,\.\?/]+`).MatchString(password) {
+		hits++
+	}
+	return hits > 2
 }
 
 // Validate validates the KubernetesConfig

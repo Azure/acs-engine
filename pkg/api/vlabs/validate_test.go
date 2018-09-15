@@ -1077,7 +1077,7 @@ func getK8sDefaultProperties(hasWindows bool) *Properties {
 		}
 		p.WindowsProfile = &WindowsProfile{
 			AdminUsername: "azureuser",
-			AdminPassword: "password",
+			AdminPassword: "replacepassword1234$",
 		}
 	}
 
