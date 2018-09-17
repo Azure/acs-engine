@@ -1,6 +1,7 @@
 package armhelpers
 
 import (
+	"bytes"
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
@@ -48,4 +49,22 @@ func (as *AzureStorageClient) DeleteBlob(vhdContainer, vhdBlob string) error {
 	blobRef := containerRef.GetBlobReference(vhdBlob)
 
 	return blobRef.Delete(&azStorage.DeleteBlobOptions{})
+}
+
+// CreateContainer creates the CloudBlobContainer if it does not exist
+func (as *AzureStorageClient) CreateContainer(containerName string) (bool, error) {
+	bs := as.client.GetBlobService()
+	containerRef := bs.GetContainerReference(containerName)
+	created, err := containerRef.CreateIfNotExists(nil)
+
+	return created, err
+}
+
+// SaveBlockBlob initializes a block blob by taking the byte
+func (as *AzureStorageClient) SaveBlockBlob(containerName, blobName string, b []byte, options *azStorage.PutBlobOptions) error {
+	bs := as.client.GetBlobService()
+	containerRef := bs.GetContainerReference(containerName)
+	blobRef := containerRef.GetBlobReference(blobName)
+
+	return blobRef.CreateBlockBlobFromReader(bytes.NewReader(b), options)
 }

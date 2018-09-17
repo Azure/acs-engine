@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -242,6 +243,16 @@ func (mkc *MockKubernetesClient) WaitForDelete(logger *log.Entry, pods []v1.Pod,
 
 //DeleteBlob mock
 func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
+	return nil
+}
+
+//CreateContainer mock
+func (msc *MockStorageClient) CreateContainer(container string) (bool, error) {
+	return true, nil
+}
+
+//SaveBlockBlob mock
+func (msc *MockStorageClient) SaveBlockBlob(container, blob string, b []byte, options *azStorage.PutBlobOptions) error {
 	return nil
 }
 
