@@ -185,5 +185,5 @@ const (
 
 const (
 	// VHDDiskSizeAKS maps to the OSDiskSizeGB for AKS VHD image
-	VHDDiskSizeAKS = 100
+	VHDDiskSizeAKS = 30
 )
