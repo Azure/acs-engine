@@ -31,7 +31,8 @@ spec:
         - name: azure-cnms
           image: <azureCNINetworkMonitorImage>
           securityContext:
-            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
           env:
             - name: HOSTNAME
               valueFrom:

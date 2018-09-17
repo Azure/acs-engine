@@ -77,7 +77,8 @@ spec:
         - name: azure-npm
           image: containernetworking/azure-npm:v1.0.9
           securityContext:
-            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
           env:
             - name: HOSTNAME
               valueFrom:
