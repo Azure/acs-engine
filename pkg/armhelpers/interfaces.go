@@ -131,9 +131,9 @@ type ACSEngineClient interface {
 // ACSStorageClient interface models the azure storage client
 type ACSStorageClient interface {
 	// DeleteBlob deletes the specified blob in the specified container.
-	DeleteBlob(container, blob string) error
+	DeleteBlob(containerName, blobName string, options *azStorage.DeleteBlobOptions) error
 	// CreateContainer creates the CloudBlobContainer if it does not exist
-	CreateContainer(containerName string) (bool, error)
+	CreateContainer(containerName string, options *azStorage.CreateContainerOptions) (bool, error)
 	// SaveBlockBlob initializes a block blob by taking the byte
 	SaveBlockBlob(containerName, blobName string, b []byte, options *azStorage.PutBlobOptions) error
 }

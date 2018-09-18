@@ -245,12 +245,12 @@ func (mkc *MockKubernetesClient) WaitForDelete(logger *log.Entry, pods []v1.Pod,
 }
 
 //DeleteBlob mock
-func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
+func (msc *MockStorageClient) DeleteBlob(container, blob string, options *azStorage.DeleteBlobOptions) error {
 	return nil
 }
 
 //CreateContainer mock
-func (msc *MockStorageClient) CreateContainer(container string) (bool, error) {
+func (msc *MockStorageClient) CreateContainer(container string, options *azStorage.CreateContainerOptions) (bool, error) {
 	if !msc.FailCreateContainer {
 		return true, nil
 	}

@@ -43,30 +43,30 @@ func (az *AzureClient) getStorageKeys(ctx context.Context, resourceGroup, accoun
 // DeleteBlob deletes the specified blob
 // TODO(colemick): why doesn't SDK give a way to just delete a blob by URI?
 // it's what it ends up doing internally anyway...
-func (as *AzureStorageClient) DeleteBlob(vhdContainer, vhdBlob string) error {
-	containerRef := getContainerRef(as, vhdContainer)
+func (as *AzureStorageClient) DeleteBlob(vhdContainer, vhdBlob string, options *azStorage.DeleteBlobOptions) error {
+	containerRef := getContainerRef(as.client, vhdContainer)
 	blobRef := containerRef.GetBlobReference(vhdBlob)
 
-	return blobRef.Delete(&azStorage.DeleteBlobOptions{})
+	return blobRef.Delete(options)
 }
 
 // CreateContainer creates the CloudBlobContainer if it does not exist
-func (as *AzureStorageClient) CreateContainer(containerName string) (bool, error) {
-	containerRef := getContainerRef(as, containerName)
-	created, err := containerRef.CreateIfNotExists(nil)
+func (as *AzureStorageClient) CreateContainer(containerName string, options *azStorage.CreateContainerOptions) (bool, error) {
+	containerRef := getContainerRef(as.client, containerName)
+	created, err := containerRef.CreateIfNotExists(options)
 
 	return created, err
 }
 
 // SaveBlockBlob initializes a block blob by taking the byte
 func (as *AzureStorageClient) SaveBlockBlob(containerName, blobName string, b []byte, options *azStorage.PutBlobOptions) error {
-	containerRef := getContainerRef(as, containerName)
+	containerRef := getContainerRef(as.client, containerName)
 	blobRef := containerRef.GetBlobReference(blobName)
 
 	return blobRef.CreateBlockBlobFromReader(bytes.NewReader(b), options)
 }
 
-func getContainerRef(as *AzureStorageClient, containerName string) *azStorage.Container {
-	bs := as.client.GetBlobService()
+func getContainerRef(client *azStorage.Client, containerName string) *azStorage.Container {
+	bs := client.GetBlobService()
 	return bs.GetContainerReference(containerName)
 }

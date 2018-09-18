@@ -75,7 +75,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		}
 
 		logger.Infof("deleting blob: %s/%s", vhdContainer, vhdBlob)
-		if err = as.DeleteBlob(vhdContainer, vhdBlob); err != nil {
+		if err = as.DeleteBlob(vhdContainer, vhdBlob, nil); err != nil {
 			return err
 		}
 	} else if managedDisk != nil {

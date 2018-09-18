@@ -17,7 +17,7 @@ var _ = Describe("CreateContainer Test", func() {
 		client := MockStorageClient{
 			FailCreateContainer: false,
 		}
-		created, err := client.CreateContainer("fakeContainerName")
+		created, err := client.CreateContainer("fakeContainerName", nil)
 		Expect(err).To(BeNil())
 		Expect(created).To(BeTrue())
 	})
@@ -26,7 +26,7 @@ var _ = Describe("CreateContainer Test", func() {
 		client := MockStorageClient{
 			FailCreateContainer: true,
 		}
-		created, err := client.CreateContainer("fakeContainerName")
+		created, err := client.CreateContainer("fakeContainerName", nil)
 		Expect(err).NotTo(BeNil())
 		Expect(created).To(BeFalse())
 	})
