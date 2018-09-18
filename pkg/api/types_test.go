@@ -482,14 +482,14 @@ func TestAvailabilityProfile(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		if c.p.HasVirtualMachineScaleSets() != c.expectedHasVMSS {
-			t.Fatalf("expected HasVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedHasVMSS, c.p.HasVirtualMachineScaleSets())
+		if c.p.HasVMSSAgentPool() != c.expectedHasVMSS {
+			t.Fatalf("expected HasVMSSAgentPool() to return %t but instead returned %t", c.expectedHasVMSS, c.p.HasVMSSAgentPool())
 		}
 		if c.p.AgentPoolProfiles[0].IsVirtualMachineScaleSets() != c.expectedISVMSS {
 			t.Fatalf("expected IsVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedISVMSS, c.p.AgentPoolProfiles[0].IsVirtualMachineScaleSets())
 		}
 		if c.p.AgentPoolProfiles[0].IsAvailabilitySets() != c.expectedIsAS {
-			t.Fatalf("expected HasVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedIsAS, c.p.AgentPoolProfiles[0].IsAvailabilitySets())
+			t.Fatalf("expected IsAvailabilitySets() to return %t but instead returned %t", c.expectedIsAS, c.p.AgentPoolProfiles[0].IsAvailabilitySets())
 		}
 		if c.p.AgentPoolProfiles[0].IsLowPriorityScaleSet() != c.expectedLowPri {
 			t.Fatalf("expected IsLowPriorityScaleSet() to return %t but instead returned %t", c.expectedLowPri, c.p.AgentPoolProfiles[0].IsLowPriorityScaleSet())
@@ -623,8 +623,8 @@ func TestHasAvailabilityZones(t *testing.T) {
 		if c.p.AgentPoolProfiles[0].HasAvailabilityZones() != c.expectedAgent {
 			t.Fatalf("expected HasAvailabilityZones() to return %t but instead returned %t", c.expectedAgent, c.p.AgentPoolProfiles[0].HasAvailabilityZones())
 		}
-		if c.p.HasAllZonesAgentPools() != c.expectedAllZones {
-			t.Fatalf("expected HasAllZonesAgentPools() to return %t but instead returned %t", c.expectedAllZones, c.p.HasAllZonesAgentPools())
+		if c.p.HasZonesForAllAgentPools() != c.expectedAllZones {
+			t.Fatalf("expected HasZonesForAllAgentPools() to return %t but instead returned %t", c.expectedAllZones, c.p.HasZonesForAllAgentPools())
 		}
 	}
 }

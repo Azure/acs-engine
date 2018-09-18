@@ -707,8 +707,8 @@ func (p *Properties) TotalNodes() int {
 	return totalNodes
 }
 
-// HasVirtualMachineScaleSets returns true if the cluster contains Virtual Machine Scale Sets
-func (p *Properties) HasVirtualMachineScaleSets() bool {
+// HasVMSSAgentPool returns true if the cluster contains Virtual Machine Scale Sets agent pools
+func (p *Properties) HasVMSSAgentPool() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			return true
@@ -717,8 +717,8 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 	return false
 }
 
-// HasAllZonesAgentPools will return true if all of the agent pools have zones
-func (p *Properties) HasAllZonesAgentPools() bool {
+// HasZonesForAllAgentPools returns true if all of the agent pools have zones
+func (p *Properties) HasZonesForAllAgentPools() bool {
 	count := 0
 	for _, ap := range p.AgentPoolProfiles {
 		if ap.HasAvailabilityZones() {
