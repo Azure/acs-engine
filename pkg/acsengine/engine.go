@@ -146,7 +146,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
 }
 
-//getCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
+//getCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
 //for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
