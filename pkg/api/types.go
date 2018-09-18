@@ -411,6 +411,8 @@ type MasterProfile struct {
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 	AvailabilityProfile      string            `json:"availabilityProfile"`
 	AgentSubnet              string            `json:"agentSubnet,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup     *bool             `json:"singlePlacementGroup,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -715,6 +717,17 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 	return false
 }
 
+// HasAllZonesAgentPools will return true if all of the agent pools have zones
+func (p *Properties) HasAllZonesAgentPools() bool {
+	count := 0
+	for _, ap := range p.AgentPoolProfiles {
+		if ap.HasAvailabilityZones() {
+			count++
+		}
+	}
+	return count == len(p.AgentPoolProfiles)
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -772,6 +785,11 @@ func (m *MasterProfile) GetFirstConsecutiveStaticIPAddress(subnetStr string) str
 	}
 
 	return subnet.IP.String()
+}
+
+// HasAvailabilityZones returns true if the master profile has availability zones
+func (m *MasterProfile) HasAvailabilityZones() bool {
+	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

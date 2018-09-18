@@ -547,6 +547,88 @@ func TestIsCustomVNET(t *testing.T) {
 
 }
 
+func TestHasAvailabilityZones(t *testing.T) {
+	cases := []struct {
+		p                Properties
+		expectedMaster   bool
+		expectedAgent    bool
+		expectedAllZones bool
+	}{
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count:             1,
+					AvailabilityZones: []string{"1", "2"},
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   true,
+			expectedAgent:    true,
+			expectedAllZones: true,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count: 1,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count: 1,
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   false,
+			expectedAgent:    false,
+			expectedAllZones: false,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count: 1,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count:             1,
+						AvailabilityZones: []string{},
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   false,
+			expectedAgent:    false,
+			expectedAllZones: false,
+		},
+	}
+
+	for _, c := range cases {
+		if c.p.MasterProfile.HasAvailabilityZones() != c.expectedMaster {
+			t.Fatalf("expected HasAvailabilityZones() to return %t but instead returned %t", c.expectedMaster, c.p.MasterProfile.HasAvailabilityZones())
+		}
+		if c.p.AgentPoolProfiles[0].HasAvailabilityZones() != c.expectedAgent {
+			t.Fatalf("expected HasAvailabilityZones() to return %t but instead returned %t", c.expectedAgent, c.p.AgentPoolProfiles[0].HasAvailabilityZones())
+		}
+		if c.p.HasAllZonesAgentPools() != c.expectedAllZones {
+			t.Fatalf("expected HasAllZonesAgentPools() to return %t but instead returned %t", c.expectedAllZones, c.p.HasAllZonesAgentPools())
+		}
+	}
+}
+
 func TestRequireRouteTable(t *testing.T) {
 	cases := []struct {
 		p        Properties

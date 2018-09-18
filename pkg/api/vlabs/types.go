@@ -379,6 +379,8 @@ type MasterProfile struct {
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 	AvailabilityProfile      string            `json:"availabilityProfile"`
 	AgentSubnet              string            `json:"agentSubnet,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup     *bool             `json:"singlePlacementGroup,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -507,12 +509,16 @@ func (p *Properties) HasWindows() bool {
 
 // HasAvailabilityZones returns true if the cluster contains pools with zones
 func (p *Properties) HasAvailabilityZones() bool {
-	for _, agentPoolProfile := range p.AgentPoolProfiles {
-		if agentPoolProfile.HasAvailabilityZones() {
-			return true
+	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if !hasZones && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.HasAvailabilityZones() {
+				hasZones = true
+				break
+			}
 		}
 	}
-	return false
+	return hasZones
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -555,12 +561,31 @@ func (m *MasterProfile) IsVirtualMachineScaleSets() bool {
 	return m.AvailabilityProfile == VirtualMachineScaleSets
 }
 
-// IsAllVirtualMachineScaleSets returns true if the cluster contains only Virtual Machine Scale Sets
-func (p *Properties) IsAllVirtualMachineScaleSets() bool {
-	isAll := p.MasterProfile.IsVirtualMachineScaleSets()
-	if isAll {
+// HasAvailabilityZones returns true if the master profile has availability zones
+func (m *MasterProfile) HasAvailabilityZones() bool {
+	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
+}
+
+// IsClusterAllAvailabilityZones returns true if the cluster contains AZs for all agents and masters profiles
+func (p *Properties) IsClusterAllAvailabilityZones() bool {
+	isAll := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if isAll && p.AgentPoolProfiles != nil {
 		for _, agentPoolProfile := range p.AgentPoolProfiles {
-			if agentPoolProfile.AvailabilityProfile != VirtualMachineScaleSets {
+			if !agentPoolProfile.HasAvailabilityZones() {
+				isAll = false
+				break
+			}
+		}
+	}
+	return isAll
+}
+
+// IsClusterAllVirtualMachineScaleSets returns true if the cluster contains only Virtual Machine Scale Sets
+func (p *Properties) IsClusterAllVirtualMachineScaleSets() bool {
+	isAll := p.MasterProfile != nil && p.MasterProfile.IsVirtualMachineScaleSets()
+	if isAll && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.AvailabilityProfile == AvailabilitySet {
 				isAll = false
 				break
 			}

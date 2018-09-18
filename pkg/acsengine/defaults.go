@@ -242,7 +242,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
-	setVMSSDefaults(properties)
+	setVMSSDefaultsForAgents(properties)
 
 	// Set hosted master profile defaults if this cluster configuration has a hosted control plane
 	if cs.Properties.HostedMasterProfile != nil {
@@ -582,10 +582,26 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
 		a.MasterProfile.HTTPSourceAddressPrefix = "*"
 	}
+	// Set VMSS Defaults for Masters
+	if a.MasterProfile.IsVirtualMachineScaleSets() {
+		if a.MasterProfile.Count > 100 {
+			a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(false)
+		}
+		if a.MasterProfile.SinglePlacementGroup == nil {
+			a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+		}
+		if a.MasterProfile.SinglePlacementGroup == helpers.PointerToBool(false) {
+			a.MasterProfile.StorageProfile = api.ManagedDisks
+		}
+		if a.MasterProfile.HasAvailabilityZones() {
+			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+		}
+	}
 }
 
-// setVMSSDefaults
-func setVMSSDefaults(a *api.Properties) {
+// setVMSSDefaultsForAgents
+func setVMSSDefaultsForAgents(a *api.Properties) {
 	for _, profile := range a.AgentPoolProfiles {
 		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {
 			if profile.Count > 100 {

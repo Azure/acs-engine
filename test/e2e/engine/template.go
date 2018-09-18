@@ -247,17 +247,6 @@ func (e *Engine) HasNetworkPolicy(name string) bool {
 	return strings.Contains(e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, name)
 }
 
-// HasAllZonesAgentPools will return true if all of the agent pools have zones
-func (e *Engine) HasAllZonesAgentPools() bool {
-	count := 0
-	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
-		if ap.HasAvailabilityZones() {
-			count++
-		}
-	}
-	return count == len(e.ExpandedDefinition.Properties.AgentPoolProfiles)
-}
-
 // Write will write the cluster definition to disk
 func (e *Engine) Write() error {
 	json, err := helpers.JSONMarshal(e.ClusterDefinition, false)

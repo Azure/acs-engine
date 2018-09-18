@@ -113,6 +113,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateAgentPoolProfiles(isUpdate); e != nil {
 		return e
 	}
+	if e := a.validateZones(); e != nil {
+		return e
+	}
 	if e := a.validateLinuxProfile(); e != nil {
 		return e
 	}
@@ -364,11 +367,13 @@ func (a *Properties) validateMasterProfile() error {
 		if e != nil {
 			return e
 		}
-		if !a.IsAllVirtualMachineScaleSets() {
+		if !a.IsClusterAllVirtualMachineScaleSets() {
 			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
 		}
 	}
-
+	if m.SinglePlacementGroup != nil && m.AvailabilityProfile == AvailabilitySet {
+		return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")
+	}
 	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
@@ -433,18 +438,6 @@ func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 				return errors.New("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
 			}
 
-			if a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
-				if a.AgentPoolProfiles[i].HasAvailabilityZones() {
-					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
-				}
-			}
-
-			if a.AgentPoolProfiles[i].HasAvailabilityZones() {
-				if a.AgentPoolProfiles[i].Count < len(a.AgentPoolProfiles[i].AvailabilityZones)*2 {
-					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
-				}
-			}
-
 			if a.AgentPoolProfiles[i].SinglePlacementGroup != nil && a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
 				return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")
 			}
@@ -467,6 +460,35 @@ func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 		}
 	}
 
+	return nil
+}
+
+func (a *Properties) validateZones() error {
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		// all zones or no zones should be defined for the cluster
+		if a.HasAvailabilityZones() {
+			if a.IsClusterAllAvailabilityZones() {
+				// master profile
+				if a.MasterProfile.AvailabilityProfile != VirtualMachineScaleSets {
+					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets")
+				}
+				if a.MasterProfile.Count < len(a.MasterProfile.AvailabilityZones)*2 {
+					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
+				}
+				// agent pool profiles
+				for _, agentPoolProfile := range a.AgentPoolProfiles {
+					if agentPoolProfile.AvailabilityProfile == AvailabilitySet {
+						return errors.New("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
+					}
+					if agentPoolProfile.Count < len(agentPoolProfile.AvailabilityZones)*2 {
+						return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
+					}
+				}
+			} else {
+				return errors.New("Availability Zones need to be defined for master profile and all agent pool profiles. Please set \"availabilityZones\" for all profiles")
+			}
+		}
+	}
 	return nil
 }
 
