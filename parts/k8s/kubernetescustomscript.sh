@@ -49,6 +49,7 @@ fi
 
 if $FULL_INSTALL_REQUIRED; then
     holdWALinuxAgent
+    netfilterFix
     installDeps
 else 
     echo "Golden image; skipping dependencies installation"

@@ -43,6 +43,15 @@ spec:
             mountPath: /var/run
           - name: log
             mountPath: /var/log
+        - name: cni-tc
+          image: 'qmachu/weave-tc:0.0.1'
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
+            - name: lib-tc
+              mountPath: /lib/tc
       hostNetwork: true
       volumes:
       - name: log
