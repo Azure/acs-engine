@@ -3,6 +3,7 @@ package persistentvolumeclaims
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
 	"time"
@@ -70,6 +71,19 @@ func Get(pvcName, namespace string) (*PersistentVolumeClaims, error) {
 	return &pvc, nil
 }
 
+// Describe gets the description for the given pvc and namespace.
+func Describe(pvcName, namespace string) error {
+	cmd := exec.Command("kubectl", "describe", "pvc", pvcName, "-n", namespace)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n%s\n", string(out))
+	return nil
+}
+
 // Delete will delete a PersistentVolumeClaims in a given namespace
 func (pvc *PersistentVolumeClaims) Delete() error {
 	cmd := exec.Command("kubectl", "delete", "pvc", "-n", pvc.Metadata.NameSpace, pvc.Metadata.Name)
@@ -98,6 +112,7 @@ func (pvc *PersistentVolumeClaims) WaitOnReady(namespace string, sleep, duration
 				if query != nil && query.Status.Phase == "Bound" {
 					readyCh <- true
 				} else {
+					Describe(pvc.Metadata.Name, namespace)
 					time.Sleep(sleep)
 				}
 			}
