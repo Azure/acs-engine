@@ -44,7 +44,10 @@ type MockACSEngineClient struct {
 }
 
 //MockStorageClient mock implementation of StorageClient
-type MockStorageClient struct{}
+type MockStorageClient struct {
+	FailCreateContainer bool
+	FailSaveBlockBlob   bool
+}
 
 //MockKubernetesClient mock implementation of KubernetesClient
 type MockKubernetesClient struct {
@@ -248,12 +251,18 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 
 //CreateContainer mock
 func (msc *MockStorageClient) CreateContainer(container string) (bool, error) {
-	return true, nil
+	if !msc.FailCreateContainer {
+		return true, nil
+	}
+	return false, errors.New("CreateContainer failed")
 }
 
 //SaveBlockBlob mock
 func (msc *MockStorageClient) SaveBlockBlob(container, blob string, b []byte, options *azStorage.PutBlobOptions) error {
-	return nil
+	if !msc.FailSaveBlockBlob {
+		return nil
+	}
+	return errors.New("SaveBlockBlob failed")
 }
 
 //AddAcceptLanguages mock
