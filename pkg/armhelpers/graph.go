@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/satori/go.uuid"
@@ -26,6 +27,11 @@ const (
 // CreateGraphApplication creates an application via the graphrbac client
 func (az *AzureClient) CreateGraphApplication(ctx context.Context, applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
 	return az.applicationsClient.Create(ctx, applicationCreateParameters)
+}
+
+// DeleteGraphApplication deletes an application via the graphrbac client
+func (az *AzureClient) DeleteGraphApplication(ctx context.Context, applicationObjectID string) (result autorest.Response, err error) {
+	return az.applicationsClient.Delete(ctx, applicationObjectID)
 }
 
 // CreateGraphPrincipal creates a service principal via the graphrbac client
@@ -50,7 +56,7 @@ func (az *AzureClient) ListRoleAssignmentsForPrincipal(ctx context.Context, scop
 }
 
 // CreateApp is a simpler method for creating an application
-func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
+func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationResp graphrbac.Application, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
 	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
@@ -76,11 +82,11 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 		},
 		RequiredResourceAccess: requiredResourceAccess,
 	}
-	applicationResp, err := az.CreateGraphApplication(ctx, applicationReq)
+	applicationResp, err = az.CreateGraphApplication(ctx, applicationReq)
 	if err != nil {
-		return "", "", "", err
+		return applicationResp, "", "", err
 	}
-	applicationID = to.String(applicationResp.AppID)
+	applicationID := to.String(applicationResp.AppID)
 
 	log.Debugf("ad: creating servicePrincipal for applicationID: %q", applicationID)
 
@@ -90,12 +96,22 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 	}
 	servicePrincipalResp, err := az.servicePrincipalsClient.Create(ctx, servicePrincipalReq)
 	if err != nil {
-		return "", "", "", err
+		return applicationResp, "", "", err
 	}
 
 	servicePrincipalObjectID = to.String(servicePrincipalResp.ObjectID)
 
-	return applicationID, servicePrincipalObjectID, servicePrincipalClientSecret, nil
+	return applicationResp, servicePrincipalObjectID, servicePrincipalClientSecret, nil
+}
+
+// DeleteApp is a simpler method for deleting an application and the associated spn
+func (az *AzureClient) DeleteApp(ctx context.Context, applicationName, applicationObjectID string) (autorest.Response, error) {
+	log.Debugf("ad: deleting application with name=%q", applicationName)
+	applicationResp, err := az.DeleteGraphApplication(ctx, applicationObjectID)
+	if err != nil {
+		return applicationResp, err
+	}
+	return applicationResp, nil
 }
 
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
