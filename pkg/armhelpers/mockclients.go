@@ -550,8 +550,13 @@ func (mc *MockACSEngineClient) CreateGraphPrincipal(ctx context.Context, service
 }
 
 // CreateApp is a simpler method for creating an application
-func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
-	return "app-id", "client-id", "client-secret", nil
+func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationObjectID, applicationID, servicePrincipalObjectID, secret string, err error) {
+	return "app-object-id", "app-id", "client-id", "client-secret", nil
+}
+
+// DeleteApp is a simpler method for deleting an application
+func (mc *MockACSEngineClient) DeleteApp(ctx context.Context, appName, applicationObjectID string) (response autorest.Response, err error) {
+	return response, nil
 }
 
 // User Assigned MSI

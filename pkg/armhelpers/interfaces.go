@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
+	"github.com/Azure/go-autorest/autorest"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 )
@@ -102,7 +103,8 @@ type ACSEngineClient interface {
 
 	// CreateGraphPrincipal creates a service principal via the graphrbac client
 	CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
-	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error)
+	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationObjectID, applicationID, servicePrincipalObjectID, secret string, err error)
+	DeleteApp(ctx context.Context, appName, applicationObjectID string) (autorest.Response, error)
 
 	// User Assigned MSI
 	//CreateUserAssignedID - Creates a user assigned msi.
