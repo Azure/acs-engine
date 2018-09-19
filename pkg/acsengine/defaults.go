@@ -76,6 +76,22 @@ var (
 		ImageVersion:   "16.04.201808140",
 	}
 
+	//SovereignCloudsUbuntuImageConfig is the Linux distribution for Azure Sovereign Clouds.
+	SovereignCloudsUbuntuImageConfig = AzureOSImageConfig{
+		ImageOffer:     "UbuntuServer",
+		ImageSku:       "16.04-LTS",
+		ImagePublisher: "Canonical",
+		ImageVersion:   "latest",
+	}
+
+	//GermanCloudUbuntuImageConfig is the Linux distribution for Azure Sovereign Clouds.
+	GermanCloudUbuntuImageConfig = AzureOSImageConfig{
+		ImageOffer:     "UbuntuServer",
+		ImageSku:       "16.04-LTS",
+		ImagePublisher: "Canonical",
+		ImageVersion:   "16.04.201801050",
+	}
+
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
 	DefaultRHELOSImageConfig = AzureOSImageConfig{
 		ImageOffer:     "RHEL",
@@ -150,20 +166,10 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.microsoftazure.de",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "16.04.201801050",
-			},
+			api.Ubuntu: GermanCloudUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
-			api.AKS: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "16.04.201801050",
-			},
+			api.AKS:    GermanCloudUbuntuImageConfig,
 		},
 	}
 
@@ -177,20 +183,10 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "latest",
-			},
+			api.Ubuntu: SovereignCloudsUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
-			api.AKS: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "latest",
-			},
+			api.AKS:    SovereignCloudsUbuntuImageConfig,
 		},
 	}
 
@@ -227,20 +223,10 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.chinacloudapi.cn",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "latest",
-			},
+			api.Ubuntu: SovereignCloudsUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
-			api.AKS: {
-				ImageOffer:     "UbuntuServer",
-				ImageSku:       "16.04-LTS",
-				ImagePublisher: "Canonical",
-				ImageVersion:   "latest",
-			},
+			api.AKS:    SovereignCloudsUbuntuImageConfig,
 		},
 	}
 )
