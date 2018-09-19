@@ -33,6 +33,7 @@ type Config struct {
 	CurrentWorkingDir   string
 	SoakClusterName     string `envconfig:"SOAK_CLUSTER_NAME"`
 	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
+	UseDeployCommand    bool   `envconfig:"USE_DEPLOY_COMMAND"`
 }
 
 const (
@@ -85,6 +86,9 @@ func (c *Config) SetKubeConfig() {
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
 func (c *Config) GetSSHKeyPath() string {
+	if c.UseDeployCommand {
+		return filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "azureuser_rsa")
+	}
 	return filepath.Join(c.CurrentWorkingDir, "_output", c.Name+"-ssh")
 }
 

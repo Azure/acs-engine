@@ -79,6 +79,25 @@ func (cli *CLIProvisioner) Run() error {
 	return errors.New("Unable to run provisioner")
 }
 
+func createSaveSSH(outputPath string, privateKeyName string) (string, error) {
+	os.Mkdir(outputPath, 0755)
+	keyPath := filepath.Join(outputPath, privateKeyName)
+	cmd := exec.Command("ssh-keygen", "-f", keyPath, "-q", "-N", "", "-b", "2048", "-t", "rsa")
+
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+	}
+
+	os.Chmod(keyPath, 0600)
+	publicSSHKeyBytes, err := ioutil.ReadFile(keyPath + ".pub")
+	if err != nil {
+		return "", errors.Wrap(err, "Error while trying to read public ssh key")
+	}
+	return string(publicSSHKeyBytes), nil
+}
+
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
 	if cli.Config.SoakClusterName != "" {
@@ -87,23 +106,17 @@ func (cli *CLIProvisioner) provision() error {
 	os.Setenv("NAME", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	os.Mkdir(outputPath, 0755)
-
-	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+	if !cli.Config.UseDeployCommand {
+		publicSSHKey, err := createSaveSSH(outputPath, cli.Config.Name+"-ssh")
+		if err != nil {
+			return errors.Wrap(err, "Error while generating ssh keys")
+		}
+		os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	}
 
-	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to read public ssh key")
-	}
-	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
-	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
+	err := cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
 	if err != nil {
 		return errors.Wrap(err, "Error while trying to create resource group")
 	}
@@ -159,9 +172,44 @@ func (cli *CLIProvisioner) provision() error {
 		return errors.Wrap(err, "Error while trying to write Engine Template to disk:%s")
 	}
 
-	err = cli.Engine.Generate()
+	err = cli.generateAndDeploy()
 	if err != nil {
-		return errors.Wrap(err, "Error while trying to generate acs-engine template")
+		return errors.Wrap(err, "Error in generateAndDeploy:%s")
+	}
+
+	if cli.Config.IsKubernetes() {
+		// Store the hosts for future introspection
+		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+		if err != nil {
+			return errors.Wrap(err, "GetHosts:%s")
+		}
+		var masters, agents []azure.VM
+		for _, host := range hosts {
+			if strings.Contains(host.Name, "master") {
+				masters = append(masters, host)
+			} else if strings.Contains(host.Name, "agent") {
+				agents = append(agents, host)
+			}
+		}
+		cli.Masters = masters
+		cli.Agents = agents
+	}
+
+	return nil
+}
+
+func (cli *CLIProvisioner) generateAndDeploy() error {
+	if cli.Config.UseDeployCommand {
+		fmt.Printf("Provisionning with the Deploy Command\n")
+		err := cli.Engine.Deploy(cli.Config.Location)
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to deploy acs-engine template")
+		}
+	} else {
+		err := cli.Engine.Generate()
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to generate acs-engine template")
+		}
 	}
 
 	c, err := config.ParseConfig()
@@ -184,31 +232,14 @@ func (cli *CLIProvisioner) provision() error {
 		cli.Config.SetKubeConfig()
 	}
 
-	// Lets start by just using the normal az group deployment cli for creating a cluster
-	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to create deployment")
-	}
-
-	if cli.Config.IsKubernetes() {
-		// Store the hosts for future introspection
-		hosts, err := cli.Account.GetHosts(cli.Config.Name)
+	//if we use Generate, then we need to call CreateDeployment
+	if !cli.Config.UseDeployCommand {
+		err = cli.Account.CreateDeployment(cli.Config.Name, cli.Engine)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Error while trying to create deployment")
 		}
-		var masters, agents []azure.VM
-		for _, host := range hosts {
-			if strings.Contains(host.Name, "master") {
-				masters = append(masters, host)
-			} else if strings.Contains(host.Name, "agent") {
-				agents = append(agents, host)
-			}
-		}
-		cli.Masters = masters
-		cli.Agents = agents
 	}
-
-	return nil
+	return err
 }
 
 // GenerateName will generate a new name if one has not been set

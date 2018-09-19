@@ -42,7 +42,7 @@ func main() {
 
 	err := acct.Login()
 	if err != nil {
-		log.Fatal("Error while trying to login to azure account!")
+		log.Fatalf("Error while trying to login to azure account! %s\n", err)
 	}
 
 	err = acct.SetSubscription()
