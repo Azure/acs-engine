@@ -429,11 +429,11 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
+		if !a.HasAvailabilityZones() && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
 			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
 		}
 
-		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
+		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" && a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB == nil {
 			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 		}
 
@@ -593,11 +593,12 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 
 // setVMSSDefaultsForMasters
 func setVMSSDefaultsForMasters(a *api.Properties) {
-	if a.MasterProfile.Count > 100 {
-		a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(false)
-	}
 	if a.MasterProfile.SinglePlacementGroup == nil {
 		a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+	}
+	if a.MasterProfile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
+		a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+		a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 	}
 }
 
@@ -611,8 +612,9 @@ func setVMSSDefaultsForAgents(a *api.Properties) {
 			if profile.SinglePlacementGroup == nil {
 				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
 			}
-			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
-				profile.StorageProfile = api.ManagedDisks
+			if profile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
+				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 			}
 		}
 

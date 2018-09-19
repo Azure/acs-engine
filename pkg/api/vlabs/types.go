@@ -507,7 +507,7 @@ func (p *Properties) HasWindows() bool {
 	return false
 }
 
-// HasAvailabilityZones returns true if the cluster contains pools with zones
+// HasAvailabilityZones returns true if the cluster contains any profile with zones
 func (p *Properties) HasAvailabilityZones() bool {
 	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
 	if !hasZones && p.AgentPoolProfiles != nil {
@@ -566,18 +566,19 @@ func (m *MasterProfile) HasAvailabilityZones() bool {
 	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
 }
 
-// IsClusterAllAvailabilityZones returns true if the cluster contains AZs for all agents and masters profiles
-func (p *Properties) IsClusterAllAvailabilityZones() bool {
-	isAll := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
-	if isAll && p.AgentPoolProfiles != nil {
-		for _, agentPoolProfile := range p.AgentPoolProfiles {
-			if !agentPoolProfile.HasAvailabilityZones() {
-				isAll = false
-				break
-			}
+// HasZonesForAllAgentPools returns true if all of the agent pools have zones
+func (p *Properties) HasZonesForAllAgentPools() bool {
+	for _, ap := range p.AgentPoolProfiles {
+		if !ap.HasAvailabilityZones() {
+			return false
 		}
 	}
-	return isAll
+	return true
+}
+
+// MastersAndAgentsUseAvailabilityZones returns true if the cluster contains AZs for all agents and masters profiles
+func (p *Properties) MastersAndAgentsUseAvailabilityZones() bool {
+	return (p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()) && p.HasZonesForAllAgentPools()
 }
 
 // IsClusterAllVirtualMachineScaleSets returns true if the cluster contains only Virtual Machine Scale Sets

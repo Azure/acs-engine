@@ -3,10 +3,7 @@
     "properties": {
       "orchestratorProfile": {
         "orchestratorType": "Kubernetes",
-        "orchestratorRelease": "1.12",
-        "kubernetesConfig": {
-          "loadBalancerSku": "Standard"
-        }
+        "orchestratorRelease": "1.12"
       },
       "masterProfile": {
         "count": 5,

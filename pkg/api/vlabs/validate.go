@@ -277,6 +277,9 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 						return errors.Errorf("loadBalancerSku is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion.String(), o.OrchestratorVersion)
 					}
+					if helpers.IsFalseBoolPointer(a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB) {
+						return errors.Errorf("standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"")
+					}
 				}
 			}
 		case OpenShift:
@@ -467,7 +470,7 @@ func (a *Properties) validateZones() error {
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
 		// all zones or no zones should be defined for the cluster
 		if a.HasAvailabilityZones() {
-			if a.IsClusterAllAvailabilityZones() {
+			if a.MastersAndAgentsUseAvailabilityZones() {
 				// master profile
 				if a.MasterProfile.AvailabilityProfile != VirtualMachineScaleSets {
 					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets")
@@ -484,7 +487,7 @@ func (a *Properties) validateZones() error {
 						return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 					}
 				}
-				if a.OrchestratorProfile.KubernetesConfig == nil || a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
+				if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "" && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
 					return errors.New("Availability Zones requires Standard LoadBalancer. Please set KubernetesConfig \"LoadBalancerSku\" to \"Standard\"")
 				}
 			} else {

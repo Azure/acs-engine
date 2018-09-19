@@ -1645,11 +1645,13 @@ func TestProperties_ValidateAddon(t *testing.T) {
 }
 func TestProperties_ValidateZones(t *testing.T) {
 	tests := []struct {
-		name                string
-		orchestratorRelease string
-		masterProfile       *MasterProfile
-		agentProfiles       []*AgentPoolProfile
-		expectedErr         string
+		name                        string
+		orchestratorRelease         string
+		loadBalancerSku             string
+		excludeMasterFromStandardLB bool
+		masterProfile               *MasterProfile
+		agentProfiles               []*AgentPoolProfile
+		expectedErr                 string
 	}{
 		{
 			name:                "Master profile with zones version",
@@ -1810,6 +1812,7 @@ func TestProperties_ValidateZones(t *testing.T) {
 		{
 			name:                "all zones and basic loadbalancer",
 			orchestratorRelease: "1.12",
+			loadBalancerSku:     "Basic",
 			masterProfile: &MasterProfile{
 				Count:               5,
 				DNSPrefix:           "foo",
@@ -1828,6 +1831,29 @@ func TestProperties_ValidateZones(t *testing.T) {
 			},
 			expectedErr: "Availability Zones requires Standard LoadBalancer. Please set KubernetesConfig \"LoadBalancerSku\" to \"Standard\"",
 		},
+		{
+			name:                        "all zones with standard loadbalancer and false excludeMasterFromStandardLB",
+			orchestratorRelease:         "1.12",
+			loadBalancerSku:             "Standard",
+			excludeMasterFromStandardLB: false,
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"",
+		},
 	}
 
 	for _, test := range tests {
@@ -1837,6 +1863,10 @@ func TestProperties_ValidateZones(t *testing.T) {
 			p.MasterProfile = test.masterProfile
 			p.AgentPoolProfiles = test.agentProfiles
 			p.OrchestratorProfile.OrchestratorRelease = test.orchestratorRelease
+			p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+				LoadBalancerSku:             test.loadBalancerSku,
+				ExcludeMasterFromStandardLB: helpers.PointerToBool(test.excludeMasterFromStandardLB),
+			}
 
 			err := p.Validate(false)
 

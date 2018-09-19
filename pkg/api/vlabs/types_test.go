@@ -265,8 +265,8 @@ func TestContainerServiceProperties(t *testing.T) {
 		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
 	}
 
-	if prop.IsClusterAllAvailabilityZones() {
-		t.Fatalf("unexpectedly detected ContainerServiceProperties IsClusterAllAvailabilityZones returns true  after unmarshal")
+	if prop.MastersAndAgentsUseAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties MastersAndAgentsUseAvailabilityZones returns true  after unmarshal")
 	}
 	// master profile and agent profile with availability zones
 	ContainerServicePropertiesText = `{"orchestratorProfile": {"orchestratorType": "Kubernetes","orchestratorRelease": "1.12"}, "masterProfile":{"count": 4, "vmSize": "Standard_D2_v2", "availabilityProfile": "VirtualMachineScaleSets", "storageProfile": "ManagedDisks", "diskSizesGB": [750, 250, 600, 1000], "availabilityZones": ["1","2"] }, "agentPoolProfiles":[{ "name": "linuxpool1", "osType" : "Linux", "count": 1, "vmSize": "Standard_D2_v2", 
@@ -280,7 +280,7 @@ func TestContainerServiceProperties(t *testing.T) {
 		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
 	}
 
-	if !prop.IsClusterAllAvailabilityZones() {
-		t.Fatalf("unexpectedly detected ContainerServiceProperties IsClusterAllAvailabilityZones returns false  after unmarshal")
+	if !prop.MastersAndAgentsUseAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties MastersAndAgentsUseAvailabilityZones returns false  after unmarshal")
 	}
 }

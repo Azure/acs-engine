@@ -719,13 +719,26 @@ func (p *Properties) HasVMSSAgentPool() bool {
 
 // HasZonesForAllAgentPools returns true if all of the agent pools have zones
 func (p *Properties) HasZonesForAllAgentPools() bool {
-	count := 0
 	for _, ap := range p.AgentPoolProfiles {
-		if ap.HasAvailabilityZones() {
-			count++
+		if !ap.HasAvailabilityZones() {
+			return false
 		}
 	}
-	return count == len(p.AgentPoolProfiles)
+	return true
+}
+
+// HasAvailabilityZones returns true if the cluster contains a profile with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if !hasZones && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.HasAvailabilityZones() {
+				hasZones = true
+				break
+			}
+		}
+	}
+	return hasZones
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
