@@ -56,7 +56,7 @@ func (az *AzureClient) ListRoleAssignmentsForPrincipal(ctx context.Context, scop
 }
 
 // CreateApp is a simpler method for creating an application
-func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationRes graphrbac.Application, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
+func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationResp graphrbac.Application, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
 	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
@@ -82,7 +82,7 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 		},
 		RequiredResourceAccess: requiredResourceAccess,
 	}
-	applicationResp, err := az.CreateGraphApplication(ctx, applicationReq)
+	applicationResp, err = az.CreateGraphApplication(ctx, applicationReq)
 	if err != nil {
 		return applicationResp, "", "", err
 	}
