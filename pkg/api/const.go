@@ -62,6 +62,10 @@ const (
 const (
 	// AvailabilitySet means that the vms are in an availability set
 	AvailabilitySet = "AvailabilitySet"
+	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOrchestratorName = "k8s"
+	// DefaultOpenshiftOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOpenshiftOrchestratorName = "ocp"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultFirstConsecutiveKubernetesStaticIPVMSS specifies the static IP address on Kubernetes master 0 of VMSS
@@ -72,6 +76,8 @@ const (
 	// DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS specifies the IP address offset of master 0 in VMSS
 	// when VNET integration is enabled.
 	DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS = 4
+	// DefaultSubnetNameResourceSegmentIndex specifies the default subnet name resource segment index.
+	DefaultSubnetNameResourceSegmentIndex = 10
 	// VirtualMachineScaleSets means that the vms are in a virtual machine scaleset
 	VirtualMachineScaleSets = "VirtualMachineScaleSets"
 	// ScaleSetPriorityRegular is the default ScaleSet Priority

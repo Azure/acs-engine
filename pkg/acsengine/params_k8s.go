@@ -294,13 +294,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 		}
 
-		if properties.HostedMasterProfile != nil {
-			addValue(parametersMap, "orchestratorName", "aks")
-		} else if properties.OrchestratorProfile.IsOpenShift() {
-			addValue(parametersMap, "orchestratorName", DefaultOpenshiftOrchestratorName)
-		} else {
-			addValue(parametersMap, "orchestratorName", DefaultOrchestratorName)
-		}
+		addValue(parametersMap, "orchestratorName", properties.K8sOrchestratorName())
 
 		/**
 		 The following parameters could be either a plain text, or referenced to a secret in a keyvault:

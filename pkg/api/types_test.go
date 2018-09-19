@@ -1305,3 +1305,38 @@ func getMockAddon(name string) KubernetesAddon {
 		},
 	}
 }
+
+func TestAreAgentProfilesCustomVNET(t *testing.T) {
+	p := Properties{}
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "subnetlink2",
+		},
+	}
+
+	if !p.AreAgentProfilesCustomVNET() {
+		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
+	}
+
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			VnetSubnetID: "subnetlink1",
+		},
+		{
+			VnetSubnetID: "",
+		},
+	}
+
+	if p.AreAgentProfilesCustomVNET() {
+		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
+	}
+
+	p.AgentPoolProfiles = nil
+
+	if p.AreAgentProfilesCustomVNET() {
+		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
+	}
+}

@@ -1,6 +1,9 @@
 package api
 
 import (
+	"fmt"
+	"hash/fnv"
+	"math/rand"
 	"net"
 	neturl "net/url"
 	"strconv"
@@ -713,6 +716,103 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 		}
 	}
 	return false
+}
+
+func (p *Properties) K8sOrchestratorName() string {
+	if p.OrchestratorProfile.IsKubernetes() ||
+		p.OrchestratorProfile.IsOpenShift() {
+		if p.HostedMasterProfile != nil {
+			return "aks"
+		} else if p.OrchestratorProfile.IsOpenShift() {
+			return DefaultOpenshiftOrchestratorName
+		} else {
+			return DefaultOrchestratorName
+		}
+	}
+	return ""
+}
+
+func (p *Properties) getAgentVMPrefix() string {
+	return p.K8sOrchestratorName() + "-agentpool-"
+}
+
+func (p *Properties) getMasterVMPrefix() string {
+	return p.K8sOrchestratorName() + "-master-"
+}
+
+func (p *Properties) getVMPrefix() string {
+	if p.HostedMasterProfile != nil {
+		return p.getAgentVMPrefix()
+	}
+	return p.getMasterVMPrefix()
+}
+
+func (p *Properties) GetRouteTableName() string {
+	return p.getVMPrefix() + "routetable"
+}
+
+func (p *Properties) GetNSGName() string {
+
+	return p.getVMPrefix() + "nsg"
+}
+
+func (p *Properties) GetPrimaryAvailabilitySetName() string {
+	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GenerateClusterID()
+}
+
+func (p *Properties) GetPrimaryScaleSetName() string {
+	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GenerateClusterID() + "-vmss"
+}
+
+func (p *Properties) IsHostedMasterProfile() bool {
+	return p.HostedMasterProfile != nil
+}
+
+func (p *Properties) GetSubnetName() string {
+	subnetName := ""
+	if !p.IsHostedMasterProfile() {
+		if p.AreAgentProfilesCustomVNET() {
+			subnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	} else {
+		if p.MasterProfile.IsCustomVNET() {
+			subnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	}
+	return subnetName
+}
+
+func (p *Properties) AreAgentProfilesCustomVNET() bool {
+	if p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// GenerateClusterID creates a unique 8 string cluster ID
+func (p *Properties) GenerateClusterID() string {
+	uniqueNameSuffixSize := 8
+	// the name suffix uniquely identifies the cluster and is generated off a hash
+	// from the master dns name
+	h := fnv.New64a()
+	if p.MasterProfile != nil {
+		h.Write([]byte(p.MasterProfile.DNSPrefix))
+	} else if p.HostedMasterProfile != nil {
+		h.Write([]byte(p.HostedMasterProfile.DNSPrefix))
+	} else {
+		h.Write([]byte(p.AgentPoolProfiles[0].Name))
+	}
+	rand.Seed(int64(h.Sum64()))
+	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
