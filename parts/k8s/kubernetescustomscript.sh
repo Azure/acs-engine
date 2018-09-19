@@ -41,8 +41,6 @@ function holdWALinuxAgent() {
     fi
 }
 
-testOutboundConnection
-
 if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
 fi
