@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
+
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
@@ -550,8 +552,15 @@ func (mc *MockACSEngineClient) CreateGraphPrincipal(ctx context.Context, service
 }
 
 // CreateApp is a simpler method for creating an application
-func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationID, servicePrincipalObjectID, secret string, err error) {
-	return "app-id", "client-id", "client-secret", nil
+func (mc *MockACSEngineClient) CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (result graphrbac.Application, servicePrincipalObjectID, secret string, err error) {
+	return graphrbac.Application{
+		AppID: helpers.PointerToString("app-id"),
+	}, "client-id", "client-secret", nil
+}
+
+// DeleteApp is a simpler method for deleting an application
+func (mc *MockACSEngineClient) DeleteApp(ctx context.Context, appName, applicationObjectID string) (response autorest.Response, err error) {
+	return response, nil
 }
 
 // User Assigned MSI
