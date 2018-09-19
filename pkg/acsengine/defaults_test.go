@@ -736,6 +736,7 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.AvailabilityProfile = api.VirtualMachineScaleSets
 	properties.MasterProfile.AvailabilityZones = []string{"1", "2"}
+	properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 	setPropertiesDefaults(&mockCS, false, false)
 	if *properties.MasterProfile.SinglePlacementGroup != api.DefaultSinglePlacementGroup {
 		t.Fatalf("MasterProfile.SinglePlacementGroup default did not have the expected configuration, got %t, expected %t",
@@ -744,10 +745,6 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 	if !properties.MasterProfile.HasAvailabilityZones() {
 		t.Fatalf("MasterProfile.HasAvailabilityZones did not have the expected return, got %t, expected %t",
 			properties.MasterProfile.HasAvailabilityZones(), true)
-	}
-	if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
-		t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")
 	}
 	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != api.DefaultExcludeMasterFromStandardLB {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",
@@ -773,6 +770,7 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.AgentPoolProfiles[0].Count = 4
 	properties.AgentPoolProfiles[0].AvailabilityZones = []string{"1", "2"}
+	properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 	setPropertiesDefaults(&mockCS, false, false)
 	if !properties.AgentPoolProfiles[0].IsVirtualMachineScaleSets() {
 		t.Fatalf("AgentPoolProfile[0].AvailabilityProfile did not have the expected configuration, got %s, expected %s",
@@ -785,11 +783,6 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != api.DefaultSinglePlacementGroup {
 		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup default did not have the expected configuration, got %t, expected %t",
 			*properties.AgentPoolProfiles[0].SinglePlacementGroup, api.DefaultSinglePlacementGroup)
-	}
-
-	if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
-		t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
-			properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")
 	}
 	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != api.DefaultExcludeMasterFromStandardLB {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",

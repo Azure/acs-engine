@@ -186,7 +186,7 @@
 },
 {{end}}
 {
-  "apiVersion": "2017-08-01",
+  "apiVersion": "2018-04-01",
   "location": "[variables('location')]",
   "name": "[variables('masterPublicIPAddressName')]",
   "properties": {
@@ -208,7 +208,7 @@
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('masterLbName')]",
     "location": "[variables('location')]",
-    "apiVersion": "2017-08-01",
+    "apiVersion": "2018-04-01",
     "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
     ],

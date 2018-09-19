@@ -599,13 +599,6 @@ func setVMSSDefaultsForMasters(a *api.Properties) {
 	if a.MasterProfile.SinglePlacementGroup == nil {
 		a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
 	}
-	if a.MasterProfile.SinglePlacementGroup == helpers.PointerToBool(false) {
-		a.MasterProfile.StorageProfile = api.ManagedDisks
-	}
-	if a.MasterProfile.HasAvailabilityZones() {
-		a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
-		a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
-	}
 }
 
 // setVMSSDefaultsForAgents
@@ -620,10 +613,6 @@ func setVMSSDefaultsForAgents(a *api.Properties) {
 			}
 			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
 				profile.StorageProfile = api.ManagedDisks
-			}
-			if profile.HasAvailabilityZones() {
-				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
-				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 			}
 		}
 

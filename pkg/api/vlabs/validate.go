@@ -484,6 +484,9 @@ func (a *Properties) validateZones() error {
 						return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 					}
 				}
+				if a.OrchestratorProfile.KubernetesConfig == nil || a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
+					return errors.New("Availability Zones requires Standard LoadBalancer. Please set KubernetesConfig \"LoadBalancerSku\" to \"Standard\"")
+				}
 			} else {
 				return errors.New("Availability Zones need to be defined for master profile and all agent pool profiles. Please set \"availabilityZones\" for all profiles")
 			}
