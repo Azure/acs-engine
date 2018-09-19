@@ -662,19 +662,9 @@
          "enabledForDiskEncryption": "false",
          "enabledForTemplateDeployment": "false",
          "tenantId": "[variables('tenantID')]",
- {{if not UseManagedIdentity}}
-         "accessPolicies": [
-           {
-             "tenantId": "[variables('tenantID')]",
-             "objectId": "[parameters('servicePrincipalObjectId')]",
-             "permissions": {
-               "keys": ["create", "encrypt", "decrypt", "get", "list"]
-             }
-           }
-         ],
- {{else}}
-         "accessPolicies": 
-         [
+ {{if UseManagedIdentity}}
+        "accessPolicies":
+        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
           {{range $i := loop 0 $max}}
@@ -711,6 +701,16 @@
             {{end}}
           {{end}}
          ],
+ {{else}}
+          "accessPolicies": [
+            {
+              "tenantId": "[variables('tenantID')]",
+              "objectId": "[parameters('servicePrincipalObjectId')]",
+              "permissions": {
+                "keys": ["create", "encrypt", "decrypt", "get", "list"]
+              }
+            }
+          ],
  {{end}}
          "sku": {
            "name": "[parameters('clusterKeyVaultSku')]",

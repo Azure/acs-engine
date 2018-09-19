@@ -94,10 +94,10 @@
     "resourceGroup": "[resourceGroup().name]",
     "truncatedResourceGroup": "[take(replace(replace(resourceGroup().name, '(', '-'), ')', '-'), 63)]",
     "labelResourceGroup": "[if(or(or(endsWith(variables('truncatedResourceGroup'), '-'), endsWith(variables('truncatedResourceGroup'), '_')), endsWith(variables('truncatedResourceGroup'), '.')), concat(take(variables('truncatedResourceGroup'), 62), 'z'), variables('truncatedResourceGroup'))]",
-{{if not IsHostedMaster}}
-    "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
-{{else}}
+{{if IsHostedMaster}}
     "routeTableName": "[concat(variables('agentNamePrefix'), 'routetable')]",
+{{else}}
+    "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
 {{end}}
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
@@ -153,30 +153,14 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
-{{if not IsHostedMaster}}
-  {{if .MasterProfile.IsCustomVNET}}
-    "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
     "subnetNameResourceSegmentIndex": 10,
-    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "vnetNameResourceSegmentIndex": 8,
-    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "vnetResourceGroupNameResourceSegmentIndex": 4,
-    "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
-  {{else}}
-    "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
-    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
-    "virtualNetworkResourceGroupName": "''",
-  {{end}}
-{{else}}
+{{if IsHostedMaster}}
   {{if IsCustomVNET}}
     "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
-    "subnetNameResourceSegmentIndex": 10,
     "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
-    "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-    "vnetResourceGroupNameResourceSegmentIndex": 4,
     "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
   {{else}}
     "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
@@ -185,37 +169,53 @@
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "",
   {{end}}
-{{end}}
-{{if not IsHostedMaster }}
-    "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
 {{else}}
+  {{if .MasterProfile.IsCustomVNET}}
+    "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
+    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+  {{else}}
+    "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
+    "virtualNetworkResourceGroupName": "''",
+  {{end}}
+{{end}}
+{{if IsHostedMaster }}
     "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
+{{else}}
+    "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
 {{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-{{if not AnyAgentUsesVirtualMachineScaleSets}}
-    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',parameters('nameSuffix'))]",
-    "primaryScaleSetName": "",
-    "vmType": "standard",
-{{else}}
+{{if AnyAgentUsesVirtualMachineScaleSets}}
     "primaryScaleSetName": "[concat(parameters('orchestratorName'), '-{{ (index .AgentPoolProfiles 0).Name }}-',parameters('nameSuffix'), '-vmss')]",
     "primaryAvailabilitySetName": "",
     "vmType": "vmss",
+{{else}}
+    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',parameters('nameSuffix'))]",
+    "primaryScaleSetName": "",
+    "vmType": "standard",
 {{end}}
-{{if not IsHostedMaster }}
+{{if IsHostedMaster }}
+    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
+    "agentNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool-', parameters('nameSuffix'), '-')]",
+{{else}}
     {{if IsPrivateCluster}}
-        "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
-        {{if ProvisionJumpbox}}
-            "jumpboxOSDiskName": "[concat(parameters('jumpboxVMName'), '-osdisk')]",
-            "jumpboxPublicIpAddressName": "[concat(parameters('jumpboxVMName'), '-ip')]",
-            "jumpboxNetworkInterfaceName": "[concat(parameters('jumpboxVMName'), '-nic')]",
-            "jumpboxNetworkSecurityGroupName": "[concat(parameters('jumpboxVMName'), '-nsg')]",
-            "kubeconfig": "{{GetKubeConfig}}",
-            {{if not JumpboxIsManagedDisks}}
+      "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
+       {{if ProvisionJumpbox}}
+          "jumpboxOSDiskName": "[concat(parameters('jumpboxVMName'), '-osdisk')]",
+          "jumpboxPublicIpAddressName": "[concat(parameters('jumpboxVMName'), '-ip')]",
+          "jumpboxNetworkInterfaceName": "[concat(parameters('jumpboxVMName'), '-nic')]",
+          "jumpboxNetworkSecurityGroupName": "[concat(parameters('jumpboxVMName'), '-nsg')]",
+          "kubeconfig": "{{GetKubeConfig}}",
+          {{if not JumpboxIsManagedDisks}}
             "jumpboxStorageAccountName": "[concat(variables('storageAccountBaseName'), 'jb')]",
-            {{end}}
-            {{if not .HasStorageAccountDisks}}
+          {{end}}
+          {{if not .HasStorageAccountDisks}}
             {{GetSizeMap}},
-            {{end}}
+          {{end}}
         {{end}}
     {{else}}
         "masterPublicIPAddressName": "[concat(parameters('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', parameters('nameSuffix'))]",
@@ -225,15 +225,15 @@
         "masterLbName": "[concat(parameters('orchestratorName'), '-master-lb-', parameters('nameSuffix'))]",
         "kubeconfigServer": "[concat('https://', variables('masterFqdnPrefix'), '.', variables('location'), '.', parameters('fqdnEndpointSuffix'))]",
     {{end}}
-    {{if gt .MasterProfile.Count 1}}
-    "masterInternalLbName": "[concat(parameters('orchestratorName'), '-master-internal-lb-', parameters('nameSuffix'))]",
-    "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
-    "masterInternalLbIPConfigName": "[concat(parameters('orchestratorName'), '-master-internal-lbFrontEnd-', parameters('nameSuffix'))]",
-    "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
-    "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
-    "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
+      {{if gt .MasterProfile.Count 1}}
+        "masterInternalLbName": "[concat(parameters('orchestratorName'), '-master-internal-lb-', parameters('nameSuffix'))]",
+        "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
+        "masterInternalLbIPConfigName": "[concat(parameters('orchestratorName'), '-master-internal-lbFrontEnd-', parameters('nameSuffix'))]",
+        "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
+        "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
+        "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
     {{else}}
-    "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
+      "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
     {{end}}
     "masterLbBackendPoolName": "[concat(parameters('orchestratorName'), '-master-pool-', parameters('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
@@ -276,9 +276,6 @@
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2])]",
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
     ],
-{{else}}
-    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
-    "agentNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool-', parameters('nameSuffix'), '-')]",
 {{end}}
     "subscriptionId": "[subscription().subscriptionId]",
     "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",

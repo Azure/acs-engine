@@ -85,10 +85,10 @@
     "resourceGroup": "[resourceGroup().name]",
     "truncatedResourceGroup": "[take(replace(replace(resourceGroup().name, '(', '-'), ')', '-'), 63)]",
     "labelResourceGroup": "[if(or(or(endsWith(variables('truncatedResourceGroup'), '-'), endsWith(variables('truncatedResourceGroup'), '_')), endsWith(variables('truncatedResourceGroup'), '.')), concat(take(variables('truncatedResourceGroup'), 62), 'z'), variables('truncatedResourceGroup'))]",
-{{if not IsHostedMaster}}
-    "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
-{{else}}
+{{if IsHostedMaster}}
     "routeTableName": "[concat(variables('agentNamePrefix'), 'routetable')]",
+{{else}}
+    "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
 {{end}}
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
@@ -142,7 +142,23 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
-{{if not IsHostedMaster}}
+{{if IsHostedMaster}}
+    {{if IsCustomVNET}}
+    "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
+    "subnetNameResourceSegmentIndex": 10,
+    "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "vnetNameResourceSegmentIndex": 8,
+    "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "vnetResourceGroupNameResourceSegmentIndex": 4,
+    "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+  {{else}}
+    "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
+    "virtualNetworkResourceGroupName": "",
+  {{end}}
+{{else}}
   {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('agentVnetSubnetID')]",
     "vnetSubnetIDMaster": "[parameters('masterVnetSubnetID')]",
@@ -160,39 +176,26 @@
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "''",
   {{end}}
-{{else}}
-  {{if IsCustomVNET}}
-    "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
-    "subnetNameResourceSegmentIndex": 10,
-    "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
-    "vnetNameResourceSegmentIndex": 8,
-    "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-    "vnetResourceGroupNameResourceSegmentIndex": 4,
-    "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
-  {{else}}
-    "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
-    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
-    "virtualNetworkResourceGroupName": "",
-  {{end}}
 {{end}}
-{{if not IsHostedMaster }}
-    "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
-{{else}}
+{{if IsHostedMaster }}
     "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
+{{else}}
+    "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
 {{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-{{if not AnyAgentUsesVirtualMachineScaleSets}}
-    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',parameters('nameSuffix'))]",
-    "primaryScaleSetName": "",
-    "vmType": "standard",
-{{else}}
+{{if AnyAgentUsesVirtualMachineScaleSets}}
     "primaryScaleSetName": "[concat(parameters('orchestratorName'), '-{{ (index .AgentPoolProfiles 0).Name }}-',parameters('nameSuffix'), '-vmss')]",
     "primaryAvailabilitySetName": "",
     "vmType": "vmss",
+{{else}}
+    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',parameters('nameSuffix'))]",
+    "primaryScaleSetName": "",
+    "vmType": "standard",
 {{end}}
-{{if not IsHostedMaster }}
+{{if IsHostedMaster }}
+    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
+    "agentNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool-', parameters('nameSuffix'), '-')]",
+{{else}}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
         {{if ProvisionJumpbox}}
@@ -241,9 +244,6 @@
     ],
     "masterEtcdServerPort": {{GetMasterEtcdServerPort}},
     "masterEtcdClientPort": {{GetMasterEtcdClientPort}},
-{{else}}
-    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
-    "agentNamePrefix": "[concat(parameters('orchestratorName'), '-agentpool-', parameters('nameSuffix'), '-')]",
 {{end}}
     "subscriptionId": "[subscription().subscriptionId]",
     "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",

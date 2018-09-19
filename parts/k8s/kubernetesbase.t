@@ -83,13 +83,7 @@
         {{end}}
       {{end}}
     {{end}}
-    {{if not IsHostedMaster}}
-        {{if IsMasterVirtualMachineScaleSets}}
-          ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
-        {{else}}
-          ,{{template "k8s/kubernetesmasterresources.t" .}}
-        {{end}}
-    {{else}}
+    {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
       ,{
         "apiVersion": "[variables('apiVersionDefault')]",
@@ -191,6 +185,12 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     }
+    {{else}}
+      {{if IsMasterVirtualMachineScaleSets}}
+          ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
+        {{else}}
+          ,{{template "k8s/kubernetesmasterresources.t" .}}
+        {{end}}
     {{end}}
   ],
   "outputs": {
