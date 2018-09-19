@@ -1265,6 +1265,20 @@ func TestWindowsVersions(t *testing.T) {
 				"should not error on valid Windows version: %v", err,
 			)
 		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = "Password"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because no digits and special characters found in the password ",
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = "123!@#"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because uppercase and lowercase letters found in the password",
+			)
+		}
 		sv, _ := semver.Make(version)
 		p = getK8sDefaultProperties(true)
 		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
