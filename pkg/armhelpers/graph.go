@@ -29,7 +29,7 @@ func (az *AzureClient) CreateGraphApplication(ctx context.Context, applicationCr
 	return az.applicationsClient.Create(ctx, applicationCreateParameters)
 }
 
-// DeleteGraphApplication creates an application via the graphrbac client
+// DeleteGraphApplication deletes an application via the graphrbac client
 func (az *AzureClient) DeleteGraphApplication(ctx context.Context, applicationObjectID string) (result autorest.Response, err error) {
 	return az.applicationsClient.Delete(ctx, applicationObjectID)
 }
@@ -106,8 +106,8 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 }
 
 // DeleteApp is a simpler method for deleting an application and the associated spn
-func (az *AzureClient) DeleteApp(ctx context.Context, appName, applicationObjectID string) (autorest.Response, error) {
-	log.Debugf("ad: deleting application with name=%q", appName)
+func (az *AzureClient) DeleteApp(ctx context.Context, applicationName, applicationObjectID string) (autorest.Response, error) {
+	log.Debugf("ad: deleting application with name=%q", applicationName)
 	applicationResp, err := az.DeleteGraphApplication(ctx, applicationObjectID)
 	if err != nil {
 		return applicationResp, err
