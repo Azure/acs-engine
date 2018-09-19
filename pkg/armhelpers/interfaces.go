@@ -103,7 +103,7 @@ type ACSEngineClient interface {
 
 	// CreateGraphPrincipal creates a service principal via the graphrbac client
 	CreateGraphPrincipal(ctx context.Context, servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
-	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationObjectID, applicationID, servicePrincipalObjectID, secret string, err error)
+	CreateApp(ctx context.Context, applicationName, applicationURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (response autorest.Response, servicePrincipalObjectID, secret string, err error)
 	DeleteApp(ctx context.Context, applicationName, applicationObjectID string) (autorest.Response, error)
 
 	// User Assigned MSI
