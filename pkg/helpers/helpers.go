@@ -73,7 +73,7 @@ func PointerToBool(b bool) *bool {
 	return &p
 }
 
-// PointerToString returns a pointer to a bool
+// PointerToString returns a pointer to a string
 func PointerToString(s string) *string {
 	p := s
 	return &p
