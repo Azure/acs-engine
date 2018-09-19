@@ -56,7 +56,7 @@ func (az *AzureClient) ListRoleAssignmentsForPrincipal(ctx context.Context, scop
 }
 
 // CreateApp is a simpler method for creating an application
-func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationRes autorest.Response, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
+func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, replyURLs *[]string, requiredResourceAccess *[]graphrbac.RequiredResourceAccess) (applicationRes graphrbac.Application, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
 	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
@@ -84,7 +84,7 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 	}
 	applicationResp, err := az.CreateGraphApplication(ctx, applicationReq)
 	if err != nil {
-		return applicationResp.Response, "", "", err
+		return applicationResp, "", "", err
 	}
 	applicationID := to.String(applicationResp.AppID)
 
@@ -96,12 +96,12 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 	}
 	servicePrincipalResp, err := az.servicePrincipalsClient.Create(ctx, servicePrincipalReq)
 	if err != nil {
-		return applicationResp.Response, "", "", err
+		return applicationResp, "", "", err
 	}
 
 	servicePrincipalObjectID = to.String(servicePrincipalResp.ObjectID)
 
-	return applicationResp.Response, servicePrincipalObjectID, servicePrincipalClientSecret, nil
+	return applicationResp, servicePrincipalObjectID, servicePrincipalClientSecret, nil
 }
 
 // DeleteApp is a simpler method for deleting an application and the associated spn
