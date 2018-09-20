@@ -1279,6 +1279,21 @@ func TestWindowsVersions(t *testing.T) {
 				"should error on windows password complexity not match because uppercase and lowercase letters found in the password",
 			)
 		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = ""
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password length is zero",
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminUsername = "User@123"
+		p.WindowsProfile.AdminPassword = "User@123"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because username and password are  same",
+			)
+		}
 		sv, _ := semver.Make(version)
 		p = getK8sDefaultProperties(true)
 		p.OrchestratorProfile.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
