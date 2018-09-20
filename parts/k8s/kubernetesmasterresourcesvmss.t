@@ -36,19 +36,8 @@
       "enabledForDiskEncryption": "false",
       "enabledForTemplateDeployment": "false",
       "tenantId": "[variables('tenantID')]",
-  {{if not UseManagedIdentity}}
-      "accessPolicies": 
-      [
-        {
-          "tenantId": "[variables('tenantID')]",
-          "objectId": "[parameters('servicePrincipalObjectId')]",
-          "permissions": {
-            "keys": ["create", "encrypt", "decrypt", "get", "list"]
-          }
-        }
-      ],
-  {{else}}
-      "accessPolicies": 
+  {{if UseManagedIdentity}}
+    "accessPolicies": 
       [
         {
           "objectId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]",
@@ -63,6 +52,17 @@
           },
           "tenantId": "[variables('tenantID')]"
         },
+      ],
+  {{else}}
+      "accessPolicies": 
+      [
+        {
+          "tenantId": "[variables('tenantID')]",
+          "objectId": "[parameters('servicePrincipalObjectId')]",
+          "permissions": {
+            "keys": ["create", "encrypt", "decrypt", "get", "list"]
+          }
+        }
       ],
   {{end}}
       "sku": {
