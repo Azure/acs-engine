@@ -1077,7 +1077,7 @@ func getK8sDefaultProperties(hasWindows bool) *Properties {
 		}
 		p.WindowsProfile = &WindowsProfile{
 			AdminUsername: "azureuser",
-			AdminPassword: "password",
+			AdminPassword: "replacepassword1234$",
 		}
 	}
 
@@ -1263,6 +1263,35 @@ func TestWindowsVersions(t *testing.T) {
 		if err := p.Validate(false); err != nil {
 			t.Errorf(
 				"should not error on valid Windows version: %v", err,
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = "Password"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because no digits and special characters found in the password ",
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = "123!@#"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because uppercase and lowercase letters found in the password",
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminPassword = ""
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password length is zero",
+			)
+		}
+		p = getK8sDefaultProperties(true)
+		p.WindowsProfile.AdminUsername = "User@123"
+		p.WindowsProfile.AdminPassword = "User@123"
+		if err := p.Validate(false); err == nil {
+			t.Errorf(
+				"should error on windows password complexity not match because username and password are  same",
 			)
 		}
 		sv, _ := semver.Make(version)
