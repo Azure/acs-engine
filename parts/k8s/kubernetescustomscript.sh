@@ -37,6 +37,10 @@ function holdWALinuxAgent() {
     fi
 }
 
+function connectToAPIServer() {
+    retrycmd_if_failure 600 1 3 nc -vz $API_SERVER_IP 443 || exit $ERR_API_SERVER_CONN_FAIL
+}
+
 if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
 fi
@@ -121,6 +125,10 @@ if $FULL_INSTALL_REQUIRED; then
 
         retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENT
     fi
+fi
+
+if [[ -z "${MASTER_NODE}" ]]; then
+    connectToAPIServer
 fi
 
 echo "Custom script finished successfully"
