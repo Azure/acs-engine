@@ -106,7 +106,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
-		FIt("should have stable external container networking", func() {
+		It("should have stable external container networking", func() {
 			var successes int
 			attempts := cfg.StabilityIterations
 			for i := 0; i < attempts; i++ {
@@ -141,7 +141,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(successes).To(Equal(attempts))
 		})
 
-		FIt("should have stable internal container networking", func() {
+		It("should have stable internal container networking", func() {
 			var successes int
 			attempts := cfg.StabilityIterations
 			for i := 0; i < attempts; i++ {
