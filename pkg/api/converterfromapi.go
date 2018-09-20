@@ -923,6 +923,8 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	}
 	vlabsProfile.AvailabilityProfile = api.AvailabilityProfile
 	vlabsProfile.AgentSubnet = api.AgentSubnet
+	vlabsProfile.AvailabilityZones = api.AvailabilityZones
+	vlabsProfile.SinglePlacementGroup = api.SinglePlacementGroup
 	convertCustomFilesToVlabs(api, vlabsProfile)
 }
 

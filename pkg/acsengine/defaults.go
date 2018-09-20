@@ -241,12 +241,19 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 	if cs.Properties.MasterProfile != nil {
 		setMasterProfileDefaults(properties, isUpgrade)
 	}
+	// Set VMSS Defaults for Masters
+	if cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.IsVirtualMachineScaleSets() {
+		setVMSSDefaultsForMasters(properties)
+	}
 
 	setAgentProfileDefaults(properties, isUpgrade, isScale)
 
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
-	setVMSSDefaults(properties)
+	// Set VMSS Defaults for Agents
+	if cs.Properties.HasVMSSAgentPool() {
+		setVMSSDefaultsForAgents(properties)
+	}
 
 	// Set hosted master profile defaults if this cluster configuration has a hosted control plane
 	if cs.Properties.HostedMasterProfile != nil {
@@ -426,11 +433,11 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
+		if !a.HasAvailabilityZones() && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
 			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
 		}
 
-		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" {
+		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" && a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB == nil {
 			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 		}
 
@@ -588,8 +595,19 @@ func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 	}
 }
 
-// setVMSSDefaults
-func setVMSSDefaults(a *api.Properties) {
+// setVMSSDefaultsForMasters
+func setVMSSDefaultsForMasters(a *api.Properties) {
+	if a.MasterProfile.SinglePlacementGroup == nil {
+		a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+	}
+	if a.MasterProfile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
+		a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+		a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+	}
+}
+
+// setVMSSDefaultsForAgents
+func setVMSSDefaultsForAgents(a *api.Properties) {
 	for _, profile := range a.AgentPoolProfiles {
 		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {
 			if profile.Count > 100 {
@@ -598,10 +616,7 @@ func setVMSSDefaults(a *api.Properties) {
 			if profile.SinglePlacementGroup == nil {
 				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
 			}
-			if profile.SinglePlacementGroup == helpers.PointerToBool(false) {
-				profile.StorageProfile = api.ManagedDisks
-			}
-			if profile.HasAvailabilityZones() {
+			if profile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
 				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
 			}
