@@ -415,6 +415,8 @@ type MasterProfile struct {
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
 	AvailabilityProfile      string            `json:"availabilityProfile"`
 	AgentSubnet              string            `json:"agentSubnet,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup     *bool             `json:"singlePlacementGroup,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -709,8 +711,8 @@ func (p *Properties) TotalNodes() int {
 	return totalNodes
 }
 
-// HasVirtualMachineScaleSets returns true if the cluster contains Virtual Machine Scale Sets
-func (p *Properties) HasVirtualMachineScaleSets() bool {
+// HasVMSSAgentPool returns true if the cluster contains Virtual Machine Scale Sets agent pools
+func (p *Properties) HasVMSSAgentPool() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			return true
@@ -724,7 +726,7 @@ func (p *Properties) K8sOrchestratorName() string {
 	if p.OrchestratorProfile.IsKubernetes() ||
 		p.OrchestratorProfile.IsOpenShift() {
 		if p.HostedMasterProfile != nil {
-			return "aks"
+			return DefaultHostedProfileMasterName
 		} else if p.OrchestratorProfile.IsOpenShift() {
 			return DefaultOpenshiftOrchestratorName
 		} else {
@@ -826,6 +828,30 @@ func (p *Properties) GenerateClusterID() string {
 	return p.ClusterID
 }
 
+// HasZonesForAllAgentPools returns true if all of the agent pools have zones
+func (p *Properties) HasZonesForAllAgentPools() bool {
+	for _, ap := range p.AgentPoolProfiles {
+		if !ap.HasAvailabilityZones() {
+			return false
+		}
+	}
+	return true
+}
+
+// HasAvailabilityZones returns true if the cluster contains a profile with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if !hasZones && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.HasAvailabilityZones() {
+				hasZones = true
+				break
+			}
+		}
+	}
+	return hasZones
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -883,6 +909,11 @@ func (m *MasterProfile) GetFirstConsecutiveStaticIPAddress(subnetStr string) str
 	}
 
 	return subnet.IP.String()
+}
+
+// HasAvailabilityZones returns true if the master profile has availability zones
+func (m *MasterProfile) HasAvailabilityZones() bool {
+	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

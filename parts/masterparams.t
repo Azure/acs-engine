@@ -56,6 +56,14 @@
       "type": "string"
     },
   {{end}}
+  {{if .MasterProfile.HasAvailabilityZones}}
+  "availabilityZones": {
+    "metadata": {
+      "description": "Master availability zones"
+    },
+    "type": "array"
+  },
+  {{end}}
 {{end}}
 {{if IsHostedMaster}}
     "masterSubnet": {

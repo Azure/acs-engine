@@ -483,14 +483,14 @@ func TestAvailabilityProfile(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		if c.p.HasVirtualMachineScaleSets() != c.expectedHasVMSS {
-			t.Fatalf("expected HasVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedHasVMSS, c.p.HasVirtualMachineScaleSets())
+		if c.p.HasVMSSAgentPool() != c.expectedHasVMSS {
+			t.Fatalf("expected HasVMSSAgentPool() to return %t but instead returned %t", c.expectedHasVMSS, c.p.HasVMSSAgentPool())
 		}
 		if c.p.AgentPoolProfiles[0].IsVirtualMachineScaleSets() != c.expectedISVMSS {
 			t.Fatalf("expected IsVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedISVMSS, c.p.AgentPoolProfiles[0].IsVirtualMachineScaleSets())
 		}
 		if c.p.AgentPoolProfiles[0].IsAvailabilitySets() != c.expectedIsAS {
-			t.Fatalf("expected HasVirtualMachineScaleSets() to return %t but instead returned %t", c.expectedIsAS, c.p.AgentPoolProfiles[0].IsAvailabilitySets())
+			t.Fatalf("expected IsAvailabilitySets() to return %t but instead returned %t", c.expectedIsAS, c.p.AgentPoolProfiles[0].IsAvailabilitySets())
 		}
 		if c.p.AgentPoolProfiles[0].IsLowPriorityScaleSet() != c.expectedLowPri {
 			t.Fatalf("expected IsLowPriorityScaleSet() to return %t but instead returned %t", c.expectedLowPri, c.p.AgentPoolProfiles[0].IsLowPriorityScaleSet())
@@ -546,6 +546,88 @@ func TestIsCustomVNET(t *testing.T) {
 		}
 	}
 
+}
+
+func TestHasAvailabilityZones(t *testing.T) {
+	cases := []struct {
+		p                Properties
+		expectedMaster   bool
+		expectedAgent    bool
+		expectedAllZones bool
+	}{
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count:             1,
+					AvailabilityZones: []string{"1", "2"},
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   true,
+			expectedAgent:    true,
+			expectedAllZones: true,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count: 1,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count: 1,
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   false,
+			expectedAgent:    false,
+			expectedAllZones: false,
+		},
+		{
+			p: Properties{
+				MasterProfile: &MasterProfile{
+					Count: 1,
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Count:             1,
+						AvailabilityZones: []string{},
+					},
+					{
+						Count:             1,
+						AvailabilityZones: []string{"1", "2"},
+					},
+				},
+			},
+			expectedMaster:   false,
+			expectedAgent:    false,
+			expectedAllZones: false,
+		},
+	}
+
+	for _, c := range cases {
+		if c.p.MasterProfile.HasAvailabilityZones() != c.expectedMaster {
+			t.Fatalf("expected HasAvailabilityZones() to return %t but instead returned %t", c.expectedMaster, c.p.MasterProfile.HasAvailabilityZones())
+		}
+		if c.p.AgentPoolProfiles[0].HasAvailabilityZones() != c.expectedAgent {
+			t.Fatalf("expected HasAvailabilityZones() to return %t but instead returned %t", c.expectedAgent, c.p.AgentPoolProfiles[0].HasAvailabilityZones())
+		}
+		if c.p.HasZonesForAllAgentPools() != c.expectedAllZones {
+			t.Fatalf("expected HasZonesForAllAgentPools() to return %t but instead returned %t", c.expectedAllZones, c.p.HasZonesForAllAgentPools())
+		}
+	}
 }
 
 func TestRequireRouteTable(t *testing.T) {

@@ -909,9 +909,29 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
+	Describe("with zoned master profile", func() {
+		It("should be labeled with zones for each masternode", func() {
+			if eng.ExpandedDefinition.Properties.MasterProfile.HasAvailabilityZones() {
+				nodeList, err := node.Get()
+				Expect(err).NotTo(HaveOccurred())
+				for _, node := range nodeList.Nodes {
+					role := node.Metadata.Labels["kubernetes.io/role"]
+					if role == "master" {
+						By("Ensuring that we get zones for each master node")
+						zones := node.Metadata.Labels["failure-domain.beta.kubernetes.io/zone"]
+						contains := strings.Contains(zones, "-")
+						Expect(contains).To(Equal(true))
+					}
+				}
+			} else {
+				Skip("Availability zones was not configured for master profile for this Cluster Definition")
+			}
+		})
+	})
+
 	Describe("with all zoned agent pools", func() {
 		It("should be labeled with zones for each node", func() {
-			if eng.HasAllZonesAgentPools() {
+			if eng.ExpandedDefinition.Properties.HasZonesForAllAgentPools() {
 				nodeList, err := node.Get()
 				Expect(err).NotTo(HaveOccurred())
 				for _, node := range nodeList.Nodes {
@@ -929,7 +949,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should create pv with zone labels and node affinity", func() {
-			if eng.HasAllZonesAgentPools() {
+			if eng.ExpandedDefinition.Properties.HasZonesForAllAgentPools() {
 				By("Creating a persistent volume claim")
 				pvcName := "azure-managed-disk" // should be the same as in pvc-premium.yaml
 				pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-premium.yaml"), pvcName, "default")
