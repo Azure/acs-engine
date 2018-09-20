@@ -50,6 +50,7 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
+	ClusterID               string
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
@@ -718,6 +719,7 @@ func (p *Properties) HasVirtualMachineScaleSets() bool {
 	return false
 }
 
+// K8sOrchestratorName returns the 3 character orchestrator code for kubernetes-based clusters.
 func (p *Properties) K8sOrchestratorName() string {
 	if p.OrchestratorProfile.IsKubernetes() ||
 		p.OrchestratorProfile.IsOpenShift() {
@@ -747,29 +749,34 @@ func (p *Properties) getVMPrefix() string {
 	return p.getMasterVMPrefix()
 }
 
+// GetRouteTableName returns the route table name of the cluster.
 func (p *Properties) GetRouteTableName() string {
 	return p.getVMPrefix() + "routetable"
 }
 
+// GetNSGName returns the name of the network security group of the cluster.
 func (p *Properties) GetNSGName() string {
-
 	return p.getVMPrefix() + "nsg"
 }
 
+// GetPrimaryAvailabilitySetName returns the name of the primary availability set of the cluster
 func (p *Properties) GetPrimaryAvailabilitySetName() string {
 	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GenerateClusterID()
 }
 
+// GetPrimaryScaleSetName returns the name of the primary scale set node of the cluster
 func (p *Properties) GetPrimaryScaleSetName() string {
 	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GenerateClusterID() + "-vmss"
 }
 
+// IsHostedMasterProfile returns true if the cluster has a hosted master
 func (p *Properties) IsHostedMasterProfile() bool {
 	return p.HostedMasterProfile != nil
 }
 
+// GetSubnetName returns the subnet name of the cluster based on its current configuration.
 func (p *Properties) GetSubnetName() string {
-	subnetName := ""
+	var subnetName string
 	if !p.IsHostedMasterProfile() {
 		if p.AreAgentProfilesCustomVNET() {
 			subnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
@@ -786,6 +793,7 @@ func (p *Properties) GetSubnetName() string {
 	return subnetName
 }
 
+// AreAgentProfilesCustomVNET returns true if all of the agent profiles in the clusters are configured with VNET.
 func (p *Properties) AreAgentProfilesCustomVNET() bool {
 	if p.AgentPoolProfiles != nil {
 		for _, agentPoolProfile := range p.AgentPoolProfiles {
@@ -798,21 +806,24 @@ func (p *Properties) AreAgentProfilesCustomVNET() bool {
 	return false
 }
 
-// GenerateClusterID creates a unique 8 string cluster ID
+// GenerateClusterID creates a unique 8 string cluster ID.
 func (p *Properties) GenerateClusterID() string {
-	uniqueNameSuffixSize := 8
-	// the name suffix uniquely identifies the cluster and is generated off a hash
-	// from the master dns name
-	h := fnv.New64a()
-	if p.MasterProfile != nil {
-		h.Write([]byte(p.MasterProfile.DNSPrefix))
-	} else if p.HostedMasterProfile != nil {
-		h.Write([]byte(p.HostedMasterProfile.DNSPrefix))
-	} else {
-		h.Write([]byte(p.AgentPoolProfiles[0].Name))
+	if p.ClusterID == "" {
+		uniqueNameSuffixSize := 8
+		// the name suffix uniquely identifies the cluster and is generated off a hash
+		// from the master dns name
+		h := fnv.New64a()
+		if p.MasterProfile != nil {
+			h.Write([]byte(p.MasterProfile.DNSPrefix))
+		} else if p.HostedMasterProfile != nil {
+			h.Write([]byte(p.HostedMasterProfile.DNSPrefix))
+		} else {
+			h.Write([]byte(p.AgentPoolProfiles[0].Name))
+		}
+		rand.Seed(int64(h.Sum64()))
+		p.ClusterID = fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 	}
-	rand.Seed(int64(h.Sum64()))
-	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
+	return p.ClusterID
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"regexp"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -1338,5 +1339,27 @@ func TestAreAgentProfilesCustomVNET(t *testing.T) {
 
 	if p.AreAgentProfilesCustomVNET() {
 		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
+	}
+}
+
+func TestGenerateClusterID(t *testing.T) {
+	p := &Properties{
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name: "foo_agent",
+			},
+		},
+	}
+
+	clusterID := p.GenerateClusterID()
+
+	r, err := regexp.Compile("[0-9]{8}")
+
+	if err != nil {
+		t.Errorf("unexpected error while parsing regex : %s", err.Error())
+	}
+
+	if !r.MatchString(clusterID) {
+		t.Fatal("ClusterID should be an 8 digit integer string")
 	}
 }
