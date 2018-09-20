@@ -743,7 +743,7 @@ func (p *Properties) getMasterVMPrefix() string {
 }
 
 func (p *Properties) getVMPrefix() string {
-	if p.HostedMasterProfile != nil {
+	if p.IsHostedMasterProfile() {
 		return p.getAgentVMPrefix()
 	}
 	return p.getMasterVMPrefix()
@@ -777,7 +777,7 @@ func (p *Properties) IsHostedMasterProfile() bool {
 // GetSubnetName returns the subnet name of the cluster based on its current configuration.
 func (p *Properties) GetSubnetName() string {
 	var subnetName string
-	if !p.IsHostedMasterProfile() {
+	if p.IsHostedMasterProfile() {
 		if p.AreAgentProfilesCustomVNET() {
 			subnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
 		} else {
