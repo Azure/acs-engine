@@ -69,6 +69,9 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		}
 		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+		if properties.MasterProfile.HasAvailabilityZones() {
+			addValue(parametersMap, "availabilityZones", properties.MasterProfile.AvailabilityZones)
+		}
 	}
 	if properties.HostedMasterProfile != nil {
 		addValue(parametersMap, "masterSubnet", properties.HostedMasterProfile.Subnet)

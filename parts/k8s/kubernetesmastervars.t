@@ -123,7 +123,7 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
-{{if .HasVirtualMachineScaleSets}}
+{{if .HasVMSSAgentPool}}
     "apiVersionVirtualMachineScaleSets": "2017-12-01",
 {{end}}
 {{if not IsHostedMaster}}

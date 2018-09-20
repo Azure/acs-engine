@@ -1674,14 +1674,77 @@ func TestProperties_ValidateAddon(t *testing.T) {
 }
 func TestProperties_ValidateZones(t *testing.T) {
 	tests := []struct {
-		name                string
-		orchestratorVersion string
-		agentProfiles       []*AgentPoolProfile
-		expectedErr         string
+		name                        string
+		orchestratorRelease         string
+		loadBalancerSku             string
+		excludeMasterFromStandardLB bool
+		masterProfile               *MasterProfile
+		agentProfiles               []*AgentPoolProfile
+		expectedErr                 string
 	}{
 		{
+			name:                "Master profile with zones version",
+			orchestratorRelease: "1.11",
+			masterProfile: &MasterProfile{
+				Count:               3,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater",
+		},
+		{
+			name:                "Master profile with zones vmas",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:             3,
+				DNSPrefix:         "foo",
+				VMSize:            "Standard_DS2_v2",
+				AvailabilityZones: []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets",
+		},
+		{
+			name:                "Master profile with zones node count",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:               1,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more",
+		},
+		{
 			name:                "Agent profile with zones version",
-			orchestratorVersion: "1.11.0",
+			orchestratorRelease: "1.11",
+			masterProfile: &MasterProfile{
+				Count:               1,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
 			agentProfiles: []*AgentPoolProfile{
 				{
 					Name:                "agentpool",
@@ -1695,7 +1758,14 @@ func TestProperties_ValidateZones(t *testing.T) {
 		},
 		{
 			name:                "Agent profile with zones node count",
-			orchestratorVersion: "1.12.0-beta.0",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
 			agentProfiles: []*AgentPoolProfile{
 				{
 					Name:                "agentpool",
@@ -1708,8 +1778,15 @@ func TestProperties_ValidateZones(t *testing.T) {
 			expectedErr: "the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more",
 		},
 		{
-			name:                "Agent profile with zones vmss",
-			orchestratorVersion: "1.12.0-beta.0",
+			name:                "Agent profile with zones vmas",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
 			agentProfiles: []*AgentPoolProfile{
 				{
 					Name:                "agentpool",
@@ -1719,7 +1796,92 @@ func TestProperties_ValidateZones(t *testing.T) {
 					AvailabilityZones:   []string{"1", "2"},
 				},
 			},
-			expectedErr: "Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets",
+			expectedErr: "VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles",
+		},
+		{
+			name:                "Master profile with zones and Agent profile without zones",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "Availability Zones need to be defined for master profile and all agent pool profiles. Please set \"availabilityZones\" for all profiles",
+		},
+		{
+			name:                "Master profile without zones and Agent profile with zones",
+			orchestratorRelease: "1.12",
+			masterProfile: &MasterProfile{
+				Count:               3,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "Availability Zones need to be defined for master profile and all agent pool profiles. Please set \"availabilityZones\" for all profiles",
+		},
+		{
+			name:                "all zones and basic loadbalancer",
+			orchestratorRelease: "1.12",
+			loadBalancerSku:     "Basic",
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "Availability Zones requires Standard LoadBalancer. Please set KubernetesConfig \"LoadBalancerSku\" to \"Standard\"",
+		},
+		{
+			name:                        "all zones with standard loadbalancer and false excludeMasterFromStandardLB",
+			orchestratorRelease:         "1.12",
+			loadBalancerSku:             "Standard",
+			excludeMasterFromStandardLB: false,
+			masterProfile: &MasterProfile{
+				Count:               5,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+				AvailabilityZones:   []string{"1", "2"},
+			},
+			agentProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					AvailabilityZones:   []string{"1", "2"},
+				},
+			},
+			expectedErr: "standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"",
 		},
 	}
 
@@ -1727,15 +1889,15 @@ func TestProperties_ValidateZones(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
+			p.MasterProfile = test.masterProfile
 			p.AgentPoolProfiles = test.agentProfiles
-			p.OrchestratorProfile.OrchestratorVersion = test.orchestratorVersion
-
-			var err error
-			if test.orchestratorVersion == "1.11.0" {
-				err = p.validateOrchestratorProfile(false)
-			} else {
-				err = p.Validate(true)
+			p.OrchestratorProfile.OrchestratorRelease = test.orchestratorRelease
+			p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+				LoadBalancerSku:             test.loadBalancerSku,
+				ExcludeMasterFromStandardLB: helpers.PointerToBool(test.excludeMasterFromStandardLB),
 			}
+
+			err := p.Validate(false)
 
 			expectedMsg := test.expectedErr
 			if err.Error() != expectedMsg {
@@ -1746,24 +1908,78 @@ func TestProperties_ValidateZones(t *testing.T) {
 }
 
 func TestProperties_ValidateSinglePlacementGroup(t *testing.T) {
-	p := getK8sDefaultProperties(true)
-	p.AgentPoolProfiles = []*AgentPoolProfile{
+
+	tests := []struct {
+		name              string
+		masterProfile     *MasterProfile
+		agentPoolProfiles []*AgentPoolProfile
+		expectedMsg       string
+	}{
 		{
-			Name:                 "agentpool",
-			VMSize:               "Standard_DS2_v2",
-			Count:                2,
-			AvailabilityProfile:  AvailabilitySet,
-			SinglePlacementGroup: helpers.PointerToBool(false),
+			name: "Master profile VMAS with SinglePlacementGroup",
+			masterProfile: &MasterProfile{
+				Count:                1,
+				DNSPrefix:            "foo",
+				VMSize:               "Standard_DS2_v2",
+				AvailabilityProfile:  AvailabilitySet,
+				SinglePlacementGroup: helpers.PointerToBool(false),
+			},
+			expectedMsg: "singlePlacementGroup is only supported with VirtualMachineScaleSets",
+		},
+		{
+			name: "Agent profile VMAS with SinglePlacementGroup",
+			masterProfile: &MasterProfile{
+				Count:               1,
+				DNSPrefix:           "foo",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                 "agentpool",
+					VMSize:               "Standard_DS2_v2",
+					Count:                4,
+					AvailabilityProfile:  AvailabilitySet,
+					SinglePlacementGroup: helpers.PointerToBool(false),
+				},
+			},
+			expectedMsg: "singlePlacementGroup is only supported with VirtualMachineScaleSets",
+		},
+		{
+			name: "VMSS with SinglePlacementGroup false and StorageAccount storage",
+			masterProfile: &MasterProfile{
+				Count:                1,
+				DNSPrefix:            "foo",
+				VMSize:               "Standard_DS2_v2",
+				AvailabilityProfile:  VirtualMachineScaleSets,
+				SinglePlacementGroup: helpers.PointerToBool(false),
+				StorageProfile:       StorageAccount,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               4,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedMsg: "VirtualMachineScaleSets does not support StorageAccount disks.  Please specify \"storageProfile\": \"ManagedDisks\" (recommended) or \"availabilityProfile\": \"AvailabilitySet\"",
 		},
 	}
-	p.OrchestratorProfile.OrchestratorVersion = "1.12.0-beta.0"
 
-	err := p.Validate(true)
-	expectedMsg := "singlePlacementGroup is only supported with VirtualMachineScaleSets"
-	if err.Error() != expectedMsg {
-		t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := getK8sDefaultProperties(true)
+			p.OrchestratorProfile.OrchestratorRelease = "1.12"
+			p.MasterProfile = test.masterProfile
+			p.AgentPoolProfiles = test.agentPoolProfiles
+			err := p.Validate(true)
+			if err.Error() != test.expectedMsg {
+				t.Errorf("expected error message : %s, but got %s", test.expectedMsg, err.Error())
+			}
+		})
 	}
-
 }
 
 func TestProperties_ValidateVNET(t *testing.T) {
