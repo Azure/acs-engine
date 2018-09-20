@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -589,5 +590,27 @@ func TestGenerateKubeConfig(t *testing.T) {
 	_, err = GenerateKubeConfig(nil, "westus2")
 	if err == nil {
 		t.Fatalf("Expected an error result from nil Properties child properties")
+	}
+}
+
+func TestGenerateClusterID(t *testing.T) {
+	p := &api.Properties{
+		AgentPoolProfiles: []*api.AgentPoolProfile{
+			{
+				Name: "foo_agent",
+			},
+		},
+	}
+
+	clusterID := GenerateClusterID(p)
+
+	r, err := regexp.Compile("[0-9]{8}")
+
+	if err != nil {
+		t.Errorf("unexpected error while parsing regex : %s", err.Error())
+	}
+
+	if !r.MatchString(clusterID) {
+		t.Fatal("ClusterID should be an 8 digit integer string")
 	}
 }
