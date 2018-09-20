@@ -13,7 +13,7 @@ func (az *AzureClient) DeleteManagedDisk(ctx context.Context, resourceGroupName 
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.disksClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.disksClient.Client); err != nil {
 		return err
 	}
 
