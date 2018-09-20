@@ -40,7 +40,7 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, name string) err
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.groupsClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.groupsClient.Client); err != nil {
 		return err
 	}
 
