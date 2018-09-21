@@ -155,6 +155,20 @@ apt_get_install() {
     done
     echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
 }
+apt_get_remove() {
+    retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
+    for i in $(seq 1 $retries); do
+        timeout 30 dpkg --configure -a
+        timeout $timeout apt-get remove --purge -y ${@}
+        [ $? -eq 0  ] && break || \
+        if [ $i -eq $retries ]; then
+            return 1
+        else
+            sleep $wait_sleep
+        fi
+    done
+    echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
+}
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4
     for i in $(seq 1 $retries); do
