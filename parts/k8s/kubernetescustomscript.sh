@@ -30,12 +30,18 @@ else
     FULL_INSTALL_REQUIRED=true
 fi
 
+function testOutboundConnection() {
+    retrycmd_if_failure 40 1 3 nc -vz www.google.com 443 || retrycmd_if_failure 40 1 3 nc -vz www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
+}
+
 function holdWALinuxAgent() {
     if [[ $OS == $UBUNTU_OS_NAME ]]; then
         # make sure walinuxagent doesn't get updated in the middle of running this script
         retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     fi
 }
+
+testOutboundConnection
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
