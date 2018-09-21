@@ -167,7 +167,7 @@ apt_get_remove() {
             sleep $wait_sleep
         fi
     done
-    echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
+    echo Executed apt-get remove --purge -y \"$@\" $i times;
 }
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4
