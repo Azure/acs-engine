@@ -202,7 +202,9 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "gcr.akscn.io/google_containers/",
 			TillerImageBase:                  "gcr.akscn.io/kubernetes-helm/",
-			ACIConnectorImageBase:            DefaultKubernetesSpecConfig.ACIConnectorImageBase,
+			ACIConnectorImageBase:            "dockerhub.akscn.io/microsoft/",
+			NVIDIAImageBase:                  "dockerhub.akscn.io/nvidia/",
+			AzureCNIImageBase:                "dockerhub.akscn.io/containernetworking/",
 			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
 			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
 			WindowsPackageSASURLBase:         DefaultKubernetesSpecConfig.WindowsPackageSASURLBase,

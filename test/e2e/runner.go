@@ -215,8 +215,10 @@ func teardown() {
 			log.Printf("cannot fetch openshift metrics: %v", err)
 		}
 	}
-	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
-		log.Printf("cannot fetch the activity log: %v", err)
+	if !cfg.SkipLogsCollection {
+		if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
+			log.Printf("cannot fetch the activity log: %v", err)
+		}
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")
