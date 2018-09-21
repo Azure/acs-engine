@@ -72,6 +72,8 @@ type Properties struct {
 // ClusterMetadata represents the metadata of the ACS cluster.
 type ClusterMetadata struct {
 	SubnetName                 string `json:"subnetName,omitempty"`
+	VNetResourceGroupName      string `json:"vnetResourceGroupName,omitempty"`
+	VirtualNetworkName         string `json:"virtualNetworkName,omitempty"`
 	SecurityGroupName          string `json:"securityGroupName,omitempty"`
 	RouteTableName             string `json:"routeTableName,omitempty"`
 	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty"`
@@ -785,6 +787,30 @@ func (p *Properties) IsHostedMasterProfile() bool {
 	return p.HostedMasterProfile != nil
 }
 
+// GetVNetResourceGroupName returns the virtual network resource group name of the cluster
+func (p *Properties) GetVNetResourceGroupName() string {
+	var vnetResourceGroupName string
+	if p.IsHostedMasterProfile() {
+		vnetResourceGroupName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	} else {
+		vnetResourceGroupName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	}
+	return vnetResourceGroupName
+}
+
+// GetVirtualNetworkName returns the virtual network name of the cluster
+func (p *Properties) GetVirtualNetworkName() string {
+	var vnetName string
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
+		vnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
+		vnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else {
+		vnetName = p.K8sOrchestratorName() + "-vnet-" + p.GenerateClusterID()
+	}
+	return vnetName
+}
+
 // GetSubnetName returns the subnet name of the cluster based on its current configuration.
 func (p *Properties) GetSubnetName() string {
 	var subnetName string
@@ -841,6 +867,8 @@ func (p *Properties) GenerateClusterID() string {
 func (p *Properties) GetClusterMetadata() *ClusterMetadata {
 	return &ClusterMetadata{
 		SubnetName:                 p.GetSubnetName(),
+		VNetResourceGroupName:      p.GetVNetResourceGroupName(),
+		VirtualNetworkName:         p.GetVirtualNetworkName(),
 		SecurityGroupName:          p.GetNSGName(),
 		RouteTableName:             p.GetRouteTableName(),
 		PrimaryAvailabilitySetName: p.GetPrimaryAvailabilitySetName(),

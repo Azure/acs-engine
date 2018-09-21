@@ -1676,3 +1676,67 @@ func TestGetSubnetName(t *testing.T) {
 		})
 	}
 }
+
+func TestProperties_GetClusterMetadata(t *testing.T) {
+	p := &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+		MasterProfile: &MasterProfile{
+			Count:        1,
+			DNSPrefix:    "foo",
+			VMSize:       "Standard_DS2_v2",
+			VnetSubnetID: "/subscriptions/SUBSCRIPTION_ID/resourceGroups/SAMPLE_RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/BazAgentSubnet",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+			},
+		},
+	}
+
+	metadata := p.GetClusterMetadata()
+
+	if metadata == nil {
+		t.Error("did not expect cluster metadata to be nil")
+	}
+
+	expectedSubnetName := "BazAgentSubnet"
+	if metadata.SubnetName != expectedSubnetName {
+		t.Errorf("expected subnet name %s, but got %s", expectedSubnetName, metadata.SubnetName)
+	}
+
+	expectedVNetResourceGroupName := "SAMPLE_RESOURCE_GROUP_NAME"
+	if metadata.VNetResourceGroupName != expectedVNetResourceGroupName {
+		t.Errorf("expected vNetResourceGroupName name %s, but got %s", expectedVNetResourceGroupName, metadata.VNetResourceGroupName)
+	}
+
+	expectedVirtualNetworkName := "ExampleCustomVNET"
+	if metadata.VirtualNetworkName != expectedVirtualNetworkName {
+		t.Errorf("expected VirtualNetworkName name %s, but got %s", expectedVirtualNetworkName, metadata.VirtualNetworkName)
+	}
+
+	expectedRouteTableName := "k8s-master-routetable"
+	if metadata.RouteTableName != expectedRouteTableName {
+		t.Errorf("expected RouteTableName name %s, but got %s", expectedVirtualNetworkName, metadata.RouteTableName)
+	}
+
+	expectedSecurityGroupName := "k8s-master-nsg"
+	if metadata.SecurityGroupName != expectedSecurityGroupName {
+		t.Errorf("expected SecurityGroupName name %s, but got %s", expectedSecurityGroupName, metadata.SecurityGroupName)
+	}
+
+	expectedPrimaryAvailabilitySetName := "agentpool-availabilitySet-28513887"
+	if metadata.PrimaryAvailabilitySetName != expectedPrimaryAvailabilitySetName {
+		t.Errorf("expected PrimaryAvailabilitySetName name %s, but got %s", expectedPrimaryAvailabilitySetName, metadata.PrimaryAvailabilitySetName)
+	}
+
+	expectedPrimaryScaleSetName := "k8s-agentpool-28513887-vmss"
+	if metadata.PrimaryScaleSetName != expectedPrimaryScaleSetName {
+		t.Errorf("expected PrimaryScaleSetName name %s, but got %s", expectedPrimaryScaleSetName, metadata.PrimaryScaleSetName)
+	}
+
+}
