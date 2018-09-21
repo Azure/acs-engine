@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -45,20 +44,22 @@ const (
 
 type deployCmd struct {
 	authProvider
-	apimodelPath      string
-	dnsPrefix         string
-	autoSuffix        bool
-	outputDirectory   string // can be auto-determined from clusterDefinition
-	forceOverwrite    bool
-	caCertificatePath string
-	caPrivateKeyPath  string
-	parametersOnly    bool
-	set               []string
+	generateCmd
+	dnsPrefix      string
+	autoSuffix     bool
+	forceOverwrite bool
 
-	// derived
-	containerService *api.ContainerService
-	apiVersion       string
-	locale           *gotext.Locale
+	// generateCmd
+	// containerService  *api.ContainerService
+	// apiVersion        string
+	// locale            *gotext.Locale
+	// apimodelPath      string
+	// outputDirectory   string // can be auto-determined from clusterDefinition
+	// caCertificatePath string
+	// caPrivateKeyPath  string
+	// noPrettyPrint     bool
+	// parametersOnly    bool
+	// set               []string
 
 	client        armhelpers.ACSEngineClient
 	resourceGroup string
@@ -70,12 +71,12 @@ func newDeployCmd() *cobra.Command {
 	dc := deployCmd{
 		authProvider: &authArgs{},
 	}
-
 	deployCmd := &cobra.Command{
 		Use:   deployName,
 		Short: deployShortDescription,
 		Long:  deployLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
+
 			if err := dc.validateArgs(cmd, args); err != nil {
 				log.Fatalf("error validating deployCmd: %s", err.Error())
 			}
@@ -112,24 +113,9 @@ func newDeployCmd() *cobra.Command {
 func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 	var err error
 
-	dc.locale, err = i18n.LoadTranslations()
+	err = dc.validate(cmd, args)
 	if err != nil {
-		return errors.Wrap(err, "error loading translation files")
-	}
-
-	if dc.apimodelPath == "" {
-		if len(args) == 1 {
-			dc.apimodelPath = args[0]
-		} else if len(args) > 1 {
-			cmd.Usage()
-			return errors.New("too many arguments were provided to 'deploy'")
-		}
-	}
-
-	if dc.apimodelPath != "" {
-		if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
-			return errors.Errorf("specified api model does not exist (%s)", dc.apimodelPath)
-		}
+		return errors.Wrap(err, "validation failed")
 	}
 
 	if dc.location == "" {

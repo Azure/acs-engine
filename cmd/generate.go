@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
@@ -53,7 +54,7 @@ func newGenerateCmd() *cobra.Command {
 				log.Fatalf(fmt.Sprintf("error merging API model in generateCmd: %s", err.Error()))
 			}
 
-			if err := gc.loadAPIModel(cmd, args); err != nil {
+			if err := gc.loadAPIModel(); err != nil {
 				log.Fatalf(fmt.Sprintf("error loading API model in generateCmd: %s", err.Error()))
 			}
 
@@ -86,15 +87,14 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 			gc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
-			return errors.New("too many arguments were provided to 'generate'")
-		} else {
-			cmd.Usage()
-			return errors.New("--api-model was not supplied, nor was one specified as a positional argument")
+			return errors.Errorf("too many arguments were provided to '%s'", cmd.Name())
 		}
 	}
 
-	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-		return errors.Errorf("specified api model does not exist (%s)", gc.apimodelPath)
+	if gc.apimodelPath != "" {
+		if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
+			return errors.Errorf("specified api model does not exist (%s)", gc.apimodelPath)
+		}
 	}
 
 	return nil
@@ -102,6 +102,22 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 
 func (gc *generateCmd) mergeAPIModel() error {
 	var err error
+
+	if gc.apimodelPath == "" {
+		log.Infoln("no --api-model was specified, using default model")
+		f, err := ioutil.TempFile("", fmt.Sprintf("%s-default-api-model_%s-%s_", filepath.Base(os.Args[0]), BuildSHA, GitTreeState))
+		if err != nil {
+			return errors.Wrap(err, "error creating temp file for default API model")
+		}
+		log.Infoln("default api model generated at", f.Name())
+
+		defer f.Close()
+		if err := writeDefaultModel(f); err != nil {
+			return err
+		}
+		gc.apimodelPath = f.Name()
+	}
+
 	// if --set flag has been used
 	if gc.set != nil && len(gc.set) > 0 {
 		m := make(map[string]transform.APIModelValue)
@@ -119,7 +135,7 @@ func (gc *generateCmd) mergeAPIModel() error {
 	return nil
 }
 
-func (gc *generateCmd) loadAPIModel(cmd *cobra.Command, args []string) error {
+func (gc *generateCmd) loadAPIModel() error {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
 	var err error

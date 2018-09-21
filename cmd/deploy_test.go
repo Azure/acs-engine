@@ -105,7 +105,7 @@ func TestNewDeployCmd(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	r := &cobra.Command{}
+	r := &cobra.Command{Use: deployName}
 	apimodelPath := "apimodel-unit-test.json"
 
 	_, err := os.Create(apimodelPath)
@@ -115,76 +115,94 @@ func TestValidate(t *testing.T) {
 	defer os.Remove(apimodelPath)
 
 	cases := []struct {
+		caseName    string
 		dc          *deployCmd
 		expectedErr error
 		args        []string
 	}{
 		{
+			caseName: "empty apimodel with location should succeed",
 			dc: &deployCmd{
-				apimodelPath:      "",
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				forceOverwrite:    false,
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
-				location:          "west europe",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+
+				dnsPrefix:      "test",
+				forceOverwrite: false,
+				location:       "west europe",
 			},
 			args:        []string{},
 			expectedErr: nil,
 		},
 		{
+			caseName: "invalid apimodel path as argument should fail",
 			dc: &deployCmd{
-				apimodelPath:      "",
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+				dnsPrefix: "test",
 			},
 			args:        []string{"wrong/path"},
-			expectedErr: errors.New("specified api model does not exist (wrong/path)"),
+			expectedErr: errors.New("validation failed: specified api model does not exist (wrong/path)"),
 		},
 		{
+			caseName: "too many positional argument should fail",
 			dc: &deployCmd{
-				apimodelPath:      "",
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+				dnsPrefix: "test",
 			},
 			args:        []string{"test/apimodel.json", "some_random_stuff"},
-			expectedErr: errors.New("too many arguments were provided to 'deploy'"),
+			expectedErr: errors.New("validation failed: too many arguments were provided to 'deploy'"),
 		},
 		{
+			caseName: "correct apimodelpath without location should fail with missing location",
 			dc: &deployCmd{
-				apimodelPath:      "",
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+				dnsPrefix: "test",
 			},
 			args:        []string{apimodelPath},
 			expectedErr: errors.New("--location must be specified"),
 		},
 		{
+			caseName: "correct apimodel path and location should succeed",
 			dc: &deployCmd{
-				apimodelPath:      "",
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
-				location:          "west europe",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+				location: "west europe",
 			},
 			args:        []string{apimodelPath},
 			expectedErr: nil,
 		},
 		{
+			caseName: "no apimodel path and location should use default model and succeed",
 			dc: &deployCmd{
-				apimodelPath:      apimodelPath,
-				dnsPrefix:         "test",
-				outputDirectory:   "output/test",
-				caCertificatePath: "test",
-				caPrivateKeyPath:  "test",
-				location:          "canadaeast",
+				generateCmd: generateCmd{
+					apimodelPath:      "",
+					outputDirectory:   "output/test",
+					caCertificatePath: "test",
+					caPrivateKeyPath:  "test",
+				},
+				location: "canadaeast",
 			},
 			args:        []string{},
 			expectedErr: nil,
@@ -195,13 +213,13 @@ func TestValidate(t *testing.T) {
 		err = c.dc.validateArgs(r, c.args)
 		if err != nil && c.expectedErr != nil {
 			if err.Error() != c.expectedErr.Error() {
-				t.Fatalf("expected validate deploy command to return error %s, but instead got %s", c.expectedErr.Error(), err.Error())
+				t.Fatalf("[%s] : expected validate deploy command to return error %s, but instead got %s", c.caseName, c.expectedErr.Error(), err.Error())
 			}
 		} else {
 			if c.expectedErr != nil {
-				t.Fatalf("expected validate deploy command to return error %s, but instead got no error", c.expectedErr.Error())
+				t.Fatalf("[%s] : expected validate deploy command to return error %s, but instead got no error", c.caseName, c.expectedErr.Error())
 			} else if err != nil {
-				t.Fatalf("expected validate deploy command to return no error, but instead got %s", err.Error())
+				t.Fatalf("[%s] : expected validate deploy command to return no error, but instead got %s", c.caseName, err.Error())
 			}
 		}
 	}
@@ -230,13 +248,15 @@ func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
 	deployCmd := &deployCmd{
-		apimodelPath:     "./this/is/unused.json",
-		outputDirectory:  "_test_output",
-		forceOverwrite:   true,
-		location:         "westus",
-		autoSuffix:       true,
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		forceOverwrite: true,
+		location:       "westus",
+		autoSuffix:     true,
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -275,12 +295,14 @@ func TestAPIModelWithoutServicePrincipalProfileAndClientIdAndSecretInCmd(t *test
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
 	deployCmd := &deployCmd{
-		apimodelPath:     "./this/is/unused.json",
-		outputDirectory:  "_test_output",
-		forceOverwrite:   true,
-		location:         "westus",
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		forceOverwrite: true,
+		location:       "westus",
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -328,12 +350,14 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndClientIdAndSecretInCmd(t *te
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
 	deployCmd := &deployCmd{
-		apimodelPath:     "./this/is/unused.json",
-		outputDirectory:  "_test_output",
-		forceOverwrite:   true,
-		location:         "westus",
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		forceOverwrite: true,
+		location:       "westus",
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -374,12 +398,14 @@ func TestAPIModelWithoutServicePrincipalProfileAndWithoutClientIdAndSecretInCmd(
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
 	deployCmd := &deployCmd{
-		apimodelPath:     "./this/is/unused.json",
-		outputDirectory:  "_test_output",
-		forceOverwrite:   true,
-		location:         "westus",
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		forceOverwrite: true,
+		location:       "westus",
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -411,12 +437,14 @@ func TestAPIModelWithEmptyServicePrincipalProfileAndWithoutClientIdAndSecretInCm
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
 	deployCmd := &deployCmd{
-		apimodelPath:     "./this/is/unused.json",
-		outputDirectory:  "_test_output",
-		forceOverwrite:   true,
-		location:         "westus",
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		forceOverwrite: true,
+		location:       "westus",
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -461,14 +489,15 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	// setting that occurs in autofillApimodel (which is called from validate)
 	// Thus, it assumes that containerService/apiVersion are already populated
 	deployCmd := &deployCmd{
-		apimodelPath:    "./this/is/unused.json",
-		dnsPrefix:       "dnsPrefix1",
-		outputDirectory: "_test_output",
-		forceOverwrite:  true,
-		location:        "westus",
-
-		containerService: cs,
-		apiVersion:       ver,
+		generateCmd: generateCmd{
+			apimodelPath:     "./this/is/unused.json",
+			outputDirectory:  "_test_output",
+			containerService: cs,
+			apiVersion:       ver,
+		},
+		dnsPrefix:      "dnsPrefix1",
+		forceOverwrite: true,
+		location:       "westus",
 
 		client: &armhelpers.MockACSEngineClient{},
 		authProvider: &mockAuthProvider{
@@ -542,10 +571,54 @@ func TestDeployCmdRun(t *testing.T) {
 			authArgs:      &authArgs{},
 			getClientMock: &armhelpers.MockACSEngineClient{},
 		},
-		apimodelPath:    "./this/is/unused.json",
-		outputDirectory: "_test_output",
-		forceOverwrite:  true,
-		location:        "westus",
+		generateCmd: generateCmd{
+			apimodelPath:    "./this/is/unused.json",
+			outputDirectory: "_test_output",
+		},
+		forceOverwrite: true,
+		location:       "westus",
+	}
+
+	r := &cobra.Command{}
+	f := r.Flags()
+
+	addAuthFlags(d.getAuthArgs(), f)
+
+	fakeRawSubscriptionID := "6dc93fae-9a76-421f-bbe5-cc6460ea81cb"
+	fakeSubscriptionID, err := uuid.FromString(fakeRawSubscriptionID)
+	if err != nil {
+		t.Fatalf("Invalid SubscriptionId in Test: %s", err)
+	}
+
+	d.apimodelPath = "../pkg/acsengine/testdata/simple/kubernetes.json"
+	d.getAuthArgs().SubscriptionID = fakeSubscriptionID
+	d.getAuthArgs().rawSubscriptionID = fakeRawSubscriptionID
+
+	err = d.loadAPIModel(r, []string{})
+	if err != nil {
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
+	}
+
+	err = d.run()
+	if err != nil {
+		t.Fatalf("Failed to call LoadAPIModel: %s", err)
+	}
+
+}
+
+func TestDeployCmdCustomVNetKubenet_PostDeployRouteRegistration(t *testing.T) {
+	d := &deployCmd{
+		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs:      &authArgs{},
+			getClientMock: &armhelpers.MockACSEngineClient{},
+		},
+		generateCmd: generateCmd{
+			apimodelPath:    "./this/is/unused.json",
+			outputDirectory: "_test_output",
+		},
+		forceOverwrite: true,
+		location:       "westus",
 	}
 
 	r := &cobra.Command{}

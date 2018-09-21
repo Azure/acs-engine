@@ -110,7 +110,7 @@ func TestGenerateCmdMLoadAPIModel(t *testing.T) {
 
 	g.validate(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
 	g.mergeAPIModel()
-	err := g.loadAPIModel(r, []string{"../pkg/acsengine/testdata/simple/kubernetes.json"})
+	err := g.loadAPIModel()
 	if err != nil {
 		t.Fatalf("unexpected error loading api model: %s", err.Error())
 	}
