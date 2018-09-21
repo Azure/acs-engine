@@ -44,7 +44,6 @@ write_files:
   owner: "root"
   content: |
     [Service]
-    ExecStart=
     {{if .KubernetesConfig.HasMoby}}
     ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
     {{else}}
