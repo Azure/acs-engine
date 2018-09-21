@@ -85,7 +85,8 @@ function installMoby() {
     retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
     retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
-    #apt_get_remove 10 5 10 docker-engine || exit $ERR_APT_UPDATE_TIMEOUT
+    apt_get_remove 10 5 10 docker-engine || exit $ERR_APT_UPDATE_TIMEOUT
+    echo { \"live-restore\": true, \"log-driver\": \"json-file\", \"log-opts\":  { \"max-size\": \"50m\", \"max-file\": \"5\" } } > /etc/docker/daemon.json
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
     apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
 }
