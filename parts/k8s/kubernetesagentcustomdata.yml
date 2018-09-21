@@ -44,8 +44,11 @@ write_files:
   content: |
     [Service]
     ExecStart=
+    {{if .KubernetesConfig.HasMoby}}
+    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
+    {{else}}
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
-
+    {{end}}
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"

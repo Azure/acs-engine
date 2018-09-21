@@ -1078,3 +1078,9 @@ func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == "moby" || runtime == ""
 }
+
+// HasMoby returns if the container runtime is moby
+func (k *KubernetesConfig) HasMoby() bool {
+	runtime := strings.ToLower(k.ContainerRuntime)
+	return runtime == "moby"
+}
