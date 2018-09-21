@@ -38,13 +38,18 @@ write_files:
     [Service]
     MountFlags=shared
     {{end}}
+
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     ExecStart=
+    {{if HasMoby}}
+    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
+    {{else}}
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
+    {{end}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
