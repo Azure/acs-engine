@@ -69,6 +69,15 @@ type Properties struct {
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
 }
 
+// ClusterMetadata represents the metadata of the ACS cluster.
+type ClusterMetadata struct {
+	SubnetName                 string `json:"subnetName,omitempty"`
+	SecurityGroupName          string `json:"securityGroupName,omitempty"`
+	RouteTableName             string `json:"routeTableName,omitempty"`
+	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty"`
+	PrimaryScaleSetName        string `json:"primaryScaleSetName,omitempty"`
+}
+
 // AddonProfile represents an addon for managed cluster
 type AddonProfile struct {
 	Enabled bool              `json:"enabled"`
@@ -826,6 +835,17 @@ func (p *Properties) GenerateClusterID() string {
 		p.ClusterID = fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 	}
 	return p.ClusterID
+}
+
+// GetClusterMetadata returns a instance of the struct type api.ClusterMetadata.
+func (p *Properties) GetClusterMetadata() *ClusterMetadata {
+	return &ClusterMetadata{
+		SubnetName:                 p.GetSubnetName(),
+		SecurityGroupName:          p.GetNSGName(),
+		RouteTableName:             p.GetRouteTableName(),
+		PrimaryAvailabilitySetName: p.GetPrimaryAvailabilitySetName(),
+		PrimaryScaleSetName:        p.GetPrimaryScaleSetName(),
+	}
 }
 
 // HasZonesForAllAgentPools returns true if all of the agent pools have zones
