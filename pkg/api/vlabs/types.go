@@ -300,12 +300,12 @@ type KubernetesConfig struct {
 	CloudControllerManagerConfig    map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig                 map[string]string `json:"apiServerConfig,omitempty"`
 	SchedulerConfig                 map[string]string `json:"schedulerConfig,omitempty"`
-	CloudProviderBackoff            bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoff            *bool             `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries     int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter      float64           `json:"cloudProviderBackoffJitter,omitempty"`
 	CloudProviderBackoffDuration    int               `json:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffExponent    float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit          bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimit          *bool             `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS       float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	LoadBalancerSku                 string            `json:"loadBalancerSku,omitempty"`

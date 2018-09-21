@@ -285,8 +285,6 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 
 	switch o.OrchestratorType {
 	case api.Kubernetes:
-		k8sVersion := o.OrchestratorVersion
-
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
@@ -350,26 +348,31 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		if o.KubernetesConfig.ServiceCIDR == "" {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
+
+		if o.KubernetesConfig.CloudProviderBackoff == nil {
+			o.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(DefaultKubernetesCloudProviderBackoff)
+		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		o.KubernetesConfig.CloudProviderBackoff = true
-		if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-			o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderBackoff) {
+			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+			}
+			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+			}
+			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+			}
+			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+			}
 		}
-		if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-			o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+
+		if o.KubernetesConfig.CloudProviderRateLimit == nil {
+			o.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(DefaultKubernetesCloudProviderRateLimit)
 		}
-		if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-			o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
-		}
-		if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-			o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
-		}
-		k8sSemVer, _ := semver.Make(k8sVersion)
-		minVersion, _ := semver.Make("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		o.KubernetesConfig.CloudProviderRateLimit = true
-		if o.KubernetesConfig.CloudProviderRateLimit && k8sSemVer.GTE(minVersion) {
+		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderRateLimit) {
 			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
