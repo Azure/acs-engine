@@ -60,6 +60,7 @@ write_files:
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
         {{end}}
     {{end}}
+
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
