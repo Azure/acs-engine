@@ -34,6 +34,7 @@ type Config struct {
 	SoakClusterName     string `envconfig:"SOAK_CLUSTER_NAME"`
 	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
 	UseDeployCommand    bool   `envconfig:"USE_DEPLOY_COMMAND"`
+	GinkgoFocus         string `envconfig:"GINKGO_FOCUS"`
 }
 
 const (
