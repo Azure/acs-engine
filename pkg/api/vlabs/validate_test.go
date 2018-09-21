@@ -1142,6 +1142,18 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 			"should error on containerd for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "moby"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on moby for windows clusters",
+		)
+	}
 }
 
 func Test_Properties_ValidateAddons(t *testing.T) {
