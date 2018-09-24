@@ -283,6 +283,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
+		test := test
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 			err := test.properties.validateOrchestratorProfile(test.isUpdate)
@@ -334,6 +335,7 @@ func Test_OpenShiftConfig_Validate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
+		test := test
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 			err := test.properties.validateOrchestratorProfile(test.isUpdate)
@@ -798,6 +800,7 @@ func TestProperties_ValidateInvalidExtensionProfiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
@@ -1386,6 +1389,7 @@ func TestValidateImageNameAndGroup(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
@@ -1471,6 +1475,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			properties := getK8sDefaultProperties(true)
@@ -1623,6 +1628,7 @@ func TestMasterProfileValidate(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			properties := getK8sDefaultProperties(true)
@@ -1886,6 +1892,7 @@ func TestProperties_ValidateZones(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
@@ -1943,7 +1950,7 @@ func TestProperties_ValidateSinglePlacementGroup(t *testing.T) {
 					SinglePlacementGroup: helpers.PointerToBool(false),
 				},
 			},
-			expectedMsg: "singlePlacementGroup is only supported with VirtualMachineScaleSets",
+			expectedMsg: `VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set "availabilityProfile" to "VirtualMachineScaleSets" for agent profiles`,
 		},
 		{
 			name: "VMSS with SinglePlacementGroup false and StorageAccount storage",
@@ -1968,6 +1975,7 @@ func TestProperties_ValidateSinglePlacementGroup(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
@@ -2120,6 +2128,7 @@ func TestProperties_ValidateVNET(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			p := getK8sDefaultProperties(true)
@@ -2285,6 +2294,7 @@ func TestOpenshiftValidate(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			gotErr := test.properties.Validate(test.isUpgrade)
@@ -2334,6 +2344,7 @@ func TestWindowsProfile_Validate(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			err := test.w.Validate(test.orchestratorType)
@@ -2426,6 +2437,7 @@ func TestValidateAgentPoolProfiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			gotErr := test.properties.validateAgentPoolProfiles(true)
@@ -2505,6 +2517,7 @@ func TestValidate_VaultKeySecrets(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			err := validateKeyVaultSecrets(test.secrets, true)
