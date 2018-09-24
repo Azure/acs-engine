@@ -749,11 +749,11 @@ func (p *Properties) K8sOrchestratorName() string {
 }
 
 func (p *Properties) getAgentVMPrefix() string {
-	return p.K8sOrchestratorName() + "-agentpool-" + p.GenerateClusterID() + "-"
+	return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
 }
 
 func (p *Properties) getMasterVMPrefix() string {
-	return p.K8sOrchestratorName() + "-master-" + p.GenerateClusterID() + "-"
+	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
 }
 
 // GetVMPrefix returns the agent VM prefix or master VM prefix based on the cluster configuration.
@@ -776,12 +776,12 @@ func (p *Properties) GetNSGName() string {
 
 // GetPrimaryAvailabilitySetName returns the name of the primary availability set of the cluster
 func (p *Properties) GetPrimaryAvailabilitySetName() string {
-	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GenerateClusterID()
+	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GetClusterID()
 }
 
 // GetPrimaryScaleSetName returns the name of the primary scale set node of the cluster
 func (p *Properties) GetPrimaryScaleSetName() string {
-	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GenerateClusterID() + "-vmss"
+	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GetClusterID() + "-vmss"
 }
 
 // IsHostedMasterProfile returns true if the cluster has a hosted master
@@ -808,7 +808,7 @@ func (p *Properties) GetVirtualNetworkName() string {
 	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
 		vnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
 	} else {
-		vnetName = p.K8sOrchestratorName() + "-vnet-" + p.GenerateClusterID()
+		vnetName = p.K8sOrchestratorName() + "-vnet-" + p.GetClusterID()
 	}
 	return vnetName
 }
@@ -845,8 +845,8 @@ func (p *Properties) AreAgentProfilesCustomVNET() bool {
 	return false
 }
 
-// GenerateClusterID creates a unique 8 string cluster ID.
-func (p *Properties) GenerateClusterID() string {
+// GetClusterID creates a unique 8 string cluster ID.
+func (p *Properties) GetClusterID() string {
 	if p.ClusterID == "" {
 		uniqueNameSuffixSize := 8
 		// the name suffix uniquely identifies the cluster and is generated off a hash

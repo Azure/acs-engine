@@ -395,7 +395,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSecurityRules(ports)
 		},
 		"GetUniqueNameSuffix": func() string {
-			return cs.Properties.GenerateClusterID()
+			return cs.Properties.GetClusterID()
 		},
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(cs.Properties)

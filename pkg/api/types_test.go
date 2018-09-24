@@ -1433,7 +1433,7 @@ func TestGenerateClusterID(t *testing.T) {
 		},
 	}
 
-	clusterID := p.GenerateClusterID()
+	clusterID := p.GetClusterID()
 
 	r, err := regexp.Compile("[0-9]{8}")
 
@@ -1451,7 +1451,7 @@ func TestGenerateClusterID(t *testing.T) {
 		},
 	}
 
-	clusterID = p.GenerateClusterID()
+	clusterID = p.GetClusterID()
 
 	r, err = regexp.Compile("[0-9]{8}")
 
