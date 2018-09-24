@@ -73,7 +73,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201808140",
+		ImageVersion:   "16.04.201809120",
 	}
 
 	//SovereignCloudsUbuntuImageConfig is the Linux distribution for Azure Sovereign Clouds.
