@@ -350,7 +350,7 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		if o.KubernetesConfig.CloudProviderBackoff == nil {
-			o.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(api.DefaultKubernetesCloudProviderBackoff)
+			o.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(DefaultKubernetesCloudProviderBackoff)
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderBackoff) {
@@ -358,7 +358,7 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		if o.KubernetesConfig.CloudProviderRateLimit == nil {
-			o.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(api.DefaultKubernetesCloudProviderRateLimit)
+			o.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(DefaultKubernetesCloudProviderRateLimit)
 		}
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderRateLimit) {

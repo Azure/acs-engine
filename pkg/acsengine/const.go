@@ -78,6 +78,10 @@ const (
 	DefaultKubernetesCtrlMgrTerminatedPodGcThreshold = "5000"
 	// DefaultKubernetesCtrlMgrUseSvcAccountCreds is "true", see --use-service-account-credentials at https://kubernetes.io/docs/admin/kube-controller-manager/
 	DefaultKubernetesCtrlMgrUseSvcAccountCreds = "false"
+	// DefaultKubernetesCloudProviderBackoff is false to disable cloudprovider backoff implementation for API calls
+	DefaultKubernetesCloudProviderBackoff = true
+	// DefaultKubernetesCloudProviderRateLimit is false to disable cloudprovider rate limiting implementation for API calls
+	DefaultKubernetesCloudProviderRateLimit = true
 	// DefaultKubeHeapsterDeploymentAddonName is the name of the kube-heapster-deployment addon
 	DefaultKubeHeapsterDeploymentAddonName = "kube-heapster-deployment"
 	// DefaultKubeDNSDeploymentAddonName is the name of the kube-dns-deployment addon
