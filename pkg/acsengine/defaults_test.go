@@ -868,6 +868,40 @@ func TestDefaultDisableRbac(t *testing.T) {
 	}
 }
 
+func TestDefaultCloudProvider(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10.3")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	setOrchestratorDefaults(&mockCS, true)
+
+	if !helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff) {
+		t.Fatalf("got unexpected CloudProviderBackoff expected true, got %t",
+			helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
+	}
+
+	if !helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit) {
+		t.Fatalf("got unexpected CloudProviderBackoff expected true, got %t",
+			helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
+	}
+
+	mockCS = getMockBaseContainerService("1.10.3")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(false)
+	properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(false)
+	setOrchestratorDefaults(&mockCS, true)
+
+	if !helpers.IsFalseBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff) {
+		t.Fatalf("got unexpected CloudProviderBackoff expected true, got %t",
+			helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
+	}
+
+	if !helpers.IsFalseBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit) {
+		t.Fatalf("got unexpected CloudProviderBackoff expected true, got %t",
+			helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
