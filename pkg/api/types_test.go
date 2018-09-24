@@ -1539,10 +1539,10 @@ func TestGetRouteTableName(t *testing.T) {
 	}
 
 	actualRTName := p.GetRouteTableName()
-	expectedRTName := "aks-agentpool-routetable"
+	expectedRTName := "aks-agentpool-28513887-routetable"
 
 	actualNSGName := p.GetNSGName()
-	expectedNSGName := "aks-agentpool-nsg"
+	expectedNSGName := "aks-agentpool-28513887-nsg"
 
 	if actualRTName != expectedRTName {
 		t.Errorf("expected route table name %s, but got %s", expectedRTName, actualRTName)
@@ -1572,10 +1572,10 @@ func TestGetRouteTableName(t *testing.T) {
 	}
 
 	actualRTName = p.GetRouteTableName()
-	expectedRTName = "k8s-master-routetable"
+	expectedRTName = "k8s-master-28513887-routetable"
 
 	actualNSGName = p.GetNSGName()
-	expectedNSGName = "k8s-master-nsg"
+	expectedNSGName = "k8s-master-28513887-nsg"
 
 	if actualRTName != expectedRTName {
 		t.Errorf("expected route table name %s, but got %s", actualRTName, expectedRTName)
@@ -1828,12 +1828,12 @@ func TestProperties_GetClusterMetadata(t *testing.T) {
 		t.Errorf("expected VirtualNetworkName name %s, but got %s", expectedVirtualNetworkName, metadata.VirtualNetworkName)
 	}
 
-	expectedRouteTableName := "k8s-master-routetable"
+	expectedRouteTableName := "k8s-master-28513887-routetable"
 	if metadata.RouteTableName != expectedRouteTableName {
 		t.Errorf("expected RouteTableName name %s, but got %s", expectedVirtualNetworkName, metadata.RouteTableName)
 	}
 
-	expectedSecurityGroupName := "k8s-master-nsg"
+	expectedSecurityGroupName := "k8s-master-28513887-nsg"
 	if metadata.SecurityGroupName != expectedSecurityGroupName {
 		t.Errorf("expected SecurityGroupName name %s, but got %s", expectedSecurityGroupName, metadata.SecurityGroupName)
 	}
