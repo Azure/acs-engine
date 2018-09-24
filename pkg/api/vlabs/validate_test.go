@@ -368,12 +368,12 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			ClusterSubnet:                "10.120.0.0/16",
 			DockerBridgeSubnet:           "10.120.1.0/16",
 			MaxPods:                      42,
-			CloudProviderBackoff:         ValidKubernetesCloudProviderBackoff,
+			CloudProviderBackoff:         helpers.PointerToBool(ValidKubernetesCloudProviderBackoff),
 			CloudProviderBackoffRetries:  ValidKubernetesCloudProviderBackoffRetries,
 			CloudProviderBackoffJitter:   ValidKubernetesCloudProviderBackoffJitter,
 			CloudProviderBackoffDuration: ValidKubernetesCloudProviderBackoffDuration,
 			CloudProviderBackoffExponent: ValidKubernetesCloudProviderBackoffExponent,
-			CloudProviderRateLimit:       ValidKubernetesCloudProviderRateLimit,
+			CloudProviderRateLimit:       helpers.PointerToBool(ValidKubernetesCloudProviderRateLimit),
 			CloudProviderRateLimitQPS:    ValidKubernetesCloudProviderRateLimitQPS,
 			CloudProviderRateLimitBucket: ValidKubernetesCloudProviderRateLimitBucket,
 			KubeletConfig: map[string]string{
@@ -551,8 +551,8 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that apply to 1.6 and later releases
 	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions(false, false) {
 		c := KubernetesConfig{
-			CloudProviderBackoff:   true,
-			CloudProviderRateLimit: true,
+			CloudProviderBackoff:   helpers.PointerToBool(true),
+			CloudProviderRateLimit: helpers.PointerToBool(true),
 		}
 		if err := c.Validate(k8sVersion, false); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")

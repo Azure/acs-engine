@@ -177,3 +177,18 @@ const (
 	// VHDDiskSizeAKS maps to the OSDiskSizeGB for AKS VHD image
 	VHDDiskSizeAKS = 30
 )
+
+const (
+	// DefaultKubernetesCloudProviderBackoffRetries is 6, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffRetries = 6
+	// DefaultKubernetesCloudProviderBackoffJitter is 1, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffJitter = 1.0
+	// DefaultKubernetesCloudProviderBackoffDuration is 5, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffDuration = 5
+	// DefaultKubernetesCloudProviderBackoffExponent is 1.5, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffExponent = 1.5
+	// DefaultKubernetesCloudProviderRateLimitQPS is 3, takes effect if DefaultKubernetesCloudProviderRateLimit is true
+	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
+	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
+	DefaultKubernetesCloudProviderRateLimitBucket = 10
+)

@@ -1257,6 +1257,200 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 	}
 }
 
+func TestCloudProviderDefaults(t *testing.T) {
+	// Test cloudprovider defaults when no user-provided values
+	v := "1.8.0"
+	o := OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig:    &KubernetesConfig{},
+	}
+	o.KubernetesConfig.SetCloudProviderBackoffDefaults()
+	o.KubernetesConfig.SetCloudProviderRateLimitDefaults()
+
+	intCases := []struct {
+		defaultVal  int
+		computedVal int
+	}{
+		{
+			defaultVal:  DefaultKubernetesCloudProviderBackoffRetries,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffRetries,
+		},
+		{
+			defaultVal:  DefaultKubernetesCloudProviderBackoffDuration,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffDuration,
+		},
+		{
+			defaultVal:  DefaultKubernetesCloudProviderRateLimitBucket,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitBucket,
+		},
+	}
+
+	for _, c := range intCases {
+		if c.computedVal != c.defaultVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %d, got %d", c.defaultVal, c.computedVal)
+		}
+	}
+
+	floatCases := []struct {
+		defaultVal  float64
+		computedVal float64
+	}{
+		{
+			defaultVal:  DefaultKubernetesCloudProviderBackoffJitter,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffJitter,
+		},
+		{
+			defaultVal:  DefaultKubernetesCloudProviderBackoffExponent,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffExponent,
+		},
+		{
+			defaultVal:  DefaultKubernetesCloudProviderRateLimitQPS,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitQPS,
+		},
+	}
+
+	for _, c := range floatCases {
+		if c.computedVal != c.defaultVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %f, got %f", c.defaultVal, c.computedVal)
+		}
+	}
+
+	customCloudProviderBackoffDuration := 99
+	customCloudProviderBackoffExponent := 10.0
+	customCloudProviderBackoffJitter := 11.9
+	customCloudProviderBackoffRetries := 9
+	customCloudProviderRateLimitBucket := 37
+	customCloudProviderRateLimitQPS := 9.9
+
+	// Test cloudprovider defaults when user provides configuration
+	v = "1.8.0"
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{
+			CloudProviderBackoffDuration: customCloudProviderBackoffDuration,
+			CloudProviderBackoffExponent: customCloudProviderBackoffExponent,
+			CloudProviderBackoffJitter:   customCloudProviderBackoffJitter,
+			CloudProviderBackoffRetries:  customCloudProviderBackoffRetries,
+			CloudProviderRateLimitBucket: customCloudProviderRateLimitBucket,
+			CloudProviderRateLimitQPS:    customCloudProviderRateLimitQPS,
+		},
+	}
+	o.KubernetesConfig.SetCloudProviderBackoffDefaults()
+	o.KubernetesConfig.SetCloudProviderRateLimitDefaults()
+
+	intCasesCustom := []struct {
+		customVal   int
+		computedVal int
+	}{
+		{
+			customVal:   customCloudProviderBackoffRetries,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffRetries,
+		},
+		{
+			customVal:   customCloudProviderBackoffDuration,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffDuration,
+		},
+		{
+			customVal:   customCloudProviderRateLimitBucket,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitBucket,
+		},
+	}
+
+	for _, c := range intCasesCustom {
+		if c.computedVal != c.customVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %d, got %d", c.customVal, c.computedVal)
+		}
+	}
+
+	floatCasesCustom := []struct {
+		customVal   float64
+		computedVal float64
+	}{
+		{
+			customVal:   customCloudProviderBackoffJitter,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffJitter,
+		},
+		{
+			customVal:   customCloudProviderBackoffExponent,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffExponent,
+		},
+		{
+			customVal:   customCloudProviderRateLimitQPS,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitQPS,
+		},
+	}
+
+	for _, c := range floatCasesCustom {
+		if c.computedVal != c.customVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %f, got %f", c.customVal, c.computedVal)
+		}
+	}
+
+	// Test cloudprovider defaults when user provides *some* config values
+	v = "1.8.0"
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{
+			CloudProviderBackoffDuration: customCloudProviderBackoffDuration,
+			CloudProviderRateLimitBucket: customCloudProviderRateLimitBucket,
+			CloudProviderRateLimitQPS:    customCloudProviderRateLimitQPS,
+		},
+	}
+	o.KubernetesConfig.SetCloudProviderBackoffDefaults()
+	o.KubernetesConfig.SetCloudProviderRateLimitDefaults()
+
+	intCasesMixed := []struct {
+		expectedVal int
+		computedVal int
+	}{
+		{
+			expectedVal: DefaultKubernetesCloudProviderBackoffRetries,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffRetries,
+		},
+		{
+			expectedVal: customCloudProviderBackoffDuration,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffDuration,
+		},
+		{
+			expectedVal: customCloudProviderRateLimitBucket,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitBucket,
+		},
+	}
+
+	for _, c := range intCasesMixed {
+		if c.computedVal != c.expectedVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %d, got %d", c.expectedVal, c.computedVal)
+		}
+	}
+
+	floatCasesMixed := []struct {
+		expectedVal float64
+		computedVal float64
+	}{
+		{
+			expectedVal: DefaultKubernetesCloudProviderBackoffJitter,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffJitter,
+		},
+		{
+			expectedVal: DefaultKubernetesCloudProviderBackoffExponent,
+			computedVal: o.KubernetesConfig.CloudProviderBackoffExponent,
+		},
+		{
+			expectedVal: customCloudProviderRateLimitQPS,
+			computedVal: o.KubernetesConfig.CloudProviderRateLimitQPS,
+		},
+	}
+
+	for _, c := range floatCasesMixed {
+		if c.computedVal != c.expectedVal {
+			t.Fatalf("KubernetesConfig empty cloudprovider configs should reflect default values after SetCloudProviderBackoffDefaults(), expected %f, got %f", c.expectedVal, c.computedVal)
+		}
+	}
+}
+
 func getMockAddon(name string) KubernetesAddon {
 	return KubernetesAddon{
 		Name: name,
