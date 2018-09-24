@@ -42,7 +42,15 @@ function installGPUDrivers() {
     retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list || exit  $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
     apt_get_update
+    while fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+        echo 'Waiting for release of apt locks'
+        sleep 3
+    done
     retrycmd_if_failure 30 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
+    while fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+        echo 'Waiting for release of apt locks'
+        sleep 3
+    done
     retrycmd_if_failure 30 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=$NVIDIA_DOCKER_VERSION+docker$DOCKER_VERSION nvidia-container-runtime=$NVIDIA_CONTAINER_RUNTIME_VERSION+docker$DOCKER_VERSION || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     pkill -SIGHUP dockerd
     # Download the .run file from NVIDIA.
@@ -51,17 +59,6 @@ function installGPUDrivers() {
     retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/$GPU_DV/NVIDIA-Linux-x86_64-$GPU_DV.run -o $GPU_DEST/nvidia-drivers-$GPU_DV || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     mkdir -p $GPU_DEST/lib64 $GPU_DEST/overlay-workdir
     mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=$GPU_DEST/lib64,workdir=$GPU_DEST/overlay-workdir none /usr/lib/x86_64-linux-gnu
-}
-
-function installContainerRuntime() {
-    if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
-        installDocker
-    elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	    # Ensure we can nest virtualization
-        if grep -q vmx /proc/cpuinfo; then
-            installClearContainersRuntime
-        fi
-    fi
 }
 
 function installDocker() {
@@ -76,6 +73,22 @@ function installDocker() {
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
         apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
     fi
+}
+
+function installMoby() {
+    # TODO CURRENT_VERSION=$(moby --version | cut -d " " -f 3 | cut -d "," -f 1)
+    # TODO if [[ "$CURRENT_VERSION" = ${MOBY_VERSION} ]]; then
+        # TODO echo "moby version ${MOBY_VERSION} is already installed, skipping download"
+    # TODO else
+    # TODO fi
+    retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
+    retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
+    retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+    apt_get_remove 10 5 10 docker-engine || exit $ERR_APT_UPDATE_TIMEOUT
+    echo { \"live-restore\": true, \"log-driver\": \"json-file\", \"log-opts\":  { \"max-size\": \"50m\", \"max-file\": \"5\" } } > /etc/docker/daemon.json
+    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+    apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
 }
 
 function installKataContainersRuntime() {
@@ -122,6 +135,19 @@ function installClearContainersRuntime() {
         local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
         retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
         retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+    fi
+}
+
+function installContainerRuntime() {
+    if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+        installDocker
+    elif [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
+        installMoby
+    elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	    # Ensure we can nest virtualization
+        if grep -q vmx /proc/cpuinfo; then
+            installClearContainersRuntime
+        fi
     fi
 }
 
