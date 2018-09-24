@@ -78,22 +78,6 @@ const (
 	DefaultKubernetesCtrlMgrTerminatedPodGcThreshold = "5000"
 	// DefaultKubernetesCtrlMgrUseSvcAccountCreds is "true", see --use-service-account-credentials at https://kubernetes.io/docs/admin/kube-controller-manager/
 	DefaultKubernetesCtrlMgrUseSvcAccountCreds = "false"
-	// DefaultKubernetesCloudProviderBackoff is false to disable cloudprovider backoff implementation for API calls
-	DefaultKubernetesCloudProviderBackoff = true
-	// DefaultKubernetesCloudProviderBackoffRetries is 6, takes effect if DefaultKubernetesCloudProviderBackoff is true
-	DefaultKubernetesCloudProviderBackoffRetries = 6
-	// DefaultKubernetesCloudProviderBackoffJitter is 1, takes effect if DefaultKubernetesCloudProviderBackoff is true
-	DefaultKubernetesCloudProviderBackoffJitter = 1.0
-	// DefaultKubernetesCloudProviderBackoffDuration is 5, takes effect if DefaultKubernetesCloudProviderBackoff is true
-	DefaultKubernetesCloudProviderBackoffDuration = 5
-	// DefaultKubernetesCloudProviderBackoffExponent is 1.5, takes effect if DefaultKubernetesCloudProviderBackoff is true
-	DefaultKubernetesCloudProviderBackoffExponent = 1.5
-	// DefaultKubernetesCloudProviderRateLimit is false to disable cloudprovider rate limiting implementation for API calls
-	DefaultKubernetesCloudProviderRateLimit = true
-	// DefaultKubernetesCloudProviderRateLimitQPS is 3, takes effect if DefaultKubernetesCloudProviderRateLimit is true
-	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
-	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
-	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultKubeHeapsterDeploymentAddonName is the name of the kube-heapster-deployment addon
 	DefaultKubeHeapsterDeploymentAddonName = "kube-heapster-deployment"
 	// DefaultKubeDNSDeploymentAddonName is the name of the kube-dns-deployment addon

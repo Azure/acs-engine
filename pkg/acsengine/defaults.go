@@ -350,35 +350,19 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		if o.KubernetesConfig.CloudProviderBackoff == nil {
-			o.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(DefaultKubernetesCloudProviderBackoff)
+			o.KubernetesConfig.CloudProviderBackoff = helpers.PointerToBool(api.DefaultKubernetesCloudProviderBackoff)
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderBackoff) {
-			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
-			}
-			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
-			}
-			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
-			}
-			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
-			}
+			o.KubernetesConfig.SetCloudProviderBackoffDefaults()
 		}
 
 		if o.KubernetesConfig.CloudProviderRateLimit == nil {
-			o.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(DefaultKubernetesCloudProviderRateLimit)
+			o.KubernetesConfig.CloudProviderRateLimit = helpers.PointerToBool(api.DefaultKubernetesCloudProviderRateLimit)
 		}
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		if helpers.IsTrueBoolPointer(o.KubernetesConfig.CloudProviderRateLimit) {
-			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
-				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
-			}
-			if o.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
-				o.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
-			}
+			o.KubernetesConfig.SetCloudProviderRateLimitDefaults()
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {

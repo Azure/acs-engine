@@ -1078,3 +1078,29 @@ func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == ""
 }
+
+// SetCloudProviderBackoffDefaults sets default cloudprovider backoff config
+func (k *KubernetesConfig) SetCloudProviderBackoffDefaults() {
+	if k.CloudProviderBackoffDuration == 0 {
+		k.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+	}
+	if k.CloudProviderBackoffExponent == 0 {
+		k.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+	}
+	if k.CloudProviderBackoffJitter == 0 {
+		k.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+	}
+	if k.CloudProviderBackoffRetries == 0 {
+		k.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+	}
+}
+
+// SetCloudProviderRateLimitDefaults sets default cloudprovider rate limiter config
+func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
+	if k.CloudProviderRateLimitQPS == 0 {
+		k.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+	}
+	if k.CloudProviderRateLimitBucket == 0 {
+		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+	}
+}
