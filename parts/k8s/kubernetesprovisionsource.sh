@@ -18,6 +18,9 @@ ERR_DOCKER_DOWNLOAD_TIMEOUT=21 # Timout waiting for docker download(s)
 ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT=22 # Timeout waiting to download docker repo key
 ERR_DOCKER_APT_KEY_TIMEOUT=23 # Timeout waiting for docker apt-key
 ERR_DOCKER_START_FAIL=24 # Docker could not be started by systemctl
+ERR_MOBY_APT_LIST_TIMEOUT=25 # Timeout waiting for moby apt sources
+ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT=26 # Timeout waiting for MS GPG key download
+ERR_MOBY_INSTALL_TIMEOUT=27 # Timeout waiting for moby install
 ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
@@ -160,6 +163,24 @@ apt_get_install() {
     done
     echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
     wait_for_apt_locks
+}
+apt_get_remove() {
+    retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
+    for i in $(seq 1 $retries); do
+        while fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+            echo 'Waiting for release of apt locks'
+            sleep 3
+        done
+        timeout 30 dpkg --configure -a
+        timeout $timeout apt-get remove --purge -y ${@}
+        [ $? -eq 0  ] && break || \
+        if [ $i -eq $retries ]; then
+            return 1
+        else
+            sleep $wait_sleep
+        fi
+    done
+    echo Executed apt-get remove --purge -y \"$@\" $i times;
 }
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4

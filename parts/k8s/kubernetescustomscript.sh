@@ -73,6 +73,8 @@ fi
 
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
     ensureDocker
+elif [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
+    ensureDocker
 elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
         ensureCCProxy

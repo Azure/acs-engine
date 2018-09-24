@@ -705,6 +705,7 @@
       },
       "allowedValues": [
         "docker",
+        "moby",
         "clear-containers",
         "kata-containers",
         "containerd"
