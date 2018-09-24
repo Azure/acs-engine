@@ -1444,6 +1444,24 @@ func TestGenerateClusterID(t *testing.T) {
 	if !r.MatchString(clusterID) {
 		t.Fatal("ClusterID should be an 8 digit integer string")
 	}
+
+	p = &Properties{
+		HostedMasterProfile: &HostedMasterProfile{
+			DNSPrefix: "foodnsprefx",
+		},
+	}
+
+	clusterID = p.GenerateClusterID()
+
+	r, err = regexp.Compile("[0-9]{8}")
+
+	if err != nil {
+		t.Errorf("unexpected error while parsing regex : %s", err.Error())
+	}
+
+	if !r.MatchString(clusterID) {
+		t.Fatal("ClusterID should be an 8 digit integer string")
+	}
 }
 
 func TestGetPrimaryAvailabilitySetName(t *testing.T) {
@@ -1667,13 +1685,104 @@ func TestGetSubnetName(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			actual := test.properties.GetSubnetName()
 
 			if actual != test.expectedSubnetName {
-				t.Errorf("expect subnet name %s, but got %s", test.expectedSubnetName, actual)
+				t.Errorf("expected subnet name %s, but got %s", test.expectedSubnetName, actual)
 			}
 		})
+	}
+}
+
+func TestProperties_GetVirtualNetworkName(t *testing.T) {
+	tests := []struct {
+		name                       string
+		properties                 *Properties
+		expectedVirtualNetworkName string
+	}{
+		{
+			name: "Cluster with HostedMasterProfile and Custom VNET AgentProfiles",
+			properties: &Properties{
+				HostedMasterProfile: &HostedMasterProfile{
+					FQDN:      "fqdn",
+					DNSPrefix: "foo",
+					Subnet:    "mastersubnet",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "agentpool",
+						VMSize:              "Standard_D2_v2",
+						Count:               1,
+						AvailabilityProfile: VirtualMachineScaleSets,
+						VnetSubnetID:        "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/BazAgentSubnet",
+					},
+				},
+			},
+			expectedVirtualNetworkName: "ExampleCustomVNET",
+		},
+		{
+			name: "Cluster with HostedMasterProfile and AgentProfiles",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				HostedMasterProfile: &HostedMasterProfile{
+					FQDN:      "fqdn",
+					DNSPrefix: "foo",
+					Subnet:    "mastersubnet",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "agentpool",
+						VMSize:              "Standard_D2_v2",
+						Count:               1,
+						AvailabilityProfile: VirtualMachineScaleSets,
+					},
+				},
+			},
+			expectedVirtualNetworkName: "aks-vnet-28513887",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.GetVirtualNetworkName()
+
+			if actual != test.expectedVirtualNetworkName {
+				t.Errorf("expected virtual network name %s, but got %s", test.expectedVirtualNetworkName, actual)
+			}
+		})
+	}
+}
+
+func TestProperties_GetVNetResourceGroupName(t *testing.T) {
+	p := &Properties{
+		HostedMasterProfile: &HostedMasterProfile{
+			FQDN:      "fqdn",
+			DNSPrefix: "foo",
+			Subnet:    "mastersubnet",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: VirtualMachineScaleSets,
+				VnetSubnetID:        "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/BazAgentSubnet",
+			},
+		},
+	}
+	expectedVNETResourceGroupName := "RESOURCE_GROUP_NAME"
+
+	actual := p.GetVNetResourceGroupName()
+
+	if expectedVNETResourceGroupName != actual {
+		t.Errorf("expected vnet resource group name name %s, but got %s", expectedVNETResourceGroupName, actual)
 	}
 }
 

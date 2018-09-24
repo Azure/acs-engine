@@ -790,9 +790,9 @@ func (p *Properties) IsHostedMasterProfile() bool {
 // GetVNetResourceGroupName returns the virtual network resource group name of the cluster
 func (p *Properties) GetVNetResourceGroupName() string {
 	var vnetResourceGroupName string
-	if p.IsHostedMasterProfile() {
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
 		vnetResourceGroupName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
-	} else {
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
 		vnetResourceGroupName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
 	}
 	return vnetResourceGroupName
