@@ -11,7 +11,7 @@ installDeps
 
 DOCKER_REPO="https://apt.dockerproject.org/repo"
 DOCKER_ENGINE_VERSION="1.13.*"
-installDocker
+installMoby
 
 installClearContainersRuntime
 
