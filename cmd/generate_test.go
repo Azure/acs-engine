@@ -34,9 +34,8 @@ func TestGenerateCmdValidate(t *testing.T) {
 
 	// validate cmd with 0 args
 	err = g.validate(r, []string{})
-	t.Logf(err.Error())
-	if err == nil {
-		t.Fatalf("expected error validating 0 args")
+	if err != nil {
+		t.Fatalf("expected no error, default model should be used")
 	}
 
 	g = &generateCmd{}
