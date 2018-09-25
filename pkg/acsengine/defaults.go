@@ -707,7 +707,7 @@ func setHostedMasterProfileDefaults(a *api.Properties) {
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
 	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return certgen.OpenShiftSetDefaultCerts(a, DefaultOpenshiftOrchestratorName, GenerateClusterID(a))
+		return certgen.OpenShiftSetDefaultCerts(a, api.DefaultOpenshiftOrchestratorName, a.GetClusterID())
 	}
 
 	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {

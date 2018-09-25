@@ -18,7 +18,7 @@ func TestWriteTLSArtifacts(t *testing.T) {
 		},
 	}
 	dir := "_testoutputdir"
-	defaultDir := fmt.Sprintf("%s-%s", cs.Properties.OrchestratorProfile.OrchestratorType, GenerateClusterID(cs.Properties))
+	defaultDir := fmt.Sprintf("%s-%s", cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.GetClusterID())
 	defaultDir = path.Join("_output", defaultDir)
 	defer os.RemoveAll(dir)
 	defer os.RemoveAll(defaultDir)

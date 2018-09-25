@@ -1,6 +1,9 @@
 package api
 
 import (
+	"fmt"
+	"hash/fnv"
+	"math/rand"
 	"net"
 	neturl "net/url"
 	"strconv"
@@ -47,6 +50,7 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
+	ClusterID               string
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
@@ -63,6 +67,18 @@ type Properties struct {
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+}
+
+// ClusterMetadata represents the metadata of the ACS cluster.
+type ClusterMetadata struct {
+	SubnetName                 string `json:"subnetName,omitempty"`
+	VNetResourceGroupName      string `json:"vnetResourceGroupName,omitempty"`
+	VirtualNetworkName         string `json:"virtualNetworkName,omitempty"`
+	SecurityGroupName          string `json:"securityGroupName,omitempty"`
+	RouteTableName             string `json:"routeTableName,omitempty"`
+	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty"`
+	PrimaryScaleSetName        string `json:"primaryScaleSetName,omitempty"`
+	VMPrefix                   string `json:"vmPrefix,omitempty"`
 }
 
 // AddonProfile represents an addon for managed cluster
@@ -715,6 +731,152 @@ func (p *Properties) HasVMSSAgentPool() bool {
 		}
 	}
 	return false
+}
+
+// K8sOrchestratorName returns the 3 character orchestrator code for kubernetes-based clusters.
+func (p *Properties) K8sOrchestratorName() string {
+	if p.OrchestratorProfile.IsKubernetes() ||
+		p.OrchestratorProfile.IsOpenShift() {
+		if p.HostedMasterProfile != nil {
+			return DefaultHostedProfileMasterName
+		} else if p.OrchestratorProfile.IsOpenShift() {
+			return DefaultOpenshiftOrchestratorName
+		} else {
+			return DefaultOrchestratorName
+		}
+	}
+	return ""
+}
+
+func (p *Properties) getAgentVMPrefix() string {
+	return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
+}
+
+func (p *Properties) getMasterVMPrefix() string {
+	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
+}
+
+// GetVMPrefix returns the agent VM prefix or master VM prefix based on the cluster configuration.
+func (p *Properties) GetVMPrefix() string {
+	if p.IsHostedMasterProfile() {
+		return p.getAgentVMPrefix()
+	}
+	return p.getMasterVMPrefix()
+}
+
+// GetRouteTableName returns the route table name of the cluster.
+func (p *Properties) GetRouteTableName() string {
+	return p.GetVMPrefix() + "routetable"
+}
+
+// GetNSGName returns the name of the network security group of the cluster.
+func (p *Properties) GetNSGName() string {
+	return p.GetVMPrefix() + "nsg"
+}
+
+// GetPrimaryAvailabilitySetName returns the name of the primary availability set of the cluster
+func (p *Properties) GetPrimaryAvailabilitySetName() string {
+	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GetClusterID()
+}
+
+// GetPrimaryScaleSetName returns the name of the primary scale set node of the cluster
+func (p *Properties) GetPrimaryScaleSetName() string {
+	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GetClusterID() + "-vmss"
+}
+
+// IsHostedMasterProfile returns true if the cluster has a hosted master
+func (p *Properties) IsHostedMasterProfile() bool {
+	return p.HostedMasterProfile != nil
+}
+
+// GetVNetResourceGroupName returns the virtual network resource group name of the cluster
+func (p *Properties) GetVNetResourceGroupName() string {
+	var vnetResourceGroupName string
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
+		vnetResourceGroupName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
+		vnetResourceGroupName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	}
+	return vnetResourceGroupName
+}
+
+// GetVirtualNetworkName returns the virtual network name of the cluster
+func (p *Properties) GetVirtualNetworkName() string {
+	var vnetName string
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
+		vnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
+		vnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else {
+		vnetName = p.K8sOrchestratorName() + "-vnet-" + p.GetClusterID()
+	}
+	return vnetName
+}
+
+// GetSubnetName returns the subnet name of the cluster based on its current configuration.
+func (p *Properties) GetSubnetName() string {
+	var subnetName string
+	if p.IsHostedMasterProfile() {
+		if p.AreAgentProfilesCustomVNET() {
+			subnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	} else {
+		if p.MasterProfile.IsCustomVNET() {
+			subnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	}
+	return subnetName
+}
+
+// AreAgentProfilesCustomVNET returns true if all of the agent profiles in the clusters are configured with VNET.
+func (p *Properties) AreAgentProfilesCustomVNET() bool {
+	if p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// GetClusterID creates a unique 8 string cluster ID.
+func (p *Properties) GetClusterID() string {
+	if p.ClusterID == "" {
+		uniqueNameSuffixSize := 8
+		// the name suffix uniquely identifies the cluster and is generated off a hash
+		// from the master dns name
+		h := fnv.New64a()
+		if p.MasterProfile != nil {
+			h.Write([]byte(p.MasterProfile.DNSPrefix))
+		} else if p.HostedMasterProfile != nil {
+			h.Write([]byte(p.HostedMasterProfile.DNSPrefix))
+		} else {
+			h.Write([]byte(p.AgentPoolProfiles[0].Name))
+		}
+		rand.Seed(int64(h.Sum64()))
+		p.ClusterID = fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
+	}
+	return p.ClusterID
+}
+
+// GetClusterMetadata returns a instance of the struct type api.ClusterMetadata.
+func (p *Properties) GetClusterMetadata() *ClusterMetadata {
+	return &ClusterMetadata{
+		SubnetName:                 p.GetSubnetName(),
+		VNetResourceGroupName:      p.GetVNetResourceGroupName(),
+		VirtualNetworkName:         p.GetVirtualNetworkName(),
+		SecurityGroupName:          p.GetNSGName(),
+		RouteTableName:             p.GetRouteTableName(),
+		PrimaryAvailabilitySetName: p.GetPrimaryAvailabilitySetName(),
+		PrimaryScaleSetName:        p.GetPrimaryScaleSetName(),
+		VMPrefix:                   p.GetVMPrefix(),
+	}
 }
 
 // HasZonesForAllAgentPools returns true if all of the agent pools have zones

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -506,41 +505,6 @@ func TestIsNSeriesSKU(t *testing.T) {
 	}
 }
 
-func TestIsCustomVNET(t *testing.T) {
-
-	a := []*api.AgentPoolProfile{
-		{
-			VnetSubnetID: "subnetlink1",
-		},
-		{
-			VnetSubnetID: "subnetlink2",
-		},
-	}
-
-	if !isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
-	}
-
-	a = []*api.AgentPoolProfile{
-		{
-			VnetSubnetID: "subnetlink1",
-		},
-		{
-			VnetSubnetID: "",
-		},
-	}
-
-	if isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
-	}
-
-	a = nil
-
-	if isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
-	}
-}
-
 func TestGenerateIpList(t *testing.T) {
 	count := 3
 	forth := 240
@@ -590,27 +554,5 @@ func TestGenerateKubeConfig(t *testing.T) {
 	_, err = GenerateKubeConfig(nil, "westus2")
 	if err == nil {
 		t.Fatalf("Expected an error result from nil Properties child properties")
-	}
-}
-
-func TestGenerateClusterID(t *testing.T) {
-	p := &api.Properties{
-		AgentPoolProfiles: []*api.AgentPoolProfile{
-			{
-				Name: "foo_agent",
-			},
-		},
-	}
-
-	clusterID := GenerateClusterID(p)
-
-	r, err := regexp.Compile("[0-9]{8}")
-
-	if err != nil {
-		t.Errorf("unexpected error while parsing regex : %s", err.Error())
-	}
-
-	if !r.MatchString(clusterID) {
-		t.Fatal("ClusterID should be an 8 digit integer string")
 	}
 }

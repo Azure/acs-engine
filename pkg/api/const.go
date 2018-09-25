@@ -62,6 +62,12 @@ const (
 const (
 	// AvailabilitySet means that the vms are in an availability set
 	AvailabilitySet = "AvailabilitySet"
+	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOrchestratorName = "k8s"
+	// DefaultOpenshiftOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOpenshiftOrchestratorName = "ocp"
+	// DefaultHostedProfileMasterName specifies the 3 character orchestrator code of the clusters with hosted master profiles.
+	DefaultHostedProfileMasterName = "aks"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultFirstConsecutiveKubernetesStaticIPVMSS specifies the static IP address on Kubernetes master 0 of VMSS
@@ -72,6 +78,12 @@ const (
 	// DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS specifies the IP address offset of master 0 in VMSS
 	// when VNET integration is enabled.
 	DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS = 4
+	// DefaultSubnetNameResourceSegmentIndex specifies the default subnet name resource segment index.
+	DefaultSubnetNameResourceSegmentIndex = 10
+	// DefaultVnetResourceGroupSegmentIndex specifies the default virtual network resource segment index.
+	DefaultVnetResourceGroupSegmentIndex = 4
+	// DefaultVnetNameResourceSegmentIndex specifies the default virtual network name segment index.
+	DefaultVnetNameResourceSegmentIndex = 8
 	// VirtualMachineScaleSets means that the vms are in a virtual machine scaleset
 	VirtualMachineScaleSets = "VirtualMachineScaleSets"
 	// ScaleSetPriorityRegular is the default ScaleSet Priority
@@ -164,11 +176,15 @@ const (
 	NetworkPolicyNone = "none"
 	// NetworkPluginKubenet is the string expression for the kubenet NetworkPlugin config
 	NetworkPluginKubenet = "kubenet"
-	// NetworkPluginAzure is thee string expression for Azure CNI plugin.
+	// NetworkPluginAzure is the string expression for Azure CNI plugin.
 	NetworkPluginAzure = "azure"
 	// DefaultSinglePlacementGroup determines the acs-engine provided default for supporting large VMSS
 	// (true = single placement group 0-100 VMs, false = multiple placement group 0-1000 VMs)
 	DefaultSinglePlacementGroup = true
+	// ARMNetworkNamespace is the ARM-specific namespace for ARM's network providers.
+	ARMNetworkNamespace = "Microsoft.Networks"
+	// ARMVirtualNetworksResourceType is the ARM resource type for virtual network resources of ARM.
+	ARMVirtualNetworksResourceType = "virtualNetworks"
 )
 
 const (

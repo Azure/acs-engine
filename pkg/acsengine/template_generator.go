@@ -206,7 +206,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.IsVirtualMachineScaleSets()
 		},
 		"IsHostedMaster": func() bool {
-			return cs.Properties.HostedMasterProfile != nil
+			return cs.Properties.IsHostedMasterProfile()
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
@@ -395,7 +395,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSecurityRules(ports)
 		},
 		"GetUniqueNameSuffix": func() string {
-			return GenerateClusterID(cs.Properties)
+			return cs.Properties.GetClusterID()
 		},
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(cs.Properties)
@@ -802,11 +802,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			imageRef := cs.Properties.MasterProfile.ImageRef
 			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
 		},
+		"GetRouteTableName": func() string {
+			return cs.Properties.GetRouteTableName()
+		},
+		"GetNSGName": func() string {
+			return cs.Properties.GetNSGName()
+		},
 		"GetMasterEtcdServerPort": func() int {
 			return DefaultMasterEtcdServerPort
 		},
 		"GetMasterEtcdClientPort": func() int {
 			return DefaultMasterEtcdClientPort
+		},
+		"GetPrimaryAvailabilitySetName": func() string {
+			return cs.Properties.GetPrimaryAvailabilitySetName()
+		},
+		"GetPrimaryScaleSetName": func() string {
+			return cs.Properties.GetPrimaryScaleSetName()
 		},
 		"UseCloudControllerManager": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
@@ -907,7 +919,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return a - b
 		},
 		"IsCustomVNET": func() bool {
-			return isCustomVNET(cs.Properties.AgentPoolProfiles)
+			return cs.Properties.AreAgentProfilesCustomVNET()
 		},
 		"quote": strconv.Quote,
 		"shellQuote": func(s string) string {
