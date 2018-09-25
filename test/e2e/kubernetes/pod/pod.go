@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -136,9 +137,9 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 }
 
 // RunLinuxPod will create a pod that runs a bash command
-// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+// --overrides := `"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
 func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
-	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	overrides := `{ "spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	var out []byte
 	var err error
@@ -157,6 +158,78 @@ func RunLinuxPod(image, name, namespace, command string, printOutput bool) (*Pod
 		return nil, err
 	}
 	return p, nil
+}
+
+// RunWindowsPod will create a pod that runs a powershell command
+// --overrides := `"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
+func RunWindowsPod(image, name, namespace, command string, printOutput bool) (*Pod, error) {
+	overrides := `{ "spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}`
+	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--restart=Never", "--overrides", overrides, "--command", "--", "powershell", command)
+	var out []byte
+	var err error
+	if printOutput {
+		out, err = util.RunAndLogCommand(cmd)
+	} else {
+		out, err = cmd.CombinedOutput()
+	}
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	p, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Pod %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return p, nil
+}
+
+type podRunnerCmd func(string, string, string, string, bool) (*Pod, error)
+
+// RunCommandMultipleTimes runs the same command 'desiredAttempts' times
+func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command string, desiredAttempts int) (int, error) {
+	var successfulAttempts int
+	var actualAttempts int
+	logResults := func() {
+		log.Printf("Ran command on %d of %d desired attempts with %d successes\n\n", actualAttempts, desiredAttempts, successfulAttempts)
+	}
+	defer logResults()
+	for i := 0; i < desiredAttempts; i++ {
+		actualAttempts++
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		podName := fmt.Sprintf("%s-%d", name, r.Intn(99999))
+		var p *Pod
+		var err error
+		if i < 1 {
+			// Print the first attempt
+			p, err = podRunnerCmd(image, podName, "default", command, true)
+		} else {
+			p, err = podRunnerCmd(image, podName, "default", command, false)
+		}
+
+		if err != nil {
+			return successfulAttempts, err
+		}
+		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
+		out, err := util.RunAndLogCommand(cmd)
+		if err != nil {
+			log.Printf("Unable to get logs from pod %s\n", podName)
+		} else {
+			log.Printf("%s\n", string(out[:]))
+		}
+
+		err = p.Delete()
+		if err != nil {
+			return successfulAttempts, err
+		}
+
+		if succeeded {
+			successfulAttempts++
+		}
+	}
+
+	return successfulAttempts, nil
 }
 
 // GetAll will return all pods in a given namespace
@@ -553,7 +626,7 @@ func (p *Pod) ValidateOmsAgentLogs(execCmdString string, sleep, duration time.Du
 }
 
 // CheckWindowsOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
-func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (bool, error) {
+func (p *Pod) CheckWindowsOutboundConnection(url string, sleep, duration time.Duration) (bool, error) {
 	exp, err := regexp.Compile(`(StatusCode\s*:\s*200)`)
 	if err != nil {
 		log.Printf("Error while trying to create regex for windows outbound check:%s\n", err)
@@ -569,7 +642,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 			case <-ctx.Done():
 				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
-				out, err := p.Exec("--", "powershell", "iwr", "-UseBasicParsing", "-TimeoutSec", "60", "www.bing.com")
+				out, err := p.Exec("--", "powershell", "iwr", "-UseBasicParsing", "-TimeoutSec", "60", url)
 				if err == nil {
 					matched := exp.MatchString(string(out))
 					if matched {

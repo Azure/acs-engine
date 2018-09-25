@@ -107,73 +107,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have stable external container networking", func() {
-			var successes int
-			attempts := cfg.StabilityIterations
-			for i := 0; i < attempts; i++ {
-				// Validate basic outbound networking
-				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				var p *pod.Pod
-				var err error
-				if i < 1 {
-					// Print the first attempt
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", true)
-				} else {
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53", false)
-				}
-				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
-				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
-				out, err := util.RunAndLogCommand(cmd)
-				if err != nil {
-					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
-				} else {
-					log.Printf("%s\n", string(out[:]))
-				}
-				if succeeded {
-					successes++
-				}
-				By("Cleaning up after ourselves")
-				err = p.Delete()
-				Expect(err).NotTo(HaveOccurred())
-			}
-			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
-			Expect(successes).To(Equal(attempts))
+			name := fmt.Sprintf("alpine-%s", cfg.Name)
+			command := fmt.Sprintf("nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53")
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
 		It("should have stable internal container networking", func() {
-			var successes int
-			attempts := cfg.StabilityIterations
-			for i := 0; i < attempts; i++ {
-				// Validate basic in-cluster networking
-				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				var p *pod.Pod
-				var err error
-				if i < 1 {
-					// Print the first attempt
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", true)
-				} else {
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz kubernetes 443", false)
-				}
-				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
-				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
-				out, err := util.RunAndLogCommand(cmd)
-				if err != nil {
-					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
-				} else {
-					log.Printf("%s\n", string(out[:]))
-				}
-				if succeeded {
-					successes++
-				}
-				By("Cleaning up after ourselves")
-				err = p.Delete()
-				Expect(err).NotTo(HaveOccurred())
-			}
-			log.Printf("Container internal networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
-			Expect(successes).To(Equal(attempts))
+			name := fmt.Sprintf("alpine-%s", cfg.Name)
+			command := fmt.Sprintf("nc -vz kubernetes 443")
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
 		It("should have functional DNS", func() {
@@ -328,38 +274,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(ready).To(Equal(true))
 
 			By("Ensuring that we have stable DNS resolution from a container")
-			var successes int
-			attempts := cfg.StabilityIterations
-			for i := 0; i < attempts; i++ {
-				// Validate basic outbound networking
-				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				alpinePodName := fmt.Sprintf("alpine-%s-%d", cfg.Name, r.Intn(99999))
-				var p *pod.Pod
-				var err error
-				if i < 1 {
-					// Print the first attempt
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", true)
-				} else {
-					p, err = pod.RunLinuxPod("alpine", alpinePodName, "default", "nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80", false)
-				}
-				Expect(err).NotTo(HaveOccurred())
-				succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
-				cmd := exec.Command("kubectl", "logs", alpinePodName, "-n", "default")
-				out, err := util.RunAndLogCommand(cmd)
-				if err != nil {
-					log.Printf("Unable to get logs from pod %s\n", alpinePodName)
-				} else {
-					log.Printf("%s\n", string(out[:]))
-				}
-				if succeeded {
-					successes++
-				}
-				By("Cleaning up after ourselves")
-				err = p.Delete()
-				Expect(err).NotTo(HaveOccurred())
-			}
-			log.Printf("Container external networking validation succeeded on %d of %d test attempts\n\n", successes, attempts)
-			Expect(successes).To(Equal(attempts))
+			name := fmt.Sprintf("alpine-%s", cfg.Name)
+			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
 		It("should have kube-dns running", func() {
@@ -1181,7 +1100,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
 				for _, iisPod := range iisPods {
-					pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
@@ -1190,6 +1109,79 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				err = iisDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("No windows agent was provisioned for this Cluster Definition")
+			}
+		})
+
+		It("should be able to resolve DNS across windows and linux deployments", func() {
+			if eng.HasWindowsAgents() {
+				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+				windowsServerImage := "microsoft/windowsservercore:1803"
+
+				By("Creating a deployment running IIS")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				windowsDeploymentName := fmt.Sprintf("iis-dns-%s-%v", cfg.Name, r.Intn(99999))
+				windowsIISDeployment, err := deployment.CreateWindowsDeploy(iisImage, windowsDeploymentName, "default", 80, -1)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Creating a nginx deployment")
+				nginxDeploymentName := fmt.Sprintf("nginx-dns-%s-%v", cfg.Name, r.Intn(99999))
+				linuxNginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", nginxDeploymentName, "default", "")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensure there is a Running nginx pod")
+				running, err := pod.WaitOnReady(nginxDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Ensure there is a Running iis pod")
+				running, err = pod.WaitOnReady(windowsDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Exposing a internal service for the linux nginx deployment")
+				err = linuxNginxDeploy.Expose("ClusterIP", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				linuxService, err := service.Get(nginxDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Exposing a internal service for the windows iis deployment")
+				err = windowsIISDeployment.Expose("ClusterIP", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				windowsService, err := service.Get(windowsDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Connecting to Windows from another Windows deployment")
+				name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
+				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(successes).To(Equal(cfg.StabilityIterations))
+
+				By("Connecting to Linux from Windows deployment")
+				name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
+				command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(successes).To(Equal(cfg.StabilityIterations))
+
+				By("Connecting to Windows from Linux deployment")
+				name = fmt.Sprintf("linux-2-windows-%s", cfg.Name)
+				command = fmt.Sprintf("wget %s", windowsService.Metadata.Name)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(successes).To(Equal(cfg.StabilityIterations))
+
+				By("Cleaning up after ourselves")
+				err = windowsIISDeployment.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = linuxNginxDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = windowsService.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = linuxService.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
