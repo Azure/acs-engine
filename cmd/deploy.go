@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -122,41 +121,6 @@ func (dc *deployCmd) validateArgs(cmd *cobra.Command, args []string) error {
 		return errors.New("--location must be specified")
 	}
 	dc.location = helpers.NormalizeAzureRegion(dc.location)
-
-	return nil
-}
-
-func (dc *deployCmd) mergeAPIModel() error {
-	var err error
-
-	if dc.apimodelPath == "" {
-		log.Infoln("no --api-model was specified, using default model")
-		f, err := ioutil.TempFile("", fmt.Sprintf("%s-default-api-model_%s-%s_", filepath.Base(os.Args[0]), BuildSHA, GitTreeState))
-		if err != nil {
-			return errors.Wrap(err, "error creating temp file for default API model")
-		}
-		log.Infoln("default api model generated at", f.Name())
-
-		defer f.Close()
-		if err := writeDefaultModel(f); err != nil {
-			return err
-		}
-		dc.apimodelPath = f.Name()
-	}
-
-	// if --set flag has been used
-	if len(dc.set) > 0 {
-		m := make(map[string]transform.APIModelValue)
-		transform.MapValues(m, dc.set)
-
-		// overrides the api model and generates a new file
-		dc.apimodelPath, err = transform.MergeValuesWithAPIModel(dc.apimodelPath, m)
-		if err != nil {
-			return errors.Wrapf(err, "error merging --set values with the api model: %s", dc.apimodelPath)
-		}
-
-		log.Infoln(fmt.Sprintf("new api model file has been generated during merge: %s", dc.apimodelPath))
-	}
 
 	return nil
 }
