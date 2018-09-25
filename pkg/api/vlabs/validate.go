@@ -981,7 +981,7 @@ func (w *WindowsProfile) Validate(orchestratorType string) error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return errors.New("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
-	if validatePasswordComplexity(w.AdminUsername, w.AdminPassword) == false {
+	if !validatePasswordComplexity(w.AdminUsername, w.AdminPassword) {
 		return errors.New("WindowsProfile.AdminPassword complexity not met. Windows password should contain 3 of the following categories - uppercase letters(A-Z), lowercase(a-z) letters, digits(0-9), special characters (~!@#$%^&*_-+=`|\\(){}[]:;<>,.?/')")
 	}
 	return validateKeyVaultSecrets(w.Secrets, true)

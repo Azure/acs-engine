@@ -107,11 +107,7 @@ func (az *AzureClient) CreateApp(ctx context.Context, appName, appURL string, re
 // DeleteApp is a simpler method for deleting an application and the associated spn
 func (az *AzureClient) DeleteApp(ctx context.Context, applicationName, applicationObjectID string) (autorest.Response, error) {
 	log.Debugf("ad: deleting application with name=%q", applicationName)
-	applicationResp, err := az.DeleteGraphApplication(ctx, applicationObjectID)
-	if err != nil {
-		return applicationResp, err
-	}
-	return applicationResp, nil
+	return az.DeleteGraphApplication(ctx, applicationObjectID)
 }
 
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
