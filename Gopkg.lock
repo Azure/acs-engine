@@ -2,14 +2,14 @@
 
 
 [[projects]]
-  digest = "1:f7ff1934e26ce1443f3895ce5d7c48b5ff9be0a1f267406a73f4ba62d41df549"
+  digest = "1:979a821d56fbe670625f96f9bc54ea17f74e2f75472dcc7811711c9955b8ca14"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/apimanagement/mgmt/2017-03-01/apimanagement",
     "services/authorization/mgmt/2015-07-01/authorization",
     "services/compute/mgmt/2018-04-01/compute",
     "services/graphrbac/1.6/graphrbac",
-    "services/network/mgmt/2018-05-01/network",
+    "services/network/mgmt/2018-08-01/network",
     "services/preview/msi/mgmt/2015-08-31-preview/msi",
     "services/resources/mgmt/2016-06-01/subscriptions",
     "services/resources/mgmt/2018-05-01/resources",
@@ -18,8 +18,8 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "520918e6c8e8e1064154f51d13e02fad92b287b8"
-  version = "v19.0.0"
+  revision = "d3bcaa706ac10b18784811ff31e43be635159013"
+  version = "v21.0.0"
 
 [[projects]]
   digest = "1:aafd4229d26448b58665f4067d3fa5e945a2c90a30a639346767c21e4be9beb7"
@@ -650,7 +650,7 @@
     "github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization",
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac",
-    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network",
+    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-08-01/network",
     "github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-06-01/subscriptions",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
