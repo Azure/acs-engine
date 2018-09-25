@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:5b573ff56f04078309d396dca9f9a03c53926fd487420c4e3a157ece217ebedb"
+  digest = "1:979a821d56fbe670625f96f9bc54ea17f74e2f75472dcc7811711c9955b8ca14"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/apimanagement/mgmt/2017-03-01/apimanagement",
@@ -18,8 +18,8 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "f912cddf81bffc1569ccd89719a36acb64ca3035"
-  version = "v20.2.0"
+  revision = "d3bcaa706ac10b18784811ff31e43be635159013"
+  version = "v21.0.0"
 
 [[projects]]
   digest = "1:aafd4229d26448b58665f4067d3fa5e945a2c90a30a639346767c21e4be9beb7"
