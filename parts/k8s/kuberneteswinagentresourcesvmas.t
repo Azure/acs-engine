@@ -35,6 +35,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
 {{if .IsCustomVNET}}
 	    "networkSecurityGroup": {
 		    "id": "[variables('nsgID')]"
@@ -48,7 +49,6 @@
               {{if eq $seq 1}}
               "primary": true,
               {{end}}
-              "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
