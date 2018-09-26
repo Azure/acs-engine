@@ -674,6 +674,14 @@ Set-Explorer
     New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main" -Name "Start Page" -Type String -Value http://bing.com
 }
 
+function
+Update-ServiceFailureActions()
+{
+    sc.exe failure "kubelet" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "kubeproxy" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "docker" actions= restart/60000/restart/60000/restart/60000 reset= 900
+}
+
 try
 {
     # Set to false for debugging.  This will output the start script to
@@ -722,6 +730,9 @@ try
 
         Write-Log "Start preProvisioning script"
         PREPROVISION_EXTENSION
+
+        Write-Log "Update service failure actions"
+        Update-ServiceFailureActions
 
         Write-Log "Setup Complete, reboot computer"
         Restart-Computer
