@@ -1,6 +1,6 @@
 {{if HasWindowsCustomImage}}
     {"type": "Microsoft.Compute/images",
-      "apiVersion": "2017-12-01",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "name": "{{.Name}}CustomWindowsImage",
       "location": "[variables('location')]",
       "properties": {
@@ -69,7 +69,7 @@
    {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "properties":
         {
             "platformFaultDomainCount": 2,
@@ -81,7 +81,7 @@
     },
 {{else if .IsStorageAccount}}
     {
-      "apiVersion": "[variables('apiVersionStorage')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "loop"
@@ -102,7 +102,7 @@
     },
     {{if .HasDisks}}
     {
-      "apiVersion": "[variables('apiVersionStorage')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "datadiskLoop"
@@ -131,11 +131,7 @@
     },
 {{end}}
     {
-      {{if .IsManagedDisks}}
-        "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      {{else}}
-        "apiVersion": "[variables('apiVersionDefault')]",
-      {{end}}
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
@@ -203,7 +199,7 @@
 {{if .IsStorageAccount}}
             ,"name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]"
             ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionDefault')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '-osdisk.vhd')]"
             }
 {{end}}
 {{if ne .OSDiskSizeGB 0}}
@@ -216,7 +212,7 @@
     },
     {{if UseManagedIdentity}}
     {
-      "apiVersion": "2014-10-01-preview",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
          "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
@@ -235,7 +231,7 @@
           "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
           "name": "vmLoopNode"
         },
-        "apiVersion": "2015-05-01-preview",
+        "apiVersion": "[variables('apiVersionDefault')]",
         "location": "[resourceGroup().location]",
         "dependsOn": [
           "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",

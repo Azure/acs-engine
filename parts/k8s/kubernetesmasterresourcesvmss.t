@@ -1,6 +1,6 @@
 {{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
-    "apiVersion": "2014-10-01-preview",
+    "apiVersion": "[variables('apiVersionDefault')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -13,7 +13,7 @@
   {
     "type": "Microsoft.Storage/storageAccounts",
     "name": "[variables('clusterKeyVaultName')]",
-    "apiVersion": "[variables('apiVersionStorage')]",
+    "apiVersion": "[variables('apiVersionDefault')]",
     "location": "[variables('location')]",
     "properties": {
       "accountType": "Standard_LRS"
@@ -22,7 +22,7 @@
   {
     "type": "Microsoft.KeyVault/vaults",
     "name": "[variables('clusterKeyVaultName')]",
-    "apiVersion": "[variables('apiVersionKeyVault')]",
+    "apiVersion": "[variables('apiVersionDefault')]",
     "location": "[variables('location')]",
     {{ if UseManagedIdentity}}
     "dependsOn": 
@@ -186,7 +186,7 @@
 },
 {{end}}
 {
-  "apiVersion": "2018-04-01",
+  "apiVersion": "[variables('apiVersionDefault')]",
   "location": "[variables('location')]",
   "name": "[variables('masterPublicIPAddressName')]",
   "properties": {
@@ -208,7 +208,7 @@
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('masterLbName')]",
     "location": "[variables('location')]",
-    "apiVersion": "2018-04-01",
+    "apiVersion": "[variables('apiVersionDefault')]",
     "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
     ],
@@ -282,7 +282,7 @@
     }
 },
 {
-    "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+    "apiVersion": "[variables('apiVersionDefault')]",
     "dependsOn": [
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"

@@ -1,6 +1,6 @@
 {{if .MasterProfile.IsManagedDisks}}
     {
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
@@ -20,7 +20,7 @@
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
-      "apiVersion": "[variables('apiVersionStorage')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
 {{if not IsPrivateCluster}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
@@ -410,11 +410,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('jumpboxVMName')]",
-      {{if JumpboxIsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
-      {{end}}
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
@@ -455,7 +451,7 @@
               "osDisk": {
                 "createOption": "fromImage",
                 "vhd": {
-                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',parameters('jumpboxVMName'),'jumpboxdisk.vhd')]"
+                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionDefault')).primaryEndpoints.blob,'vhds/',parameters('jumpboxVMName'),'jumpboxdisk.vhd')]"
                 },
                 "name": "[variables('jumpboxOSDiskName')]"
               },
@@ -478,7 +474,7 @@
     {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('jumpboxStorageAccountName')]",
-            "apiVersion": "[variables('apiVersionStorage')]",
+            "apiVersion": "[variables('apiVersionDefault')]",
             "location": "[variables('location')]",
             "properties": {
                 "accountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
@@ -628,7 +624,7 @@
      {
        "type": "Microsoft.Storage/storageAccounts",
        "name": "[variables('clusterKeyVaultName')]",
-       "apiVersion": "[variables('apiVersionStorage')]",
+       "apiVersion": "[variables('apiVersionDefault')]",
        "location": "[variables('location')]",
        "properties": {
          "accountType": "Standard_LRS"
@@ -637,7 +633,7 @@
      {
        "type": "Microsoft.KeyVault/vaults",
        "name": "[variables('clusterKeyVaultName')]",
-       "apiVersion": "[variables('apiVersionKeyVault')]",
+       "apiVersion": "[variables('apiVersionDefault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
        "dependsOn": 
@@ -720,15 +716,7 @@
      },
  {{end}}
     {
-    {{if UserAssignedIDEnabled}}
-      "apiVersion": "[variables('apiVersionUserMSI')]",
-    {{else}}
-    {{if .MasterProfile.IsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-    {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
-    {{end}}
-    {{end}}
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -817,7 +805,7 @@
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
               {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
-                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionDefault')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
               {{end}}
             }
@@ -839,7 +827,7 @@
 {{if .MasterProfile.IsStorageAccount}}
             ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionDefault')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
 {{end}}
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
@@ -854,7 +842,7 @@
     {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "2014-10-01-preview",
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
@@ -874,7 +862,7 @@
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
        },
-       "apiVersion": "2015-05-01-preview",
+       "apiVersion": "[variables('apiVersionDefault')]",
        "location": "[resourceGroup().location]",
        {{if (not UserAssignedIDEnabled)}}
        "dependsOn": [

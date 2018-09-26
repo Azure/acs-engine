@@ -60,7 +60,7 @@
       {
         "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
         "name": "[variables('userAssignedID')]",
-        "apiVersion": "2015-08-31-PREVIEW",
+        "apiVersion": "[variables('apiVersionDefault')]",
         "location": "[variables('location')]"
       },
     {{end}}

@@ -75,8 +75,7 @@
     "masterOffset": "",
     "masterIpAddressCount": {{.MasterProfile.IPAddressCount}},
 {{end}}
-    "apiVersionDefault": "2016-03-30",
-    "apiVersionLinkDefault": "2015-01-01",
+    "apiVersionDefault": "2018-06-01",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
@@ -95,7 +94,6 @@
     "sshKeyPath": "[concat('/home/',parameters('linuxAdminUsername'),'/.ssh/authorized_keys')]",
 
 {{if .HasStorageAccountDisks}}
-    "apiVersionStorage": "2015-06-15",
     "maxVMsPerStorageAccount": 20,
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "dataStorageAccountPrefixSeed": 97,
@@ -108,13 +106,6 @@
     "storageAccountPrefixes": [],
     "storageAccountBaseName": "",
 {{end}}
-{{if UserAssignedIDEnabled}}
-    "apiVersionUserMSI": "2018-06-01",
-{{end}}
-{{if .HasManagedDisks}}
-    "apiVersionStorageManagedDisks": "2016-04-30-preview",
-{{end}}
-    "apiVersionVirtualMachineScaleSets": "2017-12-01",
 {{if not IsHostedMaster}}
   {{if .MasterProfile.IsStorageAccount}}
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
@@ -275,10 +266,6 @@
     , "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
-     ,"apiVersionKeyVault": "2016-10-01",
-     {{if not .HasStorageAccountDisks}}
-     "apiVersionStorage": "2015-06-15",
-     {{end}}
      "clusterKeyVaultName": "[take(concat('kv', tolower(uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),parameters('nameSuffix'))))), 22)]"
 {{else}}
     ,"clusterKeyVaultName": ""
