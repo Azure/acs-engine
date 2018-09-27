@@ -50,6 +50,6 @@ metadata:
 data:
   ip-masq-agent: |-
     nonMasqueradeCIDRs:
-      <kubernetesNonMasqueradeCidr>
+      <kubernetesNonMasqueradeCidr>,168.63.129.16/32
     masqLinkLocal: true
     resyncInterval: 60s
