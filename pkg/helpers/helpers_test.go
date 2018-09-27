@@ -5,6 +5,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"math/rand"
+	"os/exec"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -230,4 +232,87 @@ func TestEqualError(t *testing.T) {
 			t.Errorf("expected EqualError to return %t for errors %s and %s", test.expected, test.errA, test.errB)
 		}
 	}
+}
+
+func TestBashEscapeString(t *testing.T) {
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"Hel'lo'p\"la`ygr'ound'",
+			`'Hel'"'"'lo'"'"'p"la` + "`" + `ygr'"'"'ound'"'"`,
+		},
+		{
+			`"PwEV@QG7/PYt"re9`,
+			`'"PwEV@QG7/PYt"re9'`,
+		},
+		{
+			"",
+			"",
+		},
+		{
+			"plaintext1234",
+			`'plaintext1234'`,
+		},
+		{
+			"Hel'lo'p\"la`ygr'ound",
+			`'Hel'"'"'lo'"'"'p"la` + "`" + `ygr'"'"ound`,
+		},
+		{
+			`conse''cutive`,
+			`'conse'"'"''"'"cutive`,
+		},
+		{
+			"conse\\\\cutive",
+			`'conse\\cutive'`,
+		},
+		{
+			"consec\"\"utive",
+			`'consec""utive'`,
+		},
+		{
+			`PwEV@QG7/PYt"re9`,
+			`'PwEV@QG7/PYt"re9'`,
+		},
+		{
+			"Lnsr@191",
+			"'Lnsr@191'",
+		},
+		{
+			"Jach#321",
+			"'Jach#321'",
+		},
+		{
+			"Bgmo%219",
+			"'Bgmo%219'",
+		},
+		{
+			"@#$%^&*-_!+=[]{}|\\:,.?/~\"();" + "`",
+			`'@#$%^&*-_!+=[]{}|\:,.?/~"();` + "`'",
+		},
+	}
+
+	for _, test := range tests {
+		actual := BashEscapeString(test.input)
+
+		if actual != test.expected {
+			t.Errorf("expected %s but got %s", test.expected, actual)
+		}
+
+		if runtime.GOOS != "windows" {
+			out, err := exec.Command("/bin/bash", "-c", "testvar="+actual+"; echo $testvar").Output()
+			if err != nil {
+				t.Errorf("unexpected error : %s", err.Error())
+			}
+
+			o := string(out[:len(out)-1]) //dropping last character as echo prints out a new line as the last character
+
+			if o != test.input {
+				t.Errorf("failed in Bash output test. Expected %s but got %s", test, o)
+			}
+		}
+	}
+
 }
