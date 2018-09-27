@@ -4,11 +4,13 @@
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
-        {
-            "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 3,
-		        "managed" : true
-        },
+      {
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3
+      },
+      "sku": {
+        "name": "Aligned"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{else if .MasterProfile.IsStorageAccount}}
