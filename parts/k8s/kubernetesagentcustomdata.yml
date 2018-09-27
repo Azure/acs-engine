@@ -15,6 +15,13 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
 
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
+
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
   encoding: gzip
