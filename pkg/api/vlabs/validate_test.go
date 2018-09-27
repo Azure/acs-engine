@@ -414,14 +414,15 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			t.Error("should not error on valid --non-masquerade-cidr")
 		}
 
-		c = KubernetesConfig{
+		// Re-implement these tests if we re-introduce --ip-maquerade-cidr
+		/*c = KubernetesConfig{
 			KubeletConfig: map[string]string{
 				"--non-masquerade-cidr": "10.120.1.0/invalid",
 			},
 		}
 		if err := c.Validate(k8sVersion, false); err == nil {
 			t.Error("should error on invalid --non-masquerade-cidr")
-		}
+		}*/
 
 		c = KubernetesConfig{
 			MaxPods: KubernetesMinMaxPods - 1,
