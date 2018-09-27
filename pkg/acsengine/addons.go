@@ -184,6 +184,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 		Enabled: helpers.PointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
 			{
+				Name:           IPMASQAgentAddonName,
 				CPURequests:    "50m",
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",

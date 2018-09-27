@@ -577,6 +577,7 @@
       "type": "string"
     },
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsIPMasqAgentEnabled}}
     "kubernetesIPMasqAgentCPURequests": {
       "metadata": {
         "description": "IP Masq Agent CPU Requests"
@@ -601,6 +602,7 @@
       },
       "type": "string"
     },
+{{end}}
     "kubernetesPodInfraContainerSpec": {
       "metadata": {
         "description": "The container spec for pod infra."
