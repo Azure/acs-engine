@@ -160,6 +160,8 @@ const (
 	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
 	// AzureNetworkPolicyAddonName is the name of the Azure CNI networkmonitor addon
 	AzureNetworkPolicyAddonName = "azure-npm-daemonset"
+	// IPMASQAgentAddonName is the name of the ip masq agent addon
+	IPMASQAgentAddonName = "ip-masq-agent"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

@@ -188,10 +188,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-{{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
-{{end}}
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}

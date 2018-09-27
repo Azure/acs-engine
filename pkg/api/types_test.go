@@ -1374,6 +1374,37 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsIPMasqAgentEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsIPMasqAgentEnabled()
+	enabledDefault := true
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return %t when no ip-masq-agent addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(IPMASQAgentAddonName))
+	enabled = c.IsIPMasqAgentEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return true when ip-masq-agent adddon has been specified, instead returned %t", enabled)
+	}
+	b := false
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    IPMASQAgentAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsIPMasqAgentEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return false when ip-masq-agent addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestCloudProviderDefaults(t *testing.T) {
 	// Test cloudprovider defaults when no user-provided values
 	v := "1.8.0"

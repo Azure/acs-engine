@@ -577,6 +577,30 @@
       "type": "string"
     },
 {{end}}
+    "kubernetesIPMasqAgentCPURequests": {
+      "metadata": {
+        "description": "IP Masq Agent CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentMemoryRequests": {
+      "metadata": {
+        "description": "IP Masq Agent Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentCPULimit": {
+      "metadata": {
+        "description": "IP Masq Agent CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentMemoryLimit": {
+      "metadata": {
+        "description": "IP Masq Agent Memory Limit"
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       "metadata": {
         "description": "The container spec for pod infra."

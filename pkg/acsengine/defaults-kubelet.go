@@ -55,7 +55,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
-		"--non-masquerade-cidr":             o.KubernetesConfig.ClusterSubnet,
+		"--non-masquerade-cidr":             "0.0.0.0",
 		"--cloud-provider":                  "azure",
 		"--cloud-config":                    "/etc/kubernetes/azure.json",
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
