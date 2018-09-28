@@ -120,13 +120,21 @@ type Status struct {
 }
 
 // CreatePodFromFile will create a Pod from file with a name
-func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
-	cmd := exec.Command("kubectl", "apply", "-f", filename)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error trying to create Pod %s:%s\n", name, string(out))
-		return nil, err
+func CreatePodFromFile(filename, name, namespace string, retries int) (*Pod, error) {
+	var kubectlApplyOutput []byte
+	var kubectlApplyError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "apply", "-f", filename)
+		util.PrintCommand(cmd)
+		kubectlApplyOutput, kubectlApplyError = cmd.CombinedOutput()
+		if kubectlApplyError != nil {
+			continue
+		}
+		break
+	}
+	if kubectlApplyError != nil {
+		log.Printf("Error trying to create Pod %s:%s\n", name, string(kubectlApplyOutput))
+		return nil, kubectlApplyError
 	}
 	pod, err := Get(name, namespace)
 	if err != nil {
