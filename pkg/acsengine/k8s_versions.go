@@ -17,7 +17,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
 		"kube-dns":                         "k8s-dns-kube-dns-amd64:1.14.10",
-		"addon-manager":                    "kube-addon-manager-amd64:v8.6",
+		"addon-manager":                    "kube-addon-manager-amd64:v8.7",
 		"dnsmasq":                          "k8s-dns-dnsmasq-nanny-amd64:1.14.10",
 		"pause":                            "pause-amd64:3.1",
 		"tiller":                           "tiller:v2.8.1",
