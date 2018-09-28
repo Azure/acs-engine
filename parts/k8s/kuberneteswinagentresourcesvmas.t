@@ -35,7 +35,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
+        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabledWindows}}",
 {{if .IsCustomVNET}}
 	    "networkSecurityGroup": {
 		    "id": "[variables('nsgID')]"
