@@ -205,6 +205,7 @@
       "metadata": {
         "description": "kubernetesNonMasqueradeCidr cluster subnet"
       },
+      "defaultValue": "{{GetDefaultVNETCIDR}}",
       "type": "string"
     },
     "kubernetesKubeletClusterDomain": {
@@ -721,7 +722,7 @@
       "type": "int"
     },
     "vnetCidr": {
-      "defaultValue": {{GetDefaultVNETCIDR}},
+      "defaultValue": "{{GetDefaultVNETCIDR}}",
       "metadata": {
         "description": "Cluster vnet cidr"
       },
