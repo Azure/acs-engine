@@ -36,9 +36,9 @@ func (g *Ginkgo) Run() error {
 	testDir := fmt.Sprintf("test/e2e/%s", g.Config.Orchestrator)
 	var cmd *exec.Cmd
 	if g.Config.GinkgoFocus != "" {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-r", "-v", "--focus", g.Config.GinkgoFocus, testDir)
+		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", "--focus", g.Config.GinkgoFocus, testDir)
 	} else {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-r", "-v", testDir)
+		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", testDir)
 	}
 	util.PrintCommand(cmd)
 	cmd.Stdout = os.Stdout
