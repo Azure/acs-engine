@@ -78,7 +78,7 @@ type ClusterMetadata struct {
 	RouteTableName             string `json:"routeTableName,omitempty"`
 	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty"`
 	PrimaryScaleSetName        string `json:"primaryScaleSetName,omitempty"`
-	VMPrefix                   string `json:"vmPrefix,omitempty"`
+	ResourcePrefix             string `json:"resourcePrefix,omitempty"`
 }
 
 // AddonProfile represents an addon for managed cluster
@@ -748,30 +748,38 @@ func (p *Properties) K8sOrchestratorName() string {
 	return ""
 }
 
-func (p *Properties) getAgentVMPrefix() string {
-	return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
+func (p *Properties) getAgentVMPrefix(index int) string {
+	a := p.AgentPoolProfiles[index]
+	nameSuffix := p.GetClusterID()
+	var vmPrefix string
+	if a.IsWindows() {
+		vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
+	} else {
+		vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
+		if a.IsVirtualMachineScaleSets() {
+			vmPrefix += "vmss"
+		}
+	}
+	return vmPrefix
 }
 
 func (p *Properties) getMasterVMPrefix() string {
 	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
 }
 
-// GetVMPrefix returns the agent VM prefix or master VM prefix based on the cluster configuration.
-func (p *Properties) GetVMPrefix() string {
-	if p.IsHostedMasterProfile() {
-		return p.getAgentVMPrefix()
-	}
-	return p.getMasterVMPrefix()
+// GetResourcePrefix returns the prefix to use for naming cluster resources
+func (p *Properties) GetResourcePrefix() string {
+	return p.K8sOrchestratorName() + "-" + p.GetClusterID() + "-"
 }
 
 // GetRouteTableName returns the route table name of the cluster.
 func (p *Properties) GetRouteTableName() string {
-	return p.GetVMPrefix() + "routetable"
+	return p.GetResourcePrefix() + "routetable"
 }
 
 // GetNSGName returns the name of the network security group of the cluster.
 func (p *Properties) GetNSGName() string {
-	return p.GetVMPrefix() + "nsg"
+	return p.GetResourcePrefix() + "nsg"
 }
 
 // GetPrimaryAvailabilitySetName returns the name of the primary availability set of the cluster
@@ -875,7 +883,7 @@ func (p *Properties) GetClusterMetadata() *ClusterMetadata {
 		RouteTableName:             p.GetRouteTableName(),
 		PrimaryAvailabilitySetName: p.GetPrimaryAvailabilitySetName(),
 		PrimaryScaleSetName:        p.GetPrimaryScaleSetName(),
-		VMPrefix:                   p.GetVMPrefix(),
+		ResourcePrefix:             p.GetResourcePrefix(),
 	}
 }
 
