@@ -25,8 +25,8 @@ hash goveralls 2>/dev/null || go get github.com/mattn/goveralls
 hash godir 2>/dev/null || go get github.com/Masterminds/godir
 
 generate_cover_data() {
-  ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes,test/e2e/openshift -cover -r .
-  echo "" > ${coveragetxt}  
+  ginkgo -skipPackage test/e2e/dcos,test/e2e/kubernetes,test/e2e/openshift -failFast -cover -r .
+  echo "" > ${coveragetxt}
   find . -type f -name "*.coverprofile" | while read -r file;  do cat $file >> ${coveragetxt} && mv $file ${coverdir}; done
   echo "mode: $covermode" >"$profile"
   grep -h -v "^mode:" "$coverdir"/*.coverprofile >>"$profile"
