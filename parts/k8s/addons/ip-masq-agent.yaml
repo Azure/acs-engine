@@ -51,6 +51,6 @@ data:
   ip-masq-agent: |-
     nonMasqueradeCIDRs:
       - <kubernetesNonMasqueradeCidr>
-      - 168.63.129.16/32
-    masqLinkLocal: true
+      - <azureCNINonMasqueradeIP>
+    masqLinkLocal: <masqLinkLocalValue>
     resyncInterval: 60s
