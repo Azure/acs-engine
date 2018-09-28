@@ -316,7 +316,7 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		for upgradedCount+toBeUpgradedCount < agentCount {
 			agentIndex := getAvailableIndex(agentVMs)
 
-			vmName, err := utils.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
+			vmName, err := utils.GetK8sVMName(agentOsType, ku.DataModel.Properties,
 				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
 				ku.logger.Errorf("Error reconstructing agent VM name with index %d: %v", agentIndex, err)
