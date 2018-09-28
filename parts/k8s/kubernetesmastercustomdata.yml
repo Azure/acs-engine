@@ -401,7 +401,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<azureCNINonMasqueradeIP>|168.63.129.16/32|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
     sed -i "s|<masqLinkLocalValue>|true|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{else}}
-    sed -i "s|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "\|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
     sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{end}}
 
