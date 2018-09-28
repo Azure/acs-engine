@@ -522,6 +522,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return GetMasterAgentAllowedSizes()
 		},
+		"GetDefaultVNETCIDR": func() string {
+			return DefaultVNETCIDR
+		},
 		"GetAgentAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
 				return GetKubernetesAgentAllowedSizes()

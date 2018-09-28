@@ -31,6 +31,8 @@ const (
 	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
 	// when VNET integration is enabled.
 	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultVNETCIDR is the default CIDR block for the VNET
+	DefaultVNETCIDR = "10.0.0.0/8"
 	// DefaultKubernetesMaxPods is the maximum number of pods to run on a node.
 	DefaultKubernetesMaxPods = 110
 	// DefaultKubernetesMaxPodsVNETIntegrated is the maximum number of pods to run on a node when VNET integration is enabled.

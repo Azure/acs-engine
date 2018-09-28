@@ -721,7 +721,7 @@
       "type": "int"
     },
     "vnetCidr": {
-      "defaultValue": "10.0.0.0/8",
+      "defaultValue": {{GetDefaultVNETCIDR}},
       "metadata": {
         "description": "Cluster vnet cidr"
       },
