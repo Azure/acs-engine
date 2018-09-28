@@ -7,14 +7,7 @@
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', parameters('nameSuffix'))]",
 {{end}}
-{{if .IsWindows}}
-    "winResourceNamePrefix" : "[substring(parameters('nameSuffix'), 0, 5)]",
-    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), parameters('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
-{{else}}
-{{if .IsAvailabilitySets}}
-    "{{.Name}}VMNamePrefix": "[concat(parameters('orchestratorName'), '-{{.Name}}-', parameters('nameSuffix'), '-')]",
-{{else}}
-    "{{.Name}}VMNamePrefix": "[concat(parameters('orchestratorName'), '-{{.Name}}-', parameters('nameSuffix'), '-vmss')]",
+    "{{.Name}}VMNamePrefix": "{{GetAgentVMPrefix variables('{{.Name}}Index')}}",
     {{if .IsLowPriorityScaleSet}}
     "{{.Name}}ScaleSetPriority": "[parameters('{{.Name}}ScaleSetPriority')]",
     "{{.Name}}ScaleSetEvictionPolicy": "[parameters('{{.Name}}ScaleSetEvictionPolicy')]",

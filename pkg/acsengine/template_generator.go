@@ -802,6 +802,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			imageRef := cs.Properties.MasterProfile.ImageRef
 			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
 		},
+		"GetAgentVMPrefix": func(index int) string {
+			return cs.Properties.GetAgentVMPrefix(index)
+		},
+		"GetMasterVMPrefix": func() string {
+			return cs.Properties.GetMasterPrefix()
+		},
 		"GetRouteTableName": func() string {
 			return cs.Properties.GetRouteTableName()
 		},

@@ -748,7 +748,8 @@ func (p *Properties) K8sOrchestratorName() string {
 	return ""
 }
 
-func (p *Properties) getAgentVMPrefix(index int) string {
+// GetAgentVMPrefix returns the prefix of agentpool VMs given the pool index
+func (p *Properties) GetAgentVMPrefix(index int) string {
 	a := p.AgentPoolProfiles[index]
 	nameSuffix := p.GetClusterID()
 	var vmPrefix string
@@ -763,7 +764,8 @@ func (p *Properties) getAgentVMPrefix(index int) string {
 	return vmPrefix
 }
 
-func (p *Properties) getMasterVMPrefix() string {
+// GetMasterVMPrefix returns the prefix of master VMs
+func (p *Properties) GetMasterVMPrefix() string {
 	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
 }
 
