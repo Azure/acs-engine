@@ -3,16 +3,15 @@
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
 {{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
+    "{{.Name}}VMNamePrefix": "{{GetAgentVMPrefix .}}",
 {{if .IsAvailabilitySets}}
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', parameters('nameSuffix'))]",
-{{end}}
-    "{{.Name}}VMNamePrefix": "{{GetAgentVMPrefix variables('{{.Name}}Index')}}",
+{{else}}
     {{if .IsLowPriorityScaleSet}}
     "{{.Name}}ScaleSetPriority": "[parameters('{{.Name}}ScaleSetPriority')]",
     "{{.Name}}ScaleSetEvictionPolicy": "[parameters('{{.Name}}ScaleSetEvictionPolicy')]",
     {{end}}
-{{end}}
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
 {{if .IsCustomVNET}}
