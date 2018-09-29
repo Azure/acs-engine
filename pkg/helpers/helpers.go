@@ -156,3 +156,34 @@ func GetHomeDir() string {
 	}
 	return os.Getenv("HOME")
 }
+
+// BashEscapeString safely escapes strings with bash-specific special characters.
+func BashEscapeString(s string) string {
+	if runtime.GOOS == "windows" || s == "" {
+		return s
+	}
+
+	// If no single quotes, just wrap the entire string within single quotes
+	if strings.Index(s, "'") < 0 {
+		return "'" + s + "'"
+	}
+
+	// If string has single quotes, we would need to do some magic escaping
+	temp := s
+	var arr []string
+	for {
+		idx := strings.Index(temp, "'")
+		if idx < 0 {
+			break
+		}
+		arr = append(arr, `'`+temp[:idx]+`'`)
+		arr = append(arr, `"'"`)
+		temp = temp[idx+1:]
+	}
+
+	if len(temp) > 0 {
+		arr = append(arr, temp)
+	}
+
+	return strings.Join(arr, "")
+}
