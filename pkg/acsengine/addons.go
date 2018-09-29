@@ -186,9 +186,9 @@ func setAddonsConfig(cs *api.ContainerService) {
 			{
 				Name:           IPMASQAgentAddonName,
 				CPURequests:    "50m",
-				MemoryRequests: "10Mi",
+				MemoryRequests: "50Mi",
 				CPULimits:      "50m",
-				MemoryLimits:   "10Mi",
+				MemoryLimits:   "250Mi",
 			},
 		},
 	}
