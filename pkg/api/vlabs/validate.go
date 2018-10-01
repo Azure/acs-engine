@@ -197,8 +197,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 			}
 
 			if a.HasAvailabilityZones() {
-				// TODO: update this to 1.12 after it's released
-				minVersion, err := semver.Make("1.12.0-beta.0")
+				minVersion, err := semver.Make("1.12.0")
 				if err != nil {
 					return errors.New("could not validate version")
 				}
@@ -690,17 +689,17 @@ func (a *Properties) validateManagedIdentity() error {
 			if err != nil {
 				return errors.Errorf("could not validate version %s", version)
 			}
-			minVersion, err := semver.Make("1.12.0-beta.0")
+			minVersion, err := semver.Make("1.12.0")
 			if err != nil {
 				return errors.New("could not validate version")
 			}
 
 			if a.MasterProfile.IsVirtualMachineScaleSets() {
 				if sv.LT(minVersion) {
-					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
 				}
 			} else if a.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" && sv.LT(minVersion) {
-				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
 			}
 
 		}
