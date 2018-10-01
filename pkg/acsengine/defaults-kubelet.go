@@ -93,33 +93,14 @@ func setKubeletConfig(cs *api.ContainerService) {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
 
-	// Get rid of values not supported in v1.5 clusters
-	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
-		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
-	// Get rid of values not supported in v1.10 clusters
-	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
-		for _, key := range []string{"--pod-max-pids"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
-	// Get rid of values not supported in v1.12 and up
-	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.12.0") {
-		for _, key := range []string{"--cadvisor-port"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
 		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}
+
+	removeKubeletFlags(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
 
 	// Master-specific kubelet config changes go here
 	if cs.Properties.MasterProfile != nil {
@@ -129,6 +110,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
+
+		removeKubeletFlags(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
 	}
 
 	// Agent-specific kubelet config changes go here
@@ -155,6 +138,24 @@ func setKubeletConfig(cs *api.ContainerService) {
 				// enabling accelerators for Kubernetes >= 1.6 to <= 1.9
 				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
 			}
+		}
+
+		removeKubeletFlags(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+	}
+}
+
+func removeKubeletFlags(k map[string]string, v string) {
+	// Get rid of values not supported until v1.10
+	if !common.IsKubernetesVersionGe(v, "1.10.0") {
+		for _, key := range []string{"--pod-max-pids"} {
+			delete(k, key)
+		}
+	}
+
+	// Get rid of values not supported in v1.12 and up
+	if common.IsKubernetesVersionGe(v, "1.12.0") {
+		for _, key := range []string{"--cadvisor-port"} {
+			delete(k, key)
 		}
 	}
 }
