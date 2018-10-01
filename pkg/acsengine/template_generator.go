@@ -919,5 +919,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"quote":      strconv.Quote,
 		"shellQuote": helpers.ShellQuote,
+		"GetServicePrincipalClientSecret": func() string {
+			return helpers.ShellQuote(cs.Properties.ServicePrincipalProfile.Secret)
+		},
 	}
 }
