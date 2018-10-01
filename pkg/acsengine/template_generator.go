@@ -847,10 +847,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
 			t, err := template.New("master").Funcs(template.FuncMap{
-				"quote": strconv.Quote,
-				"shellQuote": func(s string) string {
-					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-				},
+				"quote":      strconv.Quote,
+				"shellQuote": helpers.ShellQuote,
 			}).Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -875,10 +873,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(nodeShAsset)
 			t, err := template.New("node").Funcs(template.FuncMap{
-				"quote": strconv.Quote,
-				"shellQuote": func(s string) string {
-					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-				},
+				"quote":      strconv.Quote,
+				"shellQuote": helpers.ShellQuote,
 			}).Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -921,9 +917,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsCustomVNET": func() bool {
 			return cs.Properties.AreAgentProfilesCustomVNET()
 		},
-		"quote": strconv.Quote,
-		"shellQuote": func(s string) string {
-			return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-		},
+		"quote":      strconv.Quote,
+		"shellQuote": helpers.ShellQuote,
 	}
 }
