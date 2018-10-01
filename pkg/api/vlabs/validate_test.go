@@ -1437,7 +1437,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 					AvailabilityProfile: VirtualMachineScaleSets,
 				},
 			},
-			expectedErr: "managed identity and VMSS masters can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+			expectedErr: "managed identity and VMSS masters can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
 		},
 		{
 			name:                "use managed identity with master vmas",
@@ -1471,7 +1471,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 					Count:  1,
 				},
 			},
-			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
 		},
 	}
 	for _, test := range tests {
