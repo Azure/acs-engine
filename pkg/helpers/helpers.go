@@ -156,3 +156,8 @@ func GetHomeDir() string {
 	}
 	return os.Getenv("HOME")
 }
+
+// ShellQuote returns a string that is enclosed within single quotes. If the string already has single quotes, they will be escaped.
+func ShellQuote(s string) string {
+	return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+}
