@@ -10,7 +10,7 @@ ucDomainName=$(echo "${sdName}" | tr /a-z/ /A-Z/)
 
 computerOUSwitch=""
 if [[ ! -z "${sdComputerOU}" ]]; then
-  computerOUSwitch="--computer-ou ${sdComputerOU}"
+  computerOUSwitch="--computer-ou='${sdComputerOU}'"
 fi
 
 echo "  dns-search ${sdName}" >> /etc/network/interfaces.d/50-cloud-init.cfg
