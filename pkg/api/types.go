@@ -1140,6 +1140,16 @@ func (k *KubernetesConfig) GetAddonByName(addonName string) KubernetesAddon {
 	return kubeAddon
 }
 
+// GetAddonContainersIndexByName returns the KubernetesAddon containers index with the name `containerName`
+func (k KubernetesAddon) GetAddonContainersIndexByName(containerName string) int {
+	for i := range k.Containers {
+		if k.Containers[i].Name == containerName {
+			return i
+		}
+	}
+	return -1
+}
+
 // GetAddonScript retrieves the raw script data specified as input for the k8s addon with name "addonName".
 func (k *KubernetesConfig) GetAddonScript(addonName string) string {
 	kubeAddon := k.GetAddonByName(addonName)
