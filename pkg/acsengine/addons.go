@@ -240,22 +240,13 @@ func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
 	return -1
 }
 
-func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
-	for i := range containers {
-		if containers[i].Name == name {
-			return i
-		}
-	}
-	return -1
-}
-
 // assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
 func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
 	if addon.Enabled == nil {
 		addon.Enabled = defaults.Enabled
 	}
 	for i := range defaults.Containers {
-		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
+		c := addon.GetAddonContainersIndexByName(defaults.Containers[i].Name)
 		if c < 0 {
 			addon.Containers = append(addon.Containers, defaults.Containers[i])
 		} else {

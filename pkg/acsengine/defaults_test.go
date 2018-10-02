@@ -180,19 +180,6 @@ func TestAddonsIndexByName(t *testing.T) {
 	}
 }
 
-func TestGetAddonContainersIndexByName(t *testing.T) {
-	addonName := "testaddon"
-	containers := getMockAddon(addonName).Containers
-	i := getAddonContainersIndexByName(containers, addonName)
-	if i != 0 {
-		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
-	}
-	i = getAddonContainersIndexByName(containers, "nonExistentContainerName")
-	if i != -1 {
-		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
-	}
-}
-
 func TestAssignDefaultAddonVals(t *testing.T) {
 	addonName := "testaddon"
 	customCPURequests := "60m"
