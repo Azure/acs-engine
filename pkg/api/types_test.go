@@ -2041,5 +2041,17 @@ func TestProperties_GetClusterMetadata(t *testing.T) {
 	if metadata.PrimaryScaleSetName != expectedPrimaryScaleSetName {
 		t.Errorf("expected PrimaryScaleSetName name %s, but got %s", expectedPrimaryScaleSetName, metadata.PrimaryScaleSetName)
 	}
+}
 
+func TestGetAddonContainersIndexByName(t *testing.T) {
+	addonName := "testaddon"
+	addon := getMockAddon(addonName)
+	i := addon.GetAddonContainersIndexByName(addonName)
+	if i != 0 {
+		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
+	}
+	i = addon.GetAddonContainersIndexByName("nonExistentContainerName")
+	if i != -1 {
+		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
+	}
 }
