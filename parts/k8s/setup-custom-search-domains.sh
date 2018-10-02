@@ -23,7 +23,6 @@ retrycmd_if_failure 10 5 120 apt-get -y install \
   sssd-tools \
   samba-common \
   samba \
-  samba-common \
   python2.7 \
   samba-libs \
   packagekit
