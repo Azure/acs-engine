@@ -36,7 +36,7 @@ WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-wit
 WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
 ```
 
-You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `windowsVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
+You can use the Offer, Publisher and Sku to pick a specific version by adding `windowsOffer`, `windowsPublisher`, `windowsSku` and (optionally) `imageVersion` to the `windowsProfile` section. In this example, the latest Windows Server version 1803 image would be deployed.
 
 ```json
 "windowsProfile": {
