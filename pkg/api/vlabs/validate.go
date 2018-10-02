@@ -367,7 +367,7 @@ func (a *Properties) validateMasterProfile() error {
 	}
 
 	if m.IsVirtualMachineScaleSets() && a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		log.Warnf("Clusters with VMSS masters an experimental feature and are not yet upgradable! You will not be able to upgrade your cluster until a future version of acs-engine!")
+		log.Warnf("Clusters with VMSS masters are not yet upgradable! You will not be able to upgrade your cluster until a future version of acs-engine!")
 		e := validateVMSS(a.OrchestratorProfile, false, m.StorageProfile)
 		if e != nil {
 			return e
