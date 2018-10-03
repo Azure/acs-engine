@@ -219,6 +219,16 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					}
 				}
 			}
+			if kubernetesConfig.IsIPMasqAgentEnabled() {
+				ipMasqAgentAddon := kubernetesConfig.GetAddonByName(IPMASQAgentAddonName)
+				i := ipMasqAgentAddon.GetAddonContainersIndexByName(IPMASQAgentAddonName)
+				if i > -1 {
+					addValue(parametersMap, "kubernetesIPMasqAgentCPURequests", ipMasqAgentAddon.Containers[c].CPURequests)
+					addValue(parametersMap, "kubernetesIPMasqAgentMemoryRequests", ipMasqAgentAddon.Containers[c].MemoryRequests)
+					addValue(parametersMap, "kubernetesIPMasqAgentCPULimit", ipMasqAgentAddon.Containers[c].CPULimits)
+					addValue(parametersMap, "kubernetesIPMasqAgentMemoryLimit", ipMasqAgentAddon.Containers[c].MemoryLimits)
+				}
+			}
 			if kubernetesConfig.LoadBalancerSku == "Standard" {
 				random := rand.New(rand.NewSource(time.Now().UnixNano()))
 				elbsvcName := random.Int()
@@ -249,7 +259,15 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				CloudProviderRateLimitBucket: kubernetesConfig.CloudProviderRateLimitBucket,
 			})
 			addValue(parametersMap, "kubeClusterCidr", kubernetesConfig.ClusterSubnet)
-			addValue(parametersMap, "kubernetesNonMasqueradeCidr", kubernetesConfig.KubeletConfig["--non-masquerade-cidr"])
+			if properties.OrchestratorProfile.IsAzureCNI() {
+				if properties.MasterProfile != nil && properties.MasterProfile.IsCustomVNET() {
+					addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.MasterProfile.VnetCidr)
+				} else {
+					addValue(parametersMap, "kubernetesNonMasqueradeCidr", DefaultVNETCIDR)
+				}
+			} else {
+				addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
+			}
 			addValue(parametersMap, "kubernetesKubeletClusterDomain", kubernetesConfig.KubeletConfig["--cluster-domain"])
 			addValue(parametersMap, "dockerBridgeCidr", kubernetesConfig.DockerBridgeSubnet)
 			addValue(parametersMap, "networkPolicy", kubernetesConfig.NetworkPolicy)
