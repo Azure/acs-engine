@@ -399,6 +399,13 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesIPMasqAgentMemoryRequests>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
     sed -i "s|<kubernetesIPMasqAgentCPULimit>|{{WrapAsParameter "kubernetesIPMasqAgentCPULimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
     sed -i "s|<kubernetesIPMasqAgentMemoryLimit>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{if IsAzureCNI}}
+    sed -i "s|<azureCNINonMasqueradeIP>|168.63.129.16/32|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|true|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{else}}
+    sed -i "\|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
