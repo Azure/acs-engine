@@ -38,6 +38,10 @@ type Properties struct {
 	// FQDN (out): Auto-allocated FQDN for OpenShift API server.
 	FQDN string `json:"fqdn,omitempty"`
 
+	// notes: redHatCredentialProfile?  redHatCustomerPortalCredentialProfile?
+	// Keep separate from e.g. servicePrincipalProfile?
+	CredentialProfile CredentialProfile `json:"credentialProfile,omitempty"`
+
 	// RouterProfiles (in,optional/out): Configuration for OpenShift router(s).
 	RouterProfiles []RouterProfile `json:"routerProfiles,omitempty"`
 
@@ -47,6 +51,10 @@ type Properties struct {
 	// TODO: is this compatible with MSI?
 	// ServicePrincipalProfile (in): Service principal for OpenShift cluster.
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+
+	// notes: masterAuthProfile?  suggest naming slightly ambiguously so we can
+	// extend it for authentication and authorization?
+	AuthProfile AuthProfile `json:"authProfile,omitempty"`
 }
 
 // ProvisioningState represents the current state of the OSA resource.
@@ -69,6 +77,14 @@ const (
 	// Upgrading means the existing OAS resource is being upgraded.
 	Upgrading ProvisioningState = "Upgrading"
 )
+
+type CredentialProfile struct {
+	// I believe the same token can be used for secured registry and for
+	// Insights.
+	RedHatCustomerPortalUsername string `json:"redHatCustomerPortalUsername,omitempty"`
+	RedHatCustomerPortalPassword string `json:"redHatCustomerPortalPassword,omitempty"`
+	// we can add a KeyVaultRef here later.
+}
 
 // RouterProfile represents an OpenShift router.
 type RouterProfile struct {
@@ -130,4 +146,24 @@ const (
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty"`
 	Secret   string `json:"secret,omitempty"`
+	// we can also add a KeyVaultRef here later.
+}
+
+type AuthProfile struct {
+	IdentityProviders []IdentityProvider `json:"identityProviders,omitempty"`
+}
+
+// IdentityProvider is heavily cut down equivalent to IdentityProvider in the
+// OpenShift master config.  We can add fields to match as we need to.
+type IdentityProvider struct {
+	Name     string                 `json:"name,omitempty"`
+	Provider IdentityProviderConfig `json:"provider,omityempty"`
+}
+
+type IdentityProviderConfig struct {
+	// suggest that for now we solely accept a synthetic AADIdentityProvider
+	// kind here; this would default all the necessary values in the OpenShift
+	// master config.  We can add fields where necessary and/or move to support
+	// OpenShift's OpenIDIdentityProvider and others when we need to.
+	Kind string `json:"kind,omitempty"`
 }
