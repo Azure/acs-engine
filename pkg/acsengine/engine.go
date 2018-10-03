@@ -1172,12 +1172,3 @@ func stringInSlice(a string, list []string) bool {
 func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
 	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
 }
-
-func getAddonByName(addons []api.KubernetesAddon, name string) api.KubernetesAddon {
-	for i := range addons {
-		if addons[i].Name == name {
-			return addons[i]
-		}
-	}
-	return api.KubernetesAddon{}
-}
