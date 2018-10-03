@@ -253,6 +253,16 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// GetAddonContainersIndexByName returns the KubernetesAddon containers index with the name `containerName`
+func (a KubernetesAddon) GetAddonContainersIndexByName(containerName string) int {
+	for i := range a.Containers {
+		if a.Containers[i].Name == containerName {
+			return i
+		}
+	}
+	return -1
+}
+
 // PrivateCluster defines the configuration for a private cluster
 type PrivateCluster struct {
 	Enabled        *bool                  `json:"enabled,omitempty"`
@@ -1118,8 +1128,8 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	return ""
 }
 
-// getAddonFromName returns the KubernetesAddon instance with name `addonName`
-func (k *KubernetesConfig) getAddonFromName(addonName string) KubernetesAddon {
+// GetAddonByName returns the KubernetesAddon instance with name `addonName`
+func (k *KubernetesConfig) GetAddonByName(addonName string) KubernetesAddon {
 	var kubeAddon KubernetesAddon
 	for _, addon := range k.Addons {
 		if addon.Name == addonName {
@@ -1132,14 +1142,14 @@ func (k *KubernetesConfig) getAddonFromName(addonName string) KubernetesAddon {
 
 // GetAddonScript retrieves the raw script data specified as input for the k8s addon with name "addonName".
 func (k *KubernetesConfig) GetAddonScript(addonName string) string {
-	kubeAddon := k.getAddonFromName(addonName)
+	kubeAddon := k.GetAddonByName(addonName)
 	return kubeAddon.Data
 }
 
 // isAddonEnabled checks whether a k8s addon with name "addonName" is enabled or not based on the Enabled field of KubernetesAddon.
 // If the value of Enabled in nil, the "defaultValue" is returned.
 func (k *KubernetesConfig) isAddonEnabled(addonName string, defaultValue bool) bool {
-	kubeAddon := k.getAddonFromName(addonName)
+	kubeAddon := k.GetAddonByName(addonName)
 	return kubeAddon.IsEnabled(defaultValue)
 }
 
