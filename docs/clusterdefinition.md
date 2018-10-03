@@ -562,6 +562,38 @@ format for `sourceVault.id`, can be obtained in cli, or found in the portal: /su
 format for `vaultCertificates.certificateUrl`, can be obtained in cli, or found in the portal:
 https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
+
+### windowsProfile
+
+`windowsProfile` provides configuration specific to Windows nodes in the cluster
+
+| Name                             | Required | Description                                                              |
+| -------------------------------- | -------- | ------------------------------------------------------------------------ |
+| adminUsername                    | yes      | Username for the Windows adminstrator account created on each Windows node |
+| adminPassword                    | yes      | Password for the Windows adminstrator account created on each Windows node |
+| windowsPublisher                 | no       | Publisher used to find Windows VM to deploy from marketplace. Default: `MicrosoftWindowsServer` |
+| windowsOffer                     | no       | Offer used to find Windows VM to deploy from marketplace. Default: `WindowsServerSemiAnnual` |
+| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1803-with-Containers-smalldisk` |
+| imageVersion                     | no       | Specific image version to deploy from marketplace.  Default: `latest` |
+| windowsImageSourceURL            | no       | Path to an existing Azure storage blob with a sysprepped VHD. This is used to test pre-release or customized VHD files that you have uploaded to Azure. If provided, the above 4 parameters are ignored. |
+
+#### Choosing a Windows version
+
+If you want to choose a specific Windows image, but automatically use the latest - set `windowsPublisher`, `windowsOffer`, and `windowsSku`. If you need a specific version, then add `agentWindowsVersion` too.
+
+You can find all available images with `az vm image list`
+
+
+```bash
+$ az vm image list --publisher MicrosoftWindowsServer --all -o table
+
+Offer                    Publisher                      Sku                                             Urn                                                                                                            Version
+-----------------------  -----------------------------  ----------------------------------------------  -------------------------------------------------------------------------------------------------------------  -----------------
+...
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
+```
+
 ### servicePrincipalProfile
 
 `servicePrincipalProfile` describes an Azure Service credentials to be used by the cluster for self-configuration. See [service principal](serviceprincipal.md) for more details on creation.
