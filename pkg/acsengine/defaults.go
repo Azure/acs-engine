@@ -705,98 +705,98 @@ func setHostedMasterProfileDefaults(a *api.Properties) {
 	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
-func setDefaultCerts(a *api.Properties) (bool, error) {
-	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return certgen.OpenShiftSetDefaultCerts(a, api.DefaultOpenshiftOrchestratorName, a.GetClusterID())
+func setDefaultCerts(p *api.Properties) (bool, error) {
+	if p.MasterProfile != nil && p.OrchestratorProfile.OrchestratorType == api.OpenShift {
+		return certgen.OpenShiftSetDefaultCerts(p, api.DefaultOpenshiftOrchestratorName, p.GetClusterID())
 	}
 
-	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {
+	if p.MasterProfile == nil || p.OrchestratorProfile.OrchestratorType != api.Kubernetes {
 		return false, nil
 	}
 
-	provided := certsAlreadyPresent(a.CertificateProfile, a.MasterProfile.Count)
+	provided := certsAlreadyPresent(p.CertificateProfile, p.MasterProfile.Count)
 
 	if areAllTrue(provided) {
 		return false, nil
 	}
 
-	masterExtraFQDNs := append(formatAzureProdFQDNs(a.MasterProfile.DNSPrefix), a.MasterProfile.SubjectAltNames...)
-	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
+	masterExtraFQDNs := append(formatAzureProdFQDNs(p.MasterProfile.DNSPrefix), p.MasterProfile.SubjectAltNames...)
+	firstMasterIP := net.ParseIP(p.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
-		return false, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
+		return false, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", p.MasterProfile.FirstConsecutiveStaticIP)
 	}
 
 	ips := []net.IP{firstMasterIP}
-	// Add the Internal Loadbalancer IP which is always at at a known offset from the firstMasterIP
+	// Add the Internal Loadbalancer IP which is always at at p known offset from the firstMasterIP
 	ips = append(ips, net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)})
 	// Include the Internal load balancer as well
 
-	if a.MasterProfile.IsVirtualMachineScaleSets() {
+	if p.MasterProfile.IsVirtualMachineScaleSets() {
 		// Include the Internal load balancer as well
-		for i := 1; i < a.MasterProfile.Count; i++ {
-			offset := i * a.MasterProfile.IPAddressCount
+		for i := 1; i < p.MasterProfile.Count; i++ {
+			offset := i * p.MasterProfile.IPAddressCount
 			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
 			ips = append(ips, ip)
 		}
 	} else {
-		for i := 1; i < a.MasterProfile.Count; i++ {
+		for i := 1; i < p.MasterProfile.Count; i++ {
 			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
 			ips = append(ips, ip)
 		}
 	}
-	if a.CertificateProfile == nil {
-		a.CertificateProfile = &api.CertificateProfile{}
+	if p.CertificateProfile == nil {
+		p.CertificateProfile = &api.CertificateProfile{}
 	}
 
-	// use the specified Certificate Authority pair, or generate a new pair
-	var caPair *PkiKeyCertPair
+	// use the specified Certificate Authority pair, or generate p new pair
+	var caPair *helpers.PkiKeyCertPair
 	if provided["ca"] {
-		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
+		caPair = &helpers.PkiKeyCertPair{CertificatePem: p.CertificateProfile.CaCertificate, PrivateKeyPem: p.CertificateProfile.CaPrivateKey}
 	} else {
-		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, false, nil, nil, nil)
+		var err error
+		caPair, err = helpers.CreatePkiKeyCertPair("ca")
 		if err != nil {
-			return false, err
+			return false, nil
 		}
-		caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
-		a.CertificateProfile.CaCertificate = caPair.CertificatePem
-		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
+		p.CertificateProfile.CaCertificate = caPair.CertificatePem
+		p.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
-	cidrFirstIP, err := common.CidrStringFirstIP(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
+	cidrFirstIP, err := common.CidrStringFirstIP(p.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 	if err != nil {
 		return false, err
 	}
 	ips = append(ips, cidrFirstIP)
 
-	apiServerPair, clientPair, kubeConfigPair, etcdServerPair, etcdClientPair, etcdPeerPairs, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair, a.MasterProfile.Count)
+	apiServerPair, clientPair, kubeConfigPair, etcdServerPair, etcdClientPair, etcdPeerPairs, err := helpers.CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair, p.MasterProfile.Count)
 	if err != nil {
 		return false, err
 	}
 
 	// If no Certificate Authority pair or no cert/key pair was provided, use generated cert/key pairs signed by provided Certificate Authority pair
 	if !provided["apiserver"] || !provided["ca"] {
-		a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
-		a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
+		p.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
+		p.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
 	}
 	if !provided["client"] || !provided["ca"] {
-		a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
-		a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
+		p.CertificateProfile.ClientCertificate = clientPair.CertificatePem
+		p.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 	}
 	if !provided["kubeconfig"] || !provided["ca"] {
-		a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
-		a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		p.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
+		p.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
 	}
 	if !provided["etcd"] || !provided["ca"] {
-		a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
-		a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
-		a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
-		a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
-		a.CertificateProfile.EtcdPeerCertificates = make([]string, a.MasterProfile.Count)
-		a.CertificateProfile.EtcdPeerPrivateKeys = make([]string, a.MasterProfile.Count)
+		p.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
+		p.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
+		p.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
+		p.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
+		p.CertificateProfile.EtcdPeerCertificates = make([]string, p.MasterProfile.Count)
+		p.CertificateProfile.EtcdPeerPrivateKeys = make([]string, p.MasterProfile.Count)
 		for i, v := range etcdPeerPairs {
-			a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
-			a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
+			p.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
+			p.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
 		}
 	}
 

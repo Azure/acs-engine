@@ -1,4 +1,4 @@
-package acsengine
+package helpers
 
 import (
 	"bytes"
@@ -29,6 +29,16 @@ const (
 type PkiKeyCertPair struct {
 	CertificatePem string
 	PrivateKeyPem  string
+}
+
+// CreatePkiKeyCertPair generates a pair of PKI certificate and private key
+func CreatePkiKeyCertPair(commonName string) (*PkiKeyCertPair, error) {
+	caCertificate, caPrivateKey, err := createCertificate(commonName, nil, nil, false, false, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	caPair := &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
+	return caPair, nil
 }
 
 // CreatePki creates PKI certificates
