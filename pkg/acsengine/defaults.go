@@ -757,7 +757,7 @@ func setDefaultCerts(p *api.Properties) (bool, error) {
 		var err error
 		caPair, err = helpers.CreatePkiKeyCertPair("ca")
 		if err != nil {
-			return false, nil
+			return false, err
 		}
 		p.CertificateProfile.CaCertificate = caPair.CertificatePem
 		p.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
