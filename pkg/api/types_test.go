@@ -1381,7 +1381,7 @@ func TestIsIPMasqAgentEnabled(t *testing.T) {
 		},
 	}
 	enabled := c.IsIPMasqAgentEnabled()
-	enabledDefault := true
+	enabledDefault := IPMasqAgentAddonEnabled
 	if enabled != enabledDefault {
 		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return %t when no ip-masq-agent addon has been specified, instead returned %t", enabledDefault, enabled)
 	}

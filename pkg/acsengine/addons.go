@@ -181,7 +181,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 
 	defaultIPMasqAgentAddonsConfig := api.KubernetesAddon{
 		Name:    IPMASQAgentAddonName,
-		Enabled: helpers.PointerToBool(true),
+		Enabled: helpers.PointerToBool(api.IPMasqAgentAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           IPMASQAgentAddonName,

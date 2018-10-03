@@ -1206,7 +1206,7 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 
 // IsIPMasqAgentEnabled checks if the ip-masq-agent addon is enabled
 func (k *KubernetesConfig) IsIPMasqAgentEnabled() bool {
-	return k.isAddonEnabled(IPMASQAgentAddonName, true)
+	return k.isAddonEnabled(IPMASQAgentAddonName, IPMasqAgentAddonEnabled)
 }
 
 // IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs

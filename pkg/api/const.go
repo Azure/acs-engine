@@ -144,6 +144,8 @@ const (
 	DefaultContainerMonitoringAddonEnabled = false
 	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
 	DefaultAzureCNINetworkMonitoringAddonEnabled = false
+	// IPMasqAgentAddonEnabled enables the ip-masq-agent addon
+	IPMasqAgentAddonEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultAADPodIdentityAddonName is the name of the aad-pod-identity addon deployment
