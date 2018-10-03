@@ -2,7 +2,6 @@ package acsengine
 
 import (
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/helpers"
 	"io/ioutil"
 	"path"
 	"path/filepath"
