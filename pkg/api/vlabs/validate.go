@@ -15,6 +15,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -366,6 +367,7 @@ func (a *Properties) validateMasterProfile() error {
 	}
 
 	if m.IsVirtualMachineScaleSets() && a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		log.Warnf("Clusters with VMSS masters are not yet upgradable! You will not be able to upgrade your cluster until a future version of acs-engine!")
 		e := validateVMSS(a.OrchestratorProfile, false, m.StorageProfile)
 		if e != nil {
 			return e
