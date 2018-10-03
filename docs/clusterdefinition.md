@@ -579,10 +579,9 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 #### Choosing a Windows version
 
-If you want to choose a specific Windows image, but automatically use the latest - set `windowsPublisher`, `windowsOffer`, and `windowsSku`. If you need a specific version, then add `agentWindowsVersion` too.
+If you want to choose a specific Windows image, but automatically use the latest - set `windowsPublisher`, `windowsOffer`, and `windowsSku`. If you need a specific version, then add `imageVersion` too.
 
 You can find all available images with `az vm image list`
-
 
 ```bash
 $ az vm image list --publisher MicrosoftWindowsServer --all -o table
@@ -592,6 +591,19 @@ Offer                    Publisher                      Sku                     
 ...
 WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
 WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
+```
+
+If you wanted to use the last one in the list above, then set:
+
+```json
+"windowsProfile": {
+            "adminUsername": "...",
+            "adminPassword": "...",
+            "windowsPublisher": "MicrosoftWindowsServer",
+            "windowsOffer": "WindowsServerSemiAnnual",
+            "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk",
+            "imageVersion": "1803.0.20180504"
+     },
 ```
 
 ### servicePrincipalProfile
