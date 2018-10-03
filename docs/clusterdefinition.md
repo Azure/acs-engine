@@ -580,9 +580,10 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 #### Choosing a Windows version
 
-If you want to choose a specific Windows image, but automatically use the latest - set `windowsPublisher`, `windowsOffer`, and `windowsSku`. If you need a specific version, then add `imageVersion` too.
+If you want to choose a specific Windows image, but automatically use the latest - set `windowsPublisher`, `windowsOffer`, and `windowsSku`. If you need a specific version, then add `agentWindowsVersion` too.
 
 You can find all available images with `az vm image list`
+
 
 ```bash
 $ az vm image list --publisher MicrosoftWindowsServer --all -o table
