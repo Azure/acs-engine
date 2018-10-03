@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"archive/zip"
 	"bytes"
 	"encoding/base64"
 	"fmt"
@@ -674,7 +675,25 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
 			}
 			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+
+			// Create a buffer, new zip
+			buf := new(bytes.Buffer)
+			zw := zip.NewWriter(buf)
+
+			f, err := zw.Create("CustomDataSetupScript.ps1")
+			if err != nil {
+				panic(e)
+			}
+			_, err = f.Write([]byte(str))
+			if err != nil {
+				panic(e)
+			}
+			err = zw.Close()
+			if err != nil {
+				panic(e)
+			}
+			// convert to base64
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", base64.StdEncoding.EncodeToString(buf.Bytes()))
 		},
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
