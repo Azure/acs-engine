@@ -654,7 +654,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 				} else {
 					profile.Distro = api.AKS
 				}
-			} else if !a.OrchestratorProfile.IsOpenShift() {
+			} else if !a.OrchestratorProfile.IsOpenShift() && profile.OSType != api.Windows {
 				profile.Distro = api.Ubuntu
 			}
 		}
