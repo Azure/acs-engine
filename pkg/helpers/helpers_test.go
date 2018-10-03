@@ -301,15 +301,13 @@ func TestShellQuote(t *testing.T) {
 		}
 
 		if runtime.GOOS != "windows" {
-			out, err := exec.Command("/bin/bash", "-c", "testvar="+actual+"; echo $testvar").Output()
+			out, err := exec.Command("/bin/bash", "-c", "testvar="+actual+"; echo -n $testvar").Output()
 			if err != nil {
 				t.Errorf("unexpected error : %s", err.Error())
 			}
 
-			o := string(out[:len(out)-1]) //dropping last character as echo prints out a new line as the last character
-
-			if o != test.input {
-				t.Errorf("failed in Bash output test. Expected %s but got %s", test, o)
+			if string(out) != test.input {
+				t.Errorf("failed in Bash output test. Expected %s but got %s", test, out)
 			}
 		}
 	}
