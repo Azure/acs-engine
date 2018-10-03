@@ -1733,10 +1733,10 @@ func TestGetRouteTableName(t *testing.T) {
 	}
 
 	actualRTName := p.GetRouteTableName()
-	expectedRTName := "aks-28513887-routetable"
+	expectedRTName := "aks-agentpool-28513887-routetable"
 
 	actualNSGName := p.GetNSGName()
-	expectedNSGName := "aks-28513887-nsg"
+	expectedNSGName := "aks-agentpool-28513887-nsg"
 
 	if actualRTName != expectedRTName {
 		t.Errorf("expected route table name %s, but got %s", expectedRTName, actualRTName)
@@ -1766,10 +1766,10 @@ func TestGetRouteTableName(t *testing.T) {
 	}
 
 	actualRTName = p.GetRouteTableName()
-	expectedRTName = "k8s-28513887-routetable"
+	expectedRTName = "k8s-master-28513887-routetable"
 
 	actualNSGName = p.GetNSGName()
-	expectedNSGName = "k8s-28513887-nsg"
+	expectedNSGName = "k8s-master-28513887-nsg"
 
 	if actualRTName != expectedRTName {
 		t.Errorf("expected route table name %s, but got %s", actualRTName, expectedRTName)
