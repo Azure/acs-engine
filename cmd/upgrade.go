@@ -244,7 +244,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	f := acsengine.FileSaver{
+	f := helpers.FileSaver{
 		Translator: &i18n.Translator{
 			Locale: uc.locale,
 		},

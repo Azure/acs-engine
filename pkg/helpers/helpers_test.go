@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"math/rand"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -310,5 +311,26 @@ func TestShellQuote(t *testing.T) {
 				t.Errorf("failed in Bash output test. Expected %s but got %s", test, out)
 			}
 		}
+	}
+}
+
+func TestCreateSaveSSH(t *testing.T) {
+	translator := &i18n.Translator{
+		Locale: nil,
+	}
+	username := "test_user"
+	outputDirectory := "unit_tests"
+	expectedFile := outputDirectory + "/" + username + "_rsa"
+
+	defer os.Remove(expectedFile)
+
+	_, _, err := CreateSaveSSH(username, outputDirectory, translator)
+
+	if err != nil {
+		t.Fatalf("Unexpected error creating and saving ssh key: %s", err)
+	}
+
+	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
+		t.Fatalf("ssh file was not created")
 	}
 }

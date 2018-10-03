@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	"fmt"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -24,7 +25,7 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		artifactsDir = path.Join("_output", artifactsDir)
 	}
 
-	f := &FileSaver{
+	f := &helpers.FileSaver{
 		Translator: w.Translator,
 	}
 
