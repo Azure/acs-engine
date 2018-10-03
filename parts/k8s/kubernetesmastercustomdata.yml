@@ -242,7 +242,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
     sed -i "s|<azureCNINetworkMonitorImage>|{{WrapAsParameter "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsParameter "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
@@ -391,6 +390,19 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsParameter "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsParameter "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsParameter "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+{{end}}
+
+    sed -i "s|<kubernetesNonMasqueradeCidr>|{{WrapAsParameter "kubernetesNonMasqueradeCidr"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentCPURequests>|{{WrapAsParameter "kubernetesIPMasqAgentCPURequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentMemoryRequests>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentCPULimit>|{{WrapAsParameter "kubernetesIPMasqAgentCPULimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentMemoryLimit>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{if IsAzureCNI}}
+    sed -i "s|<azureCNINonMasqueradeIP>|168.63.129.16/32|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|true|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{else}}
+    sed -i "\|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"

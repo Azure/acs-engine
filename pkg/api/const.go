@@ -144,6 +144,8 @@ const (
 	DefaultContainerMonitoringAddonEnabled = false
 	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
 	DefaultAzureCNINetworkMonitoringAddonEnabled = false
+	// IPMasqAgentAddonEnabled enables the ip-masq-agent addon
+	IPMasqAgentAddonEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultAADPodIdentityAddonName is the name of the aad-pod-identity addon deployment
@@ -168,6 +170,8 @@ const (
 	NVIDIADevicePluginAddonName = "nvidia-device-plugin"
 	// ContainerMonitoringAddonName is the name of the kubernetes Container Monitoring addon deployment
 	ContainerMonitoringAddonName = "container-monitoring"
+	// IPMASQAgentAddonName is the name of the ip masq agent addon
+	IPMASQAgentAddonName = "ip-masq-agent"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
 	// NetworkPolicyAzure is the string expression for Azure CNI network policy manager

@@ -427,6 +427,25 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have ip-masq-agent running", func() {
+			if hasIPMasqAgent, IPMasqAgentAddon := eng.HasAddon("ip-masq-agent"); hasIPMasqAgent {
+				running, err := pod.WaitOnReady("azure-ip-masq-agent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("azure-ip-masq-agent", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for _, p := range pods {
+					for i, c := range IPMasqAgentAddon.Containers {
+						err := p.Spec.Containers[i].ValidateResources(c)
+						Expect(err).NotTo(HaveOccurred())
+					}
+				}
+			} else {
+				Skip("ip-masq-agent disabled for this cluster, will not test")
+			}
+		})
+
 		It("should have aci-connector running", func() {
 			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
 				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)

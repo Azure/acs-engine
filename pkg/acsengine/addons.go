@@ -179,6 +179,20 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
+	defaultIPMasqAgentAddonsConfig := api.KubernetesAddon{
+		Name:    IPMASQAgentAddonName,
+		Enabled: helpers.PointerToBool(api.IPMasqAgentAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           IPMASQAgentAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "50Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "250Mi",
+			},
+		},
+	}
+
 	defaultAzureCNINetworkMonitorAddonsConfig := api.KubernetesAddon{
 		Name:    AzureCNINetworkMonitoringAddonName,
 		Enabled: azureCNINetworkMonitorAddonEnabled(o),
@@ -213,6 +227,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 		defaultContainerMonitoringAddonsConfig,
 		defaultAzureCNINetworkMonitorAddonsConfig,
 		defaultAzureNetworkPolicyAddonsConfig,
+		defaultIPMasqAgentAddonsConfig,
 	}
 	// Add default addons specification, if no user-provided spec exists
 	if o.KubernetesConfig.Addons == nil {

@@ -31,6 +31,8 @@ const (
 	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
 	// when VNET integration is enabled.
 	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultVNETCIDR is the default CIDR block for the VNET
+	DefaultVNETCIDR = "10.0.0.0/8"
 	// DefaultKubernetesMaxPods is the maximum number of pods to run on a node.
 	DefaultKubernetesMaxPods = 110
 	// DefaultKubernetesMaxPodsVNETIntegrated is the maximum number of pods to run on a node when VNET integration is enabled.
@@ -160,6 +162,8 @@ const (
 	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
 	// AzureNetworkPolicyAddonName is the name of the Azure CNI networkmonitor addon
 	AzureNetworkPolicyAddonName = "azure-npm-daemonset"
+	// IPMASQAgentAddonName is the name of the ip masq agent addon
+	IPMASQAgentAddonName = "ip-masq-agent"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

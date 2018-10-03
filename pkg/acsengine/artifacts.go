@@ -120,7 +120,6 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultReschedulerAddonName),
 		},
 		{
-
 			kubernetesFeatureSetting{
 				"kubernetesmasteraddons-azure-npm-daemonset.yaml",
 				"azure-npm-daemonset.yaml",
@@ -232,6 +231,14 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 				profile.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard",
 			},
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultELBSVCAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"ip-masq-agent.yaml",
+				"ip-masq-agent.yaml",
+				true,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(IPMASQAgentAddonName),
 		},
 	}
 }

@@ -1074,11 +1074,12 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 				}
 			}
 		}
-		if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
+		// Re-enable this unit test if --non-masquerade-cidr is re-introduced
+		/*if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
 			if _, _, err := net.ParseCIDR(k.KubeletConfig["--non-masquerade-cidr"]); err != nil {
 				return errors.Errorf("--non-masquerade-cidr kubelet config '%s' is an invalid CIDR string", k.KubeletConfig["--non-masquerade-cidr"])
 			}
-		}
+		}*/
 	}
 
 	if _, ok := k.ControllerManagerConfig["--pod-eviction-timeout"]; ok {
