@@ -783,9 +783,9 @@ func (p *Properties) GetMasterVMPrefix() string {
 
 // GetResourcePrefix returns the prefix to use for naming cluster resources
 func (p *Properties) GetResourcePrefix() string {
-	if p.IsHostedMasterProfile() { 
+	if p.IsHostedMasterProfile() {
 		return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
-	} 
+	}
 	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
 
 }
