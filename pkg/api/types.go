@@ -783,7 +783,11 @@ func (p *Properties) GetMasterVMPrefix() string {
 
 // GetResourcePrefix returns the prefix to use for naming cluster resources
 func (p *Properties) GetResourcePrefix() string {
-	return p.K8sOrchestratorName() + "-" + p.GetClusterID() + "-"
+	if p.IsHostedMasterProfile() { 
+		return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
+	} 
+	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
+
 }
 
 // GetRouteTableName returns the route table name of the cluster.
