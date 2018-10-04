@@ -759,7 +759,7 @@ func (p *Properties) getAgentPoolIndexByName(name string) int {
 	return index
 }
 
-// GetAgentVMPrefix returns the prefix of agentpool VMs given the pool index
+// GetAgentVMPrefix returns the VM prefix for an agentpool
 func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
 	index := p.getAgentPoolIndexByName(a.Name)
 	nameSuffix := p.GetClusterID()
