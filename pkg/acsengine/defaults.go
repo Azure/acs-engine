@@ -491,10 +491,11 @@ func setExtensionDefaults(a *api.Properties) {
 }
 
 func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
-	// don't default Distro for OpenShift
-	if !a.OrchestratorProfile.IsOpenShift() {
-		if a.MasterProfile.Distro == "" {
+	if a.MasterProfile.Distro == "" {
+		if a.OrchestratorProfile.IsKubernetes() {
 			a.MasterProfile.Distro = api.AKS
+		} else if !a.OrchestratorProfile.IsOpenShift() {
+			a.MasterProfile.Distro = api.Ubuntu
 		}
 	}
 	// set default to VMAS for now
@@ -646,14 +647,15 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
-		// don't default Distro for OpenShift
-		if !a.OrchestratorProfile.IsOpenShift() {
-			if profile.Distro == "" {
+		if profile.Distro == "" {
+			if a.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
 				} else {
 					profile.Distro = api.AKS
 				}
+			} else if !a.OrchestratorProfile.IsOpenShift() {
+				profile.Distro = api.Ubuntu
 			}
 		}
 
