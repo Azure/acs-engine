@@ -492,7 +492,7 @@ func setExtensionDefaults(a *api.Properties) {
 
 func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
 	// don't default Distro for OpenShift
-	if !a.OrchestratorProfile.IsOpenShift() {
+	if a.OrchestratorProfile.IsKubernetes() {
 		if a.MasterProfile.Distro == "" {
 			a.MasterProfile.Distro = api.AKS
 		}
@@ -647,7 +647,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		}
 
 		// don't default Distro for OpenShift
-		if !a.OrchestratorProfile.IsOpenShift() {
+		if a.OrchestratorProfile.IsKubernetes() {
 			if profile.Distro == "" {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
