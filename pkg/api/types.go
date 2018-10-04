@@ -763,13 +763,15 @@ func (p *Properties) getAgentPoolIndexByName(name string) int {
 func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
 	index := p.getAgentPoolIndexByName(a.Name)
 	nameSuffix := p.GetClusterID()
-	var vmPrefix string
-	if a.IsWindows() {
-		vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
-	} else {
-		vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
-		if a.IsVirtualMachineScaleSets() {
-			vmPrefix += "vmss"
+	vmPrefix := ""
+	if index != -1 {
+		if a.IsWindows() {
+			vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
+		} else {
+			vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
+			if a.IsVirtualMachineScaleSets() {
+				vmPrefix += "vmss"
+			}
 		}
 	}
 	return vmPrefix

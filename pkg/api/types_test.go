@@ -2173,6 +2173,7 @@ func TestGetAgentVMPrefix(t *testing.T) {
 						Name:   "agentpool",
 						VMSize: "Standard_D2_v2",
 						Count:  1,
+						OSType: "Linux",
 					},
 				},
 			},
@@ -2198,9 +2199,11 @@ func TestGetAgentVMPrefix(t *testing.T) {
 				},
 				AgentPoolProfiles: []*AgentPoolProfile{
 					{
-						Name:   "agentpool",
-						VMSize: "Standard_D2_v2",
-						Count:  1,
+						Name:                "agentpool",
+						VMSize:              "Standard_D2_v2",
+						Count:               1,
+						AvailabilityProfile: "VirtualMachineScaleSets",
+						OSType:              "Linux",
 					},
 				},
 			},
@@ -2228,10 +2231,38 @@ func TestGetAgentVMPrefix(t *testing.T) {
 						Name:   "agentpool",
 						VMSize: "Standard_D2_v2",
 						Count:  1,
+						OSType: "Windows",
 					},
 				},
 			},
 			expectedVMPrefix: "24789k8s900",
+		},
+		{
+			name: "agent profile doesn't exist",
+			profile: &AgentPoolProfile{
+				Name:   "something",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "",
 		},
 	}
 
