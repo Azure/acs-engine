@@ -272,7 +272,7 @@
       ]
 {{end}}
 {{if .HasWindows}}
-    , "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $zipFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.zip' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Rename-Item $inputFile $zipFile ; Expand-Archive $zipFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
+    , "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $zipFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.zip' ; $scriptFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Rename-Item $inputFile $zipFile ; Expand-Archive $zipFile -DestinationPath 'C:\\AzureData\\' ; Invoke-Expression('{0} {1}' -f $scriptFile, $arguments) ; "
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
      ,"apiVersionKeyVault": "2016-10-01",
