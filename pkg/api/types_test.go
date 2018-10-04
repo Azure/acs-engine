@@ -2047,17 +2047,13 @@ func TestProperties_GetClusterMetadata(t *testing.T) {
 func TestGetAgentPoolIndexByName(t *testing.T) {
 	tests := []struct {
 		name          string
-		profile       *AgentPoolProfile
+		profileName   string
 		properties    *Properties
 		expectedIndex int
 	}{
 		{
-			name: "index 0",
-			profile: &AgentPoolProfile{
-				Name:   "myagentpool",
-				VMSize: "Standard_D2_v2",
-				Count:  3,
-			},
+			name:        "index 0",
+			profileName: "myagentpool",
 			properties: &Properties{
 				AgentPoolProfiles: []*AgentPoolProfile{
 					{
@@ -2075,12 +2071,8 @@ func TestGetAgentPoolIndexByName(t *testing.T) {
 			expectedIndex: 0,
 		},
 		{
-			name: "index 3",
-			profile: &AgentPoolProfile{
-				Name:   "myagentpool",
-				VMSize: "Standard_D2_v2",
-				Count:  2,
-			},
+			name:        "index 3",
+			profileName: "myagentpool",
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType: Kubernetes,
@@ -2116,12 +2108,8 @@ func TestGetAgentPoolIndexByName(t *testing.T) {
 			expectedIndex: 3,
 		},
 		{
-			name: "not found",
-			profile: &AgentPoolProfile{
-				Name:   "myagentpool",
-				VMSize: "Standard_D2_v2",
-				Count:  1,
-			},
+			name:        "not found",
+			profileName: "myagentpool",
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType: Kubernetes,
@@ -2147,7 +2135,7 @@ func TestGetAgentPoolIndexByName(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			actual := test.properties.getAgentPoolIndexByName(test.profile)
+			actual := test.properties.getAgentPoolIndexByName(test.profileName)
 
 			if actual != test.expectedIndex {
 				t.Errorf("expected agent pool index %d, but got %d", test.expectedIndex, actual)
