@@ -2243,7 +2243,7 @@ func TestGetAgentVMPrefix(t *testing.T) {
 					},
 				},
 			},
-			expectedVMPrefix: "44196k8s900",
+			expectedVMPrefix: "24789k8s900",
 		},
 	}
 
