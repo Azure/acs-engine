@@ -750,7 +750,7 @@ func (p *Properties) K8sOrchestratorName() string {
 
 // GetAgentPoolIndex returns the prefix of agentpool VMs given the pool index1
 func (p *Properties) GetAgentPoolIndex(a *AgentPoolProfile) int {
-	var index int
+	index := -1
 	for i, profile := range p.AgentPoolProfiles {
 		if profile.Name == a.Name {
 			index = i
