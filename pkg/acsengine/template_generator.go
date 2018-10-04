@@ -693,7 +693,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				panic(e)
 			}
 			// convert to base64
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", base64.StdEncoding.EncodeToString(buf.Bytes()))
+			return fmt.Sprintf("\"customData\": \"%s\",", base64.StdEncoding.EncodeToString(buf.Bytes()))
 		},
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
