@@ -4,6 +4,9 @@
 {{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
     "{{.Name}}VMNamePrefix": "{{GetAgentVMPrefix .}}",
+{{if .IsWindows}}
+    "winResourceNamePrefix" : "[substring(parameters('nameSuffix'), 0, 5)]",
+{{end}}
 {{if .IsAvailabilitySets}}
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', parameters('nameSuffix'))]",
