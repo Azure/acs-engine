@@ -2084,6 +2084,7 @@ func TestGetAgentVMPrefix(t *testing.T) {
 				Name:                "agentpool",
 				VMSize:              "Standard_D2_v2",
 				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
 				OSType:              "Linux",
 			},
 			properties: &Properties{
@@ -2103,7 +2104,7 @@ func TestGetAgentVMPrefix(t *testing.T) {
 					},
 				},
 			},
-			expectedVMPrefix: "k8s-agentpool-42378941-vmss",
+			expectedVMPrefix: "k8s-agentpool-30819786-vmss",
 		},
 		{
 			name: "Windows agent pool profile",
