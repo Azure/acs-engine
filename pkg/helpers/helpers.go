@@ -3,8 +3,10 @@ package helpers
 import (
 	// "fmt"
 	"bytes"
+	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -160,4 +162,25 @@ func GetHomeDir() string {
 // ShellQuote returns a string that is enclosed within single quotes. If the string already has single quotes, they will be escaped.
 func ShellQuote(s string) string {
 	return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+}
+
+// CreateSaveSSH generates and stashes an SSH key pair.
+func CreateSaveSSH(username, outputDirectory string, s *i18n.Translator) (privateKey *rsa.PrivateKey, publicKeyString string, err error) {
+	privateKey, publicKeyString, err = CreateSSH(rand.Reader, s)
+	if err != nil {
+		return nil, "", err
+	}
+
+	privateKeyPem := privateKeyToPem(privateKey)
+
+	f := &FileSaver{
+		Translator: s,
+	}
+
+	err = f.SaveFile(outputDirectory, fmt.Sprintf("%s_rsa", username), privateKeyPem)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return privateKey, publicKeyString, nil
 }

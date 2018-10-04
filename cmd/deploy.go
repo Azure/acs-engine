@@ -294,7 +294,7 @@ func autofillApimodel(dc *deployCmd) error {
 		translator := &i18n.Translator{
 			Locale: dc.locale,
 		}
-		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
+		_, publicKey, err := helpers.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory, translator)
 		if err != nil {
 			return errors.Wrap(err, "Failed to generate SSH Key")
 		}
