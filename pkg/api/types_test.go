@@ -2043,3 +2043,51 @@ func TestProperties_GetClusterMetadata(t *testing.T) {
 	}
 
 }
+
+func TestGetAgentVMPrefix(t *testing.T) {
+	tests := []struct {
+		name             string
+		profile          *AgentPoolProfile
+		properties       *Properties
+		expectedVMPrefix string
+	}{
+		{
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OsType: "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "bbb",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.GetAgentVMPrefix(test.profile)
+
+			if actual != test.expectedVMPrefix {
+				t.Errorf("expected agent VM name %s, but got %s", test.expectedVMPrefix, actual)
+			}
+		})
+	}
+}
