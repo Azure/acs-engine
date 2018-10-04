@@ -1281,3 +1281,36 @@ func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
 		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 	}
 }
+
+//GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
+//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
+//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
+func (cs *ContainerService) GetCloudSpecConfig() AzureEnvironmentSpecConfig {
+	switch cs.getCloudTargetEnv() {
+	case azureChinaCloud:
+		return AzureChinaCloudSpec
+	case azureGermanCloud:
+		return AzureGermanCloudSpec
+	case azureUSGovernmentCloud:
+		return AzureUSGovernmentCloud
+	default:
+		return AzureCloudSpec
+	}
+}
+
+// getCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
+func (cs *ContainerService) getCloudTargetEnv() string {
+	loc := strings.ToLower(strings.Join(strings.Fields(cs.Location), ""))
+	switch {
+	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
+		return azureChinaCloud
+	case loc == "germanynortheast" || loc == "germanycentral":
+		return azureGermanCloud
+	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
+		return azureUSGovernmentCloud
+	default:
+		return azurePublicCloud
+	}
+}

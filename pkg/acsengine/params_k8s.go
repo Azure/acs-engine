@@ -12,7 +12,7 @@ import (
 )
 
 func assignKubernetesParameters(properties *api.Properties, parametersMap paramsMap,
-	cloudSpecConfig AzureEnvironmentSpecConfig, generatorCode string) {
+	cloudSpecConfig api.AzureEnvironmentSpecConfig, generatorCode string) {
 	addValue(parametersMap, "generatorCode", generatorCode)
 
 	orchestratorProfile := properties.OrchestratorProfile

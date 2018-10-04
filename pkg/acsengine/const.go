@@ -202,12 +202,6 @@ const (
 	DefaultDockerEngineRepo = "https://download.docker.com/linux/ubuntu"
 	// DefaultDockerComposeURL for grabbing docker images
 	DefaultDockerComposeURL = "https://github.com/docker/compose/releases/download"
-
-	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
-	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
-	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
-	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
-	//AzureEdgeDCOSWindowsBootstrapDownloadURL
 )
 
 const (
