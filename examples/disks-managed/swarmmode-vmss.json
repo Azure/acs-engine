@@ -12,14 +12,14 @@
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
-        "count": 3,
+        "count": 1,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "VirtualMachineScaleSets",
         "storageProfile": "ManagedDisks"
       },
       {
           "name": "agentpublic",
-          "count": 3,
+          "count": 1,
           "vmSize": "Standard_D2_v2",
           "availabilityProfile": "VirtualMachineScaleSets",
           "storageProfile": "ManagedDisks",
