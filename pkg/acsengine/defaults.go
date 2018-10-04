@@ -647,6 +647,10 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
+		if profile.AcceleratedNetworkingEnabledWindows == nil {
+			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(false)
+		}
+
 		if profile.Distro == "" {
 			if a.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
