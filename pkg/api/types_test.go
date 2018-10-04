@@ -2052,11 +2052,12 @@ func TestGetAgentVMPrefix(t *testing.T) {
 		expectedVMPrefix string
 	}{
 		{
+			name: "Linux VMAS agent pool profile",
 			profile: &AgentPoolProfile{
 				Name:   "agentpool",
 				VMSize: "Standard_D2_v2",
 				Count:  1,
-				OsType: "Linux",
+				OSType: "Linux",
 			},
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
@@ -2075,7 +2076,61 @@ func TestGetAgentVMPrefix(t *testing.T) {
 					},
 				},
 			},
-			expectedVMPrefix: "bbb",
+			expectedVMPrefix: "k8s-agentpool-42378941-",
+		},
+		{
+			name: "Linux VMSS agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				OSType:              "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "k8s-agentpool-42378941-vmss",
+		},
+		{
+			name: "Windows agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "44196k8s900",
 		},
 	}
 
