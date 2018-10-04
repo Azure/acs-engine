@@ -2044,6 +2044,118 @@ func TestProperties_GetClusterMetadata(t *testing.T) {
 
 }
 
+func TestGetAgentPoolIndexByName(t *testing.T) {
+	tests := []struct {
+		name          string
+		profile       *AgentPoolProfile
+		properties    *Properties
+		expectedIndex int
+	}{
+		{
+			name: "index 0",
+			profile: &AgentPoolProfile{
+				Name:   "myagentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  3,
+			},
+			properties: &Properties{
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  3,
+					},
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: 0,
+		},
+		{
+			name: "index 3",
+			profile: &AgentPoolProfile{
+				Name:   "myagentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  2,
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool2",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool3",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+				},
+			},
+			expectedIndex: 3,
+		},
+		{
+			name: "not found",
+			profile: &AgentPoolProfile{
+				Name:   "myagentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agent1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: -1,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.getAgentPoolIndexByName(test.profile)
+
+			if actual != test.expectedIndex {
+				t.Errorf("expected agent pool index %d, but got %d", test.expectedIndex, actual)
+			}
+		})
+	}
+}
+
 func TestGetAgentVMPrefix(t *testing.T) {
 	tests := []struct {
 		name             string
