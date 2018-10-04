@@ -491,7 +491,7 @@ func setExtensionDefaults(a *api.Properties) {
 }
 
 func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
-	// don't default Distro for OpenShift
+	// Set Kubernetes default distro
 	if a.OrchestratorProfile.IsKubernetes() {
 		if a.MasterProfile.Distro == "" {
 			a.MasterProfile.Distro = api.AKS
@@ -646,7 +646,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
-		// don't default Distro for OpenShift
+		// Set Kubernetes default distro
 		if a.OrchestratorProfile.IsKubernetes() {
 			if profile.Distro == "" {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
