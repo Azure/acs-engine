@@ -491,10 +491,11 @@ func setExtensionDefaults(a *api.Properties) {
 }
 
 func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
-	// Set Kubernetes default distro
-	if a.OrchestratorProfile.IsKubernetes() {
-		if a.MasterProfile.Distro == "" {
+	if a.MasterProfile.Distro == "" {
+		if a.OrchestratorProfile.IsKubernetes() {
 			a.MasterProfile.Distro = api.AKS
+		} else {
+			a.MasterProfile.Distro = api.Ubuntu
 		}
 	}
 	// set default to VMAS for now
@@ -646,14 +647,15 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
-		// Set Kubernetes default distro
-		if a.OrchestratorProfile.IsKubernetes() {
-			if profile.Distro == "" {
+		if a.MasterProfile.Distro == "" {
+			if a.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
 				} else {
 					profile.Distro = api.AKS
 				}
+			} else {
+				profile.Distro = api.Ubuntu
 			}
 		}
 
