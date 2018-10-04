@@ -75,16 +75,6 @@ type AzureOSImageConfig struct {
 	ImageVersion   string
 }
 
-//AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
-type AzureEnvironmentSpecConfig struct {
-	CloudName            string
-	DockerSpecConfig     DockerSpecConfig
-	KubernetesSpecConfig KubernetesSpecConfig
-	DCOSSpecConfig       DCOSSpecConfig
-	EndpointConfig       AzureEndpointConfig
-	OSImageConfig        map[api.Distro]AzureOSImageConfig
-}
-
 // Context represents the object that is passed to the package
 type Context struct {
 	Translator *i18n.Translator

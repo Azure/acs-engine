@@ -116,31 +116,15 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 	var FQDNFormat string
 	switch getCloudTargetEnv(location) {
 	case azureChinaCloud:
-		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+		FQDNFormat = api.AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	case azureGermanCloud:
-		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+		FQDNFormat = api.AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	case azureUSGovernmentCloud:
-		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
+		FQDNFormat = api.AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
 	default:
-		FQDNFormat = AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+		FQDNFormat = api.AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	}
 	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
-}
-
-//getCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
-//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
-//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
-func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	switch getCloudTargetEnv(location) {
-	case azureChinaCloud:
-		return AzureChinaCloudSpec
-	case azureGermanCloud:
-		return AzureGermanCloudSpec
-	case azureUSGovernmentCloud:
-		return AzureUSGovernmentCloud
-	default:
-		return AzureCloudSpec
-	}
 }
 
 // validateDistro checks if the requested orchestrator type is supported on the requested Linux distro.
