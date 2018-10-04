@@ -652,14 +652,14 @@ func TestSetComponentsNetworkDefaults(t *testing.T) {
 		expectedDistro      api.Distro              // expected result default disto to be used
 	}{
 		{
-			"ubuntu_kubernetes",
+			"default_kubernetes",
 			api.OrchestratorProfile{
 				OrchestratorType: api.Kubernetes,
 			},
 			api.AKS,
 		},
 		{
-			"rhel_openshift",
+			"default_openshift",
 			api.OrchestratorProfile{
 				OrchestratorType: api.OpenShift,
 			},
