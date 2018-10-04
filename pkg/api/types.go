@@ -748,11 +748,10 @@ func (p *Properties) K8sOrchestratorName() string {
 	return ""
 }
 
-// GetAgentPoolIndex returns the prefix of agentpool VMs given the pool index1
-func (p *Properties) GetAgentPoolIndex(a *AgentPoolProfile) int {
+func (p *Properties) getAgentPoolIndex(name string) int {
 	index := -1
 	for i, profile := range p.AgentPoolProfiles {
-		if profile.Name == a.Name {
+		if profile.Name == name {
 			index = i
 			break
 		}
@@ -762,7 +761,7 @@ func (p *Properties) GetAgentPoolIndex(a *AgentPoolProfile) int {
 
 // GetAgentVMPrefix returns the prefix of agentpool VMs given the pool index
 func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
-	index := p.GetAgentPoolIndex(a)
+	index := p.getAgentPoolIndex(a.Name)
 	nameSuffix := p.GetClusterID()
 	var vmPrefix string
 	if a.IsWindows() {
