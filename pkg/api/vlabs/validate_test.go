@@ -73,7 +73,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.16",
+					OrchestratorVersion: "1.8.15",
 					KubernetesConfig: &KubernetesConfig{
 						EnableAggregatedAPIs: true,
 						EnableRbac:           &falseVal,
@@ -98,7 +98,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.16",
+					OrchestratorVersion: "1.8.15",
 					KubernetesConfig: &KubernetesConfig{
 						EnableDataEncryptionAtRest: &trueVal,
 						EtcdEncryptionKey:          "fakeEncryptionKey",
@@ -135,7 +135,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.16",
+					OrchestratorVersion: "1.8.15",
 					KubernetesConfig: &KubernetesConfig{
 						EnablePodSecurityPolicy: &trueVal,
 					},
@@ -147,14 +147,14 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 			properties: &Properties{
 				OrchestratorProfile: &OrchestratorProfile{
 					OrchestratorType:    "Kubernetes",
-					OrchestratorVersion: "1.7.16",
+					OrchestratorVersion: "1.6.9",
 					KubernetesConfig: &KubernetesConfig{
 						EnableRbac:              &trueVal,
 						EnablePodSecurityPolicy: &trueVal,
 					},
 				},
 			},
-			expectedError: "enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version 1.8.0 or greater; unable to validate for Kubernetes version 1.7.16",
+			expectedError: "enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version 1.8.0 or greater; unable to validate for Kubernetes version 1.6.9",
 		},
 		"should not error with empty object": {
 			properties: &Properties{

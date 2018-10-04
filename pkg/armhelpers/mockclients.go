@@ -64,6 +64,7 @@ type MockKubernetesClient struct {
 	FailEvictPod          bool
 	FailWaitForDelete     bool
 	ShouldSupportEviction bool
+	KubernetesVersion     string
 	PodsList              *v1.PodList
 }
 
@@ -377,6 +378,9 @@ func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resource
 
 	creationSource := "acsengine-k8s-agentpool1-12345678-0"
 	orchestrator := "Kubernetes:1.6.9"
+	if mc.MockKubernetesClient != nil && mc.MockKubernetesClient.KubernetesVersion != "" {
+		orchestrator = "Kubernetes:" + mc.MockKubernetesClient.KubernetesVersion
+	}
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 
