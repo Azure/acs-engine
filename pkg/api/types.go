@@ -17,6 +17,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
 )
 
@@ -1306,5 +1307,21 @@ func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
 	}
 	if k.CloudProviderRateLimitBucket == 0 {
 		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+	}
+}
+
+//GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
+//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
+//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
+func (cs *ContainerService) GetCloudSpecConfig() AzureEnvironmentSpecConfig {
+	switch helpers.GetCloudTargetEnv(cs.Location) {
+	case azureChinaCloud:
+		return AzureChinaCloudSpec
+	case azureGermanCloud:
+		return AzureGermanCloudSpec
+	case azureUSGovernmentCloud:
+		return AzureUSGovernmentCloud
+	default:
+		return AzureCloudSpec
 	}
 }

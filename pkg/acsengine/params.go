@@ -7,13 +7,14 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func getParameters(cs *api.ContainerService, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
-	cloudSpecConfig := getCloudSpecConfig(location)
+	cloudSpecConfig := cs.GetCloudSpecConfig()
 
 	// acsengine Parameters
 	addValue(parametersMap, "acsengineVersion", acsengineVersion)
@@ -36,7 +37,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 	// for the openshift orchestrator
 
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
-	addValue(parametersMap, "targetEnvironment", getCloudTargetEnv(location))
+	addValue(parametersMap, "targetEnvironment", helpers.GetCloudTargetEnv(cs.Location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	if properties.LinuxProfile.CustomSearchDomain != nil {
 		addValue(parametersMap, "searchDomainName", properties.LinuxProfile.CustomSearchDomain.Name)

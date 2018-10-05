@@ -184,3 +184,20 @@ func CreateSaveSSH(username, outputDirectory string, s *i18n.Translator) (privat
 
 	return privateKey, publicKeyString, nil
 }
+
+// GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
+func GetCloudTargetEnv(location string) string {
+	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
+	switch {
+	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
+		return "AzureChinaCloud"
+	case loc == "germanynortheast" || loc == "germanycentral":
+		return "AzureGermanCloud"
+	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
+		return "AzureUSGovernmentCloud"
+	default:
+		return "AzurePublicCloud"
+	}
+}
