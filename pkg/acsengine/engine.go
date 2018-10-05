@@ -92,7 +92,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 		}
 
 		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
-			getCloudTargetEnv(location),
+			helpers.GetCloudTargetEnv(location),
 			tenantID,
 			properties.AADProfile.ServerAppID,
 			properties.AADProfile.ClientAppID)
@@ -114,7 +114,7 @@ func formatAzureProdFQDNs(fqdnPrefix string) []string {
 // FormatAzureProdFQDN constructs an Azure prod fqdn
 func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 	var FQDNFormat string
-	switch getCloudTargetEnv(location) {
+	switch helpers.GetCloudTargetEnv(location) {
 	case azureChinaCloud:
 		FQDNFormat = api.AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	case azureGermanCloud:
@@ -144,23 +144,6 @@ func validateDistro(cs *api.ContainerService) bool {
 		}
 	}
 	return true
-}
-
-// getCloudTargetEnv determines and returns whether the region is a sovereign cloud which
-// have their own data compliance regulations (China/Germany/USGov) or standard
-//  Azure public cloud
-func getCloudTargetEnv(location string) string {
-	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
-	switch {
-	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
-		return azureChinaCloud
-	case loc == "germanynortheast" || loc == "germanycentral":
-		return azureGermanCloud
-	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
-		return azureUSGovernmentCloud
-	default:
-		return azurePublicCloud
-	}
 }
 
 func getOpenshiftMasterShAsset(version string) string {
