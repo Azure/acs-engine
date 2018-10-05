@@ -647,14 +647,14 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabled = helpers.PointerToBool(!isUpgrade && !isScale && helpers.AcceleratedNetworkingSupported(profile.VMSize))
 		}
 
-		if profile.Distro == "" {
+		if profile.Distro == "" && profile.OSType != api.Windows {
 			if a.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
 				} else {
 					profile.Distro = api.AKS
 				}
-			} else if !a.OrchestratorProfile.IsOpenShift() && profile.OSType != api.Windows {
+			} else if !a.OrchestratorProfile.IsOpenShift() {
 				profile.Distro = api.Ubuntu
 			}
 		}
