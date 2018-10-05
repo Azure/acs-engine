@@ -189,6 +189,8 @@ const (
 	ARMNetworkNamespace = "Microsoft.Networks"
 	// ARMVirtualNetworksResourceType is the ARM resource type for virtual network resources of ARM.
 	ARMVirtualNetworksResourceType = "virtualNetworks"
+	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
+	DefaultAcceleratedNetworkingWindowsEnabled = false
 )
 
 const (

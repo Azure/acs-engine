@@ -648,7 +648,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		}
 
 		if profile.AcceleratedNetworkingEnabledWindows == nil {
-			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(false)
+			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(api.DefaultAcceleratedNetworkingWindowsEnabled)
 		}
 
 		if profile.Distro == "" {
