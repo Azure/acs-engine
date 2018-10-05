@@ -65,6 +65,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--image-pull-progress-deadline":    "30m",
 	}
 
+	// AKS overrides
+	if cs.Properties.IsHostedMasterProfile() {
+		defaultKubeletConfig["--non-masquerade-cidr"] = cs.Properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet
+	}
+
 	// Apply Azure CNI-specific --max-pods value
 	if o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure {
 		defaultKubeletConfig["--max-pods"] = strconv.Itoa(DefaultKubernetesMaxPodsVNETIntegrated)

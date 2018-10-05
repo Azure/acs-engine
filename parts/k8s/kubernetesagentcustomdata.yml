@@ -191,6 +191,12 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
+{{if IsHostedMaster}}
+    {{if IsAzureCNI}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
+    {{end}}
+{{end}}
 {{if HasCustomSearchDomain}}
     sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
     sed -i "s|<searchDomainRealmUser>|{{WrapAsParameter "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
