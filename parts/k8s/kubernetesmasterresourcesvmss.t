@@ -13,7 +13,7 @@
   {
     "type": "Microsoft.Storage/storageAccounts",
     "name": "[variables('clusterKeyVaultName')]",
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionStorage')]",
     "location": "[variables('location')]",
     "properties": {
       "accountType": "Standard_LRS"
