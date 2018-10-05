@@ -240,7 +240,7 @@
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
-    "masterVMNamePrefix": "[concat(parameters('orchestratorName'), '-master-', parameters('nameSuffix'), '-')]",
+    "masterVMNamePrefix": "{{GetMasterVMPrefix}}",
     "masterVMNames": [
       "[concat(variables('masterVMNamePrefix'), '0')]",
       "[concat(variables('masterVMNamePrefix'), '1')]",
