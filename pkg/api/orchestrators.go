@@ -1,13 +1,11 @@
 package api
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
-	"github.com/blang/semver"
 	"github.com/pkg/errors"
 )
 
@@ -181,13 +179,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*Orchestrat
 
 func kubernetesUpgrades(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
-
-	currentVer, err := semver.Make(csOrch.OrchestratorVersion)
-	if err != nil {
-		return nil, err
-	}
-	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
+	upgradeableVersions := common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, false, true)
 	for _, ver := range upgradeableVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
