@@ -269,8 +269,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				} else {
 					addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 				}
-			} else {
-				addValue(parametersMap, "kubernetesNonMasqueradeCidr", kubernetesConfig.KubeletConfig["--non-masquerade-cidr"])
 			}
 			addValue(parametersMap, "kubernetesKubeletClusterDomain", kubernetesConfig.KubeletConfig["--cluster-domain"])
 			addValue(parametersMap, "dockerBridgeCidr", kubernetesConfig.DockerBridgeSubnet)
