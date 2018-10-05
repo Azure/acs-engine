@@ -665,35 +665,47 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := getBase64CustomScript(swarmModeWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
-		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLine(kubernetesWindowsAgentCustomDataPS1, cs, profile)
-			if e != nil {
-				panic(e)
-			}
-			preprovisionCmd := ""
-			if profile.PreprovisionExtension != nil {
-				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
-			}
-			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
+		"GetKubernetesWindowsAgentFunctions": func() string {
+			// Collect all the parts into a zip
+			var parts = []string{kubernetesWindowsAgentFunctionsPS1}
 
 			// Create a buffer, new zip
 			buf := new(bytes.Buffer)
 			zw := zip.NewWriter(buf)
 
-			f, err := zw.Create("CustomDataSetupScript.ps1")
+			for _, part := range parts {
+				f, err := zw.Create(part)
+				if err != nil {
+					panic(err)
+				}
+				partContents, err := Asset(part)
+				_, err = f.Write([]byte(partContents))
+				if err != nil {
+					panic(err)
+				}
+			}
+			err := zw.Close()
 			if err != nil {
+				panic(err)
+			}
+			return base64.StdEncoding.EncodeToString(buf.Bytes())
+		},
+		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str, e := t.getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1, cs, profile)
+
+			if e != nil {
 				panic(e)
 			}
-			_, err = f.Write([]byte(str))
-			if err != nil {
-				panic(e)
+
+			preprovisionCmd := ""
+
+			if profile.PreprovisionExtension != nil {
+				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
 			}
-			err = zw.Close()
-			if err != nil {
-				panic(e)
-			}
-			// convert to base64
-			return fmt.Sprintf("\"customData\": \"%s\",", base64.StdEncoding.EncodeToString(buf.Bytes()))
+
+			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
+
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
