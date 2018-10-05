@@ -213,7 +213,7 @@ function extractHyperkube() {
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
-    rm -rf /home/rootfs-*  # TODO: remove this after VHD 0.18.0
+    rm -rf /home/rootfs-*
 }
 
 function pullContainerImage() {
