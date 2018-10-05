@@ -28,6 +28,9 @@ if [ -f /var/log/azure/golden-image-install.complete ]; then
     FULL_INSTALL_REQUIRED=false
 else
     FULL_INSTALL_REQUIRED=true
+    # temporary fix for cleanup of packer dir
+    # TODO: remove after VHD 0.18.0
+    rm -rf /home/packer
 fi
 
 function testOutboundConnection() {

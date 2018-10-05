@@ -199,8 +199,8 @@ function pullHyperkube() {
         cp "$path" "/opt/kubectl"
         chmod a+x /opt/kubelet /opt/kubectl
     else
-        cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
-        cp "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
+        mv "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
+        mv "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
     fi
 }
 
@@ -213,6 +213,7 @@ function extractHyperkube() {
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-*
+    rm -rf /home/rootfs-*  # TODO: remove this after VHD 0.18.0
 }
 
 function pullContainerImage() {
