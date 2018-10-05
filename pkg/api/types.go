@@ -2,15 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/helpers"
 	"hash/fnv"
 	"math/rand"
 	"net"
 	neturl "net/url"
 	"strconv"
 	"strings"
-
-	"github.com/Azure/acs-engine/pkg/helpers"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
@@ -20,6 +17,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
 )
 

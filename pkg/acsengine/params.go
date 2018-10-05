@@ -3,13 +3,11 @@ package acsengine
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/helpers"
 	"strings"
-
-	"github.com/Azure/acs-engine/pkg/helpers"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func getParameters(cs *api.ContainerService, generatorCode string, acsengineVersion string) (paramsMap, error) {
