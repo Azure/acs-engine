@@ -165,14 +165,13 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	return agentIndex, nil
 }
 
-// GetK8sVMName reconstructs VM name
-func GetK8sVMName(osType api.OSType, p *api.Properties, nameSuffix, agentPoolName string, agentPoolIndex, agentIndex int) (string, error) {
-	prefix := p.K8sOrchestratorName()
-	if osType == api.Linux {
-		return fmt.Sprintf("%s-%s-%s-%d", prefix, agentPoolName, nameSuffix, agentIndex), nil
-	}
-	if osType == api.Windows {
-		return fmt.Sprintf("%s%s%d%d", nameSuffix[:4], prefix, agentPoolIndex, agentIndex), nil
+// GetK8sVMName reconstructs the VM name
+func GetK8sVMName(p *api.Properties, agentPoolIndex, agentIndex int) (string, error) {
+	if len(p.AgentPoolProfiles) > agentIndex {
+		vmPrefix := p.GetAgentVMPrefix(p.AgentPoolProfiles[agentPoolIndex])
+		if vmPrefix != "" {
+			return vmPrefix + strconv.Itoa(agentIndex), nil
+		}
 	}
 	return "", errors.Errorf("Failed to reconstruct VM Name")
 }

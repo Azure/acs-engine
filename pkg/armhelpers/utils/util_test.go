@@ -150,20 +150,46 @@ func Test_GetVMNameIndexWindows(t *testing.T) {
 }
 
 func Test_GetK8sVMName(t *testing.T) {
+	p := &api.Properties{
+		OrchestratorProfile: &api.OrchestratorProfile{
+			OrchestratorType: api.Kubernetes,
+		},
+		HostedMasterProfile: &api.HostedMasterProfile{
+			DNSPrefix: "foo",
+		},
+		AgentPoolProfiles: []*api.AgentPoolProfile{
+			{
+				Name:   "linux1",
+				VMSize: "Standard_D2_v2",
+				Count:  3,
+				OSType: "Linux",
+			},
+			{
+				Name:   "windows2",
+				VMSize: "Standard_D2_v2",
+				Count:  2,
+				OSType: "Windows",
+			},
+			{
+				Name:   "someotherpool",
+				VMSize: "Standard_D2_v2",
+				Count:  5,
+				OSType: "Linux",
+			},
+		},
+	}
 
 	for _, s := range []struct {
-		osType                     api.OSType
-		isAKS                      bool
-		nameSuffix, agentPoolName  string
+		properties                 *api.Properties
 		agentPoolIndex, agentIndex int
 		expected                   string
 		expectedErr                bool
 	}{
-		{api.Linux, true, "35953384", "agentpool1", 0, 2, "aks-agentpool1-35953384-2", false},
-		{api.Windows, false, "35953384", "agentpool1", 0, 2, "35953k8s9002", false},
-		{"macOS", false, "35953384", "agentpool1", 0, 2, "", true},
+		{properties: p, agentPoolIndex: 0, agentIndex: 2, expected: "aks-linux1-28513887-2", expectedErr: false},
+		{properties: p, agentPoolIndex: 1, agentIndex: 1, expected: "2851aks11", expectedErr: false},
+		{properties: p, agentPoolIndex: 3, agentIndex: 0, expected: "", expectedErr: true},
 	} {
-		vmName, err := GetK8sVMName(s.osType, s.isAKS, s.nameSuffix, s.agentPoolName, s.agentPoolIndex, s.agentIndex)
+		vmName, err := GetK8sVMName(s.properties, s.agentPoolIndex, s.agentIndex)
 
 		if !s.expectedErr {
 			if err != nil {
@@ -171,7 +197,7 @@ func Test_GetK8sVMName(t *testing.T) {
 			}
 		}
 		if vmName != s.expected {
-			t.Fatalf("vmName %s, expected %s", vmName, s.expected)
+			t.Fatalf("Got vmName %s, expected %s", vmName, s.expected)
 		}
 	}
 }
