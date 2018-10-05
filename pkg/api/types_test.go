@@ -2086,3 +2086,238 @@ func TestGetAddonContainersIndexByName(t *testing.T) {
 		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
 	}
 }
+
+func TestGetAgentPoolIndexByName(t *testing.T) {
+	tests := []struct {
+		name          string
+		profileName   string
+		properties    *Properties
+		expectedIndex int
+	}{
+		{
+			name:        "index 0",
+			profileName: "myagentpool",
+			properties: &Properties{
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  3,
+					},
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: 0,
+		},
+		{
+			name:        "index 3",
+			profileName: "myagentpool",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool2",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool3",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+				},
+			},
+			expectedIndex: 3,
+		},
+		{
+			name:        "not found",
+			profileName: "myagentpool",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agent1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: -1,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.getAgentPoolIndexByName(test.profileName)
+
+			if actual != test.expectedIndex {
+				t.Errorf("expected agent pool index %d, but got %d", test.expectedIndex, actual)
+			}
+		})
+	}
+}
+
+func TestGetAgentVMPrefix(t *testing.T) {
+	tests := []struct {
+		name             string
+		profile          *AgentPoolProfile
+		properties       *Properties
+		expectedVMPrefix string
+	}{
+		{
+			name: "Linux VMAS agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+						OSType: "Linux",
+					},
+				},
+			},
+			expectedVMPrefix: "k8s-agentpool-42378941-",
+		},
+		{
+			name: "Linux VMSS agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
+				OSType:              "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "agentpool",
+						VMSize:              "Standard_D2_v2",
+						Count:               1,
+						AvailabilityProfile: "VirtualMachineScaleSets",
+						OSType:              "Linux",
+					},
+				},
+			},
+			expectedVMPrefix: "k8s-agentpool-30819786-vmss",
+		},
+		{
+			name: "Windows agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+						OSType: "Windows",
+					},
+				},
+			},
+			expectedVMPrefix: "24789k8s900",
+		},
+		{
+			name: "agent profile doesn't exist",
+			profile: &AgentPoolProfile{
+				Name:   "something",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.GetAgentVMPrefix(test.profile)
+
+			if actual != test.expectedVMPrefix {
+				t.Errorf("expected agent VM name %s, but got %s", test.expectedVMPrefix, actual)
+			}
+		})
+	}
+}

@@ -3,23 +3,18 @@
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
 {{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
+    "{{.Name}}VMNamePrefix": "{{GetAgentVMPrefix .}}",
+{{if .IsWindows}}
+    "winResourceNamePrefix" : "[substring(parameters('nameSuffix'), 0, 5)]",
+{{end}}
 {{if .IsAvailabilitySets}}
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', parameters('nameSuffix'))]",
-{{end}}
-{{if .IsWindows}}
-    "winResourceNamePrefix" : "[substring(parameters('nameSuffix'), 0, 5)]",
-    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), parameters('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
 {{else}}
-{{if .IsAvailabilitySets}}
-    "{{.Name}}VMNamePrefix": "[concat(parameters('orchestratorName'), '-{{.Name}}-', parameters('nameSuffix'), '-')]",
-{{else}}
-    "{{.Name}}VMNamePrefix": "[concat(parameters('orchestratorName'), '-{{.Name}}-', parameters('nameSuffix'), '-vmss')]",
     {{if .IsLowPriorityScaleSet}}
     "{{.Name}}ScaleSetPriority": "[parameters('{{.Name}}ScaleSetPriority')]",
     "{{.Name}}ScaleSetEvictionPolicy": "[parameters('{{.Name}}ScaleSetEvictionPolicy')]",
     {{end}}
-{{end}}
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
 {{if .IsCustomVNET}}
