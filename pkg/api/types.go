@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"hash/fnv"
 	"math/rand"
 	"net"

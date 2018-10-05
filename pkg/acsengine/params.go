@@ -3,6 +3,7 @@ package acsengine
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
