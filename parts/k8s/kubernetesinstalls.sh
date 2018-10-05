@@ -195,11 +195,11 @@ function pullHyperkube() {
     path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
-        mv "$path" "/opt/kubelet"
+        cp "$path" "/opt/kubelet"
         mv "$path" "/opt/kubectl"
         chmod a+x /opt/kubelet /opt/kubectl
     else
-        mv "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
+        cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
         mv "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
     fi
 }
