@@ -16,7 +16,11 @@
     },
 {{end}}
     {
+      {{if .AcceleratedNetworkingEnabled}}
+      "apiVersion": "2018-04-01",
+      {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+      {{end}}
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -31,6 +35,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabledWindows}}",
 {{if .IsCustomVNET}}
 	    "networkSecurityGroup": {
 		    "id": "[variables('nsgID')]"

@@ -400,7 +400,7 @@ func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 			return e
 		}
 
-		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) {
+		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) || helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabledWindows) {
 			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize); e != nil {
 				return e
 			}
