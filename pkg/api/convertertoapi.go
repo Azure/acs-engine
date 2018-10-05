@@ -1018,6 +1018,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.AcceleratedNetworkingEnabled = vlabs.AcceleratedNetworkingEnabled
+	api.AcceleratedNetworkingEnabledWindows = vlabs.AcceleratedNetworkingEnabledWindows
 	api.AvailabilityZones = vlabs.AvailabilityZones
 	api.SinglePlacementGroup = vlabs.SinglePlacementGroup
 

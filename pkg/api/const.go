@@ -189,6 +189,8 @@ const (
 	ARMNetworkNamespace = "Microsoft.Networks"
 	// ARMVirtualNetworksResourceType is the ARM resource type for virtual network resources of ARM.
 	ARMVirtualNetworksResourceType = "virtualNetworks"
+	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
+	DefaultAcceleratedNetworkingWindowsEnabled = false
 )
 
 const (
@@ -221,4 +223,33 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+)
+
+const (
+	azurePublicCloud       = "AzurePublicCloud"
+	azureChinaCloud        = "AzureChinaCloud"
+	azureGermanCloud       = "AzureGermanCloud"
+	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
+)
+
+const (
+	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
+	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
+	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
+	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
+	//AzureEdgeDCOSWindowsBootstrapDownloadURL
+)
+
+const (
+	// AzureCniPluginVerLinux specifies version of Azure CNI plugin, which has been mirrored from
+	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
+	// to https://acs-mirror.azureedge.net/cni
+	AzureCniPluginVerLinux = "v1.0.11"
+	// AzureCniPluginVerWindows specifies version of Azure CNI plugin, which has been mirrored from
+	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-windows-amd64-${AZURE_PLUGIN_VER}.tgz
+	// to https://acs-mirror.azureedge.net/cni
+	AzureCniPluginVerWindows = "v1.0.11"
+	// CNIPluginVer specifies the version of CNI implementation
+	// https://github.com/containernetworking/plugins
+	CNIPluginVer = "v0.7.1"
 )

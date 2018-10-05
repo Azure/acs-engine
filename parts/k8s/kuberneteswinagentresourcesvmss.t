@@ -53,6 +53,7 @@
               "name": "[variables('{{.Name}}VMNamePrefix')]",
               "properties": {
                 "primary": true,
+                "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabledWindows}}",
                 {{if .IsCustomVNET}}
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"
