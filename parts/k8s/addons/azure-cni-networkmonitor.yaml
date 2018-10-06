@@ -20,7 +20,6 @@ spec:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
-        # Allow the pod to run on the master.
       - key: node-role.kubernetes.io/master
         operator: Equal
         value: "true"
