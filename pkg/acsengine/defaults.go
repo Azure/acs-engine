@@ -446,7 +446,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(api.DefaultAcceleratedNetworkingWindowsEnabled)
 		}
 
-		if profile.Distro == "" {
+		if profile.Distro == "" && profile.OSType != api.Windows {
 			if a.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
 					profile.Distro = api.Ubuntu
