@@ -8,7 +8,7 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 Binary downloads for the latest version of acs-engine for are available [here](https://github.com/Azure/acs-engine/releases/latest). Download `acs-engine` for your operating system. Extract the binary and copy it to your `$PATH`.
 
-You can also choose to install acs-engine using [gofish](https://www.gofi.sh/#about), to do so execute the command `gofish install acs-engine` . You can install gofish following the [instructions](https://www.gofi.sh/#install) for your OS.
+You can also choose to install acs-engine using [gofish](https://gofi.sh/#about), to do so execute the command `gofish install acs-engine` . You can install gofish following the [instructions](https://gofi.sh/#install) for your OS.
 
 If you would prefer to build `acs-engine` from source or you are interested in contributing to `acs-engine` see [building from source](#build-acs-engine-from-source) below.
 
