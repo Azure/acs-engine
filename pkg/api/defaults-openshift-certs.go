@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"net"
+
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen/release39"
 	"github.com/Azure/acs-engine/pkg/openshift/certgen/unstable"
-	"net"
 )
 
 // setOpenShiftSetDefaultCerts sets default certificate and configuration properties in the
