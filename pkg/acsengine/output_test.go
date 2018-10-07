@@ -2,15 +2,12 @@ package acsengine
 
 import (
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/helpers"
 	"os"
 	"path"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
-
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
