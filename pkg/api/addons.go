@@ -1,19 +1,18 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setAddonsConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setAddonsConfig() {
 	o := cs.Properties.OrchestratorProfile
-	defaultTillerAddonsConfig := api.KubernetesAddon{
+	defaultTillerAddonsConfig := KubernetesAddon{
 		Name:    DefaultTillerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultTillerAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(DefaultTillerAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultTillerAddonName,
 				CPURequests:    "50m",
@@ -27,16 +26,16 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultACIConnectorAddonsConfig := api.KubernetesAddon{
+	defaultACIConnectorAddonsConfig := KubernetesAddon{
 		Name:    DefaultACIConnectorAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Enabled: helpers.PointerToBool(DefaultACIConnectorAddonEnabled),
 		Config: map[string]string{
 			"region":   "westus",
 			"nodeName": "aci-connector",
 			"os":       "Linux",
 			"taint":    "azure.com/aci",
 		},
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultACIConnectorAddonName,
 				CPURequests:    "50m",
@@ -47,14 +46,14 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultClusterAutoscalerAddonsConfig := api.KubernetesAddon{
+	defaultClusterAutoscalerAddonsConfig := KubernetesAddon{
 		Name:    DefaultClusterAutoscalerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultClusterAutoscalerAddonEnabled),
+		Enabled: helpers.PointerToBool(DefaultClusterAutoscalerAddonEnabled),
 		Config: map[string]string{
 			"minNodes": "1",
 			"maxNodes": "5",
 		},
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultClusterAutoscalerAddonName,
 				CPURequests:    "100m",
@@ -65,10 +64,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultBlobfuseFlexVolumeAddonsConfig := api.KubernetesAddon{
+	defaultBlobfuseFlexVolumeAddonsConfig := KubernetesAddon{
 		Name:    DefaultBlobfuseFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultBlobfuseFlexVolumeAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && DefaultBlobfuseFlexVolumeAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultBlobfuseFlexVolumeAddonName,
 				CPURequests:    "50m",
@@ -79,10 +78,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultSMBFlexVolumeAddonsConfig := api.KubernetesAddon{
+	defaultSMBFlexVolumeAddonsConfig := KubernetesAddon{
 		Name:    DefaultSMBFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && api.DefaultSMBFlexVolumeAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") && DefaultSMBFlexVolumeAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultSMBFlexVolumeAddonName,
 				CPURequests:    "50m",
@@ -93,10 +92,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultKeyVaultFlexVolumeAddonsConfig := api.KubernetesAddon{
+	defaultKeyVaultFlexVolumeAddonsConfig := KubernetesAddon{
 		Name:    DefaultKeyVaultFlexVolumeAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultKeyVaultFlexVolumeAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(DefaultKeyVaultFlexVolumeAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultKeyVaultFlexVolumeAddonName,
 				CPURequests:    "50m",
@@ -107,10 +106,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultDashboardAddonsConfig := api.KubernetesAddon{
+	defaultDashboardAddonsConfig := KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultDashboardAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(DefaultDashboardAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultDashboardAddonName,
 				CPURequests:    "300m",
@@ -121,10 +120,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultReschedulerAddonsConfig := api.KubernetesAddon{
+	defaultReschedulerAddonsConfig := KubernetesAddon{
 		Name:    DefaultReschedulerAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultReschedulerAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(DefaultReschedulerAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           DefaultReschedulerAddonName,
 				CPURequests:    "10m",
@@ -135,20 +134,20 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultMetricsServerAddonsConfig := api.KubernetesAddon{
+	defaultMetricsServerAddonsConfig := KubernetesAddon{
 		Name:    DefaultMetricsServerAddonName,
 		Enabled: k8sVersionMetricsServerAddonEnabled(o),
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name: DefaultMetricsServerAddonName,
 			},
 		},
 	}
 
-	defaultNVIDIADevicePluginAddonsConfig := api.KubernetesAddon{
+	defaultNVIDIADevicePluginAddonsConfig := KubernetesAddon{
 		Name:    NVIDIADevicePluginAddonName,
-		Enabled: helpers.PointerToBool(api.IsNSeriesSKU(cs.Properties) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0")),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(IsNSeriesSKU(cs.Properties) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0")),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name: NVIDIADevicePluginAddonName,
 				// from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/device-plugins/nvidia-gpu/daemonset.yaml#L44
@@ -160,14 +159,14 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultContainerMonitoringAddonsConfig := api.KubernetesAddon{
+	defaultContainerMonitoringAddonsConfig := KubernetesAddon{
 		Name:    ContainerMonitoringAddonName,
-		Enabled: helpers.PointerToBool(api.DefaultContainerMonitoringAddonEnabled),
+		Enabled: helpers.PointerToBool(DefaultContainerMonitoringAddonEnabled),
 		Config: map[string]string{
 			"omsAgentVersion":       "1.6.0-42",
 			"dockerProviderVersion": "2.0.0-3",
 		},
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
 				Image:          "microsoft/oms:acsenginelogfixnew",
@@ -179,10 +178,10 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultIPMasqAgentAddonsConfig := api.KubernetesAddon{
+	defaultIPMasqAgentAddonsConfig := KubernetesAddon{
 		Name:    IPMASQAgentAddonName,
-		Enabled: helpers.PointerToBool(api.IPMasqAgentAddonEnabled),
-		Containers: []api.KubernetesContainerSpec{
+		Enabled: helpers.PointerToBool(IPMasqAgentAddonEnabled),
+		Containers: []KubernetesContainerSpec{
 			{
 				Name:           IPMASQAgentAddonName,
 				CPURequests:    "50m",
@@ -193,27 +192,27 @@ func setAddonsConfig(cs *api.ContainerService) {
 		},
 	}
 
-	defaultAzureCNINetworkMonitorAddonsConfig := api.KubernetesAddon{
+	defaultAzureCNINetworkMonitorAddonsConfig := KubernetesAddon{
 		Name:    AzureCNINetworkMonitoringAddonName,
 		Enabled: azureCNINetworkMonitorAddonEnabled(o),
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name: AzureCNINetworkMonitoringAddonName,
 			},
 		},
 	}
 
-	defaultAzureNetworkPolicyAddonsConfig := api.KubernetesAddon{
+	defaultAzureNetworkPolicyAddonsConfig := KubernetesAddon{
 		Name:    AzureNetworkPolicyAddonName,
 		Enabled: azureNetworkPolicyAddonEnabled(o),
-		Containers: []api.KubernetesContainerSpec{
+		Containers: []KubernetesContainerSpec{
 			{
 				Name: AzureNetworkPolicyAddonName,
 			},
 		},
 	}
 
-	defaultAddons := []api.KubernetesAddon{
+	defaultAddons := []KubernetesAddon{
 		defaultTillerAddonsConfig,
 		defaultACIConnectorAddonsConfig,
 		defaultClusterAutoscalerAddonsConfig,
@@ -246,7 +245,7 @@ func setAddonsConfig(cs *api.ContainerService) {
 	}
 }
 
-func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
+func getAddonsIndexByName(addons []KubernetesAddon, name string) int {
 	for i := range addons {
 		if addons[i].Name == name {
 			return i
@@ -256,7 +255,7 @@ func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
 }
 
 // assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
-func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
+func assignDefaultAddonVals(addon, defaults KubernetesAddon) KubernetesAddon {
 	if addon.Enabled == nil {
 		addon.Enabled = defaults.Enabled
 	}
@@ -293,7 +292,7 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 	return addon
 }
 
-func synthesizeAddonsConfig(addons []api.KubernetesAddon, addon api.KubernetesAddon, enableIfNil bool) {
+func synthesizeAddonsConfig(addons []KubernetesAddon, addon KubernetesAddon, enableIfNil bool) {
 	i := getAddonsIndexByName(addons, addon.Name)
 	if i >= 0 {
 		if addons[i].IsEnabled(enableIfNil) {
@@ -302,14 +301,14 @@ func synthesizeAddonsConfig(addons []api.KubernetesAddon, addon api.KubernetesAd
 	}
 }
 
-func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
+func k8sVersionMetricsServerAddonEnabled(o *OrchestratorProfile) *bool {
 	return helpers.PointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
-func azureNetworkPolicyAddonEnabled(o *api.OrchestratorProfile) *bool {
+func azureNetworkPolicyAddonEnabled(o *OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.KubernetesConfig.NetworkPlugin == NetworkPluginAzure && o.KubernetesConfig.NetworkPolicy == NetworkPolicyAzure)
 }
 
-func azureCNINetworkMonitorAddonEnabled(o *api.OrchestratorProfile) *bool {
+func azureCNINetworkMonitorAddonEnabled(o *OrchestratorProfile) *bool {
 	return helpers.PointerToBool(o.IsAzureCNI())
 }

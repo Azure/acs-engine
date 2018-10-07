@@ -866,7 +866,6 @@ func convertV20170131MasterProfile(v20170131 *v20170131.MasterProfile, api *Mast
 	api.FQDN = v20170131.FQDN
 	api.Subnet = v20170131.GetSubnet()
 	// Set default VMSize
-	// TODO: Use azureconst.go to set
 	api.VMSize = "Standard_D2_v2"
 }
 

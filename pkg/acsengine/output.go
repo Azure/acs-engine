@@ -66,7 +66,7 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if containerService.Location != "" {
 			locations = []string{containerService.Location}
 		} else {
-			locations = AzureLocations
+			locations = helpers.GetAzureLocations()
 		}
 
 		for _, location := range locations {

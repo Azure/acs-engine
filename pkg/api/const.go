@@ -226,13 +226,6 @@ const (
 )
 
 const (
-	azurePublicCloud       = "AzurePublicCloud"
-	azureChinaCloud        = "AzureChinaCloud"
-	azureGermanCloud       = "AzureGermanCloud"
-	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
-)
-
-const (
 	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
 	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
@@ -252,4 +245,124 @@ const (
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
+)
+
+const (
+	// DefaultOpenShiftMasterSubnet is the default value for master subnet for Openshift.
+	DefaultOpenShiftMasterSubnet = "10.0.0.0/24"
+	// DefaultOpenShiftFirstConsecutiveStaticIP is the default static ip address for master 0 for Openshift.
+	DefaultOpenShiftFirstConsecutiveStaticIP = "10.0.0.11"
+	// DefaultMasterSubnet specifies the default master subnet for DCOS or Swarm
+	DefaultMasterSubnet = "172.16.0.0/24"
+	// DefaultFirstConsecutiveStaticIP specifies the static IP address on master 0 for DCOS or Swarm
+	DefaultFirstConsecutiveStaticIP = "172.16.0.5"
+	// DefaultSwarmWindowsMasterSubnet specifies the default master subnet for a Swarm Windows cluster
+	DefaultSwarmWindowsMasterSubnet = "192.168.255.0/24"
+	// DefaultSwarmWindowsFirstConsecutiveStaticIP specifies the static IP address on master 0 for a Swarm WIndows cluster
+	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
+	// DefaultDCOSMasterSubnet specifies the default master subnet for a DCOS cluster
+	DefaultDCOSMasterSubnet = "192.168.255.0/24"
+	// DefaultDCOSFirstConsecutiveStaticIP  specifies the static IP address on master 0 for a DCOS cluster
+	DefaultDCOSFirstConsecutiveStaticIP = "192.168.255.5"
+	// DefaultDCOSBootstrapStaticIP specifies the static IP address on bootstrap for a DCOS cluster
+	DefaultDCOSBootstrapStaticIP = "192.168.255.240"
+	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
+	// Except when master VMSS is used, this specifies the default subnet for masters.
+	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
+	// DefaultAgentSubnetTemplate specifies a default agent subnet
+	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
+	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
+	// when VNET integration is enabled.
+	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultVNETCIDR is the default CIDR block for the VNET
+	DefaultVNETCIDR = "10.0.0.0/8"
+	// DefaultKubernetesMaxPods is the maximum number of pods to run on a node.
+	DefaultKubernetesMaxPods = 110
+	// DefaultKubernetesMaxPodsVNETIntegrated is the maximum number of pods to run on a node when VNET integration is enabled.
+	DefaultKubernetesMaxPodsVNETIntegrated = 30
+	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
+	DefaultKubernetesClusterDomain = "cluster.local"
+	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
+	// address relative to the first consecutive Kubernetes static IP
+	DefaultInternalLbStaticIPOffset = 10
+	// NetworkPolicyCalico is the string expression for calico network policy config option
+	NetworkPolicyCalico = "calico"
+	// NetworkPolicyCilium is the string expression for cilium network policy config option
+	NetworkPolicyCilium = "cilium"
+	// NetworkPluginFlannel is the string expression for flannel network policy config option
+	NetworkPluginFlannel = "flannel"
+	// DefaultNetworkPlugin defines the network plugin to use by default
+	DefaultNetworkPlugin = NetworkPluginKubenet
+	// DefaultNetworkPolicy defines the network policy implementation to use by default
+	DefaultNetworkPolicy = ""
+	// DefaultNetworkPluginWindows defines the network plugin implementation to use by default for clusters with Windows agent pools
+	DefaultNetworkPluginWindows = NetworkPluginKubenet
+	// DefaultNetworkPolicyWindows defines the network policy implementation to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = ""
+	// DefaultContainerRuntime is docker
+	DefaultContainerRuntime = "docker"
+	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
+	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
+	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
+	DefaultKubernetesHardEvictionThreshold = "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"
+	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrNodeMonitorGracePeriod = "40s"
+	// DefaultKubernetesCtrlMgrPodEvictionTimeout is 5m0s, see --pod-eviction-timeout at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrPodEvictionTimeout = "5m0s"
+	// DefaultKubernetesCtrlMgrRouteReconciliationPeriod is 10s, see --route-reconciliation-period at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrRouteReconciliationPeriod = "10s"
+	// DefaultKubernetesCtrlMgrTerminatedPodGcThreshold is set to 5000, see --terminated-pod-gc-threshold at https://kubernetes.io/docs/admin/kube-controller-manager/ and https://github.com/kubernetes/kubernetes/issues/22680
+	DefaultKubernetesCtrlMgrTerminatedPodGcThreshold = "5000"
+	// DefaultKubernetesCtrlMgrUseSvcAccountCreds is "true", see --use-service-account-credentials at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrUseSvcAccountCreds = "false"
+	// DefaultKubernetesCloudProviderBackoff is false to disable cloudprovider backoff implementation for API calls
+	DefaultKubernetesCloudProviderBackoff = true
+	// DefaultKubernetesCloudProviderRateLimit is false to disable cloudprovider rate limiting implementation for API calls
+	DefaultKubernetesCloudProviderRateLimit = true
+	// DefaultTillerMaxHistory limits the maximum number of revisions saved per release. Use 0 for no limit.
+	DefaultTillerMaxHistory = 0
+	//DefaultKubernetesGCHighThreshold specifies the value for  for the image-gc-high-threshold kubelet flag
+	DefaultKubernetesGCHighThreshold = 85
+	//DefaultKubernetesGCLowThreshold specifies the value for the image-gc-low-threshold kubelet flag
+	DefaultKubernetesGCLowThreshold = 80
+	// DefaultEtcdVersion specifies the default etcd version to install
+	DefaultEtcdVersion = "3.2.23"
+	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
+	DefaultEtcdDiskSize = "256"
+	// DefaultEtcdDiskSizeGT3Nodes = size for Kubernetes master etcd disk volumes in GB if > 3 nodes
+	DefaultEtcdDiskSizeGT3Nodes = "512"
+	// DefaultEtcdDiskSizeGT10Nodes = size for Kubernetes master etcd disk volumes in GB if > 10 nodes
+	DefaultEtcdDiskSizeGT10Nodes = "1024"
+	// DefaultEtcdDiskSizeGT20Nodes = size for Kubernetes master etcd disk volumes in GB if > 20 nodes
+	DefaultEtcdDiskSizeGT20Nodes = "2048"
+	// AzureCNINetworkMonitoringAddonName is the name of the Azure CNI networkmonitor addon
+	AzureCNINetworkMonitoringAddonName = "azure-cni-networkmonitor"
+	// AzureNetworkPolicyAddonName is the name of the Azure CNI networkmonitor addon
+	AzureNetworkPolicyAddonName = "azure-npm-daemonset"
+	// DefaultMasterEtcdClientPort is the default etcd client port for Kubernetes master nodes
+	DefaultMasterEtcdClientPort = 2379
+	// DefaultKubeletEventQPS is 0, see --event-qps at https://kubernetes.io/docs/reference/generated/kubelet/
+	DefaultKubeletEventQPS = "0"
+	// DefaultKubeletCadvisorPort is 0, see --cadvisor-port at https://kubernetes.io/docs/reference/generated/kubelet/
+	DefaultKubeletCadvisorPort = "0"
+	// DefaultJumpboxDiskSize specifies the default size for private cluster jumpbox OS disk in GB
+	DefaultJumpboxDiskSize = 30
+	// DefaultJumpboxUsername specifies the default admin username for the private cluster jumpbox
+	DefaultJumpboxUsername = "azureuser"
+	// DefaultKubeletPodMaxPIDs specifies the default max pid authorized by pods
+	DefaultKubeletPodMaxPIDs = 100
+	// DefaultKubernetesAgentSubnetVMSS specifies the default subnet for agents when master is VMSS
+	DefaultKubernetesAgentSubnetVMSS = "10.248.0.0/13"
+)
+
+const (
+	//DefaultExtensionsRootURL  Root URL for extensions
+	DefaultExtensionsRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/"
+)
+
+const (
+	azurePublicCloud       = "AzurePublicCloud"
+	azureChinaCloud        = "AzureChinaCloud"
+	azureGermanCloud       = "AzureGermanCloud"
+	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )

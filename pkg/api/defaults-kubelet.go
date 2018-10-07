@@ -1,15 +1,14 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setKubeletConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setKubeletConfig() {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := cs.GetCloudSpecConfig()
 	staticLinuxKubeletConfig := map[string]string{
@@ -110,7 +109,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Master-specific kubelet config changes go here
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
-			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
+			cs.Properties.MasterProfile.KubernetesConfig = &KubernetesConfig{}
 			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
@@ -122,7 +121,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
-			profile.KubernetesConfig = &api.KubernetesConfig{}
+			profile.KubernetesConfig = &KubernetesConfig{}
 			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 			if profile.OSType == "Windows" {
 				for key, val := range staticWindowsKubeletConfig {
@@ -165,7 +164,7 @@ func removeKubeletFlags(k map[string]string, v string) {
 	}
 }
 
-func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
+func setMissingKubeletValues(p *KubernetesConfig, d map[string]string) {
 	if p.KubeletConfig == nil {
 		p.KubeletConfig = d
 	} else {

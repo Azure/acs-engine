@@ -52,7 +52,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
 	}()
-	if certsGenerated, err = setPropertiesDefaults(containerService, isUpgrade, isScale); err != nil {
+	if certsGenerated, err = containerService.SetPropertiesDefaults(isUpgrade, isScale); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -518,18 +518,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
-				return GetDCOSMasterAllowedSizes()
+				return helpers.GetDCOSMasterAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
 		},
 		"GetDefaultVNETCIDR": func() string {
 			return DefaultVNETCIDR
 		},
 		"GetAgentAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
-				return GetKubernetesAgentAllowedSizes()
+				return helpers.GetKubernetesAgentAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
 			return getSwarmVersions(api.SwarmVersion, api.SwarmDockerComposeVersion)
@@ -538,7 +538,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
-			return GetSizeMap()
+			return helpers.GetSizeMap()
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))

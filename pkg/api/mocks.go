@@ -1,27 +1,26 @@
-package acsengine
+package api
 
 import (
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/satori/go.uuid"
 )
 
 // CreateMockContainerService returns a mock container service for testing purposes
-func CreateMockContainerService(containerServiceName, orchestratorVersion string, masterCount, agentCount int, certs bool) *api.ContainerService {
-	cs := api.ContainerService{}
+func CreateMockContainerService(containerServiceName, orchestratorVersion string, masterCount, agentCount int, certs bool) *ContainerService {
+	cs := ContainerService{}
 	cs.ID = uuid.NewV4().String()
 	cs.Location = "eastus"
 	cs.Name = containerServiceName
 
-	cs.Properties = &api.Properties{}
+	cs.Properties = &Properties{}
 
-	cs.Properties.MasterProfile = &api.MasterProfile{}
+	cs.Properties.MasterProfile = &MasterProfile{}
 	cs.Properties.MasterProfile.Count = masterCount
 	cs.Properties.MasterProfile.DNSPrefix = "testmaster"
 	cs.Properties.MasterProfile.VMSize = "Standard_D2_v2"
 
-	cs.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{}
-	agentPool := &api.AgentPoolProfile{}
+	cs.Properties.AgentPoolProfiles = []*AgentPoolProfile{}
+	agentPool := &AgentPoolProfile{}
 	agentPool.Count = agentCount
 	agentPool.Name = "agentpool1"
 	agentPool.VMSize = "Standard_D2_v2"
@@ -31,27 +30,27 @@ func CreateMockContainerService(containerServiceName, orchestratorVersion string
 
 	cs.Properties.AgentPoolProfiles = append(cs.Properties.AgentPoolProfiles, agentPool)
 
-	cs.Properties.LinuxProfile = &api.LinuxProfile{
+	cs.Properties.LinuxProfile = &LinuxProfile{
 		AdminUsername: "azureuser",
 		SSH: struct {
-			PublicKeys []api.PublicKey `json:"publicKeys"`
+			PublicKeys []PublicKey `json:"publicKeys"`
 		}{},
 	}
 
 	cs.Properties.LinuxProfile.AdminUsername = "azureuser"
 	cs.Properties.LinuxProfile.SSH.PublicKeys = append(
-		cs.Properties.LinuxProfile.SSH.PublicKeys, api.PublicKey{KeyData: "test"})
+		cs.Properties.LinuxProfile.SSH.PublicKeys, PublicKey{KeyData: "test"})
 
-	cs.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{}
+	cs.Properties.ServicePrincipalProfile = &ServicePrincipalProfile{}
 	cs.Properties.ServicePrincipalProfile.ClientID = "DEC923E3-1EF1-4745-9516-37906D56DEC4"
 	cs.Properties.ServicePrincipalProfile.Secret = "DEC923E3-1EF1-4745-9516-37906D56DEC4"
 
-	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
-	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
+	cs.Properties.OrchestratorProfile = &OrchestratorProfile{}
+	cs.Properties.OrchestratorProfile.OrchestratorType = Kubernetes
 	cs.Properties.OrchestratorProfile.OrchestratorVersion = orchestratorVersion
-	cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{
-		EnableSecureKubelet: helpers.PointerToBool(api.DefaultSecureKubeletEnabled),
-		EnableRbac:          helpers.PointerToBool(api.DefaultRBACEnabled),
+	cs.Properties.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{
+		EnableSecureKubelet: helpers.PointerToBool(DefaultSecureKubeletEnabled),
+		EnableRbac:          helpers.PointerToBool(DefaultRBACEnabled),
 		EtcdDiskSizeGB:      DefaultEtcdDiskSize,
 		ServiceCIDR:         DefaultKubernetesServiceCIDR,
 		DockerBridgeSubnet:  DefaultDockerBridgeSubnet,
@@ -67,7 +66,7 @@ func CreateMockContainerService(containerServiceName, orchestratorVersion string
 		KubeletConfig:       make(map[string]string),
 	}
 
-	cs.Properties.CertificateProfile = &api.CertificateProfile{}
+	cs.Properties.CertificateProfile = &CertificateProfile{}
 	if certs {
 		cs.Properties.CertificateProfile.CaCertificate = "cacert"
 		cs.Properties.CertificateProfile.CaPrivateKey = "cakey"

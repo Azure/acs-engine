@@ -260,4 +260,12 @@ var (
 			AKS:    SovereignCloudsUbuntuImageConfig,
 		},
 	}
+
+	// AzureCloudSpecEnvMap is the environment configuration map for all the Azure cloid environments.
+	AzureCloudSpecEnvMap = map[string]AzureEnvironmentSpecConfig{
+		azureChinaCloud:        AzureChinaCloudSpec,
+		azureGermanCloud:       AzureGermanCloudSpec,
+		azureUSGovernmentCloud: AzureUSGovernmentCloud,
+		azurePublicCloud:       AzureCloudSpec,
+	}
 )
