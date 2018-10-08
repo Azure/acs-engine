@@ -2385,3 +2385,29 @@ func TestFormatAzureProdFQDN(t *testing.T) {
 	}
 
 }
+
+func TestKubernetesConfig_GetAddonScript(t *testing.T) {
+	addon := getMockAddon(IPMASQAgentAddonName)
+	addon.Data = "foobarbazdata"
+	k := &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			addon,
+		},
+	}
+
+	expected := "foobarbazdata"
+	actual := k.GetAddonScript(IPMASQAgentAddonName)
+	if actual != expected {
+		t.Errorf("expected GetAddonScript to return %s, but got %s", expected, actual)
+	}
+}
+
+func TestContainerService_GetAzureProdFQDN(t *testing.T) {
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 1, 3, false)
+	expected := "testmaster.eastus.cloudapp.azure.com"
+	actual := cs.GetAzureProdFQDN()
+
+	if expected != actual {
+		t.Errorf("expected GetAzureProdFQDN to return %s, but got %s", expected, actual)
+	}
+}
