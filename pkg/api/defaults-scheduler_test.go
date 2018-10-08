@@ -23,7 +23,7 @@ func TestSchedulerDefaultConfig(t *testing.T) {
 }
 
 func TestSchedulerUserConfig(t *testing.T) {
-	cs := CreateMockContainerService("testcluster", "1.9.6", 3, 2, false)
+	cs := CreateMockContainerService("testcluster", "1.9.6", 3, 2, true)
 	assignmentMap := map[string]string{
 		"--scheduler-name": "my-custom-name",
 		"--feature-gates":  "APIListChunking=true,APIResponseCompression=true,Accelerators=true,AdvancedAuditing=true",

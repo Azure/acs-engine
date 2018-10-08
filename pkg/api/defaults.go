@@ -525,18 +525,16 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 	ips = append(ips, net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)})
 	// Include the Internal load balancer as well
 
+	var offsetMultiplier int
 	if p.MasterProfile.IsVirtualMachineScaleSets() {
-		// Include the Internal load balancer as well
-		for i := 1; i < p.MasterProfile.Count; i++ {
-			offset := i * p.MasterProfile.IPAddressCount
-			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
-			ips = append(ips, ip)
-		}
+		offsetMultiplier = p.MasterProfile.IPAddressCount
 	} else {
-		for i := 1; i < p.MasterProfile.Count; i++ {
-			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
-			ips = append(ips, ip)
-		}
+		offsetMultiplier = 1
+	}
+	for i := 1; i < p.MasterProfile.Count; i++ {
+		offset := i * offsetMultiplier
+		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
+		ips = append(ips, ip)
 	}
 	if p.CertificateProfile == nil {
 		p.CertificateProfile = &CertificateProfile{}

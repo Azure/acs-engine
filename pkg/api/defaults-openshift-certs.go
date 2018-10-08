@@ -34,7 +34,7 @@ func setOpenShiftSetDefaultCerts(a *Properties, orchestratorName, clusterID stri
 	}
 
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle

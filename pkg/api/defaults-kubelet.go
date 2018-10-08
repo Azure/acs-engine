@@ -110,7 +110,7 @@ func (cs *ContainerService) setKubeletConfig() {
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
 			cs.Properties.MasterProfile.KubernetesConfig = &KubernetesConfig{}
-			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = make(map[string]string)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
@@ -122,7 +122,7 @@ func (cs *ContainerService) setKubeletConfig() {
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
 			profile.KubernetesConfig = &KubernetesConfig{}
-			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
+			profile.KubernetesConfig.KubeletConfig = make(map[string]string)
 			if profile.OSType == "Windows" {
 				for key, val := range staticWindowsKubeletConfig {
 					profile.KubernetesConfig.KubeletConfig[key] = val
@@ -176,11 +176,4 @@ func setMissingKubeletValues(p *KubernetesConfig, d map[string]string) {
 			}
 		}
 	}
-}
-func copyMap(input map[string]string) map[string]string {
-	copy := map[string]string{}
-	for key, value := range input {
-		copy[key] = value
-	}
-	return copy
 }
