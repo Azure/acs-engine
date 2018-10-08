@@ -267,8 +267,8 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'MemoryLimits' value %s to %s,", customAddon.Containers[0].MemoryLimits, modifiedAddon.Containers[0].MemoryLimits)
 	}
 
-	addonWithDefaults.Config = map[string]string {
-		"os": "Linux",
+	addonWithDefaults.Config = map[string]string{
+		"os":    "Linux",
 		"taint": "node.kubernetes.io/memory-pressure",
 	}
 	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)

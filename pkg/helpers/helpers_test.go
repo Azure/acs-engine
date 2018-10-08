@@ -73,7 +73,7 @@ func TestPointerToBool(t *testing.T) {
 		t.Fatalf("expected PointerToBool(true) to return *true, instead returned %#v", ret)
 	}
 
-	if !IsTrueBoolPointer(ret)  {
+	if !IsTrueBoolPointer(ret) {
 		t.Fatalf("expected IsTrueBoolPointer(*true) to return true, instead returned %#v", IsTrueBoolPointer(ret))
 	}
 
@@ -358,47 +358,38 @@ func TestGetCloudTargetEnv(t *testing.T) {
 		{
 			"chinaeast",
 			"AzureChinaCloud",
-
 		},
 		{
 			"chinanorth",
 			"AzureChinaCloud",
-
 		},
 		{
 			"chinaeast",
 			"AzureChinaCloud",
-
 		},
 		{
 			"chinaeast2",
 			"AzureChinaCloud",
-
 		},
 		{
 			"chinanorth2",
 			"AzureChinaCloud",
-
 		},
 		{
 			"germanycentral",
 			"AzureGermanCloud",
-
 		},
 		{
 			"germanynortheast",
 			"AzureGermanCloud",
-
 		},
 		{
 			"usgov123",
 			"AzureUSGovernmentCloud",
-
 		},
 		{
 			"usdod-123",
 			"AzureUSGovernmentCloud",
-
 		},
 		{
 			"sampleinput",
