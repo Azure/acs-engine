@@ -1666,7 +1666,7 @@ func TestGenerateClusterID(t *testing.T) {
 					},
 				},
 			},
-			expectedClusterID: "11729301",
+			expectedClusterID: "24569115",
 		},
 		{
 			name: "From Hosted Master Profile",
@@ -1691,7 +1691,7 @@ func TestGenerateClusterID(t *testing.T) {
 					},
 				},
 			},
-			expectedClusterID: "24569115",
+			expectedClusterID: "11729301",
 		},
 	}
 
