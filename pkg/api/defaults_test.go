@@ -956,9 +956,7 @@ func TestSetOpenShiftCertDefaults(t *testing.T) {
 			OrchestratorProfile: &OrchestratorProfile{
 				OrchestratorType:    OpenShift,
 				OrchestratorVersion: "3.9.0",
-				OpenShiftConfig: &OpenShiftConfig{
-
-				},
+				OpenShiftConfig:     &OpenShiftConfig{},
 			},
 		},
 	}
@@ -995,9 +993,7 @@ func TestSetOpenShiftCertDefaults(t *testing.T) {
 			OrchestratorProfile: &OrchestratorProfile{
 				OrchestratorType:    OpenShift,
 				OrchestratorVersion: "3.7.0",
-				OpenShiftConfig: &OpenShiftConfig{
-
-				},
+				OpenShiftConfig:     &OpenShiftConfig{},
 			},
 		},
 	}
