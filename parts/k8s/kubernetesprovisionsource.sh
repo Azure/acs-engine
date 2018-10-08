@@ -46,7 +46,6 @@ RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
-# latest version of the GPU drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
 GPU_DV=396.26
 GPU_DEST=/usr/local/nvidia
 NVIDIA_DOCKER_VERSION=2.0.3

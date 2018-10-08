@@ -3,7 +3,6 @@ package api
 import (
 	"log"
 	"reflect"
-	"regexp"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -1651,42 +1650,62 @@ func TestAreAgentProfilesCustomVNET(t *testing.T) {
 }
 
 func TestGenerateClusterID(t *testing.T) {
-	p := &Properties{
-		AgentPoolProfiles: []*AgentPoolProfile{
-			{
-				Name: "foo_agent",
+	tests := []struct {
+		name              string
+		properties        *Properties
+		expectedClusterID string
+	}{
+		{
+			name: "From Master Profile",
+			properties: &Properties{
+				MasterProfile: &MasterProfile{
+					DNSPrefix: "foo_master",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent0",
+					},
+				},
 			},
+			expectedClusterID: "24569115",
+		},
+		{
+			name: "From Hosted Master Profile",
+			properties: &Properties{
+				HostedMasterProfile: &HostedMasterProfile{
+					DNSPrefix: "foo_hosted_master",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent1",
+					},
+				},
+			},
+			expectedClusterID: "42761241",
+		},
+		{
+			name: "No Master Profile",
+			properties: &Properties{
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent2",
+					},
+				},
+			},
+			expectedClusterID: "11729301",
 		},
 	}
 
-	clusterID := p.GetClusterID()
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.GetClusterID()
 
-	r, err := regexp.Compile("[0-9]{8}")
-
-	if err != nil {
-		t.Errorf("unexpected error while parsing regex : %s", err.Error())
-	}
-
-	if !r.MatchString(clusterID) {
-		t.Fatal("ClusterID should be an 8 digit integer string")
-	}
-
-	p = &Properties{
-		HostedMasterProfile: &HostedMasterProfile{
-			DNSPrefix: "foodnsprefx",
-		},
-	}
-
-	clusterID = p.GetClusterID()
-
-	r, err = regexp.Compile("[0-9]{8}")
-
-	if err != nil {
-		t.Errorf("unexpected error while parsing regex : %s", err.Error())
-	}
-
-	if !r.MatchString(clusterID) {
-		t.Fatal("ClusterID should be an 8 digit integer string")
+			if actual != test.expectedClusterID {
+				t.Errorf("expected cluster ID %s, but got %s", test.expectedClusterID, actual)
+			}
+		})
 	}
 }
 
