@@ -2333,7 +2333,8 @@ func TestGetAgentVMPrefix(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			actual := test.properties.GetAgentVMPrefix(test.profile)
+			p := test.properties
+			actual := p.GetAgentVMPrefix(test.profile)
 
 			if actual != test.expectedVMPrefix {
 				t.Errorf("expected agent VM name %s, but got %s", test.expectedVMPrefix, actual)
