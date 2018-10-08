@@ -2411,3 +2411,52 @@ func TestContainerService_GetAzureProdFQDN(t *testing.T) {
 		t.Errorf("expected GetAzureProdFQDN to return %s, but got %s", expected, actual)
 	}
 }
+
+func TestKubernetesConfig_RequiresDocker(t *testing.T) {
+	// k8sConfig with empty runtime string
+	k := &KubernetesConfig{
+		ContainerRuntime: "",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for empty runtime string")
+	}
+
+	// k8sConfig with empty runtime string
+	k = &KubernetesConfig{
+		ContainerRuntime: "docker",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for docker runtime")
+	}
+}
+
+func TestProperties_GetMasterVMPrefix(t *testing.T) {
+	p := &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+		MasterProfile: &MasterProfile{
+			Count:     1,
+			DNSPrefix: "myprefix1",
+			VMSize:    "Standard_DS2_v2",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
+				OSType:              "Linux",
+			},
+		},
+	}
+
+	actual := p.GetMasterVMPrefix()
+	expected := "k8s-master-30819786-"
+
+	if actual != expected {
+		t.Errorf("expected master VM prefix %s, but got %s", expected, actual)
+	}
+}

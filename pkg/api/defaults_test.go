@@ -267,6 +267,20 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'MemoryLimits' value %s to %s,", customAddon.Containers[0].MemoryLimits, modifiedAddon.Containers[0].MemoryLimits)
 	}
 
+	addonWithDefaults.Config = map[string]string {
+		"os": "Linux",
+		"taint": "node.kubernetes.io/memory-pressure",
+	}
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+
+	if modifiedAddon.Config["os"] != "Linux" {
+		t.Error("assignDefaultAddonVals() should have added the default config property")
+	}
+
+	if modifiedAddon.Config["taint"] != "node.kubernetes.io/memory-pressure" {
+		t.Error("assignDefaultAddonVals() should have added the default config property")
+	}
+
 }
 
 func TestKubeletFeatureGatesEnsureFeatureGatesOnAgentsFor1_6_0(t *testing.T) {
