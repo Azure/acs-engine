@@ -26,6 +26,7 @@ We increment and publish a new versioned image if any of the following is true:
 # Disadvantages of immutable image references
 
 - Because there is re-use between the VHD and non-VHD CSE implementation, we often absorb the overhead of having to publish new VHD images when we optimize the CSE delivery/installation surface area.
+  - If were were using a "re-usable OS image" that was able to accommodate a mutable image reference (i.e., a static image reference w/ a non-static implementation), we can imagine that in order to do that properly we'd have to treat the OS as a stable interface, which couldn't be changed without pushing a new, mutable image. One advantage of this is the idea that CSE would be further decomposed from the image implementation itself, and could then be distinctly maintained. Of course this advantage would include non-trivial engineering overhead of doing that decomposition in a sane, maintainable way.
 - More storage overhead due to more images
 
 # Advantages of mutable image references (e.g., `latest`) in provisioning implementation
@@ -41,3 +42,5 @@ We increment and publish a new versioned image if any of the following is true:
 - Additional CI overhead, as we will have to "promote" images from a "staging" mutable image reference to a production "latest" image
 - Introduces additional troubleshooting overhead when diagnosing production issues in the provisioning stack
   - e.g., "Which "latest" was this vm provisioned with???"
+- Removes backwards-compatibility flexibility
+  - If a new image revision includes new functionality that is subsequently rolled back, we are not able to easily refer to the image version before that functionality was introduced; we are required to build and publish a new image before performing a full rollback of that provisioning functionality
