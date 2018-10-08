@@ -200,7 +200,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 {{if IsHostedMaster}}
     {{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
     {{end}}
 {{end}}
@@ -234,7 +233,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
     systemctl start rpcbind
     systemctl start rpc-statd
 
-    # Simulates runcmd completion
     touch /opt/azure/containers/runcmd.complete
 
 coreos:
@@ -242,7 +240,6 @@ coreos:
     - name: start-provision-setup.service
       command: "start"
       content: |
-        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
         [Unit]
         Description=Start provision setup service
 
