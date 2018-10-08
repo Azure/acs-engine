@@ -8,6 +8,7 @@ import (
 	neturl "net/url"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
@@ -886,6 +887,7 @@ func (p *Properties) AreAgentProfilesCustomVNET() bool {
 
 // GetClusterID creates a unique 8 string cluster ID.
 func (p *Properties) GetClusterID() string {
+	var mutex = &sync.Mutex{}
 	if p.ClusterID == "" {
 		uniqueNameSuffixSize := 8
 		// the name suffix uniquely identifies the cluster and is generated off a hash
@@ -899,7 +901,9 @@ func (p *Properties) GetClusterID() string {
 			h.Write([]byte(p.AgentPoolProfiles[0].Name))
 		}
 		rand.Seed(int64(h.Sum64()))
+		mutex.Lock()
 		p.ClusterID = fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
+		mutex.Unlock()
 	}
 	return p.ClusterID
 }
