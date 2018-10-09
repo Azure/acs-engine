@@ -389,8 +389,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 							address := node.Status.GetAddressByType("InternalIP")
 							if address == nil {
 								log.Printf("One of our nodes does not have an InternalIP value!: %s\n", node.Metadata.Name)
+								Fail("All nodes should have an InternalIP address")
 							}
-							Expect(address).NotTo(Equal(nil))
 							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 							var cmd *exec.Cmd
