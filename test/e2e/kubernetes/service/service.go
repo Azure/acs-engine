@@ -87,11 +87,7 @@ func (s *Service) Delete(retries int) error {
 		break
 	}
 
-	if kubectlError != nil {
-		return kubectlError
-	}
-
-	return nil
+	return kubectlError
 }
 
 // GetNodePort will return the node port for a given pod

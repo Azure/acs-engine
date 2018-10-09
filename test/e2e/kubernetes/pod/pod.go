@@ -502,11 +502,7 @@ func (p *Pod) Delete(retries int) error {
 		break
 	}
 
-	if kubectlError != nil {
-		return kubectlError
-	}
-
-	return nil
+	return kubectlError
 }
 
 // CheckLinuxOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.

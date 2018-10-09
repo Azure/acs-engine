@@ -163,11 +163,7 @@ func (d *Deployment) Delete(retries int) error {
 		}
 	}
 
-	if kubectlError != nil {
-		return kubectlError
-	}
-
-	return nil
+	return kubectlError
 }
 
 // Expose will create a load balancer and expose the deployment on a given port

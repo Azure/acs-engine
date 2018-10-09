@@ -98,11 +98,7 @@ func (pvc *PersistentVolumeClaims) Delete(retries int) error {
 		break
 	}
 
-	if kubectlError != nil {
-		return kubectlError
-	}
-
-	return nil
+	return kubectlError
 }
 
 // WaitOnReady will block until PersistentVolumeClaims is available
