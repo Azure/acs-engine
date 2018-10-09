@@ -489,14 +489,23 @@ func (p *Pod) Exec(c ...string) ([]byte, error) {
 }
 
 // Delete will delete a Pod in a given namespace
-func (p *Pod) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying to delete Pod %s in namespace %s:%s\n", p.Metadata.Namespace, p.Metadata.Name, string(out))
-		return err
+func (p *Pod) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name)
+		kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete Pod %s in namespace %s:%s\n", p.Metadata.Namespace, p.Metadata.Name, string(kubectlOutput))
+			continue
+		}
+		break
 	}
+
+	if kubectlError != nil {
+		return kubectlError
+	}
+
 	return nil
 }
 

@@ -30,8 +30,9 @@ import (
 )
 
 const (
-	WorkloadDir = "workloads"
-	PolicyDir   = "workloads/policies"
+	WorkloadDir           = "workloads"
+	PolicyDir             = "workloads/policies"
+	deleteResourceRetries = 10
 )
 
 var (
@@ -226,7 +227,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
 			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
-			delErr := j.Delete(10)
+			delErr := j.Delete(deleteResourceRetries)
 			if delErr != nil {
 				fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 				fmt.Println(delErr)
@@ -640,11 +641,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					}
 				}
 				By("Cleaning up after ourselves")
-				err = curlDeploy.Delete()
+				err = curlDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = deploy.Delete()
+				err = deploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
@@ -707,11 +708,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Cleaning up after ourselves")
-				err = loadTestDeploy.Delete()
+				err = loadTestDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = phpApacheDeploy.Delete()
+				err = phpApacheDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
@@ -754,9 +755,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				err = nginxDeploy.Delete()
+				err = nginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
@@ -777,7 +778,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete(10)
+					delErr := j.Delete(deleteResourceRetries)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
@@ -788,7 +789,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete(10)
+					delErr := j.Delete(deleteResourceRetries)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
@@ -894,9 +895,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(nodeZone == pvZone).To(Equal(true))
 
 				By("Cleaning up after ourselves")
-				err = testPod.Delete()
+				err = testPod.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = pvc.Delete()
+				err = pvc.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("Availability zones was not configured for this Cluster Definition")
@@ -914,7 +915,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(running).To(Equal(true))
 				restarts := pod.Status.ContainerStatuses[0].RestartCount
 				if cfg.SoakClusterName == "" {
-					err = pod.Delete()
+					err = pod.Delete(deleteResourceRetries)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(restarts).To(Equal(0))
 				} else {
@@ -1029,11 +1030,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Cleaning up after ourselves")
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
-				err = clientOneDeploy.Delete()
+				err = clientOneDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = clientTwoDeploy.Delete()
+				err = clientTwoDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = serverDeploy.Delete()
+				err = serverDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("Calico or Azure network policy was not provisioned for this Cluster Definition")
@@ -1078,9 +1079,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Verifying pods & services can be deleted")
-				err = iisDeploy.Delete()
+				err = iisDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1147,13 +1148,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Cleaning up after ourselves")
-				err = windowsIISDeployment.Delete()
+				err = windowsIISDeployment.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = linuxNginxDeploy.Delete()
+				err = linuxNginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = windowsService.Delete()
+				err = windowsService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = linuxService.Delete()
+				err = linuxService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1201,7 +1202,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						Expect(valid).To(BeTrue())
 					}
 
-					err = iisDeploy.Delete()
+					err = iisDeploy.Delete(kubectlOutput)
 					Expect(err).NotTo(HaveOccurred())
 				} else {
 					Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1243,7 +1244,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(valid).To(BeTrue())
 					Expect(err).NotTo(HaveOccurred())
 
-					err = iisPod.Delete()
+					err = iisPod.Delete(deleteResourceRetries)
 					Expect(err).NotTo(HaveOccurred())
 				} else {
 					Skip("Kubernetes version needs to be 1.8 and up for Azure File test")

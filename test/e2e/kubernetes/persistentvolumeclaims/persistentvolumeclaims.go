@@ -85,14 +85,23 @@ func Describe(pvcName, namespace string) error {
 }
 
 // Delete will delete a PersistentVolumeClaims in a given namespace
-func (pvc *PersistentVolumeClaims) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "pvc", "-n", pvc.Metadata.NameSpace, pvc.Metadata.Name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying to delete PVC %s in namespace %s:%s\n", pvc.Metadata.Name, pvc.Metadata.NameSpace, string(out))
-		return err
+func (pvc *PersistentVolumeClaims) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "pvc", "-n", pvc.Metadata.NameSpace, pvc.Metadata.Name)
+		kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete PVC %s in namespace %s:%s\n", pvc.Metadata.Name, pvc.Metadata.NameSpace, string(kubectlOutput))
+			continue
+		}
+		break
 	}
+
+	if kubectlError != nil {
+		return kubectlError
+	}
+
 	return nil
 }
 
