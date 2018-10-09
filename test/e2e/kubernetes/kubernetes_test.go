@@ -824,7 +824,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete()
+					delErr := j.Delete(10)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
@@ -835,7 +835,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete()
+					delErr := j.Delete(10)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
