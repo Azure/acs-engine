@@ -900,9 +900,9 @@ func (p *Properties) GetClusterID() string {
 		} else {
 			h.Write([]byte(p.AgentPoolProfiles[0].Name))
 		}
-		rand.Seed(int64(h.Sum64()))
+		r := rand.New(rand.NewSource(int64(h.Sum64())))
 		mutex.Lock()
-		p.ClusterID = fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
+		p.ClusterID = fmt.Sprintf("%08d", r.Uint32())[:uniqueNameSuffixSize]
 		mutex.Unlock()
 	}
 	return p.ClusterID
