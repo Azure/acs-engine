@@ -437,7 +437,7 @@ func (dc *deployCmd) run() error {
 		os.Exit(1)
 	}
 
-	template, parameters, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, false, false, BuildTag)
+	template, parameters, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)

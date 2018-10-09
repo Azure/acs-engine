@@ -538,7 +538,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 
 	var templateJSON string
 	var parametersJSON string
-	if templateJSON, parametersJSON, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true, false, acsengineVersion); err != nil {
+	if templateJSON, parametersJSON, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, acsengineVersion); err != nil {
 		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 

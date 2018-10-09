@@ -74,7 +74,7 @@ func TestExpected(t *testing.T) {
 
 		certsGenerated, err := containerService.SetPropertiesDefaults(false, false)
 
-		armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+		armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 		if err != nil {
 			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -99,7 +99,7 @@ func TestExpected(t *testing.T) {
 
 		for i := 0; i < 3; i++ {
 			certsGenerated, err = containerService.SetPropertiesDefaults(false, false)
-			armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+			armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 			if err != nil {
 				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -293,7 +293,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
 	containerService.SetPropertiesDefaults(false, false)
-	armTemplate, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+	armTemplate, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
