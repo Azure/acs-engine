@@ -70,6 +70,10 @@ var _ = BeforeSuite(func() {
 		masterSSHPort = "22"
 	}
 	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
+	// If no user-configurable stability iteration value is passed in, run stability tests once
+	if cfg.StabilityIterations == 0 {
+		cfg.StabilityIterations = 1
+	}
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
@@ -115,13 +119,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have stable internal container networking", func() {
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
-			command := fmt.Sprintf("nc -vz kubernetes 443")
+			command := fmt.Sprintf("nc -vz kubernetes 443 && nc -vz kubernetes.default.svc 443 && nc -vz kubernetes.default.svc.cluster.local 443")
 			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
-		It("should have functional DNS", func() {
+		It("should be able to launch a long-running container networking DNS liveness pod", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
@@ -138,7 +142,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 			}
+		})
 
+		It("should have functional host OS DNS", func() {
 			kubeConfig, err := GetConfig()
 			Expect(err).NotTo(HaveOccurred())
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
@@ -222,7 +228,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if err != nil {
 				log.Printf("Error while querying DNS: %s\n", err)
 			}
+		})
 
+		It("should have functional container networking DNS", func() {
 			By("Ensuring that we have functional DNS resolution from a container")
 			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
@@ -235,7 +243,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ready).To(Equal(true))
 
-			By("Ensuring that we have stable DNS resolution from a container")
+			By("Ensuring that we have stable external DNS resolution from a container")
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
 			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)

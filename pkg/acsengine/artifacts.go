@@ -35,7 +35,15 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 			kubernetesFeatureSetting{
 				"kubernetesmasteraddons-kube-dns-deployment.yaml",
 				"kube-dns-deployment.yaml",
-				true,
+				!common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDNSDeploymentAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"coredns.yaml",
+				"coredns.yaml",
+				common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
 			},
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDNSDeploymentAddonName),
 		},
