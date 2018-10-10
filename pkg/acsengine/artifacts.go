@@ -45,7 +45,15 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 				"coredns.yaml",
 				common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
 			},
-			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDNSDeploymentAddonName),
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultCoreDNSAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"dns-autoscaler.yaml",
+				"dns-autoscaler.yaml",
+				common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultDNSAutoscalerAddonName),
 		},
 		{
 			kubernetesFeatureSetting{
