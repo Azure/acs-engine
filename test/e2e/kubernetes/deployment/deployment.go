@@ -134,23 +134,36 @@ func Get(name, namespace string) (*Deployment, error) {
 }
 
 // Delete will delete a deployment in a given namespace
-func (d *Deployment) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
-	out, err := util.RunAndLogCommand(cmd)
-	if err != nil {
-		log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
-		return err
+func (d *Deployment) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
+		kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(kubectlOutput))
+			continue
+		}
+		break
 	}
-	// Delete any associated HPAs
+
+	if kubectlError != nil {
+		return kubectlError
+	}
+
 	if d.Metadata.HasHPA {
-		cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
-		out, err := util.RunAndLogCommand(cmd)
-		if err != nil {
-			log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
-			return err
+		for i := 0; i < retries; i++ {
+			cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
+			kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+			if kubectlError != nil {
+				log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(kubectlOutput))
+				continue
+			}
+			break
 		}
 	}
-	return nil
+
+	return kubectlError
 }
 
 // Expose will create a load balancer and expose the deployment on a given port

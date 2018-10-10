@@ -30,14 +30,16 @@ import (
 )
 
 const (
-	WorkloadDir = "workloads"
-	PolicyDir   = "workloads/policies"
-	SSHPort     = "50001"
+	WorkloadDir           = "workloads"
+	PolicyDir             = "workloads/policies"
+	deleteResourceRetries = 10
 )
 
 var (
-	cfg config.Config
-	eng engine.Engine
+	cfg                         config.Config
+	eng                         engine.Engine
+	masterSSHPort               string
+	masterSSHPrivateKeyFilepath string
 )
 
 var _ = BeforeSuite(func() {
@@ -59,6 +61,15 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition:  csInput,
 		ExpandedDefinition: csGenerated,
 	}
+	masterNodes, err := node.GetByPrefix("k8s-master")
+	Expect(err).NotTo(HaveOccurred())
+	masterName := masterNodes[0].Metadata.Name
+	if strings.Contains(masterName, "vmss") {
+		masterSSHPort = "50001"
+	} else {
+		masterSSHPort = "22"
+	}
+	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
@@ -67,18 +78,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			kubeConfig, err := GetConfig()
 			Expect(err).NotTo(HaveOccurred())
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-			sshKeyPath := cfg.GetSSHKeyPath()
-			masterNodes, err := node.GetByPrefix("k8s-master")
-			Expect(err).NotTo(HaveOccurred())
-			masterName := masterNodes[0].Metadata.Name
-			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
 
+			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
 			var cmd *exec.Cmd
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -87,11 +90,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			kernelVerCmd := fmt.Sprintf("cat /proc/version")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, kernelVerCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -143,19 +142,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			kubeConfig, err := GetConfig()
 			Expect(err).NotTo(HaveOccurred())
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-			sshKeyPath := cfg.GetSSHKeyPath()
-
-			masterNodes, err := node.GetByPrefix("k8s-master")
-			Expect(err).NotTo(HaveOccurred())
-			masterName := masterNodes[0].Metadata.Name
 
 			ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
 			var cmd *exec.Cmd
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -164,11 +154,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			resolvCmd := fmt.Sprintf("cat /etc/resolv.conf")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, resolvCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -178,11 +164,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we have a valid connection to our resolver")
 			digCmd := fmt.Sprintf("dig +short +search +answer `hostname`")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -196,11 +178,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that we get a DNS lookup answer response for each node hostname")
 				digCmd := fmt.Sprintf("dig +short +search +answer %s | grep -v -e '^$'", node.Metadata.Name)
 
-				if strings.Contains(masterName, "vmss") {
-					cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				} else {
-					cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-				}
+				cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 				util.PrintCommand(cmd)
 				out, err = cmd.CombinedOutput()
 				log.Printf("%s\n", out)
@@ -212,22 +190,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we get a DNS lookup answer response for external names")
 			digCmd = fmt.Sprintf("dig +short +search www.bing.com | grep -v -e '^$'")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			if err != nil {
 				log.Printf("Error while querying DNS: %s\n", out)
 			}
 			digCmd = fmt.Sprintf("dig +short +search google.com | grep -v -e '^$'")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -237,11 +207,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			By("Ensuring that we get a DNS lookup answer response for external names using external resolver")
 			digCmd = fmt.Sprintf("dig +short +search www.bing.com @8.8.8.8 | grep -v -e '^$'")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -249,11 +215,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				log.Printf("Error while querying DNS: %s\n", err)
 			}
 			digCmd = fmt.Sprintf("dig +short +search google.com @8.8.8.8 | grep -v -e '^$'")
-			if strings.Contains(masterName, "vmss") {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			} else {
-				cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
-			}
+			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, digCmd)
 			util.PrintCommand(cmd)
 			out, err = cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -265,7 +227,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
 			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
-			delErr := j.Delete(10)
+			delErr := j.Delete(deleteResourceRetries)
 			if delErr != nil {
 				fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 				fmt.Println(delErr)
@@ -372,10 +334,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 
-					sshKeyPath := cfg.GetSSHKeyPath()
-					masterNodes, err := node.GetByPrefix("k8s-master")
-					Expect(err).NotTo(HaveOccurred())
-					masterName := masterNodes[0].Metadata.Name
 					if dashboardPort == 80 {
 						By("Ensuring that we can connect via HTTP to the dashboard on any one node")
 					} else {
@@ -390,15 +348,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 							if address == nil {
 								log.Printf("One of our nodes does not have an InternalIP value!: %s\n", node.Metadata.Name)
 							}
-							Expect(address).NotTo(Equal(nil))
+							Expect(address).NotTo(BeNil())
 							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 							var cmd *exec.Cmd
-							if strings.Contains(masterName, "vmss") {
-								cmd = exec.Command("ssh", "-i", sshKeyPath, "-p", SSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
-							} else {
-								cmd = exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
-							}
+							cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
 							util.PrintCommand(cmd)
 							out, err := cmd.CombinedOutput()
 							if err == nil {
@@ -687,11 +641,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					}
 				}
 				By("Cleaning up after ourselves")
-				err = curlDeploy.Delete()
+				err = curlDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = deploy.Delete()
+				err = deploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
@@ -754,11 +708,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Cleaning up after ourselves")
-				err = loadTestDeploy.Delete()
+				err = loadTestDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = phpApacheDeploy.Delete()
+				err = phpApacheDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
@@ -801,9 +755,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Cleaning up after ourselves")
-				err = nginxDeploy.Delete()
+				err = nginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
@@ -824,7 +778,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "cuda-vector-add.yaml"), "cuda-vector-add", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete(10)
+					delErr := j.Delete(deleteResourceRetries)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
@@ -835,7 +789,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
 					Expect(err).NotTo(HaveOccurred())
 					ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-					delErr := j.Delete(10)
+					delErr := j.Delete(deleteResourceRetries)
 					if delErr != nil {
 						fmt.Printf("could not delete job %s\n", j.Metadata.Name)
 						fmt.Println(delErr)
@@ -941,9 +895,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(nodeZone == pvZone).To(Equal(true))
 
 				By("Cleaning up after ourselves")
-				err = testPod.Delete()
+				err = testPod.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = pvc.Delete()
+				err = pvc.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("Availability zones was not configured for this Cluster Definition")
@@ -961,7 +915,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(running).To(Equal(true))
 				restarts := pod.Status.ContainerStatuses[0].RestartCount
 				if cfg.SoakClusterName == "" {
-					err = pod.Delete()
+					err = pod.Delete(deleteResourceRetries)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(restarts).To(Equal(0))
 				} else {
@@ -1076,11 +1030,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Cleaning up after ourselves")
 				networkpolicy.DeleteNetworkPolicy(networkPolicyName, namespace)
-				err = clientOneDeploy.Delete()
+				err = clientOneDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = clientTwoDeploy.Delete()
+				err = clientTwoDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = serverDeploy.Delete()
+				err = serverDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("Calico or Azure network policy was not provisioned for this Cluster Definition")
@@ -1125,9 +1079,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				By("Verifying pods & services can be deleted")
-				err = iisDeploy.Delete()
+				err = iisDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
+				err = s.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1194,13 +1148,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Cleaning up after ourselves")
-				err = windowsIISDeployment.Delete()
+				err = windowsIISDeployment.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = linuxNginxDeploy.Delete()
+				err = linuxNginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = windowsService.Delete()
+				err = windowsService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = linuxService.Delete()
+				err = linuxService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1242,14 +1196,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					kubeConfig, err := GetConfig()
 					Expect(err).NotTo(HaveOccurred())
 					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-					sshKeyPath := cfg.GetSSHKeyPath()
 
 					for _, iisPod := range iisPods {
-						valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, sshKeyPath)
+						valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, masterSSHPrivateKeyFilepath)
 						Expect(valid).To(BeTrue())
 					}
 
-					err = iisDeploy.Delete()
+					err = iisDeploy.Delete(kubectlOutput)
 					Expect(err).NotTo(HaveOccurred())
 				} else {
 					Skip("No windows agent was provisioned for this Cluster Definition")
@@ -1291,7 +1244,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(valid).To(BeTrue())
 					Expect(err).NotTo(HaveOccurred())
 
-					err = iisPod.Delete()
+					err = iisPod.Delete(deleteResourceRetries)
 					Expect(err).NotTo(HaveOccurred())
 				} else {
 					Skip("Kubernetes version needs to be 1.8 and up for Azure File test")

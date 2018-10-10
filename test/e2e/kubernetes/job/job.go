@@ -175,9 +175,5 @@ func (j *Job) Delete(retries int) error {
 		break
 	}
 
-	if kubectlError != nil {
-		return kubectlError
-	}
-
-	return nil
+	return kubectlError
 }
