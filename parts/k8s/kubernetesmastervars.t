@@ -83,8 +83,9 @@
     "masterCount": {{.MasterProfile.Count}},
     "masterOffset": "[parameters('masterOffset')]",
 {{end}}
-    "apiVersionDefault": "2018-06-01",
+    "apiVersionCompute": "2018-06-01",
     "apiVersionStorage": "2018-07-01",
+    "apiVersionKeyVault": "2018-02-14",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"

@@ -1,6 +1,6 @@
 {{if .MasterProfile.IsManagedDisks}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
@@ -15,7 +15,7 @@
     },
 {{else if .MasterProfile.IsStorageAccount}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
@@ -38,7 +38,7 @@
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "dependsOn": [
 {{if RequireRouteTable}}
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if not IsOpenShift}},{{end}}
@@ -80,7 +80,7 @@
     },
 {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",
       "properties": {
@@ -135,7 +135,7 @@
     },
 {{if RequireRouteTable}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
@@ -143,7 +143,7 @@
 {{end}}
 {{if not IsPrivateCluster}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
@@ -155,7 +155,7 @@
       "type": "Microsoft.Network/publicIPAddresses"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
@@ -214,7 +214,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "masterLbLoopNode"
@@ -236,7 +236,7 @@
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "nicLoopNode"
@@ -327,7 +327,7 @@
     },
 {{else}}
       {
-        "apiVersion": "[variables('apiVersionDefault')]",
+        "apiVersion": "[variables('apiVersionCompute')]",
         "copy": {
           "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
           "name": "nicLoopNode"
@@ -412,7 +412,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('jumpboxVMName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
@@ -486,7 +486,7 @@
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('jumpboxNetworkSecurityGroupName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "properties": {
           "securityRules": [
@@ -512,7 +512,7 @@
           "name": "Basic"
       },
       "name": "[variables('jumpboxPublicIpAddressName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "properties": {
           "dnsSettings": {
@@ -524,7 +524,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('jumpboxNetworkInterfaceName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "properties": {
           "ipConfigurations": [
@@ -558,7 +558,7 @@
 {{end}}
 {{if gt .MasterProfile.Count 1}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "dependsOn": [
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]"
@@ -635,7 +635,7 @@
      {
        "type": "Microsoft.KeyVault/vaults",
        "name": "[variables('clusterKeyVaultName')]",
-       "apiVersion": "[variables('apiVersionDefault')]",
+       "apiVersion": "[variables('apiVersionKeyVault')]",
        "location": "[variables('location')]",
        {{ if UseManagedIdentity}}
        "dependsOn": 
@@ -718,7 +718,7 @@
      },
  {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -844,7 +844,7 @@
     {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
@@ -864,7 +864,7 @@
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
        },
-       "apiVersion": "[variables('apiVersionDefault')]",
+       "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
        {{if (not UserAssignedIDEnabled)}}
        "dependsOn": [
@@ -889,7 +889,7 @@
      },
      {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -923,7 +923,7 @@
     ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"

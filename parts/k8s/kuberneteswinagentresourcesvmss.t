@@ -1,6 +1,6 @@
 {{if UseManagedIdentity}}
   {
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -10,7 +10,7 @@
   },
 {{end}}
   {
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
     {{if .IsCustomVNET}}
       "[variables('nsgID')]"

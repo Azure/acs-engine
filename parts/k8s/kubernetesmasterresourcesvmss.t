@@ -1,6 +1,6 @@
 {{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -22,7 +22,7 @@
   {
     "type": "Microsoft.KeyVault/vaults",
     "name": "[variables('clusterKeyVaultName')]",
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
     {{ if UseManagedIdentity}}
     "dependsOn": 
@@ -73,7 +73,7 @@
   },
 {{end}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionCompute')]",
   "location": "[variables('location')]",
   "name": "[variables('nsgName')]",
   "properties": {
@@ -128,7 +128,7 @@
 },
 {{if RequireRouteTable}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionCompute')]",
   "location": "[variables('location')]",
   "name": "[variables('routeTableName')]",
   "type": "Microsoft.Network/routeTables"
@@ -136,7 +136,7 @@
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionCompute')]",
   "dependsOn": [
     {{if RequireRouteTable}}
     "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]",
@@ -186,7 +186,7 @@
 },
 {{end}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionCompute')]",
   "location": "[variables('location')]",
   "name": "[variables('masterPublicIPAddressName')]",
   "properties": {
@@ -208,7 +208,7 @@
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('masterLbName')]",
     "location": "[variables('location')]",
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
     ],
@@ -282,7 +282,7 @@
     }
 },
 {
-    "apiVersion": "[variables('apiVersionDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"
