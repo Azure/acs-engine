@@ -667,7 +667,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesWindowsAgentFunctions": func() string {
 			// Collect all the parts into a zip
-			var parts = []string{kubernetesWindowsAgentFunctionsPS1}
+			var parts = []string{
+				kubernetesWindowsAgentFunctionsPS1,
+				kubernetesWindowsConfigFunctionsPS1,
+				kubernetesWindowsKubeletFunctionsPS1,
+				kubernetesWindowsCniFunctionsPS1}
 
 			// Create a buffer, new zip
 			buf := new(bytes.Buffer)

@@ -95,8 +95,9 @@ $zippedFiles = "{{ GetKubernetesWindowsAgentFunctions }}"
 # TODO: Expand ZIP
 Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
 
-# Dot-source contents
+# Dot-source contents of zip. This should match the list in template_generator.go GetKubernetesWindowsAgentFunctions
 . c:\AzureData\k8s\kuberneteswindowsfunctions.ps1
+. c:\AzureData\k8s\windowsconfigfunc.ps1
 
 try
 {
@@ -108,7 +109,7 @@ try
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
         Write-Log "apply telemetry data setting"
-        Set-TelemetrySetting
+        Set-TelemetrySetting -WindowsTelemetryGUID $global:WindowsTelemetryGUID
 
         Write-Log "resize os drive if possible"
         Resize-OSDrive
@@ -121,13 +122,36 @@ try
         Update-WindowsPackages
 
         Write-Log "Write azure config"
-        Write-AzureConfig
+        Write-AzureConfig `
+            -AADClientId $AADClientId `
+            -AADClientSecret $AADClientSecret `
+            -TenantId $global:TenantId `
+            -SubscriptionId $global:SubscriptionId `
+            -ResourceGroup $global:ResourceGroup `
+            -Location $Location `
+            -VmType $global:VmType `
+            -SubnetName $global:SubnetName `
+            -SecurityGroupName $global:SecurityGroupName `
+            -VNetName $global:VNetName `
+            -RouteTableName $global:RouteTableName `
+            -PrimaryAvailabilitySetName $global:PrimaryAvailabilitySetName `
+            -PrimaryScaleSetName $global:PrimaryScaleSetName `
+            -UseManagedIdentityExtension $global:UseManagedIdentityExtension `
+            -UserAssignedClientID $global:UserAssignedClientID `
+            -UseInstanceMetadata $global:UseInstanceMetadata `
+            -LoadBalancerSku $global:LoadBalancerSku `
+            -ExcludeMasterFromStandardLB $global:ExcludeMasterFromStandardLB
 
         Write-Log "Write ca root"
-        Write-CACert
+        Write-CACert -CACertificate $global:CACertificate
 
         Write-Log "Write kube config"
-        Write-KubeConfig
+        Write-KubeConfig -CACertificate $global:CACertificate `
+            -MasterFQDNPrefix $MasterFQDNPrefix `
+            -MasterIP $MasterIP `
+            -AgentKey $AgentKey `
+            -AgentCertificate $global:AgentCertificate
+
 
         Write-Log "Create the Pause Container kubletwin/pause"
         New-InfraContainer

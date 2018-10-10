@@ -3,12 +3,9 @@
 
 # Windows defaults, not changed by acs-engine
 $global:DockerServiceName = "Docker"
-$global:KubeDir = "c:\k"
 $global:KubeNetwork = "l2bridge"
 $global:KubeDnsSearchPath = "svc.cluster.local"
-$global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
-$global:KubeletStartFile = [io.path]::Combine($global:KubeDir, "kubeletstart.ps1")
-$global:KubeProxyStartFile = [io.path]::Combine($global:KubeDir, "kubeproxystart.ps1")
+
 
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
@@ -34,55 +31,24 @@ Write-Log($message)
     Write-Output $msg
 }
 
-function Set-TelemetrySetting()
-{
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "CommercialId" -Value $global:WindowsTelemetryGUID -Force
-}
-
-function Resize-OSDrive()
-{
-    $osDrive = ((Get-WmiObject Win32_OperatingSystem).SystemDrive).TrimEnd(":")
-    $size = (Get-Partition -DriveLetter $osDrive).Size
-    $maxSize = (Get-PartitionSupportedSize -DriveLetter $osDrive).SizeMax
-    if ($size -lt $maxSize)
-    {
-        Resize-Partition -DriveLetter $osDrive -Size $maxSize
-    }
-}
-
-function
-Get-KubeBinaries()
-{
-    $zipfile = "c:\k.zip"
-    for ($i=0; $i -le 10; $i++)
-    {
-        Start-BitsTransfer -Source $global:KubeBinariesSASURL -Destination $zipfile
-        if ($?) {
-            break
-        } else {
-            Write-Log $Error[0].Exception.Message
-        }
-    }
-    Expand-Archive -path $zipfile -DestinationPath C:\
-}
-
 function DownloadFileOverHttp($Url, $DestinationPath)
 {
-     $secureProtocols = @()
-     $insecureProtocols = @([System.Net.SecurityProtocolType]::SystemDefault, [System.Net.SecurityProtocolType]::Ssl3)
+    $secureProtocols = @()
+    $insecureProtocols = @([System.Net.SecurityProtocolType]::SystemDefault, [System.Net.SecurityProtocolType]::Ssl3)
 
-     foreach ($protocol in [System.Enum]::GetValues([System.Net.SecurityProtocolType]))
-     {
-         if ($insecureProtocols -notcontains $protocol)
-         {
-             $secureProtocols += $protocol
-         }
-     }
-     [System.Net.ServicePointManager]::SecurityProtocol = $secureProtocols
+    foreach ($protocol in [System.Enum]::GetValues([System.Net.SecurityProtocolType]))
+    {
+        if ($insecureProtocols -notcontains $protocol)
+        {
+            $secureProtocols += $protocol
+        }
+    }
+    [System.Net.ServicePointManager]::SecurityProtocol = $secureProtocols
 
-    curl $Url -UseBasicParsing -OutFile $DestinationPath -Verbose
-    Write-Log "$DestinationPath updated"
+    Invoke-WebRequest $Url -UseBasicParsing -OutFile $DestinationPath -Verbose
+    Write-Log "Downloaded file to $DestinationPath"
 }
+
 function Get-HnsPsm1()
 {
     DownloadFileOverHttp "https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1" "$global:HNSModule"
@@ -102,94 +68,7 @@ Update-WindowsPackages()
     Get-HnsPsm1
 }
 
-function
-Write-AzureConfig()
-{
-    $azureConfigFile = [io.path]::Combine($global:KubeDir, "azure.json")
 
-    $azureConfig = @"
-{
-    "tenantId": "$global:TenantId",
-    "subscriptionId": "$global:SubscriptionId",
-    "aadClientId": "$AADClientId",
-    "aadClientSecret": "$AADClientSecret",
-    "resourceGroup": "$global:ResourceGroup",
-    "location": "$Location",
-    "vmType": "$global:VmType",
-    "subnetName": "$global:SubnetName",
-    "securityGroupName": "$global:SecurityGroupName",
-    "vnetName": "$global:VNetName",
-    "routeTableName": "$global:RouteTableName",
-    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
-    "primaryScaleSetName": "$global:PrimaryScaleSetName",
-    "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
-    "userAssignedIdentityID": $global:UserAssignedClientID,
-    "useInstanceMetadata": $global:UseInstanceMetadata,
-    "loadBalancerSku": "$global:LoadBalancerSku",
-    "excludeMasterFromStandardLB": $global:ExcludeMasterFromStandardLB
-}
-"@
-
-    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"
-}
-
-
-function
-Write-CACert()
-{
-    $caFile = [io.path]::Combine($global:KubeDir, "ca.crt")
-    [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($global:CACertificate)) | Out-File -Encoding ascii $caFile
-}
-
-function
-Write-KubeConfig()
-{
-    $kubeConfigFile = [io.path]::Combine($global:KubeDir, "config")
-
-    $kubeConfig = @"
----
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: "$global:CACertificate"
-    server: https://${MasterIP}:443
-  name: "$MasterFQDNPrefix"
-contexts:
-- context:
-    cluster: "$MasterFQDNPrefix"
-    user: "$MasterFQDNPrefix-admin"
-  name: "$MasterFQDNPrefix"
-current-context: "$MasterFQDNPrefix"
-kind: Config
-users:
-- name: "$MasterFQDNPrefix-admin"
-  user:
-    client-certificate-data: "$global:AgentCertificate"
-    client-key-data: "$AgentKey"
-"@
-
-    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeConfigFile"
-}
-
-function
-New-InfraContainer()
-{
-    cd $global:KubeDir
-    $computerInfo = Get-ComputerInfo
-    $windowsBase = if ($computerInfo.WindowsVersion -eq "1709") {
-        "microsoft/nanoserver:1709"
-    } elseif ( ($computerInfo.WindowsVersion -eq "1803") -and ($computerInfo.WindowsBuildLabEx.StartsWith("17134")) ) {
-        "microsoft/nanoserver:1803"
-    } else {
-        # This is a temporary workaround. As of May 2018, Windows Server Insider builds still report 1803 which is wrong.
-        # Once that is fixed, add another elseif ( -eq "nnnn") instead and remove the StartsWith("17134") above
-        "microsoft/nanoserver-insider"
-    }
-
-    "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
-    "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
-    docker build -t kubletwin/pause .
-}
 
 function
 Set-VnetPluginMode($mode)
@@ -203,8 +82,8 @@ function
 Install-VnetPlugins()
 {
     # Create CNI directories.
-     mkdir $global:AzureCNIBinDir
-     mkdir $global:AzureCNIConfDir
+    mkdir $global:AzureCNIBinDir
+    mkdir $global:AzureCNIConfDir
 
     # Download Azure VNET CNI plugins.
     # Mirror from https://github.com/Azure/azure-container-networking/releases
@@ -228,6 +107,7 @@ Set-AzureNetworkPlugin()
     # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
     Set-VnetPluginMode "tunnel"
 }
+
 function
 Set-AzureCNIConfig()
 {
@@ -590,15 +470,4 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-}
-
-function
-Set-Explorer
-{
-    # setup explorer so that it is usable
-    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer"
-    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation"
-    New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation" -Name IntranetCompatibilityMode -Value 0 -Type DWord
-    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main"
-    New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main" -Name "Start Page" -Type String -Value http://bing.com
 }
