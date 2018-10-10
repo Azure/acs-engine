@@ -223,8 +223,12 @@ var k8sComponentVersions = map[string]map[string]string{
 	},
 }
 
-// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
-var KubeConfigs = getKubeConfigs()
+// K8sComponentsVersionMap represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
+var K8sComponentsByVersionMap map[string]map[string]string
+
+func init() {
+	K8sComponentsByVersionMap = getKubeConfigs()
+}
 
 func getKubeConfigs() map[string]map[string]string {
 	ret := make(map[string]map[string]string)
