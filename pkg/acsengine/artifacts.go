@@ -51,7 +51,9 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 			kubernetesFeatureSetting{
 				"dns-autoscaler.yaml",
 				"dns-autoscaler.yaml",
-				common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+				// TODO enable this when it has been smoke tested
+				//common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+				false,
 			},
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultDNSAutoscalerAddonName),
 		},
