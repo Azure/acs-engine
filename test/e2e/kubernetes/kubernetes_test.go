@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -346,12 +345,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						success := false
 						for i := 0; i < 60; i++ {
 							address := node.Status.GetAddressByType("InternalIP")
-							var getAddressError error
 							if address == nil {
 								log.Printf("One of our nodes does not have an InternalIP value!: %s\n", node.Metadata.Name)
-								getAddressError = errors.New("All nodes should have an InternalIP address")
 							}
-							Expect(getAddressError).NotTo(HaveOccurred())
+							Expect(address).NotTo(BeNil())
 							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 							var cmd *exec.Cmd
