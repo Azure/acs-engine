@@ -69,28 +69,28 @@ func TestNormalizeAzureRegion(t *testing.T) {
 func TestPointerToBool(t *testing.T) {
 	boolVar := true
 	ret := PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(true) to return *true, instead returned %#v", ret)
+	if !*ret {
+		t.Fatal("expected PointerToBool(true) to return true")
 	}
 
 	if !IsTrueBoolPointer(ret) {
-		t.Fatalf("expected IsTrueBoolPointer(*true) to return true, instead returned %#v", IsTrueBoolPointer(ret))
+		t.Fatal("expected IsTrueBoolPointer(*true) to return true")
 	}
 
 	boolVar = false
 	ret = PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(false) to return *false, instead returned %#v", ret)
+	if *ret {
+		t.Fatal("expected PointerToBool(false) to return false")
 	}
 
 	if !IsFalseBoolPointer(ret) {
-		t.Fatalf("expected IsFalseBoolPointer(*false) to return true, instead returned %#v", IsFalseBoolPointer(ret))
+		t.Fatal("expected IsFalseBoolPointer(*false) to return true")
 	}
 
 	boolVar = true
 	ret = PointerToBool(boolVar)
 	if IsFalseBoolPointer(ret) {
-		t.Fatalf("expected IsFalseBoolPointer(*true) to return false, instead returned %#v", IsFalseBoolPointer(ret))
+		t.Fatal("expected IsFalseBoolPointer(*true) to return false")
 	}
 }
 
