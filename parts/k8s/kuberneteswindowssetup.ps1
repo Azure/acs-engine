@@ -108,6 +108,17 @@ $global:VNetCNIPluginsURL = "{{WrapAsParameter "vnetCniWindowsPluginsURL"}}"
 # Base64 representation of ZIP archive
 $zippedFiles = "{{ GetKubernetesWindowsAgentFunctions }}"
 
+# Extract ZIP from script
+[io.file]::WriteAllBytes("scripts.zip", [System.Convert]::FromBase64String($zippedFiles))
+Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
+
+# Dot-source contents of zip. This should match the list in template_generator.go GetKubernetesWindowsAgentFunctions
+. c:\AzureData\k8s\kuberneteswindowsfunctions.ps1
+. c:\AzureData\k8s\windowsconfigfunc.ps1
+. c:\AzureData\k8s\windowskubeletfunc.ps1
+. c:\AzureData\k8s\windowscnifunc.ps1
+. c:\AzureData\k8s\windowsazurecnifunc.ps1
+
 try
 {
     # Set to false for debugging.  This will output the start script to
@@ -115,19 +126,6 @@ try
     # to the windows machine, and run the script manually to watch
     # the output.
     if ($false) { # BUGBUG: revert this to $false before merging back to master
-
-        # Extract ZIP from script
-        [io.file]::WriteAllBytes("scripts.zip", [System.Convert]::FromBase64String($zippedFiles))
-        Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
-
-        # Dot-source contents of zip. This should match the list in template_generator.go GetKubernetesWindowsAgentFunctions
-        . c:\AzureData\k8s\kuberneteswindowsfunctions.ps1
-        . c:\AzureData\k8s\windowsconfigfunc.ps1
-        . c:\AzureData\k8s\windowskubeletfunc.ps1
-        . c:\AzureData\k8s\windowscnifunc.ps1
-        . c:\AzureData\k8s\windowsazurecnifunc.ps1
-    
-
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
         Write-Log "apply telemetry data setting"
