@@ -73,7 +73,7 @@
   },
 {{end}}
 {
-  "apiVersion": "[variables('apiVersionCompute')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('nsgName')]",
   "properties": {
@@ -128,7 +128,7 @@
 },
 {{if RequireRouteTable}}
 {
-  "apiVersion": "[variables('apiVersionCompute')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('routeTableName')]",
   "type": "Microsoft.Network/routeTables"
@@ -136,7 +136,7 @@
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
-  "apiVersion": "[variables('apiVersionCompute')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "dependsOn": [
     {{if RequireRouteTable}}
     "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]",
@@ -186,7 +186,7 @@
 },
 {{end}}
 {
-  "apiVersion": "[variables('apiVersionCompute')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('masterPublicIPAddressName')]",
   "properties": {
@@ -208,7 +208,7 @@
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('masterLbName')]",
     "location": "[variables('location')]",
-    "apiVersion": "[variables('apiVersionCompute')]",
+    "apiVersion": "[variables('apiVersionNetwork')]",
     "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
     ],
