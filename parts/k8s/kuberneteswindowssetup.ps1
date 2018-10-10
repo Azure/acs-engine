@@ -83,21 +83,30 @@ $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 $global:LoadBalancerSku = "{{WrapAsVariable "loadBalancerSku"}}"
 $global:ExcludeMasterFromStandardLB = "{{WrapAsVariable "excludeMasterFromStandardLB"}}"
 
+
+# Windows defaults, not changed by acs-engine
+$global:KubeDir = "c:\k"
+$global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
+
+$global:KubeDnsSearchPath = "svc.cluster.local"
+
+$global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
+$global:NetworkMode = "L2Bridge"
+$global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
+$global:CNIConfigPath = [Io.path]::Combine("$global:CNIPath", "config")
+
+
+$global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")
+$global:AzureCNIBinDir = [Io.path]::Combine("$global:AzureCNIDir", "bin")
+$global:AzureCNIConfDir = [Io.path]::Combine("$global:AzureCNIDir", "netconf")
+
 # Azure cni configuration
 # $global:NetworkPolicy = "{{WrapAsParameter "networkPolicy"}}" # BUG: unused
 $global:NetworkPlugin = "{{WrapAsParameter "networkPlugin"}}"
 $global:VNetCNIPluginsURL = "{{WrapAsParameter "vnetCniWindowsPluginsURL"}}"
 
-# Extract ZIP from script
+# Base64 representation of ZIP archive
 $zippedFiles = "{{ GetKubernetesWindowsAgentFunctions }}"
-[io.file]::WriteAllBytes("scripts.zip", [System.Convert]::FromBase64String($zippedFiles))
-
-# TODO: Expand ZIP
-Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
-
-# Dot-source contents of zip. This should match the list in template_generator.go GetKubernetesWindowsAgentFunctions
-. c:\AzureData\k8s\kuberneteswindowsfunctions.ps1
-. c:\AzureData\k8s\windowsconfigfunc.ps1
 
 try
 {
@@ -105,7 +114,20 @@ try
     # c:\AzureData\CustomDataSetupScript.log, and then you can RDP
     # to the windows machine, and run the script manually to watch
     # the output.
-    if ($true) {
+    if ($false) { # BUGBUG: revert this to $false before merging back to master
+
+        # Extract ZIP from script
+        [io.file]::WriteAllBytes("scripts.zip", [System.Convert]::FromBase64String($zippedFiles))
+        Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
+
+        # Dot-source contents of zip. This should match the list in template_generator.go GetKubernetesWindowsAgentFunctions
+        . c:\AzureData\k8s\kuberneteswindowsfunctions.ps1
+        . c:\AzureData\k8s\windowsconfigfunc.ps1
+        . c:\AzureData\k8s\windowskubeletfunc.ps1
+        . c:\AzureData\k8s\windowscnifunc.ps1
+        . c:\AzureData\k8s\windowsazurecnifunc.ps1
+    
+
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
         Write-Log "apply telemetry data setting"
@@ -115,13 +137,9 @@ try
         Resize-OSDrive
 
         Write-Log "download kubelet binaries and unzip"
-        Get-KubeBinaries
+        Get-KubeBinaries -KubeBinariesSASURL $global:KubeBinariesSASURL
 
-        # This is a workaround until Windows update
-        Write-Log "apply Windows patch packages"
-        Update-WindowsPackages
-
-        Write-Log "Write azure config"
+        Write-Log "Write Azure cloud provider config"
         Write-AzureConfig `
             -AADClientId $AADClientId `
             -AADClientSecret $AADClientSecret `
@@ -143,29 +161,57 @@ try
             -ExcludeMasterFromStandardLB $global:ExcludeMasterFromStandardLB
 
         Write-Log "Write ca root"
-        Write-CACert -CACertificate $global:CACertificate
+        Write-CACert -CACertificate $global:CACertificate `
+                     -KubeDir $global:KubeDir
 
         Write-Log "Write kube config"
         Write-KubeConfig -CACertificate $global:CACertificate `
-            -MasterFQDNPrefix $MasterFQDNPrefix `
-            -MasterIP $MasterIP `
-            -AgentKey $AgentKey `
-            -AgentCertificate $global:AgentCertificate
+                         -KubeDir $global:KubeDir `
+                         -MasterFQDNPrefix $MasterFQDNPrefix `
+                         -MasterIP $MasterIP `
+                         -AgentKey $AgentKey `
+                         -AgentCertificate $global:AgentCertificate
 
 
         Write-Log "Create the Pause Container kubletwin/pause"
-        New-InfraContainer
+        New-InfraContainer -KubeDir $global:KubeDir
 
-        Write-Log "Configure networking"
-        Set-NetworkConfig
+        Write-Log "Configuring networking with NetworkPlugin:$global:NetworkPlugin"
+
+        # Configure network policy.
+        if ($global:NetworkPlugin -eq "azure") {
+            Install-VnetPlugins -AzureCNIConfDir $global:AzureCNIConfDir -AzureCNIBinDir $global:AzureCNIBinDir
+            Set-AzureCNIConfig -AzureCNIConfDir $global:AzureCNIConfDir `
+                               -KubeDnsSearchPath $global:KubeDnsSearchPath `
+                               -KubeClusterCIDR $global:KubeClusterCIDR `
+                               -MasterSubnet $global:MasterSubnet `
+                               -KubeServiceCIDR $global:KubeServiceCIDR
+        } elseif ($global:NetworkPlugin -eq "kubenet") {
+            Update-WinCNI -CNIPath $global:CNIPath
+            Get-HnsPsm1 -HNSModule $global:HNSModule
+        }
 
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
-        Write-KubernetesStartFiles $podCIDR
+        Install-KubernetesServices `
+            -KubeletConfigArgs $global:KubeletConfigArgs `
+            -KubeBinariesVersion $global:KubeBinariesVersion `
+            -NetworkPlugin $global:NetworkPlugin `
+            -NetworkMode $global:NetworkMode `
+            -KubeDir $global:KubeDir `
+            -AzureCNIBinDir $global:AzureCNIBinDir `
+            -AzureCNIConfDir $global:AzureCNIConfDir `
+            -CNIPath $global:CNIPath `
+            -CNIConfig $global:CNIConfig `
+            -CNIConfigPath $global:CNIConfigPath `
+            -MasterIP $MasterIP `
+            -KubeDnsServiceIp $KubeDnsServiceIp `
+            -MasterSubnet $global:MasterSubnet `
+            -KubeClusterCIDR $global:KubeClusterCIDR `
+            -KubeServiceCIDR $global:KubeServiceCIDR `
+            -HNSModule $global:HNSModule `
+            -KubeletNodeLabels $global:KubeletNodeLabels
 
-        Write-Log "install the NSSM service"
-        New-NSSMService
-
-        Write-Log "Set Internet Explorer"
+        Write-Log "Disable Internet Explorer compat mode and set homepage"
         Set-Explorer
 
         Write-Log "Start preProvisioning script"
