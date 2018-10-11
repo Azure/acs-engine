@@ -246,6 +246,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					}
 				}
 			}
+			addValue(parametersMap, "kubernetesCoreDNSSpec", "coredns/coredns:1.2.2")
 			addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
