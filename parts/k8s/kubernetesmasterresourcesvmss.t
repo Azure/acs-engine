@@ -15,8 +15,8 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionStorage')]",
     "location": "[variables('location')]",
-    "properties": {
-      "accountType": "Standard_LRS"
+    "sku": {
+      "name": "Standard_LRS"
     }
   },
   {

@@ -30,8 +30,8 @@
 {{end}}
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -478,8 +478,8 @@
             "name": "[variables('jumpboxStorageAccountName')]",
             "apiVersion": "[variables('apiVersionStorage')]",
             "location": "[variables('location')]",
-            "properties": {
-                "accountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
+            "sku": {
+              "name": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
             }
     },
     {{end}}
@@ -628,9 +628,9 @@
        "name": "[variables('clusterKeyVaultName')]",
        "apiVersion": "[variables('apiVersionStorage')]",
        "location": "[variables('location')]",
-       "properties": {
-         "accountType": "Standard_LRS"
-       }
+       "sku": {
+        "name": "Standard_LRS"
+      }
      },
      {
        "type": "Microsoft.KeyVault/vaults",
