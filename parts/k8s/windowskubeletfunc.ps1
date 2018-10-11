@@ -3,44 +3,44 @@ Write-AzureConfig
 {
     Param(
         
-        [string][Parameter(Mandatory=$true)]
-        AADClientId,
-        [string][Parameter(Mandatory=$true)]
-        AADClientSecret,
-        [string][Parameter(Mandatory=$true)]
-        TenantId,
-        [string][Parameter(Mandatory=$true)]
-        SubscriptionId,
-        [string][Parameter(Mandatory=$true)]
-        ResourceGroup,
-        [string][Parameter(Mandatory=$true)]
-        Location,
-        [string][Parameter(Mandatory=$true)]
-        VmType,
-        [string][Parameter(Mandatory=$true)]
-        SubnetName,
-        [string][Parameter(Mandatory=$true)]
-        SecurityGroupName,
-        [string][Parameter(Mandatory=$true)]
-        VNetName,
-        [string][Parameter(Mandatory=$true)]
-        RouteTableName,
-        [string][Parameter(Mandatory=$true)]
-        PrimaryAvailabilitySetName,
-        [string][Parameter(Mandatory=$true)]
-        PrimaryScaleSetName,
-        [string][Parameter(Mandatory=$true)]
-        UseManagedIdentityExtension,
-        [string][Parameter(Mandatory=$true)]
-        UserAssignedClientID,
-        [string][Parameter(Mandatory=$true)]
-        UseInstanceMetadata,
-        [string][Parameter(Mandatory=$true)]
-        LoadBalancerSku,
-        [string][Parameter(Mandatory=$true)]
-        ExcludeMasterFromStandardLB,
-        [string][Parameter(Mandatory=$true)]
-        KubeDir
+        [Parameter(Mandatory=$true)][string]
+        $AADClientId,
+        [Parameter(Mandatory=$true)][string]
+        $AADClientSecret,
+        [Parameter(Mandatory=$true)][string]
+        $TenantId,
+        [Parameter(Mandatory=$true)][string]
+        $SubscriptionId,
+        [Parameter(Mandatory=$true)][string]
+        $ResourceGroup,
+        [Parameter(Mandatory=$true)][string]
+        $Location,
+        [Parameter(Mandatory=$true)][string]
+        $VmType,
+        [Parameter(Mandatory=$true)][string]
+        $SubnetName,
+        [Parameter(Mandatory=$true)][string]
+        $SecurityGroupName,
+        [Parameter(Mandatory=$true)][string]
+        $VNetName,
+        [Parameter(Mandatory=$true)][string]
+        $RouteTableName,
+        [Parameter(Mandatory=$true)][string]
+        $PrimaryAvailabilitySetName,
+        [Parameter(Mandatory=$true)][string]
+        $PrimaryScaleSetName,
+        [Parameter(Mandatory=$true)][string]
+        $UseManagedIdentityExtension,
+        [Parameter(Mandatory=$true)][string]
+        $UserAssignedClientID,
+        [Parameter(Mandatory=$true)][string]
+        $UseInstanceMetadata,
+        [Parameter(Mandatory=$true)][string]
+        $LoadBalancerSku,
+        [Parameter(Mandatory=$true)][string]
+        $ExcludeMasterFromStandardLB,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDir
     )
     $azureConfigFile = [io.path]::Combine($KubeDir, "azure.json")
 
@@ -75,10 +75,10 @@ function
 Write-CACert
 {
     Param(
-        [string][Parameter(Mandatory=$true)]
-        CACertificate,
-        [string][Parameter(Mandatory=$true)]
-        KubeDir
+        [Parameter(Mandatory=$true)][string]
+        $CACertificate,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDir
     )
     $caFile = [io.path]::Combine($KubeDir, "ca.crt")
     [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($CACertificate)) | Out-File -Encoding ascii $caFile
@@ -88,18 +88,18 @@ function
 Write-KubeConfig
 {
     Param(
-        [string][Parameter(Mandatory=$true)]
-        CACertificate,
-        [string][Parameter(Mandatory=$true)]
-        MasterFQDNPrefix,
-        [string][Parameter(Mandatory=$true)]
-        MasterIP,
-        [string][Parameter(Mandatory=$true)]
-        AgentKey,
-        [string][Parameter(Mandatory=$true)]
-        AgentCertificate,
-        [string][Parameter(Mandatory=$true)]
-        KubeDir
+        [Parameter(Mandatory=$true)][string]
+        $CACertificate,
+        [Parameter(Mandatory=$true)][string]
+        $MasterFQDNPrefix,
+        [Parameter(Mandatory=$true)][string]
+        $MasterIP,
+        [Parameter(Mandatory=$true)][string]
+        $AgentKey,
+        [Parameter(Mandatory=$true)][string]
+        $AgentCertificate,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDir
     )
     $kubeConfigFile = [io.path]::Combine($KubeDir, "config")
 
@@ -132,9 +132,8 @@ function
 New-InfraContainer
 {
     Param(
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeDir
+        [Parameter(Mandatory=$true)][string]
+        $KubeDir
     )
     cd $KubeDir
     $computerInfo = Get-ComputerInfo
@@ -161,8 +160,8 @@ function
 Get-KubeBinaries
 {
     Param(
-        [string]
-        KubeBinariesSASURL
+        [Parameter(Mandatory=$true)][string]
+        $KubeBinariesSASURL
     )
     
     $zipfile = "c:\k.zip"
@@ -186,13 +185,13 @@ New-NSSMService
     Param(
         [string]
         [Parameter(Mandatory=$true)]
-        KubeDir,
+        $KubeDir,
         [string]
         [Parameter(Mandatory=$true)]
-        KubeletStartFile,
+        $KubeletStartFile,
         [string]
         [Parameter(Mandatory=$true)]
-        KubeProxyStartFile
+        $KubeProxyStartFile
     )
 
     # setup kubelet
@@ -238,57 +237,40 @@ function
 Install-KubernetesServices
 {
     param(
-        [string[]]
-        [Parameter(Mandatory=$true)]
-        KubeletConfigArgs,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeBinariesVersion,
-        [string]
-        [Parameter(Mandatory=$true)]
-        NetworkPlugin,
-        [string]
-        [Parameter(Mandatory=$true)]
-        NetworkMode,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeDir,
-        [string]
-        [Parameter(Mandatory=$true)]
-        AzureCNIBinDir,
-        [string]
-        [Parameter(Mandatory=$true)]
-        AzureCNIConfDir,
-        [string]
-        [Parameter(Mandatory=$true)]
-        CNIPath,
-        [string]
-        [Parameter(Mandatory=$true)]
-        CNIConfig,
-        [string]
-        [Parameter(Mandatory=$true)]
-        CNIConfigPath,
-        [string]
-        [Parameter(Mandatory=$true)]
-        MasterIP,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeDnsServiceIp,
-        [string]
-        [Parameter(Mandatory=$true)]
-        MasterSubnet,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeClusterCIDR,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeServiceCIDR,
-        [string]
-        [Parameter(Mandatory=$true)]
-        HNSModule,
-        [string]
-        [Parameter(Mandatory=$true)]
-        KubeletNodeLabels
+        [Parameter(Mandatory=$true)][string]
+        $KubeletConfigArgs,
+        [Parameter(Mandatory=$true)][string]
+        $KubeBinariesVersion,
+        [Parameter(Mandatory=$true)][string]
+        $NetworkPlugin,
+        [Parameter(Mandatory=$true)][string]
+        $NetworkMode,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDir,
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIBinDir,
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIConfDir,
+        [Parameter(Mandatory=$true)][string]
+        $CNIPath,
+        [Parameter(Mandatory=$true)][string]
+        $CNIConfig,
+        [Parameter(Mandatory=$true)][string]
+        $CNIConfigPath,
+        [Parameter(Mandatory=$true)][string]
+        $MasterIP,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDnsServiceIp,
+        [Parameter(Mandatory=$true)][string]
+        $MasterSubnet,
+        [Parameter(Mandatory=$true)][string]
+        $KubeClusterCIDR,
+        [Parameter(Mandatory=$true)][string]
+        $KubeServiceCIDR,
+        [Parameter(Mandatory=$true)][string]
+        $HNSModule,
+        [Parameter(Mandatory=$true)][string]
+        $KubeletNodeLabels
     )
 
     # Calculate some local paths

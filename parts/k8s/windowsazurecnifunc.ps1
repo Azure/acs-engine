@@ -2,15 +2,17 @@
 
 # TODO: remove - dead code?
 function
-Set-VnetPluginMode($mode)
+Set-VnetPluginMode()
 {
     Param(
-        [string][Parameter(Mandatory=$true)]
-        AzureCNIConfDir
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIConfDir,
+        [Parameter(Mandatory=$true)][string]
+        $Mode
     )
     # Sets Azure VNET CNI plugin operational mode.
     $fileName  = [Io.path]::Combine("$AzureCNIConfDir", "10-azure.conflist")
-    (Get-Content $fileName) | %{$_ -replace "`"mode`":.*", "`"mode`": `"$mode`","} | Out-File -encoding ASCII -filepath $fileName
+    (Get-Content $fileName) | %{$_ -replace "`"mode`":.*", "`"mode`": `"$Mode`","} | Out-File -encoding ASCII -filepath $fileName
 }
 
 
@@ -18,10 +20,10 @@ function
 Install-VnetPlugins
 {
     Param(
-        [string][Parameter(Mandatory=$true)]
-        AzureCNIConfDir,
-        [string][Parameter(Mandatory=$true)]
-        AzureCNIBinDir
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIConfDir,
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIBinDir
     )
     # Create CNI directories.
     mkdir $AzureCNIBinDir
@@ -52,16 +54,16 @@ function
 Set-AzureCNIConfig
 {
     Param(
-        [string][Parameter(Mandatory=$true)]
-        AzureCNIConfDir,
-        [string][Parameter(Mandatory=$true)]
-        KubeDnsSearchPath,
-        [string][Parameter(Mandatory=$true)]
-        KubeClusterCIDR,
-        [string][Parameter(Mandatory=$true)]
-        MasterSubnet,
-        [string][Parameter(Mandatory=$true)]
-        KubeServiceCIDR
+        [Parameter(Mandatory=$true)][string]
+        $AzureCNIConfDir,
+        [Parameter(Mandatory=$true)][string]
+        $KubeDnsSearchPath,
+        [Parameter(Mandatory=$true)][string]
+        $KubeClusterCIDR,
+        [Parameter(Mandatory=$true)][string]
+        $MasterSubnet,
+        [Parameter(Mandatory=$true)][string]
+        $KubeServiceCIDR
     )
     # Fill in DNS information for kubernetes.
     $fileName  = [Io.path]::Combine("$AzureCNIConfDir", "10-azure.conflist")

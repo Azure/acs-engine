@@ -4,9 +4,8 @@
 function Set-TelemetrySetting
 {
     Param(
-        [string]
-        [Parameter(Mandatory=$true)]
-        WindowsTelemetryGUID
+        [Parameter(Mandatory=$true)][string]
+        $WindowsTelemetryGUID
     )
     Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "CommercialId" -Value $WindowsTelemetryGUID -Force
 }
