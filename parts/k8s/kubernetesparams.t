@@ -631,6 +631,12 @@
       },
       "type": "string"
     },
+    "kubernetesCoreDNSSpec": {
+      "metadata": {
+        "description": "The container spec for coredns"
+      },
+      "type": "string"
+    },
     "kubernetesDNSMasqSpec": {
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."

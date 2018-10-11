@@ -8,10 +8,10 @@ spec:
       restartPolicy: Never
       containers:
       - name: validate-bing
-        image: busybox
+        image: library/busybox
         command: ['sh', '-c', 'until nslookup www.bing.com; do echo waiting for DNS resolution; sleep 1; done;']
       - name: validate-google
-        image: busybox
+        image: library/busybox
         command: ['sh', '-c', 'until nslookup google.com; do echo waiting for DNS resolution; sleep 1; done;']
       nodeSelector:
         beta.kubernetes.io/os: linux 

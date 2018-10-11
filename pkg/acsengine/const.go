@@ -24,6 +24,10 @@ const (
 	DefaultKubeHeapsterDeploymentAddonName = "kube-heapster-deployment"
 	// DefaultKubeDNSDeploymentAddonName is the name of the kube-dns-deployment addon
 	DefaultKubeDNSDeploymentAddonName = "kube-dns-deployment"
+	// DefaultCoreDNSAddonName is the name of the coredns addon
+	DefaultCoreDNSAddonName = "coredns"
+	// DefaultDNSAutoscalerAddonName is the name of the coredns addon
+	DefaultDNSAutoscalerAddonName = "dns-autoscaler"
 	// DefaultKubeProxyAddonName is the name of the kube-proxy config addon
 	DefaultKubeProxyAddonName = "kube-proxy-daemonset"
 	// DefaultAzureStorageClassesAddonName is the name of the azure storage classes addon
