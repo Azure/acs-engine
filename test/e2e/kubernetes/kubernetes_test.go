@@ -85,8 +85,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 
 			lsbReleaseCmd := fmt.Sprintf("lsb_release -a && uname -r")
-			var cmd *exec.Cmd
-			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
+			cmd := exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, lsbReleaseCmd)
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -156,8 +155,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
 
 			ifconfigCmd := fmt.Sprintf("ifconfig -a -v")
-			var cmd *exec.Cmd
-			cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
+			cmd := exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, ifconfigCmd)
 			util.PrintCommand(cmd)
 			out, err := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -374,8 +372,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 							Expect(address).NotTo(BeNil())
 							dashboardURL := fmt.Sprintf("http://%s:%v", address.Address, port)
 							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-							var cmd *exec.Cmd
-							cmd = exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+							cmd := exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
 							util.PrintCommand(cmd)
 							out, err := cmd.CombinedOutput()
 							if err == nil {
