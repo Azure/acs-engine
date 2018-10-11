@@ -326,7 +326,7 @@ Install-KubernetesServices
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
     # Used in Azure-CNI version of kubeletstart.ps1
-    $KubeletCommandLine = "c:\$KubeDir\kubelet.exe " + ($KubeletArgList -join " ")
+    $KubeletCommandLine = "$KubeDir\kubelet.exe " + ($KubeletArgList -join " ")
 
     $kubeStartStr = @"
 `$global:MasterIP = "$MasterIP"
