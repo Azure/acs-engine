@@ -125,7 +125,7 @@ try
     # c:\AzureData\CustomDataSetupScript.log, and then you can RDP
     # to the windows machine, and run the script manually to watch
     # the output.
-    if ($false) { # BUGBUG: revert this to $false before merging back to master
+    if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
         Write-Log "apply telemetry data setting"
