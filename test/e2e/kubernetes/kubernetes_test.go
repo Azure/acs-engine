@@ -449,20 +449,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be able to access kubernetes.default.svc from a pod", func() {
-			var err error
-			var p *pod.Pod
-			p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "kubectl-liveness.yaml"), "kubectl-liveness", "default")
-			if cfg.SoakClusterName == "" {
-				Expect(err).NotTo(HaveOccurred())
-			} else {
-				if err != nil {
-					p, err = pod.Get("kubectl-liveness", "default")
+			if eng.ExpandedDefinition.Properties.MasterProfile.Count == 1 {
+				var err error
+				var p *pod.Pod
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "kubectl-liveness.yaml"), "kubectl-liveness", "default")
+				if cfg.SoakClusterName == "" {
 					Expect(err).NotTo(HaveOccurred())
+				} else {
+					if err != nil {
+						p, err = pod.Get("kubectl-liveness", "default")
+						Expect(err).NotTo(HaveOccurred())
+					}
 				}
+				running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
 			}
-			running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
 		})
 
 		It("should have functional host OS DNS", func() {
@@ -961,18 +963,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 		It("kubectl-liveness pod should not have any restarts", func() {
-			pod, err := pod.Get("kubectl-liveness", "default")
-			Expect(err).NotTo(HaveOccurred())
-			running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
-			restarts := pod.Status.ContainerStatuses[0].RestartCount
-			if cfg.SoakClusterName == "" {
-				err = pod.Delete(deleteResourceRetries)
+			if eng.ExpandedDefinition.Properties.MasterProfile.Count == 1 {
+				pod, err := pod.Get("kubectl-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(restarts).To(Equal(0))
-			} else {
-				log.Printf("%d kubectl livenessProbe restarts since this cluster was created...\n", restarts)
+				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				restarts := pod.Status.ContainerStatuses[0].RestartCount
+				if cfg.SoakClusterName == "" {
+					err = pod.Delete(deleteResourceRetries)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(restarts).To(Equal(0))
+				} else {
+					log.Printf("%d kubectl livenessProbe restarts since this cluster was created...\n", restarts)
+				}
 			}
 		})
 	})
