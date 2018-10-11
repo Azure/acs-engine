@@ -97,7 +97,7 @@
       ]
     ],
 {{if .OrchestratorProfile.IsSwarmMode}}
-    "orchestratorName": "swarm",
+    "orchestratorName": "swarmm",
     "masterOSImageOffer": {{GetMasterOSImageOffer}},
     "masterOSImagePublisher": {{GetMasterOSImagePublisher}},
     "masterOSImageSKU": {{GetMasterOSImageSKU}},
