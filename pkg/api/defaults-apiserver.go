@@ -1,14 +1,13 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setAPIServerConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setAPIServerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticAPIServerConfig := map[string]string{
 		"--bind-address":               "0.0.0.0",
@@ -71,7 +70,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		defaultAPIServerConfig["--oidc-groups-claim"] = "groups"
 		defaultAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
-		if getCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
+		if helpers.GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
 		defaultAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
@@ -130,7 +129,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 }
 
-func getDefaultAdmissionControls(cs *api.ContainerService) (string, string) {
+func getDefaultAdmissionControls(cs *ContainerService) (string, string) {
 	o := cs.Properties.OrchestratorProfile
 	admissionControlKey := "--enable-admission-plugins"
 	var admissionControlValues string

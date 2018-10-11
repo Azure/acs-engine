@@ -2,7 +2,7 @@ package api
 
 import (
 	"log"
-	"regexp"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -1374,6 +1374,37 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsIPMasqAgentEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	enabled := c.IsIPMasqAgentEnabled()
+	enabledDefault := IPMasqAgentAddonEnabled
+	if enabled != enabledDefault {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return %t when no ip-masq-agent addon has been specified, instead returned %t", enabledDefault, enabled)
+	}
+	c.Addons = append(c.Addons, getMockAddon(IPMASQAgentAddonName))
+	enabled = c.IsIPMasqAgentEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return true when ip-masq-agent adddon has been specified, instead returned %t", enabled)
+	}
+	b := false
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    IPMASQAgentAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	enabled = c.IsIPMasqAgentEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsIPMasqAgentEnabled() should return false when ip-masq-agent addon has been specified as disabled, instead returned %t", enabled)
+	}
+}
+
 func TestCloudProviderDefaults(t *testing.T) {
 	// Test cloudprovider defaults when no user-provided values
 	v := "1.8.0"
@@ -1619,42 +1650,62 @@ func TestAreAgentProfilesCustomVNET(t *testing.T) {
 }
 
 func TestGenerateClusterID(t *testing.T) {
-	p := &Properties{
-		AgentPoolProfiles: []*AgentPoolProfile{
-			{
-				Name: "foo_agent",
+	tests := []struct {
+		name              string
+		properties        *Properties
+		expectedClusterID string
+	}{
+		{
+			name: "From Master Profile",
+			properties: &Properties{
+				MasterProfile: &MasterProfile{
+					DNSPrefix: "foo_master",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent0",
+					},
+				},
 			},
+			expectedClusterID: "24569115",
+		},
+		{
+			name: "From Hosted Master Profile",
+			properties: &Properties{
+				HostedMasterProfile: &HostedMasterProfile{
+					DNSPrefix: "foo_hosted_master",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent1",
+					},
+				},
+			},
+			expectedClusterID: "42761241",
+		},
+		{
+			name: "No Master Profile",
+			properties: &Properties{
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name: "foo_agent2",
+					},
+				},
+			},
+			expectedClusterID: "11729301",
 		},
 	}
 
-	clusterID := p.GetClusterID()
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.GetClusterID()
 
-	r, err := regexp.Compile("[0-9]{8}")
-
-	if err != nil {
-		t.Errorf("unexpected error while parsing regex : %s", err.Error())
-	}
-
-	if !r.MatchString(clusterID) {
-		t.Fatal("ClusterID should be an 8 digit integer string")
-	}
-
-	p = &Properties{
-		HostedMasterProfile: &HostedMasterProfile{
-			DNSPrefix: "foodnsprefx",
-		},
-	}
-
-	clusterID = p.GetClusterID()
-
-	r, err = regexp.Compile("[0-9]{8}")
-
-	if err != nil {
-		t.Errorf("unexpected error while parsing regex : %s", err.Error())
-	}
-
-	if !r.MatchString(clusterID) {
-		t.Fatal("ClusterID should be an 8 digit integer string")
+			if actual != test.expectedClusterID {
+				t.Errorf("expected cluster ID %s, but got %s", test.expectedClusterID, actual)
+			}
+		})
 	}
 }
 
@@ -2053,5 +2104,379 @@ func TestGetAddonContainersIndexByName(t *testing.T) {
 	i = addon.GetAddonContainersIndexByName("nonExistentContainerName")
 	if i != -1 {
 		t.Fatalf("getAddonContainersIndexByName() did not return the expected index value 0, instead returned: %d", i)
+	}
+}
+
+func TestGetAgentPoolIndexByName(t *testing.T) {
+	tests := []struct {
+		name          string
+		profileName   string
+		properties    *Properties
+		expectedIndex int
+	}{
+		{
+			name:        "index 0",
+			profileName: "myagentpool",
+			properties: &Properties{
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  3,
+					},
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: 0,
+		},
+		{
+			name:        "index 3",
+			profileName: "myagentpool",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool1",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool2",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "agentpool3",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+					{
+						Name:   "myagentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  2,
+					},
+				},
+			},
+			expectedIndex: 3,
+		},
+		{
+			name:        "not found",
+			profileName: "myagentpool",
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agent1",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedIndex: -1,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			actual := test.properties.getAgentPoolIndexByName(test.profileName)
+
+			if actual != test.expectedIndex {
+				t.Errorf("expected agent pool index %d, but got %d", test.expectedIndex, actual)
+			}
+		})
+	}
+}
+
+func TestGetAgentVMPrefix(t *testing.T) {
+	tests := []struct {
+		name             string
+		profile          *AgentPoolProfile
+		properties       *Properties
+		expectedVMPrefix string
+	}{
+		{
+			name: "Linux VMAS agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+						OSType: "Linux",
+					},
+				},
+			},
+			expectedVMPrefix: "k8s-agentpool-42378941-",
+		},
+		{
+			name: "Linux VMSS agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
+				OSType:              "Linux",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix1",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:                "agentpool",
+						VMSize:              "Standard_D2_v2",
+						Count:               1,
+						AvailabilityProfile: "VirtualMachineScaleSets",
+						OSType:              "Linux",
+					},
+				},
+			},
+			expectedVMPrefix: "k8s-agentpool-30819786-vmss",
+		},
+		{
+			name: "Windows agent pool profile",
+			profile: &AgentPoolProfile{
+				Name:   "agentpool",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+						OSType: "Windows",
+					},
+				},
+			},
+			expectedVMPrefix: "24789k8s900",
+		},
+		{
+			name: "agent profile doesn't exist",
+			profile: &AgentPoolProfile{
+				Name:   "something",
+				VMSize: "Standard_D2_v2",
+				Count:  1,
+				OSType: "Windows",
+			},
+			properties: &Properties{
+				OrchestratorProfile: &OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+				},
+				MasterProfile: &MasterProfile{
+					Count:     1,
+					DNSPrefix: "myprefix2",
+					VMSize:    "Standard_DS2_v2",
+				},
+				AgentPoolProfiles: []*AgentPoolProfile{
+					{
+						Name:   "agentpool",
+						VMSize: "Standard_D2_v2",
+						Count:  1,
+					},
+				},
+			},
+			expectedVMPrefix: "",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			p := test.properties
+			actual := p.GetAgentVMPrefix(test.profile)
+
+			if actual != test.expectedVMPrefix {
+				t.Errorf("expected agent VM name %s, but got %s", test.expectedVMPrefix, actual)
+			}
+		})
+	}
+}
+
+func TestFormatAzureProdFQDN(t *testing.T) {
+	dnsPrefix := "santest"
+	var actual []string
+	for _, location := range helpers.GetAzureLocations() {
+		actual = append(actual, FormatAzureProdFQDNByLocation(dnsPrefix, location))
+	}
+
+	expected := []string{
+		"santest.australiacentral.cloudapp.azure.com",
+		"santest.australiacentral2.cloudapp.azure.com",
+		"santest.australiaeast.cloudapp.azure.com",
+		"santest.australiasoutheast.cloudapp.azure.com",
+		"santest.brazilsouth.cloudapp.azure.com",
+		"santest.canadacentral.cloudapp.azure.com",
+		"santest.canadaeast.cloudapp.azure.com",
+		"santest.centralindia.cloudapp.azure.com",
+		"santest.centralus.cloudapp.azure.com",
+		"santest.centraluseuap.cloudapp.azure.com",
+		"santest.chinaeast.cloudapp.chinacloudapi.cn",
+		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
+		"santest.eastasia.cloudapp.azure.com",
+		"santest.eastus.cloudapp.azure.com",
+		"santest.eastus2.cloudapp.azure.com",
+		"santest.eastus2euap.cloudapp.azure.com",
+		"santest.francecentral.cloudapp.azure.com",
+		"santest.francesouth.cloudapp.azure.com",
+		"santest.japaneast.cloudapp.azure.com",
+		"santest.japanwest.cloudapp.azure.com",
+		"santest.koreacentral.cloudapp.azure.com",
+		"santest.koreasouth.cloudapp.azure.com",
+		"santest.northcentralus.cloudapp.azure.com",
+		"santest.northeurope.cloudapp.azure.com",
+		"santest.southcentralus.cloudapp.azure.com",
+		"santest.southeastasia.cloudapp.azure.com",
+		"santest.southindia.cloudapp.azure.com",
+		"santest.uksouth.cloudapp.azure.com",
+		"santest.ukwest.cloudapp.azure.com",
+		"santest.westcentralus.cloudapp.azure.com",
+		"santest.westeurope.cloudapp.azure.com",
+		"santest.westindia.cloudapp.azure.com",
+		"santest.westus.cloudapp.azure.com",
+		"santest.westus2.cloudapp.azure.com",
+		"santest.chinaeast.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
+		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
+		"santest.germanycentral.cloudapp.microsoftazure.de",
+		"santest.germanynortheast.cloudapp.microsoftazure.de",
+		"santest.usgovvirginia.cloudapp.usgovcloudapi.net",
+		"santest.usgoviowa.cloudapp.usgovcloudapi.net",
+		"santest.usgovarizona.cloudapp.usgovcloudapi.net",
+		"santest.usgovtexas.cloudapp.usgovcloudapi.net",
+		"santest.francecentral.cloudapp.azure.com",
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected formatted fqdns %s, but got %s", expected, actual)
+	}
+
+}
+
+func TestKubernetesConfig_GetAddonScript(t *testing.T) {
+	addon := getMockAddon(IPMASQAgentAddonName)
+	addon.Data = "foobarbazdata"
+	k := &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			addon,
+		},
+	}
+
+	expected := "foobarbazdata"
+	actual := k.GetAddonScript(IPMASQAgentAddonName)
+	if actual != expected {
+		t.Errorf("expected GetAddonScript to return %s, but got %s", expected, actual)
+	}
+}
+
+func TestContainerService_GetAzureProdFQDN(t *testing.T) {
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 1, 3, false)
+	expected := "testmaster.eastus.cloudapp.azure.com"
+	actual := cs.GetAzureProdFQDN()
+
+	if expected != actual {
+		t.Errorf("expected GetAzureProdFQDN to return %s, but got %s", expected, actual)
+	}
+}
+
+func TestKubernetesConfig_RequiresDocker(t *testing.T) {
+	// k8sConfig with empty runtime string
+	k := &KubernetesConfig{
+		ContainerRuntime: "",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for empty runtime string")
+	}
+
+	// k8sConfig with empty runtime string
+	k = &KubernetesConfig{
+		ContainerRuntime: "docker",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for docker runtime")
+	}
+}
+
+func TestProperties_GetMasterVMPrefix(t *testing.T) {
+	p := &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+		MasterProfile: &MasterProfile{
+			Count:     1,
+			DNSPrefix: "myprefix1",
+			VMSize:    "Standard_DS2_v2",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
+				OSType:              "Linux",
+			},
+		},
+	}
+
+	actual := p.GetMasterVMPrefix()
+	expected := "k8s-master-30819786-"
+
+	if actual != expected {
+		t.Errorf("expected master VM prefix %s, but got %s", expected, actual)
 	}
 }

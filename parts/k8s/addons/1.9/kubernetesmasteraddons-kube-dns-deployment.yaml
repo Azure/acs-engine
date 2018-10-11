@@ -117,8 +117,6 @@ spec:
             path: /readiness
             port: 8081
             scheme: HTTP
-          # we poll on pod startup for the Kubernetes master service and
-          # only setup the /readiness HTTP server once that's available.
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
@@ -173,7 +171,6 @@ spec:
         - containerPort: 53
           name: dns-tcp
           protocol: TCP
-        # see: https://github.com/kubernetes/kubernetes/issues/29055 for details
         resources:
           requests:
             cpu: 150m
@@ -205,7 +202,7 @@ spec:
           requests:
             memory: 20Mi
             cpu: 10m
-      dnsPolicy: Default  # Don't use cluster DNS.
+      dnsPolicy: Default
       serviceAccountName: kube-dns
       nodeSelector:
         beta.kubernetes.io/os: linux

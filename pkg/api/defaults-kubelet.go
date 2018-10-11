@@ -1,17 +1,16 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setKubeletConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setKubeletConfig() {
 	o := cs.Properties.OrchestratorProfile
-	cloudSpecConfig := getCloudSpecConfig(cs.Location)
+	cloudSpecConfig := cs.GetCloudSpecConfig()
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                     "0.0.0.0",
 		"--allow-privileged":            "true",
@@ -49,13 +48,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 	defaultKubeletConfig := map[string]string{
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
-		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
+		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + K8sComponentsByVersionMap[o.OrchestratorVersion]["pause"],
 		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPods),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
-		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
+		"--node-status-update-frequency":    K8sComponentsByVersionMap[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
-		"--non-masquerade-cidr":             o.KubernetesConfig.ClusterSubnet,
+		"--non-masquerade-cidr":             "0.0.0.0",
 		"--cloud-provider":                  "azure",
 		"--cloud-config":                    "/etc/kubernetes/azure.json",
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
@@ -63,6 +62,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 		"--image-pull-progress-deadline":    "30m",
+	}
+
+	// AKS overrides
+	if cs.Properties.IsHostedMasterProfile() {
+		defaultKubeletConfig["--non-masquerade-cidr"] = cs.Properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 	}
 
 	// Apply Azure CNI-specific --max-pods value
@@ -93,27 +97,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		o.KubernetesConfig.KubeletConfig[key] = val
 	}
 
-	// Get rid of values not supported in v1.5 clusters
-	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
-		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
-	// Get rid of values not supported in v1.10 clusters
-	if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
-		for _, key := range []string{"--pod-max-pids"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
-	// Get rid of values not supported in v1.12 and up
-	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.12.0-alpha.1") {
-		for _, key := range []string{"--cadvisor-port"} {
-			delete(o.KubernetesConfig.KubeletConfig, key)
-		}
-	}
-
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
 		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
@@ -121,21 +104,25 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 	}
 
+	removeKubeletFlags(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+
 	// Master-specific kubelet config changes go here
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
-			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
-			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
+			cs.Properties.MasterProfile.KubernetesConfig = &KubernetesConfig{}
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = make(map[string]string)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
+
+		removeKubeletFlags(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
 	}
 
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
-			profile.KubernetesConfig = &api.KubernetesConfig{}
-			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
+			profile.KubernetesConfig = &KubernetesConfig{}
+			profile.KubernetesConfig.KubeletConfig = make(map[string]string)
 			if profile.OSType == "Windows" {
 				for key, val := range staticWindowsKubeletConfig {
 					profile.KubernetesConfig.KubeletConfig[key] = val
@@ -156,10 +143,28 @@ func setKubeletConfig(cs *api.ContainerService) {
 				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
 			}
 		}
+
+		removeKubeletFlags(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
 	}
 }
 
-func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
+func removeKubeletFlags(k map[string]string, v string) {
+	// Get rid of values not supported until v1.10
+	if !common.IsKubernetesVersionGe(v, "1.10.0") {
+		for _, key := range []string{"--pod-max-pids"} {
+			delete(k, key)
+		}
+	}
+
+	// Get rid of values not supported in v1.12 and up
+	if common.IsKubernetesVersionGe(v, "1.12.0") {
+		for _, key := range []string{"--cadvisor-port"} {
+			delete(k, key)
+		}
+	}
+}
+
+func setMissingKubeletValues(p *KubernetesConfig, d map[string]string) {
 	if p.KubeletConfig == nil {
 		p.KubeletConfig = d
 	} else {
@@ -171,11 +176,4 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 			}
 		}
 	}
-}
-func copyMap(input map[string]string) map[string]string {
-	copy := map[string]string{}
-	for key, value := range input {
-		copy[key] = value
-	}
-	return copy
 }

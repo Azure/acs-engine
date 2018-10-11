@@ -201,12 +201,15 @@
       },
       "type": "string"
     },
+{{if not IsHostedMaster}}
     "kubernetesNonMasqueradeCidr": {
       "metadata": {
         "description": "kubernetesNonMasqueradeCidr cluster subnet"
       },
+      "defaultValue": "{{GetDefaultVNETCIDR}}",
       "type": "string"
     },
+{{end}}
     "kubernetesKubeletClusterDomain": {
       "metadata": {
         "description": "--cluster-domain Kubelet config"
@@ -577,6 +580,32 @@
       "type": "string"
     },
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsIPMasqAgentEnabled}}
+    "kubernetesIPMasqAgentCPURequests": {
+      "metadata": {
+        "description": "IP Masq Agent CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentMemoryRequests": {
+      "metadata": {
+        "description": "IP Masq Agent Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentCPULimit": {
+      "metadata": {
+        "description": "IP Masq Agent CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesIPMasqAgentMemoryLimit": {
+      "metadata": {
+        "description": "IP Masq Agent Memory Limit"
+      },
+      "type": "string"
+    },
+{{end}}
     "kubernetesPodInfraContainerSpec": {
       "metadata": {
         "description": "The container spec for pod infra."
@@ -599,6 +628,12 @@
     "kubernetesKubeDNSSpec": {
       "metadata": {
         "description": "The container spec for kubedns-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesCoreDNSSpec": {
+      "metadata": {
+        "description": "The container spec for coredns"
       },
       "type": "string"
     },
@@ -695,7 +730,7 @@
       "type": "int"
     },
     "vnetCidr": {
-      "defaultValue": "10.0.0.0/8",
+      "defaultValue": "{{GetDefaultVNETCIDR}}",
       "metadata": {
         "description": "Cluster vnet cidr"
       },

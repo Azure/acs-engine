@@ -7,9 +7,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
-// DCOSNodeType represents the type of DCOS Node
-type DCOSNodeType string
-
 // VlabsContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
@@ -73,16 +70,6 @@ type AzureOSImageConfig struct {
 	ImageSku       string
 	ImagePublisher string
 	ImageVersion   string
-}
-
-//AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
-type AzureEnvironmentSpecConfig struct {
-	CloudName            string
-	DockerSpecConfig     DockerSpecConfig
-	KubernetesSpecConfig KubernetesSpecConfig
-	DCOSSpecConfig       DCOSSpecConfig
-	EndpointConfig       AzureEndpointConfig
-	OSImageConfig        map[api.Distro]AzureOSImageConfig
 }
 
 // Context represents the object that is passed to the package

@@ -866,7 +866,6 @@ func convertV20170131MasterProfile(v20170131 *v20170131.MasterProfile, api *Mast
 	api.FQDN = v20170131.FQDN
 	api.Subnet = v20170131.GetSubnet()
 	// Set default VMSize
-	// TODO: Use azureconst.go to set
 	api.VMSize = "Standard_D2_v2"
 }
 
@@ -1018,6 +1017,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.AcceleratedNetworkingEnabled = vlabs.AcceleratedNetworkingEnabled
+	api.AcceleratedNetworkingEnabledWindows = vlabs.AcceleratedNetworkingEnabledWindows
 	api.AvailabilityZones = vlabs.AvailabilityZones
 	api.SinglePlacementGroup = vlabs.SinglePlacementGroup
 

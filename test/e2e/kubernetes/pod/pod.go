@@ -219,7 +219,7 @@ func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command str
 			log.Printf("%s\n", string(out[:]))
 		}
 
-		err = p.Delete()
+		err = p.Delete(3)
 		if err != nil {
 			return successfulAttempts, err
 		}
@@ -489,15 +489,20 @@ func (p *Pod) Exec(c ...string) ([]byte, error) {
 }
 
 // Delete will delete a Pod in a given namespace
-func (p *Pod) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying to delete Pod %s in namespace %s:%s\n", p.Metadata.Namespace, p.Metadata.Name, string(out))
-		return err
+func (p *Pod) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name)
+		kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete Pod %s in namespace %s:%s\n", p.Metadata.Namespace, p.Metadata.Name, string(kubectlOutput))
+			continue
+		}
+		break
 	}
-	return nil
+
+	return kubectlError
 }
 
 // CheckLinuxOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.

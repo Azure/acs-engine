@@ -181,10 +181,8 @@ EOF
 }
 
 function configureCNI() {
-    # Turn on br_netfilter (needed for the iptables rules to work on bridges)
-    # and permanently enable it
+    # needed for the iptables rules to work on bridges
     retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
-    # /etc/modules-load.d is the location used by systemd to load modules
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -202,7 +200,6 @@ function setKubeletOpts () {
 function ensureCCProxy() {
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
-    # Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy || exit $ERR_SYSTEMCTL_START_FAIL
 }
@@ -233,8 +230,6 @@ function setupContainerd() {
 function ensureContainerd() {
     if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
         setupContainerd
-        # Enable and start cri-containerd service
-        # Make sure this is done after networking plugins are installed
         echo "Enabling and starting cri-containerd service..."
         systemctlEnableAndStart containerd || exit $ERR_SYSTEMCTL_START_FAIL
     fi
@@ -266,9 +261,9 @@ function ensureKubelet() {
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
-    # KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
-    # wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    # systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL 
+    KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
+    wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensureJournal(){
@@ -291,7 +286,7 @@ function ensureK8sControlPlane() {
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681 will remove once upstream is fixed
+    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681
     if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
         ensureKubelet
         retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || ensureKubelet && retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
@@ -319,8 +314,6 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-
-    # disable logging after secret output
     set +x
     echo "
 ---
@@ -343,7 +336,6 @@ users:
     client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
     client-key-data: \"$KUBECONFIG_KEY\"
 " > $KUBECONFIGFILE
-    # renable logging after secrets
     set -x
 }
 

@@ -26,6 +26,7 @@ fi
 if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
     FULL_INSTALL_REQUIRED=false
+    rm -rf /home/packer
 else
     FULL_INSTALL_REQUIRED=true
 fi
@@ -36,7 +37,6 @@ function testOutboundConnection() {
 
 function holdWALinuxAgent() {
     if [[ $OS == $UBUNTU_OS_NAME ]]; then
-        # make sure walinuxagent doesn't get updated in the middle of running this script
         retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
     fi
 }
@@ -74,12 +74,10 @@ fi
 if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
     ensureDocker
 elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
         ensureCCProxy
 	fi
 elif [[ "$CONTAINER_RUNTIME" == "kata-containers" ]]; then
-    # Ensure we can nest virtualization
     if grep -q vmx /proc/cpuinfo; then
         installKataContainersRuntime
     fi
@@ -106,7 +104,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureEtcd
     ensureK8sControlPlane
-    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681 will remove once upstream is fixed
+    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681
     if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
         ensureKubelet 
     fi
@@ -136,7 +134,6 @@ mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
 ps auxfww > /opt/azure/provision-ps.log &
 
 if $REBOOTREQUIRED; then
-  # wait 1 minute to restart node, so that the custom script extension can complete
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
 else

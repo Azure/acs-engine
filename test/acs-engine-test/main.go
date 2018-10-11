@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/promote"
@@ -590,7 +590,7 @@ func mainInternal() error {
 	}
 	// set regions
 	regions := []string{}
-	for _, region := range acsengine.AzureLocations {
+	for _, region := range helpers.GetAzureLocations() {
 		switch region {
 		case "eastus2euap": // initial deploy region for all RPs, known to be less stable
 		case "japanwest": // no D2V2 support

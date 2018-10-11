@@ -21,6 +21,13 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
 
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
+
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
   encoding: gzip
@@ -236,15 +243,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     PRIVATE_IP=$(hostname -I | cut -d" " -f1)
     ETCD_CLIENT_PORT={{WrapAsVariable "masterEtcdClientPort"}}
 {{if gt .MasterProfile.Count 1}}
-    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
-    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
-    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    # Redirect ILB (4443) traffic to port 443 (ELB) in the prerouting chain
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 {{end}}
 
 {{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
     sed -i "s|<azureCNINetworkMonitorImage>|{{WrapAsParameter "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsParameter "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
@@ -252,7 +255,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+{{if IsKubernetesVersionGe "1.12.0"}}
+    sed -i "s|<kubernetesCoreDNSSpec>|{{WrapAsParameter "kubernetesCoreDNSSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/coredns.yaml"
+{{else}}
     sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsParameter "kubernetesExecHealthzSpec"}}|g; s|<kubernetesDNSSidecarSpec>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+{{end}}
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsParameter "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsParameter "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
@@ -350,15 +357,12 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-    # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPlugin "flannel"}}
-    # If Flannel is enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/flannel-daemonset.yaml"
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
-    # If Cilium Policy enabled then update the etcd certs and address
     sed -i "s|<ETCD_URL>|"https://$PRIVATE_IP:$ETCD_CLIENT_PORT"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
     sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
     sed -i "s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
@@ -393,6 +397,19 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesOMSAgentMemoryRequests>|{{WrapAsParameter "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<kubernetesOMSAgentCPULimit>|{{WrapAsParameter "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
     sed -i "s|<kubernetesOMSAgentMemoryLimit>|{{WrapAsParameter "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+{{end}}
+
+    sed -i "s|<kubernetesNonMasqueradeCidr>|{{WrapAsParameter "kubernetesNonMasqueradeCidr"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentCPURequests>|{{WrapAsParameter "kubernetesIPMasqAgentCPURequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentMemoryRequests>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentCPULimit>|{{WrapAsParameter "kubernetesIPMasqAgentCPULimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<kubernetesIPMasqAgentMemoryLimit>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{if IsAzureCNI}}
+    sed -i "s|<azureCNINonMasqueradeIP>|168.63.129.16/32|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|true|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+{{else}}
+    sed -i "\|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
@@ -474,7 +491,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-    # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
     source /opt/azure/containers/provision_source.sh
     set -x
     MASTER_VM_NAME=$(hostname)
@@ -526,7 +542,6 @@ coreos:
     - name: start-provision-setup.service
       command: "start"
       content: |
-        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
         [Unit]
         Description=Start provision setup service
 

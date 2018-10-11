@@ -1004,6 +1004,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.FQDN = api.FQDN
 	p.CustomNodeLabels = map[string]string{}
 	p.AcceleratedNetworkingEnabled = api.AcceleratedNetworkingEnabled
+	p.AcceleratedNetworkingEnabledWindows = api.AcceleratedNetworkingEnabledWindows
 	p.AvailabilityZones = api.AvailabilityZones
 	p.SinglePlacementGroup = api.SinglePlacementGroup
 

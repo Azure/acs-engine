@@ -29,7 +29,7 @@ var (
 		"3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.0.4", "3.0.5", "3.0.6", "3.0.7", "3.0.8", "3.0.9", "3.0.10", "3.0.11", "3.0.12", "3.0.13", "3.0.14", "3.0.15", "3.0.16", "3.0.17",
 		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
 		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9", "3.2.11", "3.2.12",
-		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.2.23", "3.3.0", "3.3.1"}
+		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.2.23", "3.2.24", "3.3.0", "3.3.1", "3.3.8", "3.3.9"}
 	networkPluginPlusPolicyAllowed = []k8sNetworkConfig{
 		{
 			networkPlugin: "",
@@ -197,8 +197,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 			}
 
 			if a.HasAvailabilityZones() {
-				// TODO: update this to 1.12 after it's released
-				minVersion, err := semver.Make("1.12.0-beta.0")
+				minVersion, err := semver.Make("1.12.0")
 				if err != nil {
 					return errors.New("could not validate version")
 				}
@@ -401,7 +400,7 @@ func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 			return e
 		}
 
-		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) {
+		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) || helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabledWindows) {
 			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize); e != nil {
 				return e
 			}
@@ -690,17 +689,17 @@ func (a *Properties) validateManagedIdentity() error {
 			if err != nil {
 				return errors.Errorf("could not validate version %s", version)
 			}
-			minVersion, err := semver.Make("1.12.0-beta.0")
+			minVersion, err := semver.Make("1.12.0")
 			if err != nil {
 				return errors.New("could not validate version")
 			}
 
 			if a.MasterProfile.IsVirtualMachineScaleSets() {
 				if sv.LT(minVersion) {
-					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
 				}
 			} else if a.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" && sv.LT(minVersion) {
-				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0-beta.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
 			}
 
 		}
@@ -1075,11 +1074,12 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 				}
 			}
 		}
-		if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
+		// Re-enable this unit test if --non-masquerade-cidr is re-introduced
+		/*if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
 			if _, _, err := net.ParseCIDR(k.KubeletConfig["--non-masquerade-cidr"]); err != nil {
 				return errors.Errorf("--non-masquerade-cidr kubelet config '%s' is an invalid CIDR string", k.KubeletConfig["--non-masquerade-cidr"])
 			}
-		}
+		}*/
 	}
 
 	if _, ok := k.ControllerManagerConfig["--pod-eviction-timeout"]; ok {

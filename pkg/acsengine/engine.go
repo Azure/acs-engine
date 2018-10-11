@@ -76,7 +76,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", properties.MasterProfile.FirstConsecutiveStaticIP, -1)
 		}
 	} else {
-		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
+		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", api.FormatAzureProdFQDNByLocation(properties.MasterProfile.DNSPrefix, location), -1)
 	}
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
 
@@ -92,7 +92,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 		}
 
 		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
-			getCloudTargetEnv(location),
+			helpers.GetCloudTargetEnv(location),
 			tenantID,
 			properties.AADProfile.ServerAppID,
 			properties.AADProfile.ClientAppID)
@@ -100,47 +100,6 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
 	return kubeconfig, nil
-}
-
-// formatAzureProdFQDNs constructs all possible Azure prod fqdn
-func formatAzureProdFQDNs(fqdnPrefix string) []string {
-	var fqdns []string
-	for _, location := range AzureLocations {
-		fqdns = append(fqdns, FormatAzureProdFQDN(fqdnPrefix, location))
-	}
-	return fqdns
-}
-
-// FormatAzureProdFQDN constructs an Azure prod fqdn
-func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	var FQDNFormat string
-	switch getCloudTargetEnv(location) {
-	case azureChinaCloud:
-		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureGermanCloud:
-		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureUSGovernmentCloud:
-		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
-	default:
-		FQDNFormat = AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	}
-	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
-}
-
-//getCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
-//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
-//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
-func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	switch getCloudTargetEnv(location) {
-	case azureChinaCloud:
-		return AzureChinaCloudSpec
-	case azureGermanCloud:
-		return AzureGermanCloudSpec
-	case azureUSGovernmentCloud:
-		return AzureUSGovernmentCloud
-	default:
-		return AzureCloudSpec
-	}
 }
 
 // validateDistro checks if the requested orchestrator type is supported on the requested Linux distro.
@@ -160,23 +119,6 @@ func validateDistro(cs *api.ContainerService) bool {
 		}
 	}
 	return true
-}
-
-// getCloudTargetEnv determines and returns whether the region is a sovereign cloud which
-// have their own data compliance regulations (China/Germany/USGov) or standard
-//  Azure public cloud
-func getCloudTargetEnv(location string) string {
-	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
-	switch {
-	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
-		return azureChinaCloud
-	case loc == "germanynortheast" || loc == "germanycentral":
-		return azureGermanCloud
-	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
-		return azureUSGovernmentCloud
-	default:
-		return azurePublicCloud
-	}
 }
 
 func getOpenshiftMasterShAsset(version string) string {

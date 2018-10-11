@@ -1,9 +1,8 @@
-package acsengine
+package api
 
 import (
 	"testing"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -13,7 +12,7 @@ func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 	// Test EnableDataEncryptionAtRest = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--experimental-encryption-provider-config"] != "/etc/kubernetes/encryption-config.yaml" {
 		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableDataEncryptionAtRest=true: %s",
@@ -23,7 +22,7 @@ func TestAPIServerConfigEnableDataEncryptionAtRest(t *testing.T) {
 	// Test EnableDataEncryptionAtRest = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--experimental-encryption-provider-config"]; ok {
 		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableDataEncryptionAtRest=false: %s",
@@ -35,7 +34,7 @@ func TestAPIServerConfigEnableEncryptionWithExternalKms(t *testing.T) {
 	// Test EnableEncryptionWithExternalKms = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--experimental-encryption-provider-config"] != "/etc/kubernetes/encryption-config.yaml" {
 		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableEncryptionWithExternalKms=true: %s",
@@ -45,7 +44,7 @@ func TestAPIServerConfigEnableEncryptionWithExternalKms(t *testing.T) {
 	// Test EnableEncryptionWithExternalKms = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--experimental-encryption-provider-config"]; ok {
 		t.Fatalf("got unexpected '--experimental-encryption-provider-config' API server config value for EnableEncryptionWithExternalKms=false: %s",
@@ -57,7 +56,7 @@ func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 	// Test EnableAggregatedAPIs = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--requestheader-client-ca-file"] != "/etc/kubernetes/certs/proxy-ca.crt" {
 		t.Fatalf("got unexpected '--requestheader-client-ca-file' API server config value for EnableAggregatedAPIs=true: %s",
@@ -91,7 +90,7 @@ func TestAPIServerConfigEnableAggregatedAPIs(t *testing.T) {
 	// Test EnableAggregatedAPIs = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = false
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--requestheader-client-ca-file", "--proxy-client-cert-file", "--proxy-client-key-file",
 		"--requestheader-allowed-names", "--requestheader-extra-headers-prefix", "--requestheader-group-headers",
@@ -107,7 +106,7 @@ func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--cloud-provider"]; ok {
 		t.Fatalf("got unexpected '--cloud-provider' API server config value for UseCloudControllerManager=false: %s",
@@ -121,7 +120,7 @@ func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 	// Test UseCloudControllerManager = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--cloud-provider"] != "azure" {
 		t.Fatalf("got unexpected '--cloud-provider' API server config value for UseCloudControllerManager=true: %s",
@@ -136,11 +135,11 @@ func TestAPIServerConfigUseCloudControllerManager(t *testing.T) {
 func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	// Test HasAadProfile = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
-	cs.Properties.AADProfile = &api.AADProfile{
+	cs.Properties.AADProfile = &AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
 	}
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-username-claim"] != "oid" {
 		t.Fatalf("got unexpected '--oidc-username-claim' API server config value for HasAadProfile=true: %s",
@@ -161,7 +160,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 
 	// Test OIDC user overrides
 	cs = CreateMockContainerService("testcluster", "1.7.12", 3, 2, false)
-	cs.Properties.AADProfile = &api.AADProfile{
+	cs.Properties.AADProfile = &AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
 	}
@@ -175,7 +174,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 		"--oidc-client-id":      clientIDOverride,
 		"--oidc-issuer-url":     issuerURLOverride,
 	}
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-username-claim"] != usernameClaimOverride {
 		t.Fatalf("got unexpected '--oidc-username-claim' API server config value when user override provided: %s, expected: %s",
@@ -196,12 +195,12 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 
 	// Test China Cloud settings
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
-	cs.Properties.AADProfile = &api.AADProfile{
+	cs.Properties.AADProfile = &AADProfile{
 		ServerAppID: "test-id",
 		TenantID:    "test-tenant",
 	}
 	cs.Location = "chinaeast"
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
@@ -209,7 +208,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 
 	cs.Location = "chinaeast2"
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
@@ -217,7 +216,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 
 	cs.Location = "chinanorth"
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
@@ -225,7 +224,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	}
 
 	cs.Location = "chinanorth2"
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
@@ -234,7 +233,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 
 	// Test HasAadProfile = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--oidc-username-claim", "--oidc-groups-claim", "--oidc-client-id", "--oidc-issuer-url"} {
 		if _, ok := a[key]; ok {
@@ -248,7 +247,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	// Test EnableRbac = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "Node,RBAC" {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=true: %s",
@@ -258,7 +257,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	// Test EnableRbac = true with 1.6 cluster
 	cs = CreateMockContainerService("testcluster", "1.6.11", 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "RBAC" {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for 1.6 cluster with EnableRbac=true: %s",
@@ -268,7 +267,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	// Test EnableRbac = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--authorization-mode"]; ok {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
@@ -278,7 +277,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	// Test EnableRbac = false with 1.6 cluster
 	cs = CreateMockContainerService("testcluster", "1.6.11", 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--authorization-mode"]; ok {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for 1.6 cluster with EnableRbac=false: %s",
@@ -290,7 +289,7 @@ func TestAPIServerConfigDisableRbac(t *testing.T) {
 	// Test EnableRbac = false
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "" {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
@@ -302,7 +301,7 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
 	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(true)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--kubelet-client-certificate"] != "/etc/kubernetes/certs/client.crt" {
 		t.Fatalf("got unexpected '--kubelet-client-certificate' API server config value for EnableSecureKubelet=true: %s",
@@ -316,7 +315,7 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = false
 	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--kubelet-client-certificate", "--kubelet-client-key"} {
 		if _, ok := a[key]; ok {
@@ -334,7 +333,7 @@ func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
 	cs := CreateMockContainerService("testcluster", version, 3, 2, false)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{}
 	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig[admissonControlKey] = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,AlwaysPullImages,ExtendedResourceToleration"
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 
 	// --enable-admission-plugins should be set for v1.10 and above
@@ -350,7 +349,7 @@ func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
 	// Test --admission-control for v1.9 and below
 	version = "1.9.0"
 	cs = CreateMockContainerService("testcluster", version, 3, 2, false)
-	setAPIServerConfig(cs)
+	cs.setAPIServerConfig()
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 
 	// --enable-admission-plugins is available for v1.10 and above and should not be set here

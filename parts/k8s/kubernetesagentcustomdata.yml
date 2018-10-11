@@ -15,6 +15,13 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
 
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
+
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
   encoding: gzip
@@ -188,12 +195,13 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-{{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
-{{end}}
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+{{end}}
+{{if IsHostedMaster}}
+    {{if IsAzureCNI}}
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
+    {{end}}
 {{end}}
 {{if HasCustomSearchDomain}}
     sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
@@ -225,7 +233,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
     systemctl start rpcbind
     systemctl start rpc-statd
 
-    # Simulates runcmd completion
     touch /opt/azure/containers/runcmd.complete
 
 coreos:
@@ -233,7 +240,6 @@ coreos:
     - name: start-provision-setup.service
       command: "start"
       content: |
-        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
         [Unit]
         Description=Start provision setup service
 

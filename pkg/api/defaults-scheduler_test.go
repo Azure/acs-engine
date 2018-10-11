@@ -1,4 +1,4 @@
-package acsengine
+package api
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 
 func TestSchedulerDefaultConfig(t *testing.T) {
 	cs := CreateMockContainerService("testcluster", "1.9.6", 3, 2, false)
-	setSchedulerConfig(cs)
+	cs.setSchedulerConfig()
 	s := cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig
 	for key, val := range staticSchedulerConfig {
 		if val != s[key] {
@@ -23,13 +23,13 @@ func TestSchedulerDefaultConfig(t *testing.T) {
 }
 
 func TestSchedulerUserConfig(t *testing.T) {
-	cs := CreateMockContainerService("testcluster", "1.9.6", 3, 2, false)
+	cs := CreateMockContainerService("testcluster", "1.9.6", 3, 2, true)
 	assignmentMap := map[string]string{
 		"--scheduler-name": "my-custom-name",
 		"--feature-gates":  "APIListChunking=true,APIResponseCompression=true,Accelerators=true,AdvancedAuditing=true",
 	}
 	cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig = assignmentMap
-	setSchedulerConfig(cs)
+	cs.setSchedulerConfig()
 	for key, val := range assignmentMap {
 		if val != cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig[key] {
 			t.Fatalf("got unexpected kube-scheduler config value for %s. Expected %s, got %s",
@@ -45,7 +45,7 @@ func TestSchedulerStaticConfig(t *testing.T) {
 		"--leader-elect": "user-override",
 		"--profiling":    "user-override",
 	}
-	setSchedulerConfig(cs)
+	cs.setSchedulerConfig()
 	for key, val := range staticSchedulerConfig {
 		if val != cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig[key] {
 			t.Fatalf("kube-scheduler static config did not override user values for %s. Expected %s, got %s",

@@ -351,7 +351,12 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	sc.containerService.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{sc.agentPool}
 
-	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false, true, BuildTag)
+	_, err = sc.containerService.SetPropertiesDefaults(false, true)
+	if err != nil {
+		log.Fatalf("error in SetPropertiesDefaults template %s: %s", sc.apiModelPath, err.Error())
+		os.Exit(1)
+	}
+	template, parameters, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, BuildTag)
 	if err != nil {
 		return errors.Wrapf(err, "error generating template %s", sc.apiModelPath)
 	}
@@ -442,7 +447,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	f := acsengine.FileSaver{
+	f := helpers.FileSaver{
 		Translator: &i18n.Translator{
 			Locale: sc.locale,
 		},

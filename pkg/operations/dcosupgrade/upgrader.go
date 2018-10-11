@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/pkg/errors"
 )
@@ -66,12 +65,14 @@ func (uc *UpgradeCluster) runUpgrade() error {
 		uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile == nil {
 		return errors.New("BootstrapProfile is not set")
 	}
-	newVersion := uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
+
+	cs := uc.ClusterTopology.DataModel
+	newVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
 	dashedVersion := strings.Replace(newVersion, ".", "-", -1)
 
-	masterDNS := acsengine.FormatAzureProdFQDN(uc.ClusterTopology.DataModel.Properties.MasterProfile.DNSPrefix, uc.ClusterTopology.DataModel.Location)
-	masterCount := uc.ClusterTopology.DataModel.Properties.MasterProfile.Count
-	bootstrapIP := uc.ClusterTopology.DataModel.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
+	masterDNS := cs.GetAzureProdFQDN()
+	masterCount := cs.Properties.MasterProfile.Count
+	bootstrapIP := cs.Properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP
 	uc.Logger.Infof("masterDNS:%s masterCount:%d bootstrapIP:%s", masterDNS, masterCount, bootstrapIP)
 
 	// copy SSH key to master

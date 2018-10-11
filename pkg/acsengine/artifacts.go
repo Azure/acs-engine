@@ -35,9 +35,27 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 			kubernetesFeatureSetting{
 				"kubernetesmasteraddons-kube-dns-deployment.yaml",
 				"kube-dns-deployment.yaml",
-				true,
+				!common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
 			},
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeDNSDeploymentAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"coredns.yaml",
+				"coredns.yaml",
+				common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultCoreDNSAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"dns-autoscaler.yaml",
+				"dns-autoscaler.yaml",
+				// TODO enable this when it has been smoke tested
+				//common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+				false,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultDNSAutoscalerAddonName),
 		},
 		{
 			kubernetesFeatureSetting{
@@ -120,7 +138,6 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultReschedulerAddonName),
 		},
 		{
-
 			kubernetesFeatureSetting{
 				"kubernetesmasteraddons-azure-npm-daemonset.yaml",
 				"azure-npm-daemonset.yaml",
@@ -232,6 +249,14 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 				profile.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard",
 			},
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultELBSVCAddonName),
+		},
+		{
+			kubernetesFeatureSetting{
+				"ip-masq-agent.yaml",
+				"ip-masq-agent.yaml",
+				true,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(IPMASQAgentAddonName),
 		},
 	}
 }

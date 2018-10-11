@@ -3,7 +3,7 @@
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
 
-ETCD_VERSION="3.2.23"
+ETCD_VERSION="3.2.24"
 ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
 installEtcd
 
@@ -65,7 +65,7 @@ for KUBE_DNS_VERSION in ${KUBE_DNS_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/k8s-dns-kube-dns-amd64:${KUBE_DNS_VERSION}"
 done
 
-KUBE_ADDON_MANAGER_VERSIONS="8.6"
+KUBE_ADDON_MANAGER_VERSIONS="8.7 8.6"
 for KUBE_ADDON_MANAGER_VERSION in ${KUBE_ADDON_MANAGER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/kube-addon-manager-amd64:v${KUBE_ADDON_MANAGER_VERSION}"
 done
@@ -100,7 +100,7 @@ for AZURE_CNI_NETWORKMONITOR_VERSION in ${AZURE_CNI_NETWORKMONITOR_VERSIONS}; do
     pullContainerImage "docker" "containernetworking/networkmonitor:v${AZURE_CNI_NETWORKMONITOR_VERSION}"
 done
 
-CLUSTER_AUTOSCALER_VERSIONS="1.3.1 1.3.0 1.2.2 1.1.2"
+CLUSTER_AUTOSCALER_VERSIONS="1.3.3 1.3.1 1.3.0 1.2.2 1.1.2"
 for CLUSTER_AUTOSCALER_VERSION in ${CLUSTER_AUTOSCALER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/cluster-autoscaler:v${CLUSTER_AUTOSCALER_VERSION}"
 done
@@ -118,7 +118,7 @@ done
 pullContainerImage "docker" "busybox"
 
 # TODO: fetch supported k8s versions from an acs-engine command instead of hardcoding them here
-K8S_VERSIONS="1.7.15 1.7.16 1.8.14 1.8.15 1.9.10 1.9.11 1.10.7 1.10.8 1.11.2 1.11.3 1.12.0"
+K8S_VERSIONS="1.7.15 1.7.16 1.8.14 1.8.15 1.9.10 1.9.11 1.10.7 1.10.8 1.11.2 1.11.3 1.12.0 1.12.1"
 
 for KUBERNETES_VERSION in ${K8S_VERSIONS}; do
     HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
