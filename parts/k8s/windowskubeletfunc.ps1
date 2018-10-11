@@ -243,7 +243,7 @@ function
 Install-KubernetesServices
 {
     param(
-        [Parameter(Mandatory=$true)][string]
+        [Parameter(Mandatory=$true)][string[]]
         $KubeletConfigArgs,
         [Parameter(Mandatory=$true)][string]
         $KubeBinariesVersion,
