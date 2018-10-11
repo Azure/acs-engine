@@ -3,7 +3,7 @@
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
 
-ETCD_VERSION="3.2.23"
+ETCD_VERSION="3.2.24"
 ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
 installEtcd
 
