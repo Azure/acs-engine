@@ -139,6 +139,7 @@ try
 
         Write-Log "Write Azure cloud provider config"
         Write-AzureConfig `
+            -KubeDir $global:KubeDir `
             -AADClientId $AADClientId `
             -AADClientSecret $AADClientSecret `
             -TenantId $global:TenantId `
@@ -179,7 +180,7 @@ try
         # Configure network policy.
         if ($global:NetworkPlugin -eq "azure") {
             Install-VnetPlugins -AzureCNIConfDir $global:AzureCNIConfDir `
-                                -AzureCNIBinDir $global:AzureCNIBinDir`
+                                -AzureCNIBinDir $global:AzureCNIBinDir `
                                 -VNetCNIPluginsURL $global:VNetCNIPluginsURL
             Set-AzureCNIConfig -AzureCNIConfDir $global:AzureCNIConfDir `
                                -KubeDnsSearchPath $global:KubeDnsSearchPath `

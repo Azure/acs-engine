@@ -25,13 +25,13 @@ Write-AzureConfig
         $VNetName,
         [Parameter(Mandatory=$true)][string]
         $RouteTableName,
-        [Parameter(Mandatory=$true)][string]
+        [Parameter(Mandatory=$false)][string] # Need one of these configured
         $PrimaryAvailabilitySetName,
-        [Parameter(Mandatory=$true)][string]
+        [Parameter(Mandatory=$false)][string] # Need one of these configured
         $PrimaryScaleSetName,
         [Parameter(Mandatory=$true)][string]
         $UseManagedIdentityExtension,
-        [Parameter(Mandatory=$true)][string]
+        [string]
         $UserAssignedClientID,
         [Parameter(Mandatory=$true)][string]
         $UseInstanceMetadata,
@@ -42,6 +42,12 @@ Write-AzureConfig
         [Parameter(Mandatory=$true)][string]
         $KubeDir
     )
+
+    if ( -Not $PrimaryAvailabilitySetName -And -Not $PrimaryScaleSetName )
+    {
+        throw "Either PrimaryAvailabilitySetName or PrimaryScaleSetName must be set"
+    }
+
     $azureConfigFile = [io.path]::Combine($KubeDir, "azure.json")
 
     $azureConfig = @"
