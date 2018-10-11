@@ -37,7 +37,7 @@ func InitializeTemplateGenerator(ctx Context) (*TemplateGenerator, error) {
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade, isScale bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, acsengineVersion string) (templateRaw string, parametersRaw string, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -52,25 +52,22 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
 	}()
-	if certsGenerated, err = setPropertiesDefaults(containerService, isUpgrade, isScale); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
-	}
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
 	files, baseFile, e := t.prepareTemplateFiles(properties)
 	if e != nil {
-		return "", "", false, e
+		return "", "", e
 	}
 
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
 			err = t.Translator.Errorf("Error reading file %s, Error: %s", file, e.Error())
-			return templateRaw, parametersRaw, certsGenerated, err
+			return templateRaw, parametersRaw, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return templateRaw, parametersRaw, certsGenerated, err
+			return templateRaw, parametersRaw, err
 		}
 	}
 	// template generation may have panics in the called functions.  This catches those panics
@@ -87,27 +84,27 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}()
 
 	if !validateDistro(containerService) {
-		return templateRaw, parametersRaw, certsGenerated, errors.New("Invalid distro")
+		return templateRaw, parametersRaw, errors.New("Invalid distro")
 	}
 
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
 	if parametersMap, err = getParameters(containerService, generatorCode, acsengineVersion); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 
 	var parameterBytes []byte
 	if parameterBytes, err = helpers.JSONMarshal(parametersMap, false); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 	parametersRaw = string(parameterBytes)
 
-	return templateRaw, parametersRaw, certsGenerated, err
+	return templateRaw, parametersRaw, err
 }
 
 func (t *TemplateGenerator) verifyFiles() error {
@@ -520,18 +517,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
-				return GetDCOSMasterAllowedSizes()
+				return helpers.GetDCOSMasterAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
 		},
 		"GetDefaultVNETCIDR": func() string {
 			return DefaultVNETCIDR
 		},
 		"GetAgentAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
-				return GetKubernetesAgentAllowedSizes()
+				return helpers.GetKubernetesAgentAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
 			return getSwarmVersions(api.SwarmVersion, api.SwarmDockerComposeVersion)
@@ -540,7 +537,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
-			return GetSizeMap()
+			return helpers.GetSizeMap()
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))

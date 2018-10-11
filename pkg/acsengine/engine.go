@@ -76,7 +76,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", properties.MasterProfile.FirstConsecutiveStaticIP, -1)
 		}
 	} else {
-		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
+		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", api.FormatAzureProdFQDNByLocation(properties.MasterProfile.DNSPrefix, location), -1)
 	}
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
 
@@ -100,31 +100,6 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
 	return kubeconfig, nil
-}
-
-// formatAzureProdFQDNs constructs all possible Azure prod fqdn
-func formatAzureProdFQDNs(fqdnPrefix string) []string {
-	var fqdns []string
-	for _, location := range AzureLocations {
-		fqdns = append(fqdns, FormatAzureProdFQDN(fqdnPrefix, location))
-	}
-	return fqdns
-}
-
-// FormatAzureProdFQDN constructs an Azure prod fqdn
-func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	var FQDNFormat string
-	switch helpers.GetCloudTargetEnv(location) {
-	case azureChinaCloud:
-		FQDNFormat = api.AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureGermanCloud:
-		FQDNFormat = api.AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureUSGovernmentCloud:
-		FQDNFormat = api.AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
-	default:
-		FQDNFormat = api.AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	}
-	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
 }
 
 // validateDistro checks if the requested orchestrator type is supported on the requested Linux distro.

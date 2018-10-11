@@ -69,22 +69,28 @@ func TestNormalizeAzureRegion(t *testing.T) {
 func TestPointerToBool(t *testing.T) {
 	boolVar := true
 	ret := PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(true) to return *true, instead returned %#v", ret)
+	if !*ret {
+		t.Fatal("expected PointerToBool(true) to return true")
 	}
 
-	if IsTrueBoolPointer(ret) != boolVar {
-		t.Fatalf("expected IsTrueBoolPointer(*true) to return true, instead returned %#v", IsTrueBoolPointer(ret))
+	if !IsTrueBoolPointer(ret) {
+		t.Fatal("expected IsTrueBoolPointer(*true) to return true")
 	}
 
 	boolVar = false
 	ret = PointerToBool(boolVar)
-	if *ret != boolVar {
-		t.Fatalf("expected PointerToBool(false) to return *false, instead returned %#v", ret)
+	if *ret {
+		t.Fatal("expected PointerToBool(false) to return false")
 	}
 
-	if IsTrueBoolPointer(ret) != boolVar {
-		t.Fatalf("expected IsTrueBoolPointer(*false) to return false, instead returned %#v", IsTrueBoolPointer(ret))
+	if !IsFalseBoolPointer(ret) {
+		t.Fatal("expected IsFalseBoolPointer(*false) to return true")
+	}
+
+	boolVar = true
+	ret = PointerToBool(boolVar)
+	if IsFalseBoolPointer(ret) {
+		t.Fatal("expected IsFalseBoolPointer(*true) to return false")
 	}
 }
 
@@ -102,6 +108,15 @@ func TestPointerToInt(t *testing.T) {
 
 	if *ret2 <= *ret1 {
 		t.Fatalf("Pointers to ints messed up their values and made 2 <= 1")
+	}
+}
+
+func TestPointerToString(t *testing.T) {
+	str := "foobar"
+	ret := PointerToString(str)
+
+	if *ret != str {
+		t.Fatalf("expected PointerToString(foobar) to return *foobar, instead returned %#v", ret)
 	}
 }
 
@@ -333,4 +348,60 @@ func TestCreateSaveSSH(t *testing.T) {
 	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
 		t.Fatalf("ssh file was not created")
 	}
+}
+
+func TestGetCloudTargetEnv(t *testing.T) {
+	testcases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"chinaeast",
+			"AzureChinaCloud",
+		},
+		{
+			"chinanorth",
+			"AzureChinaCloud",
+		},
+		{
+			"chinaeast",
+			"AzureChinaCloud",
+		},
+		{
+			"chinaeast2",
+			"AzureChinaCloud",
+		},
+		{
+			"chinanorth2",
+			"AzureChinaCloud",
+		},
+		{
+			"germanycentral",
+			"AzureGermanCloud",
+		},
+		{
+			"germanynortheast",
+			"AzureGermanCloud",
+		},
+		{
+			"usgov123",
+			"AzureUSGovernmentCloud",
+		},
+		{
+			"usdod-123",
+			"AzureUSGovernmentCloud",
+		},
+		{
+			"sampleinput",
+			"AzurePublicCloud",
+		},
+	}
+
+	for _, testcase := range testcases {
+		actual := GetCloudTargetEnv(testcase.input)
+		if testcase.expected != actual {
+			t.Errorf("expected GetCloudTargetEnv to return %s, but got %s", testcase.expected, actual)
+		}
+	}
+
 }

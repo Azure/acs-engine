@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -73,7 +72,9 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+		certsGenerated, err := containerService.SetPropertiesDefaults(false, false)
+
+		armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 		if err != nil {
 			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -97,7 +98,8 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+			certsGenerated, err = containerService.SetPropertiesDefaults(false, false)
+			armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 			if err != nil {
 				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -290,7 +292,8 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+	containerService.SetPropertiesDefaults(false, false)
+	armTemplate, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
@@ -556,65 +559,4 @@ func TestGenerateKubeConfig(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected an error result from nil Properties child properties")
 	}
-}
-
-func TestFormatAzureProdFQDN(t *testing.T) {
-	dnsPrefix := "santest"
-
-	actual := formatAzureProdFQDNs(dnsPrefix)
-
-	expected := []string{
-		"santest.australiacentral.cloudapp.azure.com",
-		"santest.australiacentral2.cloudapp.azure.com",
-		"santest.australiaeast.cloudapp.azure.com",
-		"santest.australiasoutheast.cloudapp.azure.com",
-		"santest.brazilsouth.cloudapp.azure.com",
-		"santest.canadacentral.cloudapp.azure.com",
-		"santest.canadaeast.cloudapp.azure.com",
-		"santest.centralindia.cloudapp.azure.com",
-		"santest.centralus.cloudapp.azure.com",
-		"santest.centraluseuap.cloudapp.azure.com",
-		"santest.chinaeast.cloudapp.chinacloudapi.cn",
-		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
-		"santest.chinanorth.cloudapp.chinacloudapi.cn",
-		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
-		"santest.eastasia.cloudapp.azure.com",
-		"santest.eastus.cloudapp.azure.com",
-		"santest.eastus2.cloudapp.azure.com",
-		"santest.eastus2euap.cloudapp.azure.com",
-		"santest.francecentral.cloudapp.azure.com",
-		"santest.francesouth.cloudapp.azure.com",
-		"santest.japaneast.cloudapp.azure.com",
-		"santest.japanwest.cloudapp.azure.com",
-		"santest.koreacentral.cloudapp.azure.com",
-		"santest.koreasouth.cloudapp.azure.com",
-		"santest.northcentralus.cloudapp.azure.com",
-		"santest.northeurope.cloudapp.azure.com",
-		"santest.southcentralus.cloudapp.azure.com",
-		"santest.southeastasia.cloudapp.azure.com",
-		"santest.southindia.cloudapp.azure.com",
-		"santest.uksouth.cloudapp.azure.com",
-		"santest.ukwest.cloudapp.azure.com",
-		"santest.westcentralus.cloudapp.azure.com",
-		"santest.westeurope.cloudapp.azure.com",
-		"santest.westindia.cloudapp.azure.com",
-		"santest.westus.cloudapp.azure.com",
-		"santest.westus2.cloudapp.azure.com",
-		"santest.chinaeast.cloudapp.chinacloudapi.cn",
-		"santest.chinanorth.cloudapp.chinacloudapi.cn",
-		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
-		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
-		"santest.germanycentral.cloudapp.microsoftazure.de",
-		"santest.germanynortheast.cloudapp.microsoftazure.de",
-		"santest.usgovvirginia.cloudapp.usgovcloudapi.net",
-		"santest.usgoviowa.cloudapp.usgovcloudapi.net",
-		"santest.usgovarizona.cloudapp.usgovcloudapi.net",
-		"santest.usgovtexas.cloudapp.usgovcloudapi.net",
-		"santest.francecentral.cloudapp.azure.com",
-	}
-
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("expected formatted fqdns %s, but got %s", expected, actual)
-	}
-
 }

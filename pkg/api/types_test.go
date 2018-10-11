@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -2332,11 +2333,150 @@ func TestGetAgentVMPrefix(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			actual := test.properties.GetAgentVMPrefix(test.profile)
+			p := test.properties
+			actual := p.GetAgentVMPrefix(test.profile)
 
 			if actual != test.expectedVMPrefix {
 				t.Errorf("expected agent VM name %s, but got %s", test.expectedVMPrefix, actual)
 			}
 		})
+	}
+}
+
+func TestFormatAzureProdFQDN(t *testing.T) {
+	dnsPrefix := "santest"
+	var actual []string
+	for _, location := range helpers.GetAzureLocations() {
+		actual = append(actual, FormatAzureProdFQDNByLocation(dnsPrefix, location))
+	}
+
+	expected := []string{
+		"santest.australiacentral.cloudapp.azure.com",
+		"santest.australiacentral2.cloudapp.azure.com",
+		"santest.australiaeast.cloudapp.azure.com",
+		"santest.australiasoutheast.cloudapp.azure.com",
+		"santest.brazilsouth.cloudapp.azure.com",
+		"santest.canadacentral.cloudapp.azure.com",
+		"santest.canadaeast.cloudapp.azure.com",
+		"santest.centralindia.cloudapp.azure.com",
+		"santest.centralus.cloudapp.azure.com",
+		"santest.centraluseuap.cloudapp.azure.com",
+		"santest.chinaeast.cloudapp.chinacloudapi.cn",
+		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
+		"santest.eastasia.cloudapp.azure.com",
+		"santest.eastus.cloudapp.azure.com",
+		"santest.eastus2.cloudapp.azure.com",
+		"santest.eastus2euap.cloudapp.azure.com",
+		"santest.francecentral.cloudapp.azure.com",
+		"santest.francesouth.cloudapp.azure.com",
+		"santest.japaneast.cloudapp.azure.com",
+		"santest.japanwest.cloudapp.azure.com",
+		"santest.koreacentral.cloudapp.azure.com",
+		"santest.koreasouth.cloudapp.azure.com",
+		"santest.northcentralus.cloudapp.azure.com",
+		"santest.northeurope.cloudapp.azure.com",
+		"santest.southcentralus.cloudapp.azure.com",
+		"santest.southeastasia.cloudapp.azure.com",
+		"santest.southindia.cloudapp.azure.com",
+		"santest.uksouth.cloudapp.azure.com",
+		"santest.ukwest.cloudapp.azure.com",
+		"santest.westcentralus.cloudapp.azure.com",
+		"santest.westeurope.cloudapp.azure.com",
+		"santest.westindia.cloudapp.azure.com",
+		"santest.westus.cloudapp.azure.com",
+		"santest.westus2.cloudapp.azure.com",
+		"santest.chinaeast.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth.cloudapp.chinacloudapi.cn",
+		"santest.chinanorth2.cloudapp.chinacloudapi.cn",
+		"santest.chinaeast2.cloudapp.chinacloudapi.cn",
+		"santest.germanycentral.cloudapp.microsoftazure.de",
+		"santest.germanynortheast.cloudapp.microsoftazure.de",
+		"santest.usgovvirginia.cloudapp.usgovcloudapi.net",
+		"santest.usgoviowa.cloudapp.usgovcloudapi.net",
+		"santest.usgovarizona.cloudapp.usgovcloudapi.net",
+		"santest.usgovtexas.cloudapp.usgovcloudapi.net",
+		"santest.francecentral.cloudapp.azure.com",
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected formatted fqdns %s, but got %s", expected, actual)
+	}
+
+}
+
+func TestKubernetesConfig_GetAddonScript(t *testing.T) {
+	addon := getMockAddon(IPMASQAgentAddonName)
+	addon.Data = "foobarbazdata"
+	k := &KubernetesConfig{
+		Addons: []KubernetesAddon{
+			addon,
+		},
+	}
+
+	expected := "foobarbazdata"
+	actual := k.GetAddonScript(IPMASQAgentAddonName)
+	if actual != expected {
+		t.Errorf("expected GetAddonScript to return %s, but got %s", expected, actual)
+	}
+}
+
+func TestContainerService_GetAzureProdFQDN(t *testing.T) {
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 1, 3, false)
+	expected := "testmaster.eastus.cloudapp.azure.com"
+	actual := cs.GetAzureProdFQDN()
+
+	if expected != actual {
+		t.Errorf("expected GetAzureProdFQDN to return %s, but got %s", expected, actual)
+	}
+}
+
+func TestKubernetesConfig_RequiresDocker(t *testing.T) {
+	// k8sConfig with empty runtime string
+	k := &KubernetesConfig{
+		ContainerRuntime: "",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for empty runtime string")
+	}
+
+	// k8sConfig with empty runtime string
+	k = &KubernetesConfig{
+		ContainerRuntime: "docker",
+	}
+
+	if !k.RequiresDocker() {
+		t.Error("expected RequiresDocker to return true for docker runtime")
+	}
+}
+
+func TestProperties_GetMasterVMPrefix(t *testing.T) {
+	p := &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+		MasterProfile: &MasterProfile{
+			Count:     1,
+			DNSPrefix: "myprefix1",
+			VMSize:    "Standard_DS2_v2",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: "VirtualMachineScaleSets",
+				OSType:              "Linux",
+			},
+		},
+	}
+
+	actual := p.GetMasterVMPrefix()
+	expected := "k8s-master-30819786-"
+
+	if actual != expected {
+		t.Errorf("expected master VM prefix %s, but got %s", expected, actual)
 	}
 }

@@ -1319,14 +1319,18 @@ func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
 //for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func (cs *ContainerService) GetCloudSpecConfig() AzureEnvironmentSpecConfig {
-	switch helpers.GetCloudTargetEnv(cs.Location) {
-	case azureChinaCloud:
-		return AzureChinaCloudSpec
-	case azureGermanCloud:
-		return AzureGermanCloudSpec
-	case azureUSGovernmentCloud:
-		return AzureUSGovernmentCloud
-	default:
-		return AzureCloudSpec
-	}
+	targetEnv := helpers.GetCloudTargetEnv(cs.Location)
+	return AzureCloudSpecEnvMap[targetEnv]
+}
+
+// GetAzureProdFQDN returns the formatted FQDN string for a given apimodel.
+func (cs *ContainerService) GetAzureProdFQDN() string {
+	return FormatAzureProdFQDNByLocation(cs.Properties.MasterProfile.DNSPrefix, cs.Location)
+}
+
+// FormatAzureProdFQDNByLocation constructs an Azure prod fqdn
+func FormatAzureProdFQDNByLocation(fqdnPrefix string, location string) string {
+	targetEnv := helpers.GetCloudTargetEnv(location)
+	FQDNFormat := AzureCloudSpecEnvMap[targetEnv].EndpointConfig.ResourceManagerVMDNSSuffix
+	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
 }

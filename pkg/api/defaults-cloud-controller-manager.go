@@ -1,12 +1,10 @@
-package acsengine
+package api
 
 import (
 	"strconv"
-
-	"github.com/Azure/acs-engine/pkg/api"
 )
 
-func setCloudControllerManagerConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setCloudControllerManagerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticCloudControllerManagerConfig := map[string]string{
 		"--allocate-node-cidrs":    strconv.FormatBool(!o.IsAzureCNI()),

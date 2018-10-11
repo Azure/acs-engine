@@ -1,10 +1,9 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
@@ -32,12 +31,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -64,12 +63,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -96,12 +95,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -127,12 +126,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -156,12 +155,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -185,12 +184,12 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
@@ -213,19 +212,23 @@ var k8sComponentVersions = map[string]map[string]string{
 		"nodegraceperiod":                  DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                      DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":                      DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":                   strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":                    strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration":                  strconv.Itoa(api.DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent":                  strconv.FormatFloat(api.DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":                     strconv.FormatFloat(api.DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket":                  strconv.Itoa(api.DefaultKubernetesCloudProviderRateLimitBucket),
+		"backoffretries":                   strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":                    strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":                  strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":                  strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":                     strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":                  strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold":                  strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":                   strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 }
 
-// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
-var KubeConfigs = getKubeConfigs()
+// K8sComponentsByVersionMap represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
+var K8sComponentsByVersionMap map[string]map[string]string
+
+func init() {
+	K8sComponentsByVersionMap = getKubeConfigs()
+}
 
 func getKubeConfigs() map[string]map[string]string {
 	ret := make(map[string]map[string]string)

@@ -1,4 +1,4 @@
-package acsengine
+package api
 
 import (
 	"bytes"
@@ -10,55 +10,42 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
-	"github.com/Azure/acs-engine/pkg/openshift/certgen"
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 )
 
-const (
-	// AzureCniPluginVerLinux specifies version of Azure CNI plugin, which has been mirrored from
-	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
-	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVerLinux = "v1.0.11"
-	// AzureCniPluginVerWindows specifies version of Azure CNI plugin, which has been mirrored from
-	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-windows-amd64-${AZURE_PLUGIN_VER}.tgz
-	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVerWindows = "v1.0.11"
-)
-
-// setPropertiesDefaults for the container Properties, returns true if certs are generated
-func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (bool, error) {
+// SetPropertiesDefaults for the container Properties, returns true if certs are generated
+func (cs *ContainerService) SetPropertiesDefaults(isUpgrade, isScale bool) (bool, error) {
 	properties := cs.Properties
 
-	setOrchestratorDefaults(cs, isUpgrade || isScale)
+	cs.setOrchestratorDefaults(isUpgrade || isScale)
 
 	// Set master profile defaults if this cluster configuration includes master node(s)
 	if cs.Properties.MasterProfile != nil {
-		setMasterProfileDefaults(properties, isUpgrade)
+		properties.setMasterProfileDefaults(isUpgrade)
 	}
 	// Set VMSS Defaults for Masters
 	if cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.IsVirtualMachineScaleSets() {
-		setVMSSDefaultsForMasters(properties)
+		properties.setVMSSDefaultsForMasters()
 	}
 
-	setAgentProfileDefaults(properties, isUpgrade, isScale)
+	properties.setAgentProfileDefaults(isUpgrade, isScale)
 
-	setStorageDefaults(properties)
-	setExtensionDefaults(properties)
+	properties.setStorageDefaults()
+	properties.setExtensionDefaults()
 	// Set VMSS Defaults for Agents
 	if cs.Properties.HasVMSSAgentPool() {
-		setVMSSDefaultsForAgents(properties)
+		properties.setVMSSDefaultsForAgents()
 	}
 
 	// Set hosted master profile defaults if this cluster configuration has a hosted control plane
 	if cs.Properties.HostedMasterProfile != nil {
-		setHostedMasterProfileDefaults(properties)
+		properties.setHostedMasterProfileDefaults()
 	}
 
-	certsGenerated, e := setDefaultCerts(properties)
+	certsGenerated, e := properties.setDefaultCerts()
 	if e != nil {
 		return false, e
 	}
@@ -66,7 +53,7 @@ func setPropertiesDefaults(cs *api.ContainerService, isUpgrade, isScale bool) (b
 }
 
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
+func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 	a := cs.Properties
 
 	cloudSpecConfig := cs.GetCloudSpecConfig()
@@ -79,9 +66,9 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		o.OrchestratorVersion, isUpdate, a.HasWindows())
 
 	switch o.OrchestratorType {
-	case api.Kubernetes:
+	case Kubernetes:
 		if o.KubernetesConfig == nil {
-			o.KubernetesConfig = &api.KubernetesConfig{}
+			o.KubernetesConfig = &KubernetesConfig{}
 		}
 		// For backwards compatibility with original, overloaded "NetworkPolicy" config vector
 		// we translate deprecated NetworkPolicy usage to the NetworkConfig equivalent
@@ -161,11 +148,11 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {
-			o.KubernetesConfig.PrivateCluster = &api.PrivateCluster{}
+			o.KubernetesConfig.PrivateCluster = &PrivateCluster{}
 		}
 
 		if o.KubernetesConfig.PrivateCluster.Enabled == nil {
-			o.KubernetesConfig.PrivateCluster.Enabled = helpers.PointerToBool(api.DefaultPrivateClusterEnabled)
+			o.KubernetesConfig.PrivateCluster.Enabled = helpers.PointerToBool(DefaultPrivateClusterEnabled)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
@@ -196,7 +183,7 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == "" {
-			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.ManagedDisks
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = ManagedDisks
 		}
 
 		if !helpers.IsFalseBoolPointer(a.OrchestratorProfile.KubernetesConfig.EnableRbac) {
@@ -205,24 +192,24 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 				a.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs = true
 			}
 			if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
-				a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(api.DefaultRBACEnabled)
+				a.OrchestratorProfile.KubernetesConfig.EnableRbac = helpers.PointerToBool(DefaultRBACEnabled)
 			}
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(api.DefaultSecureKubeletEnabled)
+			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = helpers.PointerToBool(DefaultSecureKubeletEnabled)
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
-			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(api.DefaultUseInstanceMetadata)
+			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = helpers.PointerToBool(DefaultUseInstanceMetadata)
 		}
 
 		if !a.HasAvailabilityZones() && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "" {
-			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.DefaultLoadBalancerSku
+			a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = DefaultLoadBalancerSku
 		}
 
 		if common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.11.0") && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard" && a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB == nil {
-			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+			a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(DefaultExcludeMasterFromStandardLB)
 		}
 
 		if a.OrchestratorProfile.IsAzureCNI() {
@@ -234,36 +221,36 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 		}
 
 		// Configure addons
-		setAddonsConfig(cs)
+		cs.setAddonsConfig()
 		// Configure kubelet
-		setKubeletConfig(cs)
+		cs.setKubeletConfig()
 		// Configure controller-manager
-		setControllerManagerConfig(cs)
+		cs.setControllerManagerConfig()
 		// Configure cloud-controller-manager
-		setCloudControllerManagerConfig(cs)
+		cs.setCloudControllerManagerConfig()
 		// Configure apiserver
-		setAPIServerConfig(cs)
+		cs.setAPIServerConfig()
 		// Configure scheduler
-		setSchedulerConfig(cs)
+		cs.setSchedulerConfig()
 
-	case api.DCOS:
+	case DCOS:
 		if o.DcosConfig == nil {
-			o.DcosConfig = &api.DcosConfig{}
+			o.DcosConfig = &DcosConfig{}
 		}
 		dcosSemVer, _ := semver.Make(o.OrchestratorVersion)
 		dcosBootstrapSemVer, _ := semver.Make(common.DCOSVersion1Dot11Dot0)
 		if !dcosSemVer.LT(dcosBootstrapSemVer) {
 			if o.DcosConfig.BootstrapProfile == nil {
-				o.DcosConfig.BootstrapProfile = &api.BootstrapProfile{}
+				o.DcosConfig.BootstrapProfile = &BootstrapProfile{}
 			}
 			if len(o.DcosConfig.BootstrapProfile.VMSize) == 0 {
 				o.DcosConfig.BootstrapProfile.VMSize = "Standard_D2s_v3"
 			}
 		}
-	case api.OpenShift:
+	case OpenShift:
 		kc := a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
 		if kc == nil {
-			kc = &api.KubernetesConfig{}
+			kc = &KubernetesConfig{}
 		}
 		if kc.ContainerRuntime == "" {
 			kc.ContainerRuntime = DefaultContainerRuntime
@@ -274,151 +261,151 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 	}
 }
 
-func setExtensionDefaults(a *api.Properties) {
-	if a.ExtensionProfiles == nil {
+func (p *Properties) setExtensionDefaults() {
+	if p.ExtensionProfiles == nil {
 		return
 	}
-	for _, extension := range a.ExtensionProfiles {
+	for _, extension := range p.ExtensionProfiles {
 		if extension.RootURL == "" {
 			extension.RootURL = DefaultExtensionsRootURL
 		}
 	}
 }
 
-func setMasterProfileDefaults(a *api.Properties, isUpgrade bool) {
-	if a.MasterProfile.Distro == "" {
-		if a.OrchestratorProfile.IsKubernetes() {
-			a.MasterProfile.Distro = api.AKS
-		} else if !a.OrchestratorProfile.IsOpenShift() {
-			a.MasterProfile.Distro = api.Ubuntu
+func (p *Properties) setMasterProfileDefaults(isUpgrade bool) {
+	if p.MasterProfile.Distro == "" {
+		if p.OrchestratorProfile.IsKubernetes() {
+			p.MasterProfile.Distro = AKS
+		} else if !p.OrchestratorProfile.IsOpenShift() {
+			p.MasterProfile.Distro = Ubuntu
 		}
 	}
 	// set default to VMAS for now
-	if len(a.MasterProfile.AvailabilityProfile) == 0 {
-		a.MasterProfile.AvailabilityProfile = api.AvailabilitySet
+	if len(p.MasterProfile.AvailabilityProfile) == 0 {
+		p.MasterProfile.AvailabilityProfile = AvailabilitySet
 	}
 
-	if !a.MasterProfile.IsCustomVNET() {
-		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			if a.OrchestratorProfile.IsAzureCNI() {
+	if !p.MasterProfile.IsCustomVNET() {
+		if p.OrchestratorProfile.OrchestratorType == Kubernetes {
+			if p.OrchestratorProfile.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
-				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
+				p.MasterProfile.Subnet = p.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
-				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-					if a.MasterProfile.IsVirtualMachineScaleSets() {
-						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIPVMSS
-						a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
-						a.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
+				if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+					if p.MasterProfile.IsVirtualMachineScaleSets() {
+						p.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIPVMSS
+						p.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+						p.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
 					} else {
-						a.MasterProfile.FirstConsecutiveStaticIP = a.MasterProfile.GetFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
+						p.MasterProfile.FirstConsecutiveStaticIP = p.MasterProfile.GetFirstConsecutiveStaticIPAddress(p.MasterProfile.Subnet)
 					}
 				}
 			} else {
-				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+				p.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
-				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-					if a.MasterProfile.IsVirtualMachineScaleSets() {
-						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIPVMSS
-						a.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
+				if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+					if p.MasterProfile.IsVirtualMachineScaleSets() {
+						p.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIPVMSS
+						p.MasterProfile.AgentSubnet = DefaultKubernetesAgentSubnetVMSS
 					} else {
-						a.MasterProfile.FirstConsecutiveStaticIP = api.DefaultFirstConsecutiveKubernetesStaticIP
+						p.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 					}
 				}
 			}
-		} else if a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-			a.MasterProfile.Subnet = DefaultOpenShiftMasterSubnet
-			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-				a.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
+		} else if p.OrchestratorProfile.OrchestratorType == OpenShift {
+			p.MasterProfile.Subnet = DefaultOpenShiftMasterSubnet
+			if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				p.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
 			}
-		} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-			a.MasterProfile.Subnet = DefaultDCOSMasterSubnet
+		} else if p.OrchestratorProfile.OrchestratorType == DCOS {
+			p.MasterProfile.Subnet = DefaultDCOSMasterSubnet
 			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
-			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-				a.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
+			if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				p.MasterProfile.FirstConsecutiveStaticIP = DefaultDCOSFirstConsecutiveStaticIP
 			}
-			if a.OrchestratorProfile.DcosConfig != nil && a.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
-				if !isUpgrade || len(a.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP) == 0 {
-					a.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP = DefaultDCOSBootstrapStaticIP
+			if p.OrchestratorProfile.DcosConfig != nil && p.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+				if !isUpgrade || len(p.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP) == 0 {
+					p.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP = DefaultDCOSBootstrapStaticIP
 				}
 			}
-		} else if a.HasWindows() {
-			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
+		} else if p.HasWindows() {
+			p.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
-			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-				a.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
+			if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				p.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
 			}
 		} else {
-			a.MasterProfile.Subnet = DefaultMasterSubnet
+			p.MasterProfile.Subnet = DefaultMasterSubnet
 			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
-			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-				a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP
+			if !isUpgrade || len(p.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				p.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP
 			}
 		}
 	}
 
-	if a.MasterProfile.IsCustomVNET() && a.MasterProfile.IsVirtualMachineScaleSets() {
-		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.FirstConsecutiveStaticIP = a.MasterProfile.GetFirstConsecutiveStaticIPAddress(a.MasterProfile.VnetCidr)
+	if p.MasterProfile.IsCustomVNET() && p.MasterProfile.IsVirtualMachineScaleSets() {
+		if p.OrchestratorProfile.OrchestratorType == Kubernetes {
+			p.MasterProfile.FirstConsecutiveStaticIP = p.MasterProfile.GetFirstConsecutiveStaticIPAddress(p.MasterProfile.VnetCidr)
 		}
 	}
 	// Set the default number of IP addresses allocated for masters.
-	if a.MasterProfile.IPAddressCount == 0 {
+	if p.MasterProfile.IPAddressCount == 0 {
 		// Allocate one IP address for the node.
-		a.MasterProfile.IPAddressCount = 1
+		p.MasterProfile.IPAddressCount = 1
 
 		// Allocate IP addresses for pods if VNET integration is enabled.
-		if a.OrchestratorProfile.IsAzureCNI() {
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-				masterMaxPods, _ := strconv.Atoi(a.MasterProfile.KubernetesConfig.KubeletConfig["--max-pods"])
-				a.MasterProfile.IPAddressCount += masterMaxPods
+		if p.OrchestratorProfile.IsAzureCNI() {
+			if p.OrchestratorProfile.OrchestratorType == Kubernetes {
+				masterMaxPods, _ := strconv.Atoi(p.MasterProfile.KubernetesConfig.KubeletConfig["--max-pods"])
+				p.MasterProfile.IPAddressCount += masterMaxPods
 			}
 		}
 	}
 
-	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
-		a.MasterProfile.HTTPSourceAddressPrefix = "*"
+	if p.MasterProfile.HTTPSourceAddressPrefix == "" {
+		p.MasterProfile.HTTPSourceAddressPrefix = "*"
 	}
 }
 
 // setVMSSDefaultsForMasters
-func setVMSSDefaultsForMasters(a *api.Properties) {
-	if a.MasterProfile.SinglePlacementGroup == nil {
-		a.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+func (p *Properties) setVMSSDefaultsForMasters() {
+	if p.MasterProfile.SinglePlacementGroup == nil {
+		p.MasterProfile.SinglePlacementGroup = helpers.PointerToBool(DefaultSinglePlacementGroup)
 	}
-	if a.MasterProfile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
-		a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
-		a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+	if p.MasterProfile.HasAvailabilityZones() && (p.OrchestratorProfile.KubernetesConfig != nil && p.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
+		p.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+		p.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(DefaultExcludeMasterFromStandardLB)
 	}
 }
 
 // setVMSSDefaultsForAgents
-func setVMSSDefaultsForAgents(a *api.Properties) {
-	for _, profile := range a.AgentPoolProfiles {
-		if profile.AvailabilityProfile == api.VirtualMachineScaleSets {
+func (p *Properties) setVMSSDefaultsForAgents() {
+	for _, profile := range p.AgentPoolProfiles {
+		if profile.AvailabilityProfile == VirtualMachineScaleSets {
 			if profile.Count > 100 {
 				profile.SinglePlacementGroup = helpers.PointerToBool(false)
 			}
 			if profile.SinglePlacementGroup == nil {
-				profile.SinglePlacementGroup = helpers.PointerToBool(api.DefaultSinglePlacementGroup)
+				profile.SinglePlacementGroup = helpers.PointerToBool(DefaultSinglePlacementGroup)
 			}
-			if profile.HasAvailabilityZones() && (a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
-				a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
-				a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(api.DefaultExcludeMasterFromStandardLB)
+			if profile.HasAvailabilityZones() && (p.OrchestratorProfile.KubernetesConfig != nil && p.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "") {
+				p.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
+				p.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(DefaultExcludeMasterFromStandardLB)
 			}
 		}
 
 	}
 }
 
-func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
+func (p *Properties) setAgentProfileDefaults(isUpgrade, isScale bool) {
 	// configure the subnets if not in custom VNET
-	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
+	if p.MasterProfile != nil && !p.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
-		for _, profile := range a.AgentPoolProfiles {
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes ||
-				a.OrchestratorProfile.OrchestratorType == api.OpenShift {
-				if !a.MasterProfile.IsVirtualMachineScaleSets() {
-					profile.Subnet = a.MasterProfile.Subnet
+		for _, profile := range p.AgentPoolProfiles {
+			if p.OrchestratorProfile.OrchestratorType == Kubernetes ||
+				p.OrchestratorProfile.OrchestratorType == OpenShift {
+				if !p.MasterProfile.IsVirtualMachineScaleSets() {
+					profile.Subnet = p.MasterProfile.Subnet
 				}
 			} else {
 				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
@@ -428,10 +415,10 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		}
 	}
 
-	for _, profile := range a.AgentPoolProfiles {
+	for _, profile := range p.AgentPoolProfiles {
 		// set default OSType to Linux
 		if profile.OSType == "" {
-			profile.OSType = api.Linux
+			profile.OSType = Linux
 		}
 
 		// Accelerated Networking is supported on most general purpose and compute-optimized instance sizes with 2 or more vCPUs.
@@ -443,18 +430,18 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 		}
 
 		if profile.AcceleratedNetworkingEnabledWindows == nil {
-			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(api.DefaultAcceleratedNetworkingWindowsEnabled)
+			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(DefaultAcceleratedNetworkingWindowsEnabled)
 		}
 
-		if profile.Distro == "" && profile.OSType != api.Windows {
-			if a.OrchestratorProfile.IsKubernetes() {
-				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < api.VHDDiskSizeAKS {
-					profile.Distro = api.Ubuntu
+		if profile.Distro == "" && profile.OSType != Windows {
+			if p.OrchestratorProfile.IsKubernetes() {
+				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < VHDDiskSizeAKS {
+					profile.Distro = Ubuntu
 				} else {
-					profile.Distro = api.AKS
+					profile.Distro = AKS
 				}
-			} else if !a.OrchestratorProfile.IsOpenShift() {
-				profile.Distro = api.Ubuntu
+			} else if !p.OrchestratorProfile.IsOpenShift() {
+				profile.Distro = Ubuntu
 			}
 		}
 
@@ -464,7 +451,7 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 			profile.IPAddressCount = 1
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
-			if a.OrchestratorProfile.IsAzureCNI() {
+			if p.OrchestratorProfile.IsAzureCNI() {
 				agentPoolMaxPods, _ := strconv.Atoi(profile.KubernetesConfig.KubeletConfig["--max-pods"])
 				profile.IPAddressCount += agentPoolMaxPods
 			}
@@ -473,45 +460,45 @@ func setAgentProfileDefaults(a *api.Properties, isUpgrade, isScale bool) {
 }
 
 // setStorageDefaults for agents
-func setStorageDefaults(a *api.Properties) {
-	if a.MasterProfile != nil && len(a.MasterProfile.StorageProfile) == 0 {
-		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.StorageProfile = api.ManagedDisks
+func (p *Properties) setStorageDefaults() {
+	if p.MasterProfile != nil && len(p.MasterProfile.StorageProfile) == 0 {
+		if p.OrchestratorProfile.OrchestratorType == Kubernetes {
+			p.MasterProfile.StorageProfile = ManagedDisks
 		} else {
-			a.MasterProfile.StorageProfile = api.StorageAccount
+			p.MasterProfile.StorageProfile = StorageAccount
 		}
 	}
-	for _, profile := range a.AgentPoolProfiles {
+	for _, profile := range p.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-				profile.StorageProfile = api.ManagedDisks
+			if p.OrchestratorProfile.OrchestratorType == Kubernetes {
+				profile.StorageProfile = ManagedDisks
 			} else {
-				profile.StorageProfile = api.StorageAccount
+				profile.StorageProfile = StorageAccount
 			}
 		}
 		if len(profile.AvailabilityProfile) == 0 {
-			profile.AvailabilityProfile = api.VirtualMachineScaleSets
+			profile.AvailabilityProfile = VirtualMachineScaleSets
 			// VMSS is not supported for k8s below 1.10.2
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes && !common.IsKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.10.2") {
-				profile.AvailabilityProfile = api.AvailabilitySet
+			if p.OrchestratorProfile.OrchestratorType == Kubernetes && !common.IsKubernetesVersionGe(p.OrchestratorProfile.OrchestratorVersion, "1.10.2") {
+				profile.AvailabilityProfile = AvailabilitySet
 			}
 		}
-		if len(profile.ScaleSetEvictionPolicy) == 0 && profile.ScaleSetPriority == api.ScaleSetPriorityLow {
-			profile.ScaleSetEvictionPolicy = api.ScaleSetEvictionPolicyDelete
+		if len(profile.ScaleSetEvictionPolicy) == 0 && profile.ScaleSetPriority == ScaleSetPriorityLow {
+			profile.ScaleSetEvictionPolicy = ScaleSetEvictionPolicyDelete
 		}
 	}
 }
 
-func setHostedMasterProfileDefaults(a *api.Properties) {
-	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
+func (p *Properties) setHostedMasterProfileDefaults() {
+	p.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
-func setDefaultCerts(p *api.Properties) (bool, error) {
-	if p.MasterProfile != nil && p.OrchestratorProfile.OrchestratorType == api.OpenShift {
-		return certgen.OpenShiftSetDefaultCerts(p, api.DefaultOpenshiftOrchestratorName, p.GetClusterID())
+func (p *Properties) setDefaultCerts() (bool, error) {
+	if p.MasterProfile != nil && p.OrchestratorProfile.OrchestratorType == OpenShift {
+		return setOpenShiftSetDefaultCerts(p, DefaultOpenshiftOrchestratorName, p.GetClusterID())
 	}
 
-	if p.MasterProfile == nil || p.OrchestratorProfile.OrchestratorType != api.Kubernetes {
+	if p.MasterProfile == nil || p.OrchestratorProfile.OrchestratorType != Kubernetes {
 		return false, nil
 	}
 
@@ -521,7 +508,12 @@ func setDefaultCerts(p *api.Properties) (bool, error) {
 		return false, nil
 	}
 
-	masterExtraFQDNs := append(formatAzureProdFQDNs(p.MasterProfile.DNSPrefix), p.MasterProfile.SubjectAltNames...)
+	var azureProdFQDNs []string
+	for _, location := range helpers.GetAzureLocations() {
+		azureProdFQDNs = append(azureProdFQDNs, FormatAzureProdFQDNByLocation(p.MasterProfile.DNSPrefix, location))
+	}
+
+	masterExtraFQDNs := append(azureProdFQDNs, p.MasterProfile.SubjectAltNames...)
 	firstMasterIP := net.ParseIP(p.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
@@ -533,21 +525,19 @@ func setDefaultCerts(p *api.Properties) (bool, error) {
 	ips = append(ips, net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)})
 	// Include the Internal load balancer as well
 
+	var offsetMultiplier int
 	if p.MasterProfile.IsVirtualMachineScaleSets() {
-		// Include the Internal load balancer as well
-		for i := 1; i < p.MasterProfile.Count; i++ {
-			offset := i * p.MasterProfile.IPAddressCount
-			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
-			ips = append(ips, ip)
-		}
+		offsetMultiplier = p.MasterProfile.IPAddressCount
 	} else {
-		for i := 1; i < p.MasterProfile.Count; i++ {
-			ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
-			ips = append(ips, ip)
-		}
+		offsetMultiplier = 1
+	}
+	for i := 1; i < p.MasterProfile.Count; i++ {
+		offset := i * offsetMultiplier
+		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
+		ips = append(ips, ip)
 	}
 	if p.CertificateProfile == nil {
-		p.CertificateProfile = &api.CertificateProfile{}
+		p.CertificateProfile = &CertificateProfile{}
 	}
 
 	// use the specified Certificate Authority pair, or generate p new pair
@@ -614,7 +604,7 @@ func areAllTrue(m map[string]bool) bool {
 }
 
 // certsAlreadyPresent already present returns a map where each key is a type of cert and each value is true if that cert/key pair is user-provided
-func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
+func certsAlreadyPresent(c *CertificateProfile, m int) map[string]bool {
 	g := map[string]bool{
 		"ca":         false,
 		"apiserver":  false,

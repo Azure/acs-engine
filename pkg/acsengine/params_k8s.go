@@ -19,15 +19,15 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 
 	if orchestratorProfile.IsKubernetes() ||
 		orchestratorProfile.IsOpenShift() {
-		k8sVersion := orchestratorProfile.OrchestratorVersion
+		k8sComponents := api.K8sComponentsByVersionMap[orchestratorProfile.OrchestratorVersion]
 
-		dockerEngineVersion := KubeConfigs[k8sVersion]["dockerEngineVersion"]
+		dockerEngineVersion := k8sComponents["dockerEngineVersion"]
 
 		kubernetesConfig := orchestratorProfile.KubernetesConfig
 
 		if kubernetesConfig != nil {
 			if helpers.IsTrueBoolPointer(kubernetesConfig.UseCloudControllerManager) {
-				kubernetesCcmSpec := kubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
+				kubernetesCcmSpec := kubernetesConfig.KubernetesImageBase + k8sComponents["ccm"]
 				if kubernetesConfig.CustomCcmImage != "" {
 					kubernetesCcmSpec = kubernetesConfig.CustomCcmImage
 				}
@@ -35,7 +35,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "kubernetesCcmImageSpec", kubernetesCcmSpec)
 			}
 
-			kubernetesHyperkubeSpec := kubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
+			kubernetesHyperkubeSpec := kubernetesConfig.KubernetesImageBase + k8sComponents["hyperkube"]
 			if kubernetesConfig.CustomHyperkubeImage != "" {
 				kubernetesHyperkubeSpec = kubernetesConfig.CustomHyperkubeImage
 			}
@@ -43,12 +43,12 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "kubeDNSServiceIP", kubernetesConfig.DNSServiceIP)
 			addValue(parametersMap, "kubeServiceCidr", kubernetesConfig.ServiceCIDR)
 			addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
-			addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonmanager"])
-			addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonresizer"])
-			addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dnsmasq"])
-			addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
-			addValue(parametersMap, "kubernetesDNSSidecarSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["k8s-dns-sidecar"])
-			addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
+			addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonmanager"])
+			addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonresizer"])
+			addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dnsmasq"])
+			addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["exechealthz"])
+			addValue(parametersMap, "kubernetesDNSSidecarSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["k8s-dns-sidecar"])
+			addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["heapster"])
 			if kubernetesConfig.IsTillerEnabled() {
 				tillerAddon := kubernetesConfig.GetAddonByName(DefaultTillerAddonName)
 				c := tillerAddon.GetAddonContainersIndexByName(DefaultTillerAddonName)
@@ -61,7 +61,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if tillerAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+						addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+k8sComponents[DefaultTillerAddonName])
 					}
 				}
 			}
@@ -88,7 +88,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if aciConnectorAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesACIConnectorSpec", aciConnectorAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
+						addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+k8sComponents[DefaultACIConnectorAddonName])
 					}
 				}
 			} else {
@@ -110,7 +110,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if clusterAutoscalerAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesClusterAutoscalerSpec", clusterAutoscalerAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultClusterAutoscalerAddonName])
+						addValue(parametersMap, "kubernetesClusterAutoscalerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[DefaultClusterAutoscalerAddonName])
 					}
 				}
 			} else {
@@ -155,7 +155,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if dashboardAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultDashboardAddonName])
+						addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[DefaultDashboardAddonName])
 					}
 				}
 			}
@@ -170,7 +170,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if reschedulerAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesReschedulerSpec", reschedulerAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultReschedulerAddonName])
+						addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[DefaultReschedulerAddonName])
 					}
 				}
 			}
@@ -181,7 +181,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if metricsServerAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesMetricsServerSpec", metricsServerAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultMetricsServerAddonName])
+						addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[DefaultMetricsServerAddonName])
 					}
 				}
 			}
@@ -196,7 +196,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if nvidiaDevicePluginAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", nvidiaDevicePluginAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+KubeConfigs[k8sVersion][NVIDIADevicePluginAddonName])
+						addValue(parametersMap, "kubernetesNVIDIADevicePluginSpec", cloudSpecConfig.KubernetesSpecConfig.NVIDIAImageBase+k8sComponents[NVIDIADevicePluginAddonName])
 					}
 				}
 			}
@@ -215,7 +215,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if containerMonitoringAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "omsAgentImage", containerMonitoringAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][ContainerMonitoringAddonName])
+						addValue(parametersMap, "omsAgentImage", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[ContainerMonitoringAddonName])
 					}
 				}
 			}
@@ -242,13 +242,13 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					if azureCNINetworkmonitorAddon.Containers[c].Image != "" {
 						addValue(parametersMap, "AzureCNINetworkMonitorImageURL", azureCNINetworkmonitorAddon.Containers[c].Image)
 					} else {
-						addValue(parametersMap, "AzureCNINetworkMonitorImageURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIImageBase+KubeConfigs[k8sVersion][AzureCNINetworkMonitoringAddonName])
+						addValue(parametersMap, "AzureCNINetworkMonitorImageURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIImageBase+k8sComponents[AzureCNINetworkMonitoringAddonName])
 					}
 				}
 			}
 			addValue(parametersMap, "kubernetesCoreDNSSpec", "coredns/coredns:1.2.2")
-			addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
-			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
+			addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dns"])
+			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["pause"])
 			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
 				CloudProviderBackoff:         kubernetesConfig.CloudProviderBackoff,
 				CloudProviderBackoffRetries:  kubernetesConfig.CloudProviderBackoffRetries,

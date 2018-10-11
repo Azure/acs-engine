@@ -221,3 +221,11 @@ func TestSubjectAltNameInCert(t *testing.T) {
 		t.Fatalf("API server pair not generated.")
 	}
 }
+
+func TestCreatePkiKeyCertPair(t *testing.T) {
+	subject := "foosubject"
+	_, err := CreatePkiKeyCertPair(subject)
+	if err != nil {
+		t.Errorf("unexpected error thrown while executing CreatePkiKeyCertPair : %s", err.Error())
+	}
+}

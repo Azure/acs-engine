@@ -1,8 +1,4 @@
-package acsengine
-
-import (
-	"github.com/Azure/acs-engine/pkg/api"
-)
+package api
 
 // staticSchedulerConfig is not user-overridable
 var staticSchedulerConfig = map[string]string{
@@ -16,7 +12,7 @@ var defaultSchedulerConfig = map[string]string{
 	"--v": "2",
 }
 
-func setSchedulerConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setSchedulerConfig() {
 	o := cs.Properties.OrchestratorProfile
 
 	// If no user-configurable scheduler config values exists, use the defaults

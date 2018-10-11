@@ -1,13 +1,12 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setControllerManagerConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setControllerManagerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticControllerManagerConfig := map[string]string{
 		"--kubeconfig":                       "/var/lib/kubelet/kubeconfig",

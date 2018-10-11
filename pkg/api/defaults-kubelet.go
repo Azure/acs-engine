@@ -1,15 +1,14 @@
-package acsengine
+package api
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func setKubeletConfig(cs *api.ContainerService) {
+func (cs *ContainerService) setKubeletConfig() {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := cs.GetCloudSpecConfig()
 	staticLinuxKubeletConfig := map[string]string{
@@ -49,10 +48,10 @@ func setKubeletConfig(cs *api.ContainerService) {
 	defaultKubeletConfig := map[string]string{
 		"--cluster-domain":                  "cluster.local",
 		"--network-plugin":                  "cni",
-		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
+		"--pod-infra-container-image":       cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + K8sComponentsByVersionMap[o.OrchestratorVersion]["pause"],
 		"--max-pods":                        strconv.Itoa(DefaultKubernetesMaxPods),
 		"--eviction-hard":                   DefaultKubernetesHardEvictionThreshold,
-		"--node-status-update-frequency":    KubeConfigs[o.OrchestratorVersion]["nodestatusfreq"],
+		"--node-status-update-frequency":    K8sComponentsByVersionMap[o.OrchestratorVersion]["nodestatusfreq"],
 		"--image-gc-high-threshold":         strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"--image-gc-low-threshold":          strconv.Itoa(DefaultKubernetesGCLowThreshold),
 		"--non-masquerade-cidr":             "0.0.0.0",
@@ -110,8 +109,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Master-specific kubelet config changes go here
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
-			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
-			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
+			cs.Properties.MasterProfile.KubernetesConfig = &KubernetesConfig{}
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = make(map[string]string)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
@@ -122,8 +121,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
-			profile.KubernetesConfig = &api.KubernetesConfig{}
-			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
+			profile.KubernetesConfig = &KubernetesConfig{}
+			profile.KubernetesConfig.KubeletConfig = make(map[string]string)
 			if profile.OSType == "Windows" {
 				for key, val := range staticWindowsKubeletConfig {
 					profile.KubernetesConfig.KubeletConfig[key] = val
@@ -165,7 +164,7 @@ func removeKubeletFlags(k map[string]string, v string) {
 	}
 }
 
-func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
+func setMissingKubeletValues(p *KubernetesConfig, d map[string]string) {
 	if p.KubeletConfig == nil {
 		p.KubeletConfig = d
 	} else {
@@ -177,11 +176,4 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 			}
 		}
 	}
-}
-func copyMap(input map[string]string) map[string]string {
-	copy := map[string]string{}
-	for key, value := range input {
-		copy[key] = value
-	}
-	return copy
 }

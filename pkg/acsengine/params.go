@@ -230,7 +230,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
 			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
 			if kubeBinariesSASURL == "" {
-				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + api.K8sComponentsByVersionMap[k8sVersion]["windowszip"]
 			}
 
 			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
