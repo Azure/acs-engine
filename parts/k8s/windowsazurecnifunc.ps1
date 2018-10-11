@@ -23,7 +23,9 @@ Install-VnetPlugins
         [Parameter(Mandatory=$true)][string]
         $AzureCNIConfDir,
         [Parameter(Mandatory=$true)][string]
-        $AzureCNIBinDir
+        $AzureCNIBinDir,
+        [Parameter(Mandatory=$true)][string]
+        $VNetCNIPluginsURL
     )
     # Create CNI directories.
     mkdir $AzureCNIBinDir
@@ -32,7 +34,7 @@ Install-VnetPlugins
     # Download Azure VNET CNI plugins.
     # Mirror from https://github.com/Azure/azure-container-networking/releases
     $zipfile =  [Io.path]::Combine("$AzureCNIDir", "azure-vnet.zip")
-    Invoke-WebRequest -Uri $VNetCNIPluginsURL -OutFile $zipfile
+    DownloadFileOverHttp -Url $VNetCNIPluginsURL -DestinationPath $zipfile
     Expand-Archive -path $zipfile -DestinationPath $AzureCNIBinDir
     del $zipfile
 

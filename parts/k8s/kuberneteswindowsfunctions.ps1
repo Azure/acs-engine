@@ -9,8 +9,14 @@ Write-Log($message)
     Write-Output $msg
 }
 
-function DownloadFileOverHttp($Url, $DestinationPath)
+function DownloadFileOverHttp
 {
+    Param(
+        [Parameter(Mandatory=$true)][string]
+        $Url,
+        [Parameter(Mandatory=$true)][string]
+        $DestinationPath
+    )
     $secureProtocols = @()
     $insecureProtocols = @([System.Net.SecurityProtocolType]::SystemDefault, [System.Net.SecurityProtocolType]::Ssl3)
 

@@ -178,7 +178,9 @@ try
 
         # Configure network policy.
         if ($global:NetworkPlugin -eq "azure") {
-            Install-VnetPlugins -AzureCNIConfDir $global:AzureCNIConfDir -AzureCNIBinDir $global:AzureCNIBinDir
+            Install-VnetPlugins -AzureCNIConfDir $global:AzureCNIConfDir `
+                                -AzureCNIBinDir $global:AzureCNIBinDir`
+                                -VNetCNIPluginsURL $global:VNetCNIPluginsURL
             Set-AzureCNIConfig -AzureCNIConfDir $global:AzureCNIConfDir `
                                -KubeDnsSearchPath $global:KubeDnsSearchPath `
                                -KubeClusterCIDR $global:KubeClusterCIDR `

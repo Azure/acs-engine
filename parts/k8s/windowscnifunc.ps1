@@ -6,7 +6,7 @@ function Get-HnsPsm1
         [Parameter(Mandatory=$true)][string]
         $HNSModule
     )
-    DownloadFileOverHttp $HnsUrl "$HNSModule"
+    DownloadFileOverHttp -Url $HnsUrl -DestinationPath "$HNSModule"
 }
 
 function Update-WinCNI
@@ -19,7 +19,7 @@ function Update-WinCNI
     )
     $wincni = "wincni.exe"
     $wincniFile = [Io.path]::Combine($CNIPath, $wincni)
-    DownloadFileOverHttp $WinCniUrl $wincniFile
+    DownloadFileOverHttp -Url $WinCniUrl -DestinationPath $wincniFile
 }
 
 # TODO: Move the code that creates the wincni configuration file out of windowskubeletfunc.ps1 and put it here

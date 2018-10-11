@@ -167,7 +167,7 @@ Get-KubeBinaries
     $zipfile = "c:\k.zip"
     for ($i=0; $i -le 10; $i++)
     {
-        DownloadFileOverHttp -Source $KubeBinariesSASURL -DestinationPath $zipfile
+        DownloadFileOverHttp -Url $KubeBinariesSASURL -DestinationPath $zipfile
         if ($?) {
             break
         } else {
