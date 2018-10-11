@@ -70,11 +70,9 @@ var _ = BeforeSuite(func() {
 		masterSSHPort = "22"
 	}
 	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
-	// TODO
-	// If no user-configurable stability iteration value is passed in, run stability tests once
-	/*if cfg.StabilityIterations == 0 {
-		cfg.StabilityIterations = 1
-	}*/
+	if cfg.StabilityIterations == 0 {
+		cfg.StabilityIterations = 10
+	}
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
