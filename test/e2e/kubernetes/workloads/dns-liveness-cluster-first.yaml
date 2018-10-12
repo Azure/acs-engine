@@ -6,7 +6,7 @@ metadata:
   name: dns-liveness
 spec:
   containers:
-  - name: dns-liveness
+  - name: dns-liveness-cluster-first
     image: k8s.gcr.io/busybox
     args:
     - /bin/sh
@@ -21,3 +21,4 @@ spec:
       periodSeconds: 5
   nodeSelector:
     beta.kubernetes.io/os: linux 
+  dnsPolicy: ClusterFirst

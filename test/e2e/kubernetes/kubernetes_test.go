@@ -429,7 +429,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
-		It("should be able to launch a long-running container networking DNS liveness pod", func() {
+		It("should be able to launch long-running pods to test DNS", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
@@ -443,6 +443,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					}
 				}
 				running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness-cluster-first.yaml"), "dns-liveness-cluster-first", "default")
+				if cfg.SoakClusterName == "" {
+					Expect(err).NotTo(HaveOccurred())
+				} else {
+					if err != nil {
+						p, err = pod.Get("dns-liveness", "default")
+						Expect(err).NotTo(HaveOccurred())
+					}
+				}
+				running, err = p.WaitOnReady(5*time.Second, 2*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 			}
@@ -926,16 +939,30 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("after the cluster has been up for awhile", func() {
-		It("dns-liveness pod should not have any restarts", func() {
+		It("dns-liveness pods should not have any restarts", func() {
 			if !eng.HasNetworkPolicy("calico") {
-				pod, err := pod.Get("dns-liveness", "default")
+				p, err := pod.Get("dns-liveness", "default")
 				Expect(err).NotTo(HaveOccurred())
-				running, err := pod.WaitOnReady(5*time.Second, 3*time.Minute)
+				running, err := p.WaitOnReady(5*time.Second, 3*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				restarts := pod.Status.ContainerStatuses[0].RestartCount
+				restarts := p.Status.ContainerStatuses[0].RestartCount
 				if cfg.SoakClusterName == "" {
-					err = pod.Delete(deleteResourceRetries)
+					err = p.Delete(deleteResourceRetries)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(restarts).To(Equal(0))
+				} else {
+					log.Printf("%d DNS livenessProbe restarts since this cluster was created...\n", restarts)
+				}
+
+				p, err = pod.Get("dns-liveness-cluster-first", "default")
+				Expect(err).NotTo(HaveOccurred())
+				running, err = p.WaitOnReady(5*time.Second, 3*time.Minute)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				restarts = p.Status.ContainerStatuses[0].RestartCount
+				if cfg.SoakClusterName == "" {
+					err = p.Delete(deleteResourceRetries)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(restarts).To(Equal(0))
 				} else {
