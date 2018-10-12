@@ -625,12 +625,6 @@
         "cloudProviderRateLimitBucket": 0
       }
     },
-    "kubernetesKubeDNSSpec": {
-      "metadata": {
-        "description": "The container spec for kubedns-amd64."
-      },
-      "type": "string"
-    },
 {{if IsKubernetesVersionGe "1.12.0"}}
     "kubernetesCoreDNSSpec": {
       "metadata": {
@@ -639,6 +633,12 @@
       "type": "string"
     },
 {{else}}
+    "kubernetesKubeDNSSpec": {
+      "metadata": {
+        "description": "The container spec for kubedns-amd64."
+      },
+      "type": "string"
+    },
     "kubernetesDNSMasqSpec": {
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."

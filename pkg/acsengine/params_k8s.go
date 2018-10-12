@@ -46,7 +46,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 			addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonmanager"])
 			addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonresizer"])
-			addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dnsmasq"])
 			addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["exechealthz"])
 			addValue(parametersMap, "kubernetesDNSSidecarSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["k8s-dns-sidecar"])
 			addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["heapster"])
@@ -251,6 +250,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "kubernetesCoreDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["coredns"])
 			} else {
 				addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["kube-dns"])
+				addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dnsmasq"])
 			}
 			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["pause"])
 			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
