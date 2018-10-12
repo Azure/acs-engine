@@ -106,6 +106,8 @@ spec:
           effect: NoSchedule
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+      nodeSelector:
+        kubernetes.io/role: master
       containers:
       - name: coredns
         image: <kubernetesCoreDNSSpec>
