@@ -296,6 +296,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"addonresizer":                     k8sComponentVersions["1.12"]["addon-resizer"],
 			"heapster":                         k8sComponentVersions["1.12"]["heapster"],
 			DefaultMetricsServerAddonName:      k8sComponentVersions["1.12"]["metrics-server"],
+			"coredns":                          k8sComponentVersions["1.12"]["coredns"],
 			"kube-dns":                         k8sComponentVersions["1.12"]["kube-dns"],
 			"addonmanager":                     k8sComponentVersions["1.12"]["addon-manager"],
 			"dnsmasq":                          k8sComponentVersions["1.12"]["dnsmasq"],
