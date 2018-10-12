@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   labels:
     test: liveness
-  name: dns-liveness
+  name: dns-liveness-cluster-first
 spec:
   containers:
   - name: dns-liveness-cluster-first
