@@ -1,6 +1,6 @@
 {{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
-    "apiVersion": "2014-10-01-preview",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -15,8 +15,8 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionStorage')]",
     "location": "[variables('location')]",
-    "properties": {
-      "accountType": "Standard_LRS"
+    "sku": {
+      "name": "Standard_LRS"
     }
   },
   {
@@ -73,7 +73,7 @@
   },
 {{end}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('nsgName')]",
   "properties": {
@@ -128,7 +128,7 @@
 },
 {{if RequireRouteTable}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('routeTableName')]",
   "type": "Microsoft.Network/routeTables"
@@ -136,7 +136,7 @@
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
-  "apiVersion": "[variables('apiVersionDefault')]",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "dependsOn": [
     {{if RequireRouteTable}}
     "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]",
@@ -186,7 +186,7 @@
 },
 {{end}}
 {
-  "apiVersion": "2018-04-01",
+  "apiVersion": "[variables('apiVersionNetwork')]",
   "location": "[variables('location')]",
   "name": "[variables('masterPublicIPAddressName')]",
   "properties": {
@@ -208,7 +208,7 @@
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('masterLbName')]",
     "location": "[variables('location')]",
-    "apiVersion": "2018-04-01",
+    "apiVersion": "[variables('apiVersionNetwork')]",
     "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
     ],
@@ -282,7 +282,7 @@
     }
 },
 {
-    "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"

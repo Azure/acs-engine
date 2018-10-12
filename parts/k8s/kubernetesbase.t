@@ -60,7 +60,7 @@
       {
         "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
         "name": "[variables('userAssignedID')]",
-        "apiVersion": "2015-08-31-PREVIEW",
+        "apiVersion": "[variables('apiVersionCompute')]",
         "location": "[variables('location')]"
       },
     {{end}}
@@ -86,7 +86,7 @@
     {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
       ,{
-        "apiVersion": "[variables('apiVersionDefault')]",
+        "apiVersion": "[variables('apiVersionNetwork')]",
         "dependsOn": [
           "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
       {{if not IsAzureCNI}}
@@ -125,14 +125,14 @@
     {{end}}
     {{if not IsAzureCNI}}
     ,{
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
     }
     {{end}}
     ,{
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",
       "properties": {

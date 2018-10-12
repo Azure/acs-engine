@@ -9,7 +9,7 @@
 				"description": "Artifacts Location - URL"
 			}
         },
-		"apiVersionDefault": {
+		"apiVersionCompute": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
@@ -50,7 +50,7 @@
    },
    "resources": [  
 	{
-      "apiVersion": "[parameters('apiVersionDefault')]",
+      "apiVersion": "[parameters('apiVersionCompute')]",
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
