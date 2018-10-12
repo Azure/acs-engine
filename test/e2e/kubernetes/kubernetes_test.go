@@ -70,7 +70,7 @@ var _ = BeforeSuite(func() {
 		masterSSHPort = "22"
 	}
 	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
-	if cfg.StabilityIterations == 0 {
+	if cfg.StabilityIterations == 0 && !eng.HasWindowsAgents() {
 		cfg.StabilityIterations = 10
 	}
 })
@@ -1144,18 +1144,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				windowsService, err := service.Get(windowsDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
-				// TODO stabilize this test
-				/*By("Connecting to Windows from another Windows deployment")
+				By("Connecting to Windows from another Windows deployment")
 				name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
 				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
 				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(successes).To(Equal(cfg.StabilityIterations)) */
+				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Linux from Windows deployment")
-				name := fmt.Sprintf("windows-2-linux-%s", cfg.Name)
-				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
-				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
+				command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
