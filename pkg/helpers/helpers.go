@@ -164,11 +164,6 @@ func ShellQuote(s string) string {
 	return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
 }
 
-// WindowsEscape safely escapes strings with single quotes which need to be used as Powershell arguments
-func WindowsEscape(s string) string {
-	return strings.Replace(s, `'`, `''`, -1)
-}
-
 // CreateSaveSSH generates and stashes an SSH key pair.
 func CreateSaveSSH(username, outputDirectory string, s *i18n.Translator) (privateKey *rsa.PrivateKey, publicKeyString string, err error) {
 	privateKey, publicKeyString, err = CreateSSH(rand.Reader, s)

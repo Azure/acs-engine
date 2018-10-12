@@ -405,13 +405,3 @@ func TestGetCloudTargetEnv(t *testing.T) {
 	}
 
 }
-
-func TestWindowsEscape(t *testing.T) {
-	input := `don't`
-	expected := `don''t`
-	actual := WindowsEscape(input)
-
-	if actual != expected {
-		t.Errorf("expected WindowsEscape to return %s for %s, but got %s", expected, input, actual)
-	}
-}

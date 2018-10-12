@@ -96,6 +96,9 @@ $global:AzureCNIConfDir = [Io.path]::Combine("$global:AzureCNIDir", "netconf")
 $global:AzureCNIKubeletOptions = @("--cni-bin-dir=$global:AzureCNIBinDir", "--cni-conf-dir=$global:AzureCNIConfDir")
 $global:AzureCNIEnabled = $false
 
+# Unescape base64 encoded parameters
+$AADClientSecret = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($AADClientSecret))
+
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
 function
