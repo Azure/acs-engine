@@ -1150,7 +1150,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
 				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(successes).To(Equal(cfg.StabilityIterations))*/
+				Expect(successes).To(Equal(cfg.StabilityIterations)) */
 
 				By("Connecting to Linux from Windows deployment")
 				name := fmt.Sprintf("windows-2-linux-%s", cfg.Name)
