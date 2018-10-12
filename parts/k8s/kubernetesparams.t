@@ -631,18 +631,21 @@
       },
       "type": "string"
     },
+{{if IsKubernetesVersionGe "1.12.0"}}
     "kubernetesCoreDNSSpec": {
       "metadata": {
         "description": "The container spec for coredns"
       },
       "type": "string"
     },
+{{else}}
     "kubernetesDNSMasqSpec": {
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."
       },
       "type": "string"
     },
+{{end}}
     {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",
