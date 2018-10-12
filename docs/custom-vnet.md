@@ -32,7 +32,7 @@ The Azure Resource Manager template used to deploy this virtual network is:
   "variables": {  },
   "resources": [
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-06-01",
       "location": "[resourceGroup().location]",
       "name": "ExampleCustomVNET",
       "properties": {

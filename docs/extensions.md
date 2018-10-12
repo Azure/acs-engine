@@ -138,7 +138,7 @@ The following is an example of the template.json file.
 				"description": "Storage API Version"
 			}
 		},
-		"apiVersionDefault": {
+		"apiVersionCompute": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
@@ -183,7 +183,7 @@ The following is an example of the template.json file.
       }, 
       "type": "Microsoft.Storage/storageAccounts"	
 	}, {
-      "apiVersion": "[parameters('apiVersionDefault')]",
+      "apiVersion": "[parameters('apiVersionCompute')]",
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -222,7 +222,7 @@ Replace "**EXTENSION-NAME**" with the name of the extension.
 {
     "name": "EXTENSION-NAME",
     "type": "Microsoft.Resources/deployments",
-    "apiVersion": "[variables('apiVersionLinkDefault')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
         "vmLoopNode"
     ],
@@ -233,11 +233,8 @@ Replace "**EXTENSION-NAME**" with the name of the extension.
             "contentVersion": "1.0.0.0"
         },
         "parameters": {
-            "apiVersionStorage": {
-                "value": "[variables('apiVersionStorage')]"
-            },
-            "apiVersionDefault": {
-                "value": "[variables('apiVersionDefault')]"
+            "apiVersionCompute": {
+                "value": "[variables('apiVersionCompute')]"
             },
             "username": {
                 "value": "[parameters('linuxAdminUsername')]"
