@@ -18,11 +18,5 @@ spec:
         - version
       initialDelaySeconds: 5
       periodSeconds: 5
-  tolerations:
-  - effect: NoSchedule
-    key: node-role.kubernetes.io/master
-    operator: "Exists"
-  nodeSelector:
-    kubernetes.io/role: master
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
