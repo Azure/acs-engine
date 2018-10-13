@@ -280,7 +280,7 @@
       "defaultValue": false,
       "type": "bool"
     },
-{{if NeedsKubeDNSPlusExecHealthz}}
+{{if NeedsKubeDNSWithExecHealthz}}
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
