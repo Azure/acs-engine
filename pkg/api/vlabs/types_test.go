@@ -81,6 +81,68 @@ func TestOrchestratorProfile(t *testing.T) {
 	}
 }
 
+func TestMasterProfile(t *testing.T) {
+	// With osType not specified
+	MasterProfileText := `{"count" : 0, "storageProfile" : "StorageAccount", "vnetSubnetID" : "1234", "agentVnetSubnetID" : "5678"}`
+	mp := &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 0 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 1 after unmarshal")
+	}
+
+	if !mp.IsCustomVNET() {
+		t.Fatalf("unexpectedly detected nil MasterProfile.VNetSubNetID after unmarshal")
+	}
+
+	if !mp.IsStorageAccount() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	// With vmas
+	MasterProfileText = `{  "count": 1, "vmSize": "Standard_D2_v2", "storageProfile" : "ManagedDisks", "diskSizesGB" : [750, 250, 600, 1000] }`
+	mp = &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 1 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 1 after unmarshal")
+	}
+
+	if !mp.IsManagedDisks() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	if mp.IsVirtualMachineScaleSets() {
+		t.Fatalf("unexpectedly detected MasterProfile.AvailabilitySets == VirtualMachineScaleSets after unmarshal")
+	}
+
+	// With vmss and zones
+	MasterProfileText = `{  "count": 3, "vmSize": "Standard_D2_v2", "availabilityProfile": "VirtualMachineScaleSets", "storageProfile" : "ManagedDisks", "diskSizesGB" : [750, 250, 600, 1000],  "AvailabilityZones": ["1","2"] }`
+	mp = &MasterProfile{}
+	if e := json.Unmarshal([]byte(MasterProfileText), mp); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for MasterProfile, %+v", e)
+	}
+
+	if mp.Count != 3 {
+		t.Fatalf("unexpectedly detected MasterProfile.Count != 3 after unmarshal")
+	}
+
+	if !mp.IsManagedDisks() {
+		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != ManagedDisks after unmarshal")
+	}
+
+	if !mp.IsVirtualMachineScaleSets() {
+		t.Fatalf("unexpectedly detected MasterProfile.AvailabilitySets != VirtualMachineScaleSets after unmarshal")
+	}
+
+	if !mp.HasAvailabilityZones() {
+		t.Fatalf("unexpectedly detected MasterProfile.AvailabilityZones, HasAvailabilityZones returned false after unmarshal")
+	}
+}
 func TestAgentPoolProfile(t *testing.T) {
 	// With osType not specified
 	AgentPoolProfileText := `{"count" : 0, "storageProfile" : "StorageAccount", "vnetSubnetID" : "1234"}`
@@ -175,5 +237,50 @@ func TestAgentPoolProfile(t *testing.T) {
 
 	if !ap.IsVirtualMachineScaleSets() {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.AvailabilitySets != VirtualMachineScaleSets after unmarshal")
+	}
+}
+
+func TestContainerServiceProperties(t *testing.T) {
+	// Agent pool with availability zones
+	ContainerServicePropertiesText := `{"orchestratorProfile": {"orchestratorType": "Kubernetes","orchestratorRelease": "1.11"}, "agentPoolProfiles":[{ "name": "linuxpool1", "osType" : "Linux", "count": 1, "vmSize": "Standard_D2_v2", 
+		"availabilityProfile": "VirtualMachineScaleSets", "AvailabilityZones": ["1","2"]}]}`
+	prop := &Properties{}
+	if e := json.Unmarshal([]byte(ContainerServicePropertiesText), prop); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for ContainerServiceProperties, %+v", e)
+	}
+
+	if !prop.HasAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
+	}
+
+	// master profile with availability zones
+	ContainerServicePropertiesText = `{"orchestratorProfile": {"orchestratorType": "Kubernetes","orchestratorRelease": "1.12"}, "masterProfile":{"count": 4, "vmSize": "Standard_D2_v2", "availabilityProfile": "VirtualMachineScaleSets", "storageProfile": "ManagedDisks", "diskSizesGB": [750, 250, 600, 1000], "availabilityZones": ["1","2"] }, "agentPoolProfiles":[{ "name": "linuxpool1", "osType" : "Linux", "count": 1, "vmSize": "Standard_D2_v2", 
+		"availabilityProfile": "VirtualMachineScaleSets"}]}`
+	prop = &Properties{}
+	if e := json.Unmarshal([]byte(ContainerServicePropertiesText), prop); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for ContainerServiceProperties, %+v", e)
+	}
+
+	if !prop.HasAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
+	}
+
+	if prop.MastersAndAgentsUseAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties MastersAndAgentsUseAvailabilityZones returns true  after unmarshal")
+	}
+	// master profile and agent profile with availability zones
+	ContainerServicePropertiesText = `{"orchestratorProfile": {"orchestratorType": "Kubernetes","orchestratorRelease": "1.12"}, "masterProfile":{"count": 4, "vmSize": "Standard_D2_v2", "availabilityProfile": "VirtualMachineScaleSets", "storageProfile": "ManagedDisks", "diskSizesGB": [750, 250, 600, 1000], "availabilityZones": ["1","2"] }, "agentPoolProfiles":[{ "name": "linuxpool1", "osType" : "Linux", "count": 1, "vmSize": "Standard_D2_v2", 
+		"availabilityProfile": "VirtualMachineScaleSets", "availabilityZones": ["1","2"] }]}`
+	prop = &Properties{}
+	if e := json.Unmarshal([]byte(ContainerServicePropertiesText), prop); e != nil {
+		t.Fatalf("unexpectedly detected unmarshal failure for ContainerServiceProperties, %+v", e)
+	}
+
+	if !prop.HasAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties HasAvailabilityZones returns false  after unmarshal")
+	}
+
+	if !prop.MastersAndAgentsUseAvailabilityZones() {
+		t.Fatalf("unexpectedly detected ContainerServiceProperties MastersAndAgentsUseAvailabilityZones returns false  after unmarshal")
 	}
 }

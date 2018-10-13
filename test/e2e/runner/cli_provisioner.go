@@ -31,6 +31,7 @@ type CLIProvisioner struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	ProvisionRetries  int    `envconfig:"PROVISION_RETRIES" default:"0"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
+	MasterVMSS        bool   `envconfig:"MASTER_VMSS" default:"false"`
 	Config            *config.Config
 	Account           *azure.Account
 	Point             *metrics.Point
@@ -78,6 +79,25 @@ func (cli *CLIProvisioner) Run() error {
 	return errors.New("Unable to run provisioner")
 }
 
+func createSaveSSH(outputPath string, privateKeyName string) (string, error) {
+	os.Mkdir(outputPath, 0755)
+	keyPath := filepath.Join(outputPath, privateKeyName)
+	cmd := exec.Command("ssh-keygen", "-f", keyPath, "-q", "-N", "", "-b", "2048", "-t", "rsa")
+
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+	}
+
+	os.Chmod(keyPath, 0600)
+	publicSSHKeyBytes, err := ioutil.ReadFile(keyPath + ".pub")
+	if err != nil {
+		return "", errors.Wrap(err, "Error while trying to read public ssh key")
+	}
+	return string(publicSSHKeyBytes), nil
+}
+
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
 	if cli.Config.SoakClusterName != "" {
@@ -86,23 +106,17 @@ func (cli *CLIProvisioner) provision() error {
 	os.Setenv("NAME", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	os.Mkdir(outputPath, 0755)
-
-	cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "Error while trying to generate ssh key\nOutput:%s", out)
+	if !cli.Config.UseDeployCommand {
+		publicSSHKey, err := createSaveSSH(outputPath, cli.Config.Name+"-ssh")
+		if err != nil {
+			return errors.Wrap(err, "Error while generating ssh keys")
+		}
+		os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	}
 
-	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to read public ssh key")
-	}
-	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
-	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
+	err := cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
 	if err != nil {
 		return errors.Wrap(err, "Error while trying to create resource group")
 	}
@@ -110,16 +124,44 @@ func (cli *CLIProvisioner) provision() error {
 	subnetID := ""
 	vnetName := fmt.Sprintf("%sCustomVnet", cli.Config.Name)
 	subnetName := fmt.Sprintf("%sCustomSubnet", cli.Config.Name)
+	masterSubnetID := ""
+	agentSubnetID := ""
+
 	if cli.CreateVNET {
-		err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
-		if err != nil {
-			return errors.Errorf("Error trying to create vnet:%s", err.Error())
+		if cli.MasterVMSS {
+			masterSubnetName := fmt.Sprintf("%sCustomSubnetMaster", cli.Config.Name)
+			agentSubnetName := fmt.Sprintf("%sCustomSubnetAgent", cli.Config.Name)
+			err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", masterSubnetName, "10.239.0.0/17")
+			if err != nil {
+				return errors.Errorf("Error trying to create vnet:%s", err.Error())
+			}
+
+			masterSubnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, masterSubnetName)
+
+			err = cli.Account.CreateSubnet(vnetName, agentSubnetName, "10.239.128.0/17")
+			if err != nil {
+				return errors.Errorf("Error trying to create subnet in vnet:%s", err.Error())
+			}
+
+			agentSubnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, agentSubnetName)
+		} else {
+			err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
+			if err != nil {
+				return errors.Errorf("Error trying to create vnet:%s", err.Error())
+			}
+			subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, subnetName)
 		}
-		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", cli.Account.SubscriptionID, cli.Account.ResourceGroup.Name, vnetName, subnetName)
 	}
 
 	// Lets modify our template and call acs-engine generate on it
-	eng, err := engine.Build(cli.Config, subnetID)
+	var eng *engine.Engine
+
+	if cli.CreateVNET && cli.MasterVMSS {
+		eng, err = engine.Build(cli.Config, masterSubnetID, agentSubnetID, true)
+	} else {
+		eng, err = engine.Build(cli.Config, subnetID, subnetID, false)
+	}
+
 	if err != nil {
 		return errors.Wrap(err, "Error while trying to build cluster definition")
 	}
@@ -130,42 +172,16 @@ func (cli *CLIProvisioner) provision() error {
 		return errors.Wrap(err, "Error while trying to write Engine Template to disk:%s")
 	}
 
-	err = cli.Engine.Generate()
+	err = cli.generateAndDeploy()
 	if err != nil {
-		return errors.Wrap(err, "Error while trying to generate acs-engine template")
-	}
-
-	c, err := config.ParseConfig()
-	if err != nil {
-		return errors.New("unable to parse base config")
-	}
-	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
-	if err != nil {
-		return errors.New("unable to parse config")
-	}
-	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
-	if err != nil {
-		return errors.New("unable to parse output")
-	}
-	cli.Engine.ExpandedDefinition = csGenerated
-
-	// Both Openshift and Kubernetes deployments should have a kubeconfig available
-	// at this point.
-	if (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) && !cli.IsPrivate() {
-		cli.Config.SetKubeConfig()
-	}
-
-	// Lets start by just using the normal az group deployment cli for creating a cluster
-	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
-	if err != nil {
-		return errors.Wrap(err, "Error while trying to create deployment")
+		return errors.Wrap(err, "Error in generateAndDeploy:%s")
 	}
 
 	if cli.Config.IsKubernetes() {
 		// Store the hosts for future introspection
 		hosts, err := cli.Account.GetHosts(cli.Config.Name)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "GetHosts:%s")
 		}
 		var masters, agents []azure.VM
 		for _, host := range hosts {
@@ -180,6 +196,50 @@ func (cli *CLIProvisioner) provision() error {
 	}
 
 	return nil
+}
+
+func (cli *CLIProvisioner) generateAndDeploy() error {
+	if cli.Config.UseDeployCommand {
+		fmt.Printf("Provisionning with the Deploy Command\n")
+		err := cli.Engine.Deploy(cli.Config.Location)
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to deploy acs-engine template")
+		}
+	} else {
+		err := cli.Engine.Generate()
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to generate acs-engine template")
+		}
+	}
+
+	c, err := config.ParseConfig()
+	if err != nil {
+		return errors.Wrap(err, "unable to parse base config")
+	}
+	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
+	if err != nil {
+		return errors.Wrap(err, "unable to parse config")
+	}
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
+	if err != nil {
+		return errors.Wrap(err, "unable to parse output")
+	}
+	cli.Engine.ExpandedDefinition = csGenerated
+
+	// Both Openshift and Kubernetes deployments should have a kubeconfig available
+	// at this point.
+	if (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) && !cli.IsPrivate() {
+		cli.Config.SetKubeConfig()
+	}
+
+	//if we use Generate, then we need to call CreateDeployment
+	if !cli.Config.UseDeployCommand {
+		err = cli.Account.CreateDeployment(cli.Config.Name, cli.Engine)
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to create deployment")
+		}
+	}
+	return err
 }
 
 // GenerateName will generate a new name if one has not been set

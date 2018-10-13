@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/pkg/errors"
 )
@@ -20,11 +21,11 @@ type ArtifactWriter struct {
 // WriteTLSArtifacts saves TLS certificates and keys to the server filesystem
 func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
-		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, GenerateClusterID(containerService.Properties))
+		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, containerService.Properties.GetClusterID())
 		artifactsDir = path.Join("_output", artifactsDir)
 	}
 
-	f := &FileSaver{
+	f := &helpers.FileSaver{
 		Translator: w.Translator,
 	}
 
@@ -65,7 +66,7 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if containerService.Location != "" {
 			locations = []string{containerService.Location}
 		} else {
-			locations = AzureLocations
+			locations = helpers.GetAzureLocations()
 		}
 
 		for _, location := range locations {

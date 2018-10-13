@@ -59,10 +59,10 @@ type Container struct {
 }
 
 // CreateLinuxDeploy will create a deployment for a given image with a name in a namespace
-// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+// --overrides='{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, error) {
 	var cmd *exec.Cmd
-	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	if miscOpts != "" {
 		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--overrides", overrides, miscOpts)
 	} else {
@@ -82,9 +82,9 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 }
 
 // RunLinuxDeploy will create a deployment that runs a bash command in a pod
-// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+// --overrides=' "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
-	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--image-pull-policy=IfNotPresent", "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command)
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
@@ -101,7 +101,7 @@ func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Depl
 
 // CreateWindowsDeploy will crete a deployment for a given image with a name in a namespace
 func CreateWindowsDeploy(image, name, namespace string, port int, hostport int) (*Deployment, error) {
-	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
+	overrides := `{ "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
 	cmd := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--hostport", strconv.Itoa(hostport), "--overrides", overrides)
 	out, err := util.RunAndLogCommand(cmd)
 	if err != nil {
@@ -134,23 +134,36 @@ func Get(name, namespace string) (*Deployment, error) {
 }
 
 // Delete will delete a deployment in a given namespace
-func (d *Deployment) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
-	out, err := util.RunAndLogCommand(cmd)
-	if err != nil {
-		log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
-		return err
+func (d *Deployment) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "deploy", "-n", d.Metadata.Namespace, d.Metadata.Name)
+		kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(kubectlOutput))
+			continue
+		}
+		break
 	}
-	// Delete any associated HPAs
+
+	if kubectlError != nil {
+		return kubectlError
+	}
+
 	if d.Metadata.HasHPA {
-		cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
-		out, err := util.RunAndLogCommand(cmd)
-		if err != nil {
-			log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
-			return err
+		for i := 0; i < retries; i++ {
+			cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
+			kubectlOutput, kubectlError = util.RunAndLogCommand(cmd)
+			if kubectlError != nil {
+				log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(kubectlOutput))
+				continue
+			}
+			break
 		}
 	}
-	return nil
+
+	return kubectlError
 }
 
 // Expose will create a load balancer and expose the deployment on a given port
@@ -212,7 +225,7 @@ func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]po
 		select {
 		case err := <-errCh:
 			return pods, err
-		case _ = <-readyCh:
+		case <-readyCh:
 			return pods, nil
 		}
 	}

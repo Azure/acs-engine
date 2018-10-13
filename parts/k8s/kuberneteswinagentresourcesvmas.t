@@ -1,6 +1,6 @@
 {{if HasWindowsCustomImage}}
     {"type": "Microsoft.Compute/images",
-      "apiVersion": "2017-12-01",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "name": "{{.Name}}CustomWindowsImage",
       "location": "[variables('location')]",
       "properties": {
@@ -16,7 +16,7 @@
     },
 {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -31,6 +31,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
+        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabledWindows}}",
 {{if .IsCustomVNET}}
 	    "networkSecurityGroup": {
 		    "id": "[variables('nsgID')]"
@@ -64,14 +65,15 @@
    {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "properties":
         {
             "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 3,
-		        "managed" : "true"
+            "platformUpdateDomainCount": 3
         },
-
+      "sku": {
+        "name": "Aligned"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{else if .IsStorageAccount}}
@@ -90,8 +92,8 @@
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -111,8 +113,8 @@
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -120,17 +122,13 @@
     {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{end}}
     {
-      {{if .IsManagedDisks}}
-        "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      {{else}}
-        "apiVersion": "[variables('apiVersionDefault')]",
-      {{end}}
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
@@ -211,30 +209,30 @@
     },
     {{if UseManagedIdentity}}
     {
-      "apiVersion": "2014-10-01-preview",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
-         "count": "[variables('{{.Name}}Count')]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
        },
-      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(),'vmidentity'))]",
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'vmidentity'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
         "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
-        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset'))), '2017-03-30', 'Full').identity.principalId]"
       }
     },
       {
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+        "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/ManagedIdentityExtension')]",
         "copy": {
-          "count": "[variables('{{.Name}}Count')]",
+          "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
           "name": "vmLoopNode"
         },
-        "apiVersion": "2015-05-01-preview",
+        "apiVersion": "[variables('apiVersionCompute')]",
         "location": "[resourceGroup().location]",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
-          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
+          "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), 'vmidentity')))]"
         ],
         "properties": {
           "publisher": "Microsoft.ManagedIdentity",
@@ -249,14 +247,14 @@
       },
      {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
         {{if UseManagedIdentity}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), '/extensions/ManagedIdentityExtension')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/extensions/ManagedIdentityExtension')]"
         {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
         {{end}}
@@ -279,7 +277,7 @@
     ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"

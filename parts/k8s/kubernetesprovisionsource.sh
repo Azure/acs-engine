@@ -1,7 +1,7 @@
 #!/bin/sh
 
-ERR_SYSTEMCTL_ENABLE_FAIL=3 # Service could not be enabled by systemctl
-ERR_SYSTEMCTL_START_FAIL=4 # Service could not be started by systemctl
+#ERR_SYSTEMCTL_ENABLE_FAIL=3 # Service could not be enabled by systemctl -- DEPRECATED
+ERR_SYSTEMCTL_START_FAIL=4 # Service could not be started or enabled by systemctl
 ERR_CLOUD_INIT_TIMEOUT=5 # Timeout waiting for cloud-init runcmd to complete
 ERR_FILE_WATCH_TIMEOUT=6 # Timeout waiting for a file
 ERR_HOLD_WALINUXAGENT=7 # Unable to place walinuxagent apt package on hold during install
@@ -17,9 +17,11 @@ ERR_DOCKER_INSTALL_TIMEOUT=20 # Timeout waiting for docker install
 ERR_DOCKER_DOWNLOAD_TIMEOUT=21 # Timout waiting for docker download(s)
 ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT=22 # Timeout waiting to download docker repo key
 ERR_DOCKER_APT_KEY_TIMEOUT=23 # Timeout waiting for docker apt-key
+ERR_DOCKER_START_FAIL=24 # Docker could not be started by systemctl
 ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
+ERR_KUBELET_START_FAIL=34 # kubelet could not be started by systemctl
 ERR_IMG_DOWNLOAD_TIMEOUT=33 # Timeout waiting for img download
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
@@ -32,8 +34,11 @@ ERR_KATA_APT_KEY_TIMEOUT=61 # Timeout waiting for kata apt-key
 ERR_KATA_INSTALL_TIMEOUT=62 # Timeout waiting for kata install
 ERR_CONTAINERD_DOWNLOAD_TIMEOUT=70 # Timeout waiting for containerd download(s)
 ERR_CUSTOM_SEARCH_DOMAINS_FAIL=80 # Unable to configure custom search domains
+ERR_GPU_DRIVERS_START_FAIL=84 # nvidia-modprobe could not be started by systemctl
+ERR_GPU_DRIVERS_INSTALL_TIMEOUT=85 # Timeout waiting for GPU drivers install
 ERR_APT_DAILY_TIMEOUT=98 # Timeout waiting for apt daily updates
 ERR_APT_UPDATE_TIMEOUT=99 # Timeout waiting for apt-get update to complete
+ERR_CSE_PROVISION_SCRIPT_NOT_READY_TIMEOUT=100 # Timeout waiting for cloud-init to place this (!) script on the vm
 
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -41,6 +46,11 @@ RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
+GPU_DV=396.26
+GPU_DEST=/usr/local/nvidia
+NVIDIA_DOCKER_VERSION=2.0.3
+DOCKER_VERSION=1.13.1-1
+NVIDIA_CONTAINER_RUNTIME_VERSION=2.0.0
 
 retrycmd_if_failure() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
@@ -153,36 +163,4 @@ systemctl_restart() {
             sleep $wait_sleep
         fi
     done
-}
-docker_health_probe()
-{
-  # finds out if docker runtime is misbehaving
-  every=10 #check every n seconds
-  max_fail=3 #max failure count before restarting docker
-  count_fail=0
-  trap 'exit 0' SIGINT SIGTERM
-  while true;
-  do
-    # we use docker run here instead of docker ps
-    # because dockerd might be running but containerd is misbehaving
-    # docker run with *it* options ensure the entire execution
-    # pipeline is healthy
-    docker run --rm busybox /bin/sh -c 'exit 0'
-    if [ $? -ne 0 ]; then
-	    echo "docker is not healthy"
-	    count_fail=$(( count_fail + 1 ))
-    else
-	    echo "docker is healthy"
-	    count_fail=0
-    fi
-    if [ $count_fail -ge  $max_fail ];then
-	   echo "docker has failed for ${max_fail} and checked ${every} seconds. will restart it"
-	   sudo systemctl restart docker
-	   if [ $? -ne 0 ]; then
-	     echo "Failed to restart docker, will try again in ${every}"
-	   fi
-    fi
-    echo "Sleeping for ${every}"
-    sleep ${every}
-  done
 }

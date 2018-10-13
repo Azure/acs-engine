@@ -728,6 +728,8 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CloudProviderRateLimitBucket = api.CloudProviderRateLimitBucket
 	vlabs.CloudProviderRateLimitQPS = api.CloudProviderRateLimitQPS
 	vlabs.UseManagedIdentity = api.UseManagedIdentity
+	vlabs.UserAssignedID = api.UserAssignedID
+	vlabs.UserAssignedClientID = api.UserAssignedClientID
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
 	vlabs.DockerEngineVersion = api.DockerEngineVersion
 	vlabs.CustomCcmImage = api.CustomCcmImage
@@ -747,6 +749,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.EtcdVersion = api.EtcdVersion
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
 	vlabs.EtcdEncryptionKey = api.EtcdEncryptionKey
+	vlabs.AzureCNIVersion = api.AzureCNIVersion
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)
@@ -830,6 +833,7 @@ func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 			Name:    a.Addons[i].Name,
 			Enabled: a.Addons[i].Enabled,
 			Config:  map[string]string{},
+			Data:    a.Addons[i].Data,
 		})
 		for j := range a.Addons[i].Containers {
 			v.Addons[i].Containers = append(v.Addons[i].Containers, vlabs.KubernetesContainerSpec{
@@ -890,6 +894,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.VMSize = api.VMSize
 	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VnetSubnetID = api.VnetSubnetID
+	vlabsProfile.AgentVnetSubnetID = api.AgentVnetSubnetID
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.VnetCidr = api.VnetCidr
 	vlabsProfile.SetSubnet(api.Subnet)
@@ -916,7 +921,10 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 		vlabsProfile.ImageRef.Name = api.ImageRef.Name
 		vlabsProfile.ImageRef.ResourceGroup = api.ImageRef.ResourceGroup
 	}
-
+	vlabsProfile.AvailabilityProfile = api.AvailabilityProfile
+	vlabsProfile.AgentSubnet = api.AgentSubnet
+	vlabsProfile.AvailabilityZones = api.AvailabilityZones
+	vlabsProfile.SinglePlacementGroup = api.SinglePlacementGroup
 	convertCustomFilesToVlabs(api, vlabsProfile)
 }
 
@@ -996,6 +1004,9 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.FQDN = api.FQDN
 	p.CustomNodeLabels = map[string]string{}
 	p.AcceleratedNetworkingEnabled = api.AcceleratedNetworkingEnabled
+	p.AcceleratedNetworkingEnabledWindows = api.AcceleratedNetworkingEnabledWindows
+	p.AvailabilityZones = api.AvailabilityZones
+	p.SinglePlacementGroup = api.SinglePlacementGroup
 
 	for k, v := range api.CustomNodeLabels {
 		p.CustomNodeLabels[k] = v

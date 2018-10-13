@@ -62,8 +62,8 @@ func newGenerateCmd() *cobra.Command {
 	}
 
 	f := generateCmd.Flags()
-	f.StringVar(&gc.apimodelPath, "api-model", "", "")
-	f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
+	f.StringVarP(&gc.apimodelPath, "api-model", "m", "", "path to the apimodel file")
+	f.StringVarP(&gc.outputDirectory, "output-directory", "o", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&gc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
 	f.StringArrayVar(&gc.set, "set", []string{}, "set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
@@ -179,7 +179,12 @@ func (gc *generateCmd) run() error {
 		log.Fatalf("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService, acsengine.DefaultGeneratorCode, false, false, BuildTag)
+	certsGenerated, err := gc.containerService.SetPropertiesDefaults(false, false)
+	if err != nil {
+		log.Fatalf("error in SetPropertiesDefaults template %s: %s", gc.apimodelPath, err.Error())
+		os.Exit(1)
+	}
+	template, parameters, err := templateGenerator.GenerateTemplate(gc.containerService, acsengine.DefaultGeneratorCode, BuildTag)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
 		os.Exit(1)

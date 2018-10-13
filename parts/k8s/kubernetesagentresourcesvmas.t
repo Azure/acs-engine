@@ -1,9 +1,5 @@
     {
-{{if .AcceleratedNetworkingEnabled}}
-      "apiVersion": "2018-04-01",
-{{else}}
-      "apiVersion": "[variables('apiVersionDefault')]",
-{{end}}
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "loop"
@@ -84,14 +80,15 @@
    {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "properties":
         {
             "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 3,
-		"managed" : "true"
+            "platformUpdateDomainCount": 3
         },
-
+      "sku": {
+        "name": "Aligned"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{else if .IsStorageAccount}}
@@ -110,8 +107,8 @@
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -131,8 +128,8 @@
       {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -140,17 +137,13 @@
     {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{end}}
   {
-    {{if .IsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-    {{else}}
-      "apiVersion": "[variables('apiVersionDefault')]",
-    {{end}}
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
@@ -177,9 +170,18 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
       {{if UseManagedIdentity}}
+      {{if UserAssignedIDEnabled}}
+      "identity": {
+        "type": "userAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        }
+      },
+      {{else}}
       "identity": {
         "type": "systemAssigned"
       },
+      {{end}}
       {{end}}
       {{if and IsOpenShift (not (UseAgentCustomImage .))}}
       "plan": {
@@ -256,32 +258,40 @@
       "type": "Microsoft.Compute/virtualMachines"
     },
     {{if UseManagedIdentity}}
+    {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "2014-10-01-preview",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
-         "count": "[variables('{{.Name}}Count')]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
        },
-      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity'))]",
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), 'vmidentity'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
         "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
-        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset'))), '2017-03-30', 'Full').identity.principalId]"
       }
     },
+    {{end}}
      {
        "type": "Microsoft.Compute/virtualMachines/extensions",
-       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/ManagedIdentityExtension')]",
        "copy": {
-         "count": "[variables('{{.Name}}Count')]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
        },
-       "apiVersion": "2015-05-01-preview",
+       "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
+       {{if UserAssignedIDEnabled}}
        "dependsOn": [
-         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
-         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
        ],
+       {{else}}
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), 'vmidentity')))]"
+       ],
+       {{end}}
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
          "type": "ManagedIdentityExtensionForLinux",
@@ -295,14 +305,14 @@
      },
      {{end}}
      {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
         {{if UseManagedIdentity}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), '/extensions/ManagedIdentityExtension')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/extensions/ManagedIdentityExtension')]"
         {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
         {{end}}
@@ -320,7 +330,7 @@
         {{if IsOpenShift }}
           "script": "{{ Base64 (OpenShiftGetNodeSh .) }}"
         {{else}}
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
         }
       }
@@ -329,7 +339,7 @@
     ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"

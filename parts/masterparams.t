@@ -32,6 +32,14 @@
       },
       "type": "string"
     },
+    {{if .MasterProfile.IsVirtualMachineScaleSets}}
+    "agentVnetSubnetID": {
+      "metadata": {
+        "description": "Sets the vnet subnet of the agent."
+      },
+      "type": "string"
+    },
+    {{end}}
   {{else}}
     "masterSubnet": {
       "defaultValue": "{{.MasterProfile.Subnet}}",
@@ -40,6 +48,21 @@
       },
       "type": "string"
     },
+    "agentSubnet": {
+      "defaultValue": "{{.MasterProfile.AgentSubnet}}",
+      "metadata": {
+        "description": "Sets the subnet of the agent node(s)."
+      },
+      "type": "string"
+    },
+  {{end}}
+  {{if .MasterProfile.HasAvailabilityZones}}
+  "availabilityZones": {
+    "metadata": {
+      "description": "Master availability zones"
+    },
+    "type": "array"
+  },
   {{end}}
 {{end}}
 {{if IsHostedMaster}}
@@ -122,7 +145,7 @@
       "type": "string"
     },
     "osImageVersion": {
-      "defaultValue": "16.04.201804050",
+      "defaultValue": "latest",
       "metadata": {
         "description": "OS image version."
       },

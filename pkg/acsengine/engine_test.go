@@ -72,7 +72,9 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+		certsGenerated, err := containerService.SetPropertiesDefaults(false, false)
+
+		armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 		if err != nil {
 			t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -96,7 +98,8 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+			certsGenerated, err = containerService.SetPropertiesDefaults(false, false)
+			armTemplate, params, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 			if err != nil {
 				t.Error(errors.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -289,7 +292,8 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, false, false, TestACSEngineVersion)
+	containerService.SetPropertiesDefaults(false, false)
+	armTemplate, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode, TestACSEngineVersion)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
@@ -322,45 +326,6 @@ func TestTemplateOutputPresence(t *testing.T) {
 	}
 }
 
-func TestGetGPUDriversInstallScript(t *testing.T) {
-
-	// VMSize with GPU and NVIDIA agreement for drivers distribution
-	validSkus := []string{
-		"Standard_NC6",
-		"Standard_NC12",
-		"Standard_NC24",
-		"Standard_NC24r",
-		"Standard_NV6",
-		"Standard_NV12",
-		"Standard_NV24",
-		"Standard_NV24r",
-		"Standard_ND6s",
-		"Standard_ND12s",
-		"Standard_ND24s",
-		"Standard_ND24rs",
-		"Standard_NC6s_v2",
-		"Standard_NC12s_v2",
-		"Standard_NC24s_v2",
-		"Standard_NC24rs_v2",
-		"Standard_NC6s_v3",
-		"Standard_NC12s_v3",
-		"Standard_NC24s_v3",
-		"Standard_NC24rs_v3",
-	}
-
-	for _, sku := range validSkus {
-		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s == "" {
-			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
-		}
-	}
-
-	// VMSize without GPU
-	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"})
-	if s != "" {
-		t.Fatalf("VMSize without GPU should not receive a script, expected empty string, received %v", s)
-	}
-}
 func TestIsNSeriesSKU(t *testing.T) {
 	// VMSize with GPU
 	validSkus := []string{
@@ -383,6 +348,7 @@ func TestIsNSeriesSKU(t *testing.T) {
 		"Standard_NV12",
 		"Standard_NV24",
 		"Standard_NV6",
+		"Standard_NV24r",
 	}
 
 	invalidSkus := []string{
@@ -540,41 +506,6 @@ func TestIsNSeriesSKU(t *testing.T) {
 		if isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
 			t.Fatalf("Expected isNSeriesSKU(%s) to be false", sku)
 		}
-	}
-}
-
-func TestIsCustomVNET(t *testing.T) {
-
-	a := []*api.AgentPoolProfile{
-		{
-			VnetSubnetID: "subnetlink1",
-		},
-		{
-			VnetSubnetID: "subnetlink2",
-		},
-	}
-
-	if !isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be true when subnet exists for all agent pool profile")
-	}
-
-	a = []*api.AgentPoolProfile{
-		{
-			VnetSubnetID: "subnetlink1",
-		},
-		{
-			VnetSubnetID: "",
-		},
-	}
-
-	if isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be false when subnet exists for some agent pool profile")
-	}
-
-	a = nil
-
-	if isCustomVNET(a) {
-		t.Fatalf("Expected isCustomVNET to be false when agent pool profiles is nil")
 	}
 }
 

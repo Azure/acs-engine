@@ -1,9 +1,14 @@
 package api
 
 import (
+	"fmt"
+	"hash/fnv"
+	"math/rand"
+	"net"
 	neturl "net/url"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
@@ -13,6 +18,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/blang/semver"
 )
 
@@ -46,6 +52,7 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
+	ClusterID               string
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
@@ -62,6 +69,18 @@ type Properties struct {
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+}
+
+// ClusterMetadata represents the metadata of the ACS cluster.
+type ClusterMetadata struct {
+	SubnetName                 string `json:"subnetName,omitempty"`
+	VNetResourceGroupName      string `json:"vnetResourceGroupName,omitempty"`
+	VirtualNetworkName         string `json:"virtualNetworkName,omitempty"`
+	SecurityGroupName          string `json:"securityGroupName,omitempty"`
+	RouteTableName             string `json:"routeTableName,omitempty"`
+	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty"`
+	PrimaryScaleSetName        string `json:"primaryScaleSetName,omitempty"`
+	ResourcePrefix             string `json:"resourcePrefix,omitempty"`
 }
 
 // AddonProfile represents an addon for managed cluster
@@ -225,6 +244,7 @@ type KubernetesAddon struct {
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
 	Config     map[string]string         `json:"config,omitempty"`
+	Data       string                    `json:"data,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
@@ -233,6 +253,16 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 		return ifNil
 	}
 	return *a.Enabled
+}
+
+// GetAddonContainersIndexByName returns the KubernetesAddon containers index with the name `containerName`
+func (a KubernetesAddon) GetAddonContainersIndexByName(containerName string) int {
+	for i := range a.Containers {
+		if a.Containers[i].Name == containerName {
+			return i
+		}
+	}
+	return -1
 }
 
 // PrivateCluster defines the configuration for a private cluster
@@ -253,12 +283,12 @@ type PrivateJumpboxProfile struct {
 
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
 type CloudProviderConfig struct {
-	CloudProviderBackoff         bool   `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoff         *bool  `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int    `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter   string `json:"cloudProviderBackoffJitter,omitempty"`
 	CloudProviderBackoffDuration int    `json:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffExponent string `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool   `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimit       *bool  `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS    string `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket int    `json:"cloudProviderRateLimitBucket,omitempty"`
 }
@@ -287,6 +317,8 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
+	UserAssignedClientID             string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
@@ -311,12 +343,12 @@ type KubernetesConfig struct {
 	CloudControllerManagerConfig     map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
 	SchedulerConfig                  map[string]string `json:"schedulerConfig,omitempty"`
-	CloudProviderBackoff             bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoff             *bool             `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries      int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter       float64           `json:"cloudProviderBackoffJitter,omitempty"`
 	CloudProviderBackoffDuration     int               `json:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffExponent     float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit           bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimit           *bool             `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
@@ -327,6 +359,7 @@ type KubernetesConfig struct {
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
 	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	AzureCNIVersion                  string            `json:"azureCNIVersion,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -391,6 +424,7 @@ type MasterProfile struct {
 	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
 	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	AgentVnetSubnetID        string            `json:"agentVnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string            `json:"subnet"`
 	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
@@ -403,6 +437,10 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	AvailabilityProfile      string            `json:"availabilityProfile"`
+	AgentSubnet              string            `json:"agentSubnet,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup     *bool             `json:"singlePlacementGroup,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -437,33 +475,36 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                         string               `json:"name"`
-	Count                        int                  `json:"count"`
-	VMSize                       string               `json:"vmSize"`
-	OSDiskSizeGB                 int                  `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix                    string               `json:"dnsPrefix,omitempty"`
-	OSType                       OSType               `json:"osType,omitempty"`
-	Ports                        []int                `json:"ports,omitempty"`
-	AvailabilityProfile          string               `json:"availabilityProfile"`
-	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty"`
-	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty"`
-	StorageProfile               string               `json:"storageProfile,omitempty"`
-	DiskSizesGB                  []int                `json:"diskSizesGB,omitempty"`
-	VnetSubnetID                 string               `json:"vnetSubnetID,omitempty"`
-	Subnet                       string               `json:"subnet"`
-	IPAddressCount               int                  `json:"ipAddressCount,omitempty"`
-	Distro                       Distro               `json:"distro,omitempty"`
-	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
-	FQDN                         string               `json:"fqdn,omitempty"`
-	CustomNodeLabels             map[string]string    `json:"customNodeLabels,omitempty"`
-	PreprovisionExtension        *Extension           `json:"preProvisionExtension"`
-	Extensions                   []Extension          `json:"extensions"`
-	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
-	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
-	MaxCount                     *int                 `json:"maxCount,omitempty"`
-	MinCount                     *int                 `json:"minCount,omitempty"`
-	EnableAutoScaling            *bool                `json:"enableAutoScaling,omitempty"`
+	Name                                string               `json:"name"`
+	Count                               int                  `json:"count"`
+	VMSize                              string               `json:"vmSize"`
+	OSDiskSizeGB                        int                  `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix                           string               `json:"dnsPrefix,omitempty"`
+	OSType                              OSType               `json:"osType,omitempty"`
+	Ports                               []int                `json:"ports,omitempty"`
+	AvailabilityProfile                 string               `json:"availabilityProfile"`
+	ScaleSetPriority                    string               `json:"scaleSetPriority,omitempty"`
+	ScaleSetEvictionPolicy              string               `json:"scaleSetEvictionPolicy,omitempty"`
+	StorageProfile                      string               `json:"storageProfile,omitempty"`
+	DiskSizesGB                         []int                `json:"diskSizesGB,omitempty"`
+	VnetSubnetID                        string               `json:"vnetSubnetID,omitempty"`
+	Subnet                              string               `json:"subnet"`
+	IPAddressCount                      int                  `json:"ipAddressCount,omitempty"`
+	Distro                              Distro               `json:"distro,omitempty"`
+	Role                                AgentPoolProfileRole `json:"role,omitempty"`
+	AcceleratedNetworkingEnabled        *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabledWindows *bool                `json:"acceleratedNetworkingEnabledWindows,omitempty"`
+	FQDN                                string               `json:"fqdn,omitempty"`
+	CustomNodeLabels                    map[string]string    `json:"customNodeLabels,omitempty"`
+	PreprovisionExtension               *Extension           `json:"preProvisionExtension"`
+	Extensions                          []Extension          `json:"extensions"`
+	KubernetesConfig                    *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef                            *ImageReference      `json:"imageReference,omitempty"`
+	MaxCount                            *int                 `json:"maxCount,omitempty"`
+	MinCount                            *int                 `json:"minCount,omitempty"`
+	EnableAutoScaling                   *bool                `json:"enableAutoScaling,omitempty"`
+	AvailabilityZones                   []string             `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup                *bool                `json:"singlePlacementGroup,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
@@ -695,14 +736,214 @@ func (p *Properties) TotalNodes() int {
 	return totalNodes
 }
 
-// HasVirtualMachineScaleSets returns true if the cluster contains Virtual Machine Scale Sets
-func (p *Properties) HasVirtualMachineScaleSets() bool {
+// HasVMSSAgentPool returns true if the cluster contains Virtual Machine Scale Sets agent pools
+func (p *Properties) HasVMSSAgentPool() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
 			return true
 		}
 	}
 	return false
+}
+
+// K8sOrchestratorName returns the 3 character orchestrator code for kubernetes-based clusters.
+func (p *Properties) K8sOrchestratorName() string {
+	if p.OrchestratorProfile.IsKubernetes() ||
+		p.OrchestratorProfile.IsOpenShift() {
+		if p.HostedMasterProfile != nil {
+			return DefaultHostedProfileMasterName
+		} else if p.OrchestratorProfile.IsOpenShift() {
+			return DefaultOpenshiftOrchestratorName
+		} else {
+			return DefaultOrchestratorName
+		}
+	}
+	return ""
+}
+
+func (p *Properties) getAgentPoolIndexByName(name string) int {
+	index := -1
+	for i, profile := range p.AgentPoolProfiles {
+		if profile.Name == name {
+			index = i
+			break
+		}
+	}
+	return index
+}
+
+// GetAgentVMPrefix returns the VM prefix for an agentpool
+func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
+	index := p.getAgentPoolIndexByName(a.Name)
+	nameSuffix := p.GetClusterID()
+	vmPrefix := ""
+	if index != -1 {
+		if a.IsWindows() {
+			vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
+		} else {
+			vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
+			if a.IsVirtualMachineScaleSets() {
+				vmPrefix += "vmss"
+			}
+		}
+	}
+	return vmPrefix
+}
+
+// GetMasterVMPrefix returns the prefix of master VMs
+func (p *Properties) GetMasterVMPrefix() string {
+	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
+}
+
+// GetResourcePrefix returns the prefix to use for naming cluster resources
+func (p *Properties) GetResourcePrefix() string {
+	if p.IsHostedMasterProfile() {
+		return p.K8sOrchestratorName() + "-agentpool-" + p.GetClusterID() + "-"
+	}
+	return p.K8sOrchestratorName() + "-master-" + p.GetClusterID() + "-"
+
+}
+
+// GetRouteTableName returns the route table name of the cluster.
+func (p *Properties) GetRouteTableName() string {
+	return p.GetResourcePrefix() + "routetable"
+}
+
+// GetNSGName returns the name of the network security group of the cluster.
+func (p *Properties) GetNSGName() string {
+	return p.GetResourcePrefix() + "nsg"
+}
+
+// GetPrimaryAvailabilitySetName returns the name of the primary availability set of the cluster
+func (p *Properties) GetPrimaryAvailabilitySetName() string {
+	return p.AgentPoolProfiles[0].Name + "-availabilitySet-" + p.GetClusterID()
+}
+
+// GetPrimaryScaleSetName returns the name of the primary scale set node of the cluster
+func (p *Properties) GetPrimaryScaleSetName() string {
+	return p.K8sOrchestratorName() + "-" + p.AgentPoolProfiles[0].Name + "-" + p.GetClusterID() + "-vmss"
+}
+
+// IsHostedMasterProfile returns true if the cluster has a hosted master
+func (p *Properties) IsHostedMasterProfile() bool {
+	return p.HostedMasterProfile != nil
+}
+
+// GetVNetResourceGroupName returns the virtual network resource group name of the cluster
+func (p *Properties) GetVNetResourceGroupName() string {
+	var vnetResourceGroupName string
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
+		vnetResourceGroupName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
+		vnetResourceGroupName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetResourceGroupSegmentIndex]
+	}
+	return vnetResourceGroupName
+}
+
+// GetVirtualNetworkName returns the virtual network name of the cluster
+func (p *Properties) GetVirtualNetworkName() string {
+	var vnetName string
+	if p.IsHostedMasterProfile() && p.AreAgentProfilesCustomVNET() {
+		vnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else if !p.IsHostedMasterProfile() && p.MasterProfile.IsCustomVNET() {
+		vnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultVnetNameResourceSegmentIndex]
+	} else {
+		vnetName = p.K8sOrchestratorName() + "-vnet-" + p.GetClusterID()
+	}
+	return vnetName
+}
+
+// GetSubnetName returns the subnet name of the cluster based on its current configuration.
+func (p *Properties) GetSubnetName() string {
+	var subnetName string
+	if p.IsHostedMasterProfile() {
+		if p.AreAgentProfilesCustomVNET() {
+			subnetName = strings.Split(p.AgentPoolProfiles[0].VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	} else {
+		if p.MasterProfile.IsCustomVNET() {
+			subnetName = strings.Split(p.MasterProfile.VnetSubnetID, "/")[DefaultSubnetNameResourceSegmentIndex]
+		} else {
+			subnetName = p.K8sOrchestratorName() + "-subnet"
+		}
+	}
+	return subnetName
+}
+
+// AreAgentProfilesCustomVNET returns true if all of the agent profiles in the clusters are configured with VNET.
+func (p *Properties) AreAgentProfilesCustomVNET() bool {
+	if p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if !agentPoolProfile.IsCustomVNET() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// GetClusterID creates a unique 8 string cluster ID.
+func (p *Properties) GetClusterID() string {
+	var mutex = &sync.Mutex{}
+	if p.ClusterID == "" {
+		uniqueNameSuffixSize := 8
+		// the name suffix uniquely identifies the cluster and is generated off a hash
+		// from the master dns name
+		h := fnv.New64a()
+		if p.MasterProfile != nil {
+			h.Write([]byte(p.MasterProfile.DNSPrefix))
+		} else if p.HostedMasterProfile != nil {
+			h.Write([]byte(p.HostedMasterProfile.DNSPrefix))
+		} else {
+			h.Write([]byte(p.AgentPoolProfiles[0].Name))
+		}
+		r := rand.New(rand.NewSource(int64(h.Sum64())))
+		mutex.Lock()
+		p.ClusterID = fmt.Sprintf("%08d", r.Uint32())[:uniqueNameSuffixSize]
+		mutex.Unlock()
+	}
+	return p.ClusterID
+}
+
+// GetClusterMetadata returns a instance of the struct type api.ClusterMetadata.
+func (p *Properties) GetClusterMetadata() *ClusterMetadata {
+	return &ClusterMetadata{
+		SubnetName:                 p.GetSubnetName(),
+		VNetResourceGroupName:      p.GetVNetResourceGroupName(),
+		VirtualNetworkName:         p.GetVirtualNetworkName(),
+		SecurityGroupName:          p.GetNSGName(),
+		RouteTableName:             p.GetRouteTableName(),
+		PrimaryAvailabilitySetName: p.GetPrimaryAvailabilitySetName(),
+		PrimaryScaleSetName:        p.GetPrimaryScaleSetName(),
+		ResourcePrefix:             p.GetResourcePrefix(),
+	}
+}
+
+// HasZonesForAllAgentPools returns true if all of the agent pools have zones
+func (p *Properties) HasZonesForAllAgentPools() bool {
+	for _, ap := range p.AgentPoolProfiles {
+		if !ap.HasAvailabilityZones() {
+			return false
+		}
+	}
+	return true
+}
+
+// HasAvailabilityZones returns true if the cluster contains a profile with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if !hasZones && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.HasAvailabilityZones() {
+				hasZones = true
+				break
+			}
+		}
+	}
+	return hasZones
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -728,6 +969,45 @@ func (m *MasterProfile) IsRHEL() bool {
 // IsCoreOS returns true if the master specified a CoreOS distro
 func (m *MasterProfile) IsCoreOS() bool {
 	return m.Distro == CoreOS
+}
+
+// IsVirtualMachineScaleSets returns true if the master availability profile is VMSS
+func (m *MasterProfile) IsVirtualMachineScaleSets() bool {
+	return m.AvailabilityProfile == VirtualMachineScaleSets
+}
+
+// GetFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
+func (m *MasterProfile) GetFirstConsecutiveStaticIPAddress(subnetStr string) string {
+	_, subnet, err := net.ParseCIDR(subnetStr)
+	if err != nil {
+		return DefaultFirstConsecutiveKubernetesStaticIP
+	}
+
+	// Find the first and last octet of the host bits.
+	ones, bits := subnet.Mask.Size()
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	if m.IsVirtualMachineScaleSets() {
+		subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffsetVMSS
+	} else {
+		// Set the remaining host bits in the first octet.
+		subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
+
+		// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
+		// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
+		for i := firstOctet + 1; i < lastOctet; i++ {
+			subnet.IP[i] = 255
+		}
+		subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
+	}
+
+	return subnet.IP.String()
+}
+
+// HasAvailabilityZones returns true if the master profile has availability zones
+func (m *MasterProfile) HasAvailabilityZones() bool {
+	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -783,6 +1063,11 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+// HasAvailabilityZones returns true if the agent pool has availability zones
+func (a *AgentPoolProfile) HasAvailabilityZones() bool {
+	return a.AvailabilityZones != nil && len(a.AvailabilityZones) > 0
 }
 
 // HasSecrets returns true if the customer specified secrets to install
@@ -876,115 +1161,85 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	return ""
 }
 
-// IsMetricsServerEnabled checks if the metrics server addon is enabled
-func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
-	var metricsServerAddon KubernetesAddon
-	k := o.KubernetesConfig
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultMetricsServerAddonName {
-			metricsServerAddon = k.Addons[i]
+// GetAddonByName returns the KubernetesAddon instance with name `addonName`
+func (k *KubernetesConfig) GetAddonByName(addonName string) KubernetesAddon {
+	var kubeAddon KubernetesAddon
+	for _, addon := range k.Addons {
+		if addon.Name == addonName {
+			kubeAddon = addon
+			break
 		}
 	}
-	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
+	return kubeAddon
+}
+
+// GetAddonScript retrieves the raw script data specified as input for the k8s addon with name "addonName".
+func (k *KubernetesConfig) GetAddonScript(addonName string) string {
+	kubeAddon := k.GetAddonByName(addonName)
+	return kubeAddon.Data
+}
+
+// isAddonEnabled checks whether a k8s addon with name "addonName" is enabled or not based on the Enabled field of KubernetesAddon.
+// If the value of Enabled in nil, the "defaultValue" is returned.
+func (k *KubernetesConfig) isAddonEnabled(addonName string, defaultValue bool) bool {
+	kubeAddon := k.GetAddonByName(addonName)
+	return kubeAddon.IsEnabled(defaultValue)
+}
+
+// IsMetricsServerEnabled checks if the metrics server addon is enabled
+func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
+	return o.KubernetesConfig.isAddonEnabled(DefaultMetricsServerAddonName,
+		common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
 // IsContainerMonitoringEnabled checks if the container monitoring addon is enabled
 func (k *KubernetesConfig) IsContainerMonitoringEnabled() bool {
-	var containerMonitoringAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == ContainerMonitoringAddonName {
-			containerMonitoringAddon = k.Addons[i]
-		}
-	}
-	return containerMonitoringAddon.IsEnabled(DefaultContainerMonitoringAddonEnabled)
+	return k.isAddonEnabled(ContainerMonitoringAddonName, DefaultContainerMonitoringAddonEnabled)
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsTillerEnabled() bool {
-	var tillerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultTillerAddonName {
-			tillerAddon = k.Addons[i]
-		}
-	}
-	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+	return k.isAddonEnabled(DefaultTillerAddonName, DefaultTillerAddonEnabled)
 }
 
 // IsAADPodIdentityEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
-	var aadPodIdentityAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultAADPodIdentityAddonName {
-			aadPodIdentityAddon = k.Addons[i]
-		}
-	}
-	return aadPodIdentityAddon.IsEnabled(DefaultAADPodIdentityAddonEnabled)
+	return k.isAddonEnabled(DefaultAADPodIdentityAddonName, DefaultAADPodIdentityAddonEnabled)
 }
 
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
-	var aciConnectorAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultACIConnectorAddonName {
-			aciConnectorAddon = k.Addons[i]
-		}
-	}
-	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
+	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultAADPodIdentityAddonEnabled)
 }
 
 // IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
 func (k *KubernetesConfig) IsClusterAutoscalerEnabled() bool {
-	var clusterAutoscalerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultClusterAutoscalerAddonName {
-			clusterAutoscalerAddon = k.Addons[i]
-		}
-	}
-	return clusterAutoscalerAddon.IsEnabled(DefaultClusterAutoscalerAddonEnabled)
+	return k.isAddonEnabled(DefaultClusterAutoscalerAddonName, DefaultClusterAutoscalerAddonEnabled)
 }
 
 // IsBlobfuseFlexVolumeEnabled checks if the Blobfuse FlexVolume addon is enabled
 func (k *KubernetesConfig) IsBlobfuseFlexVolumeEnabled() bool {
-	var bfFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultBlobfuseFlexVolumeAddonName {
-			bfFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return bfFlexVolumeAddon.IsEnabled(DefaultBlobfuseFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultBlobfuseFlexVolumeAddonName, DefaultBlobfuseFlexVolumeAddonEnabled)
 }
 
 // IsSMBFlexVolumeEnabled checks if the SMB FlexVolume addon is enabled
 func (k *KubernetesConfig) IsSMBFlexVolumeEnabled() bool {
-	var smbFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultSMBFlexVolumeAddonName {
-			smbFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return smbFlexVolumeAddon.IsEnabled(DefaultSMBFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultSMBFlexVolumeAddonName, DefaultSMBFlexVolumeAddonEnabled)
 }
 
 // IsKeyVaultFlexVolumeEnabled checks if the Key Vault FlexVolume addon is enabled
 func (k *KubernetesConfig) IsKeyVaultFlexVolumeEnabled() bool {
-	var kvFlexVolumeAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultKeyVaultFlexVolumeAddonName {
-			kvFlexVolumeAddon = k.Addons[i]
-		}
-	}
-	return kvFlexVolumeAddon.IsEnabled(DefaultKeyVaultFlexVolumeAddonEnabled)
+	return k.isAddonEnabled(DefaultKeyVaultFlexVolumeAddonName, DefaultKeyVaultFlexVolumeAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
 func (k *KubernetesConfig) IsDashboardEnabled() bool {
-	var dashboardAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultDashboardAddonName {
-			dashboardAddon = k.Addons[i]
-		}
-	}
-	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
+	return k.isAddonEnabled(DefaultDashboardAddonName, DefaultDashboardAddonEnabled)
+}
+
+// IsIPMasqAgentEnabled checks if the ip-masq-agent addon is enabled
+func (k *KubernetesConfig) IsIPMasqAgentEnabled() bool {
+	return k.isAddonEnabled(IPMASQAgentAddonName, IPMasqAgentAddonEnabled)
 }
 
 // IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
@@ -1000,36 +1255,24 @@ func IsNSeriesSKU(p *Properties) bool {
 // IsNVIDIADevicePluginEnabled checks if the NVIDIA Device Plugin addon is enabled
 // It is enabled by default if agents contain a GPU and Kubernetes version is >= 1.10.0
 func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
-	var nvidiaDevicePluginAddon KubernetesAddon
 	k := p.OrchestratorProfile.KubernetesConfig
-	o := p.OrchestratorProfile
-	for i := range k.Addons {
-		if k.Addons[i].Name == NVIDIADevicePluginAddonName {
-			nvidiaDevicePluginAddon = k.Addons[i]
-		}
-	}
+	return k.isAddonEnabled(NVIDIADevicePluginAddonName, getDefaultNVIDIADevicePluginEnabled(p))
+}
 
+func getDefaultNVIDIADevicePluginEnabled(p *Properties) bool {
+	o := p.OrchestratorProfile
 	var addonEnabled bool
-	if nvidiaDevicePluginAddon.Enabled != nil && !*nvidiaDevicePluginAddon.Enabled {
-		addonEnabled = false
-	} else if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false
 	}
-
-	return nvidiaDevicePluginAddon.IsEnabled(addonEnabled)
+	return addonEnabled
 }
 
 // IsReschedulerEnabled checks if the rescheduler addon is enabled
 func (k *KubernetesConfig) IsReschedulerEnabled() bool {
-	var reschedulerAddon KubernetesAddon
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultReschedulerAddonName {
-			reschedulerAddon = k.Addons[i]
-		}
-	}
-	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
+	return k.isAddonEnabled(DefaultReschedulerAddonName, DefaultReschedulerAddonEnabled)
 }
 
 // PrivateJumpboxProvision checks if a private cluster has jumpbox auto-provisioning
@@ -1044,4 +1287,50 @@ func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
 func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == ""
+}
+
+// SetCloudProviderBackoffDefaults sets default cloudprovider backoff config
+func (k *KubernetesConfig) SetCloudProviderBackoffDefaults() {
+	if k.CloudProviderBackoffDuration == 0 {
+		k.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+	}
+	if k.CloudProviderBackoffExponent == 0 {
+		k.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+	}
+	if k.CloudProviderBackoffJitter == 0 {
+		k.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+	}
+	if k.CloudProviderBackoffRetries == 0 {
+		k.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+	}
+}
+
+// SetCloudProviderRateLimitDefaults sets default cloudprovider rate limiter config
+func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
+	if k.CloudProviderRateLimitQPS == 0 {
+		k.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+	}
+	if k.CloudProviderRateLimitBucket == 0 {
+		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+	}
+}
+
+//GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
+//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
+//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
+func (cs *ContainerService) GetCloudSpecConfig() AzureEnvironmentSpecConfig {
+	targetEnv := helpers.GetCloudTargetEnv(cs.Location)
+	return AzureCloudSpecEnvMap[targetEnv]
+}
+
+// GetAzureProdFQDN returns the formatted FQDN string for a given apimodel.
+func (cs *ContainerService) GetAzureProdFQDN() string {
+	return FormatAzureProdFQDNByLocation(cs.Properties.MasterProfile.DNSPrefix, cs.Location)
+}
+
+// FormatAzureProdFQDNByLocation constructs an Azure prod fqdn
+func FormatAzureProdFQDNByLocation(fqdnPrefix string, location string) string {
+	targetEnv := helpers.GetCloudTargetEnv(location)
+	FQDNFormat := AzureCloudSpecEnvMap[targetEnv].EndpointConfig.ResourceManagerVMDNSSuffix
+	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
 }

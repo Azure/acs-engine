@@ -19,21 +19,6 @@ import (
 // for converting.
 ///////////////////////////////////////////////////////////
 
-const (
-	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
-	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
-	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will create Service IPs within.
-	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
-	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns listens on by default. must by in the default Service CIDR range.
-	DefaultKubernetesDNSServiceIP = "10.0.0.10"
-	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
-	DefaultDockerBridgeSubnet = "172.17.0.1/16"
-	// DefaultKubernetesMaxPodsKubenet is the maximum number of pods to run on a node for Kubenet.
-	DefaultKubernetesMaxPodsKubenet = "110"
-	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
-	DefaultKubernetesMaxPodsAzureCNI = "30"
-)
-
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
@@ -384,7 +369,7 @@ func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) 
 }
 
 func convertV20180331AgentPoolOnlyKubernetesConfig(enableRBAC *bool) *KubernetesConfig {
-	if enableRBAC != nil && *enableRBAC == true {
+	if helpers.IsTrueBoolPointer(enableRBAC) {
 		// We set default behavior to be false
 		return &KubernetesConfig{
 			EnableRbac:          helpers.PointerToBool(true),

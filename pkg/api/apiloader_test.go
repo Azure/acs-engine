@@ -19,7 +19,7 @@ import (
 
 func TestLoadContainerServiceFromFile(t *testing.T) {
 	existingContainerService := &ContainerService{Name: "test",
-		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.6.9"}}}
+		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.7.16"}}}
 
 	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
 	i18n.Initialize(locale)
@@ -41,7 +41,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.7.16" {
 		t.Errorf("Failed to set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -49,7 +49,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.7.16" {
 		t.Errorf("Failed to set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -57,7 +57,7 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.6.9" {
+	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != "1.7.16" {
 		t.Errorf("Failed to set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -230,7 +230,7 @@ func TestLoadContainerServiceWithNilProperties(t *testing.T) {
 
 	apiloader := &Apiloader{}
 	existingContainerService := &ContainerService{Name: "test",
-		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.6.9"}}}
+		Properties: &Properties{OrchestratorProfile: &OrchestratorProfile{OrchestratorType: Kubernetes, OrchestratorVersion: "1.7.16"}}}
 	_, _, err = apiloader.LoadContainerServiceFromFile(fileName, true, false, existingContainerService)
 	if err == nil {
 		t.Errorf("Expected error to be thrown")

@@ -6,10 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"hash/fnv"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net"
 	"net/http"
 	"regexp"
@@ -28,7 +26,7 @@ import (
 var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResourcesVMAS, kubernetesMasterResourcesVMSS, kubernetesMasterVarsVMAS, kubernetesMasterVarsVMSS, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
@@ -44,23 +42,6 @@ var keyvaultSecretPathRe *regexp.Regexp
 
 func init() {
 	keyvaultSecretPathRe = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
-}
-
-// GenerateClusterID creates a unique 8 string cluster ID
-func GenerateClusterID(properties *api.Properties) string {
-	uniqueNameSuffixSize := 8
-	// the name suffix uniquely identifies the cluster and is generated off a hash
-	// from the master dns name
-	h := fnv.New64a()
-	if properties.MasterProfile != nil {
-		h.Write([]byte(properties.MasterProfile.DNSPrefix))
-	} else if properties.HostedMasterProfile != nil {
-		h.Write([]byte(properties.HostedMasterProfile.DNSPrefix))
-	} else {
-		h.Write([]byte(properties.AgentPoolProfiles[0].Name))
-	}
-	rand.Seed(int64(h.Sum64()))
-	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
@@ -95,7 +76,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", properties.MasterProfile.FirstConsecutiveStaticIP, -1)
 		}
 	} else {
-		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
+		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", api.FormatAzureProdFQDNByLocation(properties.MasterProfile.DNSPrefix, location), -1)
 	}
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
 
@@ -111,7 +92,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 		}
 
 		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
-			getCloudTargetEnv(location),
+			helpers.GetCloudTargetEnv(location),
 			tenantID,
 			properties.AADProfile.ServerAppID,
 			properties.AADProfile.ClientAppID)
@@ -119,47 +100,6 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
 	return kubeconfig, nil
-}
-
-// formatAzureProdFQDNs constructs all possible Azure prod fqdn
-func formatAzureProdFQDNs(fqdnPrefix string) []string {
-	var fqdns []string
-	for _, location := range AzureLocations {
-		fqdns = append(fqdns, FormatAzureProdFQDN(fqdnPrefix, location))
-	}
-	return fqdns
-}
-
-// FormatAzureProdFQDN constructs an Azure prod fqdn
-func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	var FQDNFormat string
-	switch getCloudTargetEnv(location) {
-	case azureChinaCloud:
-		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureGermanCloud:
-		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	case azureUSGovernmentCloud:
-		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
-	default:
-		FQDNFormat = AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	}
-	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
-}
-
-//getCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
-//for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
-//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
-func getCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	switch getCloudTargetEnv(location) {
-	case azureChinaCloud:
-		return AzureChinaCloudSpec
-	case azureGermanCloud:
-		return AzureGermanCloudSpec
-	case azureUSGovernmentCloud:
-		return AzureUSGovernmentCloud
-	default:
-		return AzureCloudSpec
-	}
 }
 
 // validateDistro checks if the requested orchestrator type is supported on the requested Linux distro.
@@ -179,23 +119,6 @@ func validateDistro(cs *api.ContainerService) bool {
 		}
 	}
 	return true
-}
-
-// getCloudTargetEnv determines and returns whether the region is a sovereign cloud which
-// have their own data compliance regulations (China/Germany/USGov) or standard
-//  Azure public cloud
-func getCloudTargetEnv(location string) string {
-	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
-	switch {
-	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
-		return azureChinaCloud
-	case loc == "germanynortheast" || loc == "germanycentral":
-		return azureGermanCloud
-	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
-		return azureUSGovernmentCloud
-	default:
-		return azurePublicCloud
-	}
 }
 
 func getOpenshiftMasterShAsset(version string) string {
@@ -441,116 +364,41 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 }
 
 func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
-	return strings.Contains(profile.VMSize, "Standard_N")
-}
-
-func isCustomVNET(a []*api.AgentPoolProfile) bool {
-	if a != nil {
-		for _, agentPoolProfile := range a {
-			if !agentPoolProfile.IsCustomVNET() {
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
-
-func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
-
-	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "396.26"
-	dest := "/usr/local/nvidia"
-	nvidiaDockerVersion := "2.0.3"
-	dockerVersion := "1.13.1-1"
-	nvidiaContainerRuntimeVersion := "2.0.0"
-	/*
-		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
-		We also installed needed dependencies.
+	/* If a new GPU sku becomes available, add a key to this map, but only if you have a confirmation
+	   that we have an agreement with NVIDIA for this specific gpu.
 	*/
-	installScript := fmt.Sprintf(`- rmmod nouveau
-- sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
-- update-initramfs -u
-- mkdir -p %s
-- wait_for_file 900 1 /var/log/azure/docker-install.complete
-- cd %s`, dest, dest)
-
-	/*
-		Installing nvidia-docker, setting nvidia runtime as default and restarting docker daemon
-	*/
-	installScript += fmt.Sprintf(`
-- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey > /tmp/aptnvidia.gpg
-- cat /tmp/aptnvidia.gpg | apt-key add -
-- retrycmd_if_failure_no_stats 180 1 5 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
-- cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-- apt_get_update
-- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms
-- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=%s+docker%s nvidia-container-runtime=%s+docker%s
-- sudo pkill -SIGHUP dockerd
-- mkdir -p %s
-- cd %s`, nvidiaDockerVersion, dockerVersion, nvidiaContainerRuntimeVersion, dockerVersion, dest, dest)
-
-	/*
-		Download the .run file from NVIDIA.
-		Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
-		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
-	*/
-	installScript += fmt.Sprintf(`
-- retrycmd_if_failure 5 10 60 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
-- mkdir -p lib64 overlay-workdir
-- mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
-
-	/*
-		Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
-		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
-	*/
-	installScript += fmt.Sprintf(`
-- sh nvidia-drivers-%s --silent --accept-license --no-drm --dkms --utility-prefix="%s" --opengl-prefix="%s"
-- echo "%s" > /etc/ld.so.conf.d/nvidia.conf
-- sudo ldconfig
-- umount -l /usr/lib/x86_64-linux-gnu
-- nvidia-modprobe -u -c0
-- %s/bin/nvidia-smi
-- sudo ldconfig
-- systemctl enable nvidia-modprobe
-- retrycmd_if_failure 5 10 60 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
-
-	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
-	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
-	*/
-	dm := map[string]string{
+	dm := map[string]bool{
 		// K80
-		"Standard_NC6":   installScript,
-		"Standard_NC12":  installScript,
-		"Standard_NC24":  installScript,
-		"Standard_NC24r": installScript,
+		"Standard_NC6":   true,
+		"Standard_NC12":  true,
+		"Standard_NC24":  true,
+		"Standard_NC24r": true,
 		// M60
-		"Standard_NV6":   installScript,
-		"Standard_NV12":  installScript,
-		"Standard_NV24":  installScript,
-		"Standard_NV24r": installScript,
+		"Standard_NV6":   true,
+		"Standard_NV12":  true,
+		"Standard_NV24":  true,
+		"Standard_NV24r": true,
 		// P40
-		"Standard_ND6s":   installScript,
-		"Standard_ND12s":  installScript,
-		"Standard_ND24s":  installScript,
-		"Standard_ND24rs": installScript,
+		"Standard_ND6s":   true,
+		"Standard_ND12s":  true,
+		"Standard_ND24s":  true,
+		"Standard_ND24rs": true,
 		// P100
-		"Standard_NC6s_v2":   installScript,
-		"Standard_NC12s_v2":  installScript,
-		"Standard_NC24s_v2":  installScript,
-		"Standard_NC24rs_v2": installScript,
+		"Standard_NC6s_v2":   true,
+		"Standard_NC12s_v2":  true,
+		"Standard_NC24s_v2":  true,
+		"Standard_NC24rs_v2": true,
 		// V100
-		"Standard_NC6s_v3":   installScript,
-		"Standard_NC12s_v3":  installScript,
-		"Standard_NC24s_v3":  installScript,
-		"Standard_NC24rs_v3": installScript,
+		"Standard_NC6s_v3":   true,
+		"Standard_NC12s_v3":  true,
+		"Standard_NC24s_v3":  true,
+		"Standard_NC24rs_v3": true,
 	}
 	if _, ok := dm[profile.VMSize]; ok {
 		return dm[profile.VMSize]
 	}
 
-	// The VM is not part of the GPU skus, no extra steps.
-	return ""
+	return false
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
@@ -1029,17 +877,6 @@ write_files:
 	return fmt.Sprintf(clusterYamlFile, filelines)
 }
 
-// Identifies Master distro to use for master parameters
-func getMasterDistro(m *api.MasterProfile) api.Distro {
-	// Use Ubuntu distro if MasterProfile is not defined (e.g. agents-only)
-	if m == nil {
-		return api.Ubuntu
-	}
-
-	// MasterProfile.Distro configured by defaults#setMasterNetworkDefaults
-	return m.Distro
-}
-
 func getKubernetesSubnets(properties *api.Properties) string {
 	subnetString := `{
             "name": "podCIDR%d",
@@ -1276,13 +1113,4 @@ func stringInSlice(a string, list []string) bool {
 
 func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
 	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
-}
-
-func getAddonByName(addons []api.KubernetesAddon, name string) api.KubernetesAddon {
-	for i := range addons {
-		if addons[i].Name == name {
-			return addons[i]
-		}
-	}
-	return api.KubernetesAddon{}
 }

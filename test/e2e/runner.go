@@ -42,7 +42,7 @@ func main() {
 
 	err := acct.Login()
 	if err != nil {
-		log.Fatal("Error while trying to login to azure account!")
+		log.Fatalf("Error while trying to login to azure account! %s\n", err)
 	}
 
 	err = acct.SetSubscription()
@@ -191,7 +191,7 @@ func teardown() {
 		log.Printf("cannot create directory for logs: %s", err)
 	}
 
-	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
+	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" && !cfg.SkipLogsCollection {
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
@@ -215,8 +215,10 @@ func teardown() {
 			log.Printf("cannot fetch openshift metrics: %v", err)
 		}
 	}
-	if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
-		log.Printf("cannot fetch the activity log: %v", err)
+	if !cfg.SkipLogsCollection {
+		if err := cliProvisioner.FetchActivityLog(acct, logsPath); err != nil {
+			log.Printf("cannot fetch the activity log: %v", err)
+		}
 	}
 	if !cfg.RetainSSH {
 		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")

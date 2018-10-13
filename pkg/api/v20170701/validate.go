@@ -40,7 +40,7 @@ func (o *OrchestratorProfile) Validate(isUpdate, hasWindows bool) error {
 			}
 		case DockerCE:
 		case Kubernetes:
-			if k8sVersion := o.OrchestratorVersion; !common.AllKubernetesSupportedVersions[k8sVersion] && o.OrchestratorVersion != "" {
+			if k8sVersion := o.OrchestratorVersion; !common.IsSupportedKubernetesVersion(k8sVersion, isUpdate, hasWindows) && o.OrchestratorVersion != "" {
 				return errors.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 			}
 

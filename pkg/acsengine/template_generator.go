@@ -37,7 +37,7 @@ func InitializeTemplateGenerator(ctx Context) (*TemplateGenerator, error) {
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, isUpgrade, isScale bool, acsengineVersion string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string, acsengineVersion string) (templateRaw string, parametersRaw string, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -52,25 +52,22 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	defer func() {
 		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
 	}()
-	if certsGenerated, err = setPropertiesDefaults(containerService, isUpgrade, isScale); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
-	}
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
 	files, baseFile, e := t.prepareTemplateFiles(properties)
 	if e != nil {
-		return "", "", false, e
+		return "", "", e
 	}
 
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
 			err = t.Translator.Errorf("Error reading file %s, Error: %s", file, e.Error())
-			return templateRaw, parametersRaw, certsGenerated, err
+			return templateRaw, parametersRaw, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return templateRaw, parametersRaw, certsGenerated, err
+			return templateRaw, parametersRaw, err
 		}
 	}
 	// template generation may have panics in the called functions.  This catches those panics
@@ -87,27 +84,27 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}()
 
 	if !validateDistro(containerService) {
-		return templateRaw, parametersRaw, certsGenerated, errors.New("Invalid distro")
+		return templateRaw, parametersRaw, errors.New("Invalid distro")
 	}
 
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
 	if parametersMap, err = getParameters(containerService, generatorCode, acsengineVersion); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 
 	var parameterBytes []byte
 	if parameterBytes, err = helpers.JSONMarshal(parametersMap, false); err != nil {
-		return templateRaw, parametersRaw, certsGenerated, err
+		return templateRaw, parametersRaw, err
 	}
 	parametersRaw = string(parameterBytes)
 
-	return templateRaw, parametersRaw, certsGenerated, err
+	return templateRaw, parametersRaw, err
 }
 
 func (t *TemplateGenerator) verifyFiles() error {
@@ -156,11 +153,57 @@ func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]
 	return files, baseFile, nil
 }
 
+func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFilename string, profile *api.Properties) string {
+	str, e := t.getSingleLineForTemplate(textFilename, cs, profile)
+	if e != nil {
+		panic(e)
+	}
+
+	// add manifests
+	str = substituteConfigString(str,
+		kubernetesManifestSettingsInit(profile),
+		"k8s/manifests",
+		"/etc/kubernetes/manifests",
+		"MASTER_MANIFESTS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add artifacts
+	str = substituteConfigString(str,
+		kubernetesArtifactSettingsInitMaster(profile),
+		"k8s/artifacts",
+		"/etc/systemd/system",
+		"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add addons
+	str = substituteAddonConfigString(str,
+		kubernetesAddonSettingsInit(profile),
+		"k8s/addons",
+		"/etc/kubernetes/addons",
+		"MASTER_ADDONS_CONFIG_PLACEHOLDER",
+		profile.OrchestratorProfile.OrchestratorVersion)
+
+	// add custom files
+	customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
+	if err != nil {
+		log.Fatalf("Could not read custom files: %s", err.Error())
+	}
+	str = substituteConfigStringCustomFiles(str,
+		customFilesReader,
+		"MASTER_CUSTOM_FILES_PLACEHOLDER")
+
+	// return the custom data
+	return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
+		"IsMasterVirtualMachineScaleSets": func() bool {
+			return cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.IsVirtualMachineScaleSets()
+		},
 		"IsHostedMaster": func() bool {
-			return cs.Properties.HostedMasterProfile != nil
+			return cs.Properties.IsHostedMasterProfile()
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
@@ -176,12 +219,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetMasterKubernetesLabels": func(rg string) string {
 			var buf bytes.Buffer
 			buf.WriteString("kubernetes.io/role=master")
+			buf.WriteString(",node-role.kubernetes.io/master=")
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			return buf.String()
 		},
 		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile, rg string) string {
 			var buf bytes.Buffer
-			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
+			buf.WriteString("node-role.kubernetes.io/agent=")
+			buf.WriteString(fmt.Sprintf(",kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
@@ -215,6 +260,26 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				buf.WriteString(fmt.Sprintf("%s=%s ", key, kubeletConfig[key]))
 			}
 			return buf.String()
+		},
+		"GetKubeletConfigKeyValsPsh": func(kc *api.KubernetesConfig) string {
+			if kc == nil {
+				return ""
+			}
+			kubeletConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+			if kc.KubeletConfig != nil {
+				kubeletConfig = kc.KubeletConfig
+			}
+			// Order by key for consistency
+			keys := []string{}
+			for key := range kubeletConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, kubeletConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
 		},
 		"GetK8sRuntimeConfigKeyVals": func(config map[string]string) string {
 			// Order by key for consistency
@@ -282,8 +347,29 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
+		"UserAssignedIDEnabled": func() bool {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
+				return true
+			}
+			return false
+		},
+		"UserAssignedID": func() string {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
+				return cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
+			}
+			return ""
+		},
+		"UserAssignedClientID": func() string {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity &&
+				cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedClientID != "" {
+				return cs.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedClientID
+			}
+			return ""
+		},
 		"UseAksExtension": func() bool {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return cloudSpecConfig.CloudName == azurePublicCloud
 		},
 		"UseInstanceMetadata": func() bool {
@@ -308,7 +394,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSecurityRules(ports)
 		},
 		"GetUniqueNameSuffix": func() string {
-			return GenerateClusterID(cs.Properties)
+			return cs.Properties.GetClusterID()
 		},
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(cs.Properties)
@@ -431,15 +517,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
-				return GetDCOSMasterAllowedSizes()
+				return helpers.GetDCOSMasterAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
+		},
+		"GetDefaultVNETCIDR": func() string {
+			return DefaultVNETCIDR
 		},
 		"GetAgentAllowedSizes": func() string {
 			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
-				return GetKubernetesAgentAllowedSizes()
+				return helpers.GetKubernetesAgentAllowedSizes()
 			}
-			return GetMasterAgentAllowedSizes()
+			return helpers.GetMasterAgentAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
 			return getSwarmVersions(api.SwarmVersion, api.SwarmDockerComposeVersion)
@@ -448,7 +537,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
-			return GetSizeMap()
+			return helpers.GetSizeMap()
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))
@@ -457,46 +546,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return DefaultInternalLbStaticIPOffset
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
-			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
-			if e != nil {
-				panic(e)
-			}
-
-			// add manifests
-			str = substituteConfigString(str,
-				kubernetesManifestSettingsInit(profile),
-				"k8s/manifests",
-				"/etc/kubernetes/manifests",
-				"MASTER_MANIFESTS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add artifacts
-			str = substituteConfigString(str,
-				kubernetesArtifactSettingsInitMaster(profile),
-				"k8s/artifacts",
-				"/etc/systemd/system",
-				"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add addons
-			str = substituteConfigString(str,
-				kubernetesAddonSettingsInit(profile),
-				"k8s/addons",
-				"/etc/kubernetes/addons",
-				"MASTER_ADDONS_CONFIG_PLACEHOLDER",
-				profile.OrchestratorProfile.OrchestratorVersion)
-
-			// add custom files
-			customFilesReader, err := customfilesIntoReaders(masterCustomFiles(profile))
-			if err != nil {
-				log.Fatalf("Could not read custom files: %s", err.Error())
-			}
-			str = substituteConfigStringCustomFiles(str,
-				customFilesReader,
-				"MASTER_CUSTOM_FILES_PLACEHOLDER")
-
-			// return the custom data
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataYaml, profile)
+			return str
+		},
+		"GetKubernetesMasterCustomDataVMSS": func(profile *api.Properties) string {
+			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataVMSSYaml, profile)
+			return str
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
@@ -534,6 +589,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesB64ProvisionSource": func() string {
 			return getBase64CustomScript(kubernetesProvisionSourceScript)
 		},
+		"GetKubernetesB64HealthMonitorScript": func() string {
+			return getBase64CustomScript(kubernetesHealthMonitorScript)
+		},
 		"GetKubernetesB64Installs": func() string {
 			return getBase64CustomScript(kubernetesInstalls)
 		},
@@ -551,6 +609,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetB64sshdConfig": func() string {
 			return getBase64CustomScript(sshdConfig)
+		},
+		"GetB64systemConf": func() string {
+			return getBase64CustomScript(systemConf)
 		},
 		"GetKubernetesMasterPreprovisionYaml": func() string {
 			str := ""
@@ -679,8 +740,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
-		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
-			return getGPUDriversInstallScript(profile)
+		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
+			return *profile.SinglePlacementGroup
+		},
+		"HasAvailabilityZones": func(profile *api.AgentPoolProfile) bool {
+			return profile.HasAvailabilityZones()
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
@@ -704,35 +768,35 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.LinuxProfile.ScriptRootURL
 		},
 		"GetMasterOSImageOffer": func() string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageOffer)
 		},
 		"GetMasterOSImagePublisher": func() string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImagePublisher)
 		},
 		"GetMasterOSImageSKU": func() string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageSku)
 		},
 		"GetMasterOSImageVersion": func() string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageVersion)
 		},
 		"GetAgentOSImageOffer": func(profile *api.AgentPoolProfile) string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageOffer)
 		},
 		"GetAgentOSImagePublisher": func(profile *api.AgentPoolProfile) string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImagePublisher)
 		},
 		"GetAgentOSImageSKU": func(profile *api.AgentPoolProfile) string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageSku)
 		},
 		"GetAgentOSImageVersion": func(profile *api.AgentPoolProfile) string {
-			cloudSpecConfig := getCloudSpecConfig(cs.Location)
+			cloudSpecConfig := cs.GetCloudSpecConfig()
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
 		},
 		"UseAgentCustomImage": func(profile *api.AgentPoolProfile) bool {
@@ -743,11 +807,29 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			imageRef := cs.Properties.MasterProfile.ImageRef
 			return imageRef != nil && len(imageRef.Name) > 0 && len(imageRef.ResourceGroup) > 0
 		},
+		"GetAgentVMPrefix": func(profile *api.AgentPoolProfile) string {
+			return cs.Properties.GetAgentVMPrefix(profile)
+		},
+		"GetMasterVMPrefix": func() string {
+			return cs.Properties.GetMasterVMPrefix()
+		},
+		"GetRouteTableName": func() string {
+			return cs.Properties.GetRouteTableName()
+		},
+		"GetNSGName": func() string {
+			return cs.Properties.GetNSGName()
+		},
 		"GetMasterEtcdServerPort": func() int {
 			return DefaultMasterEtcdServerPort
 		},
 		"GetMasterEtcdClientPort": func() int {
 			return DefaultMasterEtcdClientPort
+		},
+		"GetPrimaryAvailabilitySetName": func() string {
+			return cs.Properties.GetPrimaryAvailabilitySetName()
+		},
+		"GetPrimaryScaleSetName": func() string {
+			return cs.Properties.GetPrimaryScaleSetName()
 		},
 		"UseCloudControllerManager": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
@@ -776,10 +858,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			masterShAsset := getOpenshiftMasterShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(masterShAsset)
 			t, err := template.New("master").Funcs(template.FuncMap{
-				"quote": strconv.Quote,
-				"shellQuote": func(s string) string {
-					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-				},
+				"quote":      strconv.Quote,
+				"shellQuote": helpers.ShellQuote,
 			}).Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -804,10 +884,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			nodeShAsset := getOpenshiftNodeShAsset(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			tb := MustAsset(nodeShAsset)
 			t, err := template.New("node").Funcs(template.FuncMap{
-				"quote": strconv.Quote,
-				"shellQuote": func(s string) string {
-					return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-				},
+				"quote":      strconv.Quote,
+				"shellQuote": helpers.ShellQuote,
 			}).Parse(string(tb))
 			if err != nil {
 				return "", err
@@ -848,11 +926,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return a - b
 		},
 		"IsCustomVNET": func() bool {
-			return isCustomVNET(cs.Properties.AgentPoolProfiles)
+			return cs.Properties.AreAgentProfilesCustomVNET()
 		},
-		"quote": strconv.Quote,
-		"shellQuote": func(s string) string {
-			return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
-		},
+		"quote":      strconv.Quote,
+		"shellQuote": helpers.ShellQuote,
 	}
 }

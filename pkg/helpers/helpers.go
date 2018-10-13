@@ -3,8 +3,10 @@ package helpers
 import (
 	// "fmt"
 	"bytes"
+	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -59,9 +61,23 @@ func IsTrueBoolPointer(b *bool) bool {
 	return false
 }
 
+// IsFalseBoolPointer is a simple boolean helper function for boolean pointers
+func IsFalseBoolPointer(b *bool) bool {
+	if b != nil && !*b {
+		return true
+	}
+	return false
+}
+
 // PointerToBool returns a pointer to a bool
 func PointerToBool(b bool) *bool {
 	p := b
+	return &p
+}
+
+// PointerToString returns a pointer to a string
+func PointerToString(s string) *string {
+	p := s
 	return &p
 }
 
@@ -141,4 +157,47 @@ func GetHomeDir() string {
 		return home
 	}
 	return os.Getenv("HOME")
+}
+
+// ShellQuote returns a string that is enclosed within single quotes. If the string already has single quotes, they will be escaped.
+func ShellQuote(s string) string {
+	return `'` + strings.Replace(s, `'`, `'\''`, -1) + `'`
+}
+
+// CreateSaveSSH generates and stashes an SSH key pair.
+func CreateSaveSSH(username, outputDirectory string, s *i18n.Translator) (privateKey *rsa.PrivateKey, publicKeyString string, err error) {
+	privateKey, publicKeyString, err = CreateSSH(rand.Reader, s)
+	if err != nil {
+		return nil, "", err
+	}
+
+	privateKeyPem := privateKeyToPem(privateKey)
+
+	f := &FileSaver{
+		Translator: s,
+	}
+
+	err = f.SaveFile(outputDirectory, fmt.Sprintf("%s_rsa", username), privateKeyPem)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return privateKey, publicKeyString, nil
+}
+
+// GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
+func GetCloudTargetEnv(location string) string {
+	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
+	switch {
+	case loc == "chinaeast" || loc == "chinanorth" || loc == "chinaeast2" || loc == "chinanorth2":
+		return "AzureChinaCloud"
+	case loc == "germanynortheast" || loc == "germanycentral":
+		return "AzureGermanCloud"
+	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
+		return "AzureUSGovernmentCloud"
+	default:
+		return "AzurePublicCloud"
+	}
 }

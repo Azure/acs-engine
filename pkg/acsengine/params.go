@@ -7,13 +7,14 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func getParameters(cs *api.ContainerService, generatorCode string, acsengineVersion string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
-	cloudSpecConfig := getCloudSpecConfig(location)
+	cloudSpecConfig := cs.GetCloudSpecConfig()
 
 	// acsengine Parameters
 	addValue(parametersMap, "acsengineVersion", acsengineVersion)
@@ -22,20 +23,21 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 	addValue(parametersMap, "location", location)
 
 	// Identify Master distro
-	masterDistro := getMasterDistro(properties.MasterProfile)
-	if properties.MasterProfile != nil && properties.MasterProfile.ImageRef != nil {
-		addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
-		addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
+	if properties.MasterProfile != nil {
+		addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageOffer)
+		addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageSku)
+		addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImagePublisher)
+		addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[properties.MasterProfile.Distro].ImageVersion)
+		if properties.MasterProfile.ImageRef != nil {
+			addValue(parametersMap, "osImageName", properties.MasterProfile.ImageRef.Name)
+			addValue(parametersMap, "osImageResourceGroup", properties.MasterProfile.ImageRef.ResourceGroup)
+		}
 	}
 	// TODO: Choose the correct image config based on the version
 	// for the openshift orchestrator
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[masterDistro].ImageVersion)
 
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
-	addValue(parametersMap, "targetEnvironment", getCloudTargetEnv(location))
+	addValue(parametersMap, "targetEnvironment", helpers.GetCloudTargetEnv(cs.Location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	if properties.LinuxProfile.CustomSearchDomain != nil {
 		addValue(parametersMap, "searchDomainName", properties.LinuxProfile.CustomSearchDomain.Name)
@@ -56,14 +58,21 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 	if properties.MasterProfile != nil {
 		if properties.MasterProfile.IsCustomVNET() {
 			addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
+			if properties.MasterProfile.IsVirtualMachineScaleSets() {
+				addValue(parametersMap, "agentVnetSubnetID", properties.MasterProfile.AgentVnetSubnetID)
+			}
 			if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 				addValue(parametersMap, "vnetCidr", properties.MasterProfile.VnetCidr)
 			}
 		} else {
 			addValue(parametersMap, "masterSubnet", properties.MasterProfile.Subnet)
+			addValue(parametersMap, "agentSubnet", properties.MasterProfile.AgentSubnet)
 		}
 		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+		if properties.MasterProfile.HasAvailabilityZones() {
+			addValue(parametersMap, "availabilityZones", properties.MasterProfile.AvailabilityZones)
+		}
 	}
 	if properties.HostedMasterProfile != nil {
 		addValue(parametersMap, "masterSubnet", properties.HostedMasterProfile.Subnet)
@@ -172,6 +181,9 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 	for _, agentProfile := range properties.AgentPoolProfiles {
 		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
 		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
+		if agentProfile.HasAvailabilityZones() {
+			addValue(parametersMap, fmt.Sprintf("%sAvailabilityZones", agentProfile.Name), agentProfile.AvailabilityZones)
+		}
 		if agentProfile.IsCustomVNET() {
 			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
 		} else {
@@ -181,7 +193,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
 		}
 
-		// Unless distro is defined, default distro is configured by defaults#setAgentNetworkDefaults
+		// Unless distro is defined, default distro is configured by defaults#setAgentProfileDefaults
 		//   Ignores Windows OS
 		if !(agentProfile.OSType == api.Windows) {
 			if agentProfile.ImageRef != nil {
@@ -218,7 +230,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
 			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
 			if kubeBinariesSASURL == "" {
-				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[k8sVersion]["windowszip"]
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + api.K8sComponentsByVersionMap[k8sVersion]["windowszip"]
 			}
 
 			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)

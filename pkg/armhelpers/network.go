@@ -11,7 +11,7 @@ func (az *AzureClient) DeleteNetworkInterface(ctx context.Context, resourceGroup
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.interfacesClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.interfacesClient.Client); err != nil {
 		return err
 	}
 

@@ -24,7 +24,7 @@ func (az *AzureClient) DeleteVirtualMachine(ctx context.Context, resourceGroup, 
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.virtualMachinesClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.virtualMachinesClient.Client); err != nil {
 		return err
 	}
 
@@ -49,7 +49,7 @@ func (az *AzureClient) DeleteVirtualMachineScaleSetVM(ctx context.Context, resou
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.virtualMachineScaleSetVMsClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.virtualMachineScaleSetVMsClient.Client); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (az *AzureClient) SetVirtualMachineScaleSetCapacity(ctx context.Context, re
 		return err
 	}
 
-	if err = future.WaitForCompletion(ctx, az.virtualMachineScaleSetsClient.Client); err != nil {
+	if err = future.WaitForCompletionRef(ctx, az.virtualMachineScaleSetsClient.Client); err != nil {
 		return err
 	}
 

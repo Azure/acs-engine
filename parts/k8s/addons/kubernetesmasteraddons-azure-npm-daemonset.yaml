@@ -89,7 +89,6 @@ spec:
             mountPath: /run/xtables.lock
           - name: log
             mountPath: /var/log
-      priorityClassName: azure-npm-priority-class
       hostNetwork: true
       volumes:
       - name: log

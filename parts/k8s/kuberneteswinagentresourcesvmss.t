@@ -1,6 +1,6 @@
 {{if UseManagedIdentity}}
   {
-    "apiVersion": "2014-10-01-preview",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -10,7 +10,7 @@
   },
 {{end}}
   {
-    "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
     {{if .IsCustomVNET}}
       "[variables('nsgID')]"
@@ -26,6 +26,9 @@
       "poolName" : "{{.Name}}"
     },
     "location": "[variables('location')]",
+    {{ if HasAvailabilityZones .}}
+    "zones": "[parameters('{{.Name}}AvailabilityZones')]",
+    {{ end }}
     "name": "[variables('{{.Name}}VMNamePrefix')]",
     {{if UseManagedIdentity}}
     "identity": {
@@ -38,6 +41,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
+      "singlePlacementGroup": {{UseSinglePlacementGroup .}},
       "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"
@@ -49,6 +53,7 @@
               "name": "[variables('{{.Name}}VMNamePrefix')]",
               "properties": {
                 "primary": true,
+                "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabledWindows}}",
                 {{if .IsCustomVNET}}
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"

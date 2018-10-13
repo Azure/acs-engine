@@ -19,6 +19,7 @@ import (
 // Config holds global test configuration
 type Config struct {
 	SkipTest            bool          `envconfig:"SKIP_TEST" default:"false"`
+	SkipLogsCollection  bool          `envconfig:"SKIP_LOGS_COLLECTION" default:"false"`
 	Orchestrator        string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
 	Name                string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
 	Location            string        `envconfig:"LOCATION"`                                                              // Location where you want to create the cluster
@@ -32,6 +33,8 @@ type Config struct {
 	CurrentWorkingDir   string
 	SoakClusterName     string `envconfig:"SOAK_CLUSTER_NAME"`
 	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
+	UseDeployCommand    bool   `envconfig:"USE_DEPLOY_COMMAND"`
+	GinkgoFocus         string `envconfig:"GINKGO_FOCUS"`
 }
 
 const (
@@ -84,6 +87,9 @@ func (c *Config) SetKubeConfig() {
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
 func (c *Config) GetSSHKeyPath() string {
+	if c.UseDeployCommand {
+		return filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "azureuser_rsa")
+	}
 	return filepath.Join(c.CurrentWorkingDir, "_output", c.Name+"-ssh")
 }
 

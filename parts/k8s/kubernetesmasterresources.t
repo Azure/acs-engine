@@ -1,19 +1,21 @@
 {{if .MasterProfile.IsManagedDisks}}
     {
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
-        {
-            "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 3,
-		        "managed" : true
-        },
+      {
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3
+      },
+      "sku": {
+        "name": "Aligned"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
 {{else if .MasterProfile.IsStorageAccount}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
@@ -28,15 +30,15 @@
 {{end}}
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{end}}
 {{if not .MasterProfile.IsCustomVNET}}
 {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "dependsOn": [
 {{if RequireRouteTable}}
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"{{if not IsOpenShift}},{{end}}
@@ -78,7 +80,7 @@
     },
 {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",
       "properties": {
@@ -133,7 +135,7 @@
     },
 {{if RequireRouteTable}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
@@ -141,7 +143,7 @@
 {{end}}
 {{if not IsPrivateCluster}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
@@ -153,7 +155,7 @@
       "type": "Microsoft.Network/publicIPAddresses"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
@@ -212,7 +214,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "masterLbLoopNode"
@@ -234,7 +236,7 @@
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "nicLoopNode"
@@ -325,7 +327,7 @@
     },
 {{else}}
       {
-        "apiVersion": "[variables('apiVersionDefault')]",
+        "apiVersion": "[variables('apiVersionCompute')]",
         "copy": {
           "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
           "name": "nicLoopNode"
@@ -410,11 +412,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('jumpboxVMName')]",
-      {{if JumpboxIsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      {{else}}
-      "apiVersion": "[variables('apiVersionDefault')]",
-      {{end}}
+      "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
@@ -480,15 +478,15 @@
             "name": "[variables('jumpboxStorageAccountName')]",
             "apiVersion": "[variables('apiVersionStorage')]",
             "location": "[variables('location')]",
-            "properties": {
-                "accountType": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
+            "sku": {
+              "name": "[variables('vmSizesMap')[parameters('jumpboxVMSize')].storageAccountType]"
             }
     },
     {{end}}
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('jumpboxNetworkSecurityGroupName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "properties": {
           "securityRules": [
@@ -514,7 +512,7 @@
           "name": "Basic"
       },
       "name": "[variables('jumpboxPublicIpAddressName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "properties": {
           "dnsSettings": {
@@ -526,7 +524,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('jumpboxNetworkInterfaceName')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "properties": {
           "ipConfigurations": [
@@ -560,7 +558,7 @@
 {{end}}
 {{if gt .MasterProfile.Count 1}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "dependsOn": [
 {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]"
@@ -630,9 +628,9 @@
        "name": "[variables('clusterKeyVaultName')]",
        "apiVersion": "[variables('apiVersionStorage')]",
        "location": "[variables('location')]",
-       "properties": {
-         "accountType": "Standard_LRS"
-       }
+       "sku": {
+        "name": "Standard_LRS"
+      }
      },
      {
        "type": "Microsoft.KeyVault/vaults",
@@ -662,19 +660,9 @@
          "enabledForDiskEncryption": "false",
          "enabledForTemplateDeployment": "false",
          "tenantId": "[variables('tenantID')]",
- {{if not UseManagedIdentity}}
-         "accessPolicies": [
-           {
-             "tenantId": "[variables('tenantID')]",
-             "objectId": "[parameters('servicePrincipalObjectId')]",
-             "permissions": {
-               "keys": ["create", "encrypt", "decrypt", "get", "list"]
-             }
-           }
-         ],
- {{else}}
-         "accessPolicies": 
-         [
+ {{if UseManagedIdentity}}
+        "accessPolicies":
+        [
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
           {{range $i := loop 0 $max}}
@@ -711,6 +699,16 @@
             {{end}}
           {{end}}
          ],
+ {{else}}
+          "accessPolicies": [
+            {
+              "tenantId": "[variables('tenantID')]",
+              "objectId": "[parameters('servicePrincipalObjectId')]",
+              "permissions": {
+                "keys": ["create", "encrypt", "decrypt", "get", "list"]
+              }
+            }
+          ],
  {{end}}
          "sku": {
            "name": "[parameters('clusterKeyVaultSku')]",
@@ -720,11 +718,7 @@
      },
  {{end}}
     {
-    {{if .MasterProfile.IsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-    {{else}}
-      "apiVersion": "[variables('apiVersionDefault')]",
-    {{end}}
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -747,9 +741,18 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
       {{if UseManagedIdentity}}
+      {{if UserAssignedIDEnabled}}
+      "identity": {
+        "type": "userAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        }
+      },
+      {{else}}
       "identity": {
         "type": "systemAssigned"
       },
+      {{end}}
       {{end}}
       {{if and IsOpenShift (not UseMasterCustomImage)}}
       "plan": {
@@ -839,8 +842,9 @@
       "type": "Microsoft.Compute/virtualMachines"
     },
     {{if UseManagedIdentity}}
+    {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "2014-10-01-preview",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
@@ -852,6 +856,7 @@
         "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
       }
     },
+    {{end}}
      {
        "type": "Microsoft.Compute/virtualMachines/extensions",
        "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
@@ -859,12 +864,18 @@
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
        },
-       "apiVersion": "2015-05-01-preview",
+       "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
+       {{if (not UserAssignedIDEnabled)}}
        "dependsOn": [
          "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
        ],
+       {{else}}
+       "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
+       ],
+       {{end}}
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
          "type": "ManagedIdentityExtensionForLinux",
@@ -878,7 +889,7 @@
      },
      {{end}}
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -903,7 +914,7 @@
         {{if IsOpenShift}}
           "script": "{{ Base64 OpenShiftGetMasterSh }}"
         {{else}}
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' MASTER_INDEX=',copyIndex(variables('masterOffset')),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
         }
       }
@@ -912,7 +923,7 @@
     ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/computeAksLinuxBilling')]",
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"

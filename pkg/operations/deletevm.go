@@ -3,10 +3,10 @@ package operations
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,7 +18,7 @@ const (
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
 func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry, subscriptionID, resourceGroup, name string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), armhelpers.DefaultARMOperationTimeout)
 	defer cancel()
 	logger.Infof("fetching VM: %s/%s", resourceGroup, name)
 	vm, err := az.GetVirtualMachine(ctx, resourceGroup, name)
@@ -76,7 +76,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		}
 
 		logger.Infof("deleting blob: %s/%s", vhdContainer, vhdBlob)
-		if err = as.DeleteBlob(vhdContainer, vhdBlob); err != nil {
+		if err = as.DeleteBlob(vhdContainer, vhdBlob, &azStorage.DeleteBlobOptions{}); err != nil {
 			return err
 		}
 	} else if managedDisk != nil {

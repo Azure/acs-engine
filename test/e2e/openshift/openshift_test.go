@@ -64,7 +64,7 @@ var _ = Describe("Azure Container Cluster using the OpenShift Orchestrator", fun
 			},
 			"compute": {
 				"node-role.kubernetes.io/compute": "true",
-				"region": "primary",
+				"region":                          "primary",
 			},
 			"infra": {
 				"region": "infra",

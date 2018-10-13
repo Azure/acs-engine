@@ -104,11 +104,9 @@ function create_resource_group() {
 	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
 
 	# Create resource group if doesn't exist
-	rg=$(az group show --name="${RESOURCE_GROUP}")
-	if [ -z "$rg" ]; then
-		az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}" --tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
+	az group show --name="${RESOURCE_GROUP}" || [ $? -eq 3  ] && echo "will create resource group ${RESOURCE_GROUP}" || exit -1
+	az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}" --tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 		sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
-	fi
 }
 
 function deploy_template() {

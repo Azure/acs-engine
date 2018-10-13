@@ -646,7 +646,7 @@ func TestValidateAADProfile(t *testing.T) {
 				Properties: &Properties{
 					EnableRBAC: helpers.PointerToBool(true),
 					AADProfile: &AADProfile{
-						ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+						ServerAppSecret: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 					},
 				},
 			},
@@ -658,7 +658,7 @@ func TestValidateAADProfile(t *testing.T) {
 				Properties: &Properties{
 					EnableRBAC: helpers.PointerToBool(true),
 					AADProfile: &AADProfile{
-						ServerAppSecret: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
+						ServerAppID: "ccbfaea3-7312-497e-81d9-9ad9b8a99853",
 					},
 				},
 			},
@@ -694,6 +694,7 @@ func TestValidateAADProfile(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			if err := test.mc.Properties.AADProfile.Validate(test.mc.Properties.EnableRBAC); !helpers.EqualError(err, test.expectedErr) {

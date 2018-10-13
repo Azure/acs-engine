@@ -4,6 +4,12 @@
 
     .DESCRIPTION
         Provisions VM as a Kubernetes agent.
+        
+
+        Notes on modifying this file:
+        - This file extension is PS1, but it is actually used as a template from pkg/acsengine/template_generator.go
+        - All of the lines that have braces in them will be modified. Please do not change them here, change them in the Go sources
+        - Single quotes are forbidden, they are reserved to delineate the different members for the ARM template concat() call
 #>
 [CmdletBinding(DefaultParameterSetName="Standard")]
 param(
@@ -45,8 +51,8 @@ $global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsParameter "windowsTelemetryGUID"}}"
 $global:KubeletNodeLabels = "{{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}"
-$global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
-$global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
+$global:KubeletStartFile = [io.path]::Combine($global:KubeDir, "kubeletstart.ps1")
+$global:KubeProxyStartFile = [io.path]::Combine($global:KubeDir, "kubeproxystart.ps1")
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
@@ -63,7 +69,10 @@ $global:KubeServiceCIDR = "{{WrapAsParameter "kubeServiceCidr"}}"
 $global:KubeNetwork = "l2bridge"
 $global:KubeDnsSearchPath = "svc.cluster.local"
 
+$global:KubeletConfigArgs = @( {{GetKubeletConfigKeyValsPsh .KubernetesConfig }} )
+
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+$global:UserAssignedClientID = "{{WrapAsVariable "userAssignedClientID"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 $global:LoadBalancerSku = "{{WrapAsVariable "loadBalancerSku"}}"
 $global:ExcludeMasterFromStandardLB = "{{WrapAsVariable "excludeMasterFromStandardLB"}}"
@@ -72,7 +81,7 @@ $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
 $global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
 $global:CNIConfigPath = [Io.path]::Combine("$global:CNIPath", "config")
-$global:WindowsCNIKubeletOptions = " --network-plugin=cni --cni-bin-dir=$global:CNIPath --cni-conf-dir=$global:CNIConfigPath"
+$global:WindowsCNIKubeletOptions = @("--cni-bin-dir=$global:CNIPath", "--cni-conf-dir=$global:CNIConfigPath")
 $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
@@ -84,7 +93,7 @@ $global:VNetCNIPluginsURL = "{{WrapAsParameter "vnetCniWindowsPluginsURL"}}"
 $global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")
 $global:AzureCNIBinDir = [Io.path]::Combine("$global:AzureCNIDir", "bin")
 $global:AzureCNIConfDir = [Io.path]::Combine("$global:AzureCNIDir", "netconf")
-$global:AzureCNIKubeletOptions = " --network-plugin=cni --cni-bin-dir=$global:AzureCNIBinDir --cni-conf-dir=$global:AzureCNIConfDir"
+$global:AzureCNIKubeletOptions = @("--cni-bin-dir=$global:AzureCNIBinDir", "--cni-conf-dir=$global:AzureCNIConfDir")
 $global:AzureCNIEnabled = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
@@ -167,7 +176,7 @@ Update-WindowsPackages()
 function
 Write-AzureConfig()
 {
-    $azureConfigFile = $global:KubeDir + "\azure.json"
+    $azureConfigFile = [io.path]::Combine($global:KubeDir, "azure.json")
 
     $azureConfig = @"
 {
@@ -185,6 +194,7 @@ Write-AzureConfig()
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "primaryScaleSetName": "$global:PrimaryScaleSetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
+    "userAssignedIdentityID": $global:UserAssignedClientID,
     "useInstanceMetadata": $global:UseInstanceMetadata,
     "loadBalancerSku": "$global:LoadBalancerSku",
     "excludeMasterFromStandardLB": $global:ExcludeMasterFromStandardLB
@@ -194,10 +204,18 @@ Write-AzureConfig()
     $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"
 }
 
+
+function
+Write-CACert()
+{
+    $caFile = [io.path]::Combine($global:KubeDir, "ca.crt")
+    [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($global:CACertificate)) | Out-File -Encoding ascii $caFile
+}
+
 function
 Write-KubeConfig()
 {
-    $kubeConfigFile = $global:KubeDir + "\config"
+    $kubeConfigFile = [io.path]::Combine($global:KubeDir, "config")
 
     $kubeConfig = @"
 ---
@@ -311,11 +329,15 @@ Set-NetworkConfig
 function
 Write-KubernetesStartFiles($podCIDR)
 {
-    mkdir $global:VolumePluginDir
-    $KubeletArgList = @(" --node-labels=`$global:KubeletNodeLabels --hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
-    $KubeletCommandLine = @"
-c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
-"@
+    mkdir $global:VolumePluginDir 
+    $KubeletArgList = $global:KubeletConfigArgs # This is the initial list passed in from acs-engine
+    $KubeletArgList += "--node-labels=`$global:KubeletNodeLabels"
+    $KubeletArgList += "--hostname-override=`$global:AzureHostname"
+    $KubeletArgList += "--volume-plugin-dir=`$global:VolumePluginDir"
+    # If you are thinking about adding another arg here, you should be considering pkg/acsengine/defaults-kubelet.go first
+    # Only args that need to be calculated or combined with other ones on the Windows agent should be added here.
+    
+
     # Regex to strip version to Major.Minor.Build format such that the following check does not crash for version like x.y.z-alpha
     [regex]$regex = "^[0-9.]+"
     $KubeBinariesVersionStripped = $regex.Matches($global:KubeBinariesVersion).Value
@@ -323,22 +345,30 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
     {
         # --api-server deprecates from 1.8.0
         $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
-        $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
     }
 
-    # more time is needed to pull windows server images
-    $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
-    $KubeletCommandLine += " --volume-plugin-dir=`$global:VolumePluginDir"
-     # Configure kubelet to use CNI plugins if enabled.
+    # Configure kubelet to use CNI plugins if enabled.
     if ($global:AzureCNIEnabled) {
-        $KubeletCommandLine += $global:AzureCNIKubeletOptions
+        $KubeletArgList += $global:AzureCNIKubeletOptions
     } else {
-        $KubeletCommandLine += $global:WindowsCNIKubeletOptions
+        $KubeletArgList += $global:WindowsCNIKubeletOptions
+        $KubeletArgList = $KubeletArgList -replace "kubenet", "cni"
     }
 
-    $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
-
+    # Used in WinCNI version of kubeletstart.ps1
+    $KubeletArgListStr = ""
+    $KubeletArgList | Foreach-Object {
+        # Since generating new code to be written to a file, need to escape quotes again
+        if ($KubeletArgListStr.length -gt 0)
+        {
+            $KubeletArgListStr = $KubeletArgListStr + ", "
+        }
+        $KubeletArgListStr = $KubeletArgListStr + "`"" + $_.Replace("`"`"","`"`"`"`"") + "`""
+    }
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
+
+    # Used in Azure-CNI version of kubeletstart.ps1
+    $KubeletCommandLine = "c:\k\kubelet.exe " + ($KubeletArgList -join " ")
 
     $kubeStartStr = @"
 `$global:MasterIP = "$MasterIP"
@@ -355,6 +385,7 @@ c:\k\kubelet.exe --hostname-override=`$env:computername --pod-infra-container-im
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
 `$global:NetworkPlugin="$global:NetworkPlugin"
+`$global:KubeletNodeLabels="$global:KubeletNodeLabels"
 
 "@
 
@@ -392,24 +423,24 @@ if (`$hnsNetwork)
     Remove-HnsNetwork `$hnsNetwork
     # Kill all cni instances & stale data left by cni
     # Cleanup all files related to cni
-    `$cnijson = "$global:KubeDir" + "\azure-vnet-ipam.json"
+    `$cnijson = [io.path]::Combine("$global:KubeDir", "azure-vnet-ipam.json")
     if ((Test-Path `$cnijson))
     {
         Remove-Item `$cnijson
     }
-    `$cnilock = "$global:KubeDir" + "\azure-vnet-ipam.lock"
+    `$cnilock = [io.path]::Combine("$global:KubeDir", "azure-vnet-ipam.lock")
     if ((Test-Path `$cnilock))
     {
         Remove-Item `$cnilock
     }
     taskkill /IM azure-vnet-ipam.exe /f
 
-    `$cnijson = "$global:KubeDir" + "\azure-vnet.json"
+    `$cnijson = [io.path]::Combine("$global:KubeDir", "azure-vnet.json")
     if ((Test-Path `$cnijson))
     {
         Remove-Item `$cnijson
     }
-    `$cnilock = "$global:KubeDir" + "\azure-vnet.lock"
+    `$cnilock = [io.path]::Combine("$global:KubeDir", "azure-vnet.lock")
     if ((Test-Path `$cnilock))
     {
         Remove-Item `$cnilock
@@ -423,7 +454,9 @@ Restart-Service Kubeproxy
 $KubeletCommandLine
 
 "@
-    } else {
+    } 
+    else  # using WinCNI. TODO: If WinCNI support is removed, then delete this as dead code later
+    {
         $kubeStartStr += @"
 
 function
@@ -561,7 +594,7 @@ catch
 }
 
 "@
-    }
+    } # end else using WinCNI.
 
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
@@ -665,6 +698,9 @@ try
 
         Write-Log "Write azure config"
         Write-AzureConfig
+
+        Write-Log "Write ca root"
+        Write-CACert
 
         Write-Log "Write kube config"
         Write-KubeConfig

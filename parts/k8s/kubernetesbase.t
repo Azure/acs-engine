@@ -49,9 +49,21 @@
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
         {{end}}
     {{end}}
-    {{template "k8s/kubernetesmastervars.t" .}}
+    {{if IsMasterVirtualMachineScaleSets}}
+      {{template "k8s/kubernetesmastervarsvmss.t" .}}
+    {{else}}
+      {{template "k8s/kubernetesmastervars.t" .}}
+    {{end}}
   },
   "resources": [
+    {{if UserAssignedIDEnabled}}
+      {
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "name": "[variables('userAssignedID')]",
+        "apiVersion": "[variables('apiVersionCompute')]",
+        "location": "[variables('location')]"
+      },
+    {{end}}
     {{if IsOpenShift}}
       {{template "openshift/infraresources.t" .}}
     {{end}}
@@ -71,12 +83,10 @@
         {{end}}
       {{end}}
     {{end}}
-    {{if not IsHostedMaster}}
-      ,{{template "k8s/kubernetesmasterresources.t" .}}
-    {{else}}
+    {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
       ,{
-        "apiVersion": "[variables('apiVersionDefault')]",
+        "apiVersion": "[variables('apiVersionNetwork')]",
         "dependsOn": [
           "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
       {{if not IsAzureCNI}}
@@ -115,14 +125,14 @@
     {{end}}
     {{if not IsAzureCNI}}
     ,{
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
     }
     {{end}}
     ,{
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiVersionNetwork')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",
       "properties": {
@@ -175,17 +185,21 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     }
+    {{else}}
+      {{if IsMasterVirtualMachineScaleSets}}
+          ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
+        {{else}}
+          ,{{template "k8s/kubernetesmasterresources.t" .}}
+        {{end}}
     {{end}}
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}
     {{end}}
-    {{if IsHostedMaster}}
-      {{template "iaasoutputs.t" .}}
-    {{else}}
+    {{if not IsHostedMaster}}
       {{template "masteroutputs.t" .}} ,
-      {{template "iaasoutputs.t" .}}
     {{end}}
+    {{template "iaasoutputs.t" .}}
 
   }
 }

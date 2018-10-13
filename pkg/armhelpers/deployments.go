@@ -26,7 +26,7 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 	}
 
 	outcomeText := "Succeeded"
-	err = future.WaitForCompletion(ctx, az.deploymentsClient.Client)
+	err = future.WaitForCompletionRef(ctx, az.deploymentsClient.Client)
 	if err != nil {
 		outcomeText = fmt.Sprintf("Error: %v", err)
 		log.Infof("Finished ARM Deployment (%s). %s", deploymentName, outcomeText)

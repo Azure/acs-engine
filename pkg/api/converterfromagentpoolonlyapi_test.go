@@ -230,7 +230,7 @@ func TestConvertToV20180331AddonProfile(t *testing.T) {
 	if _, ok := p[addonName]; !ok {
 		t.Error("addon is not found")
 	}
-	if p[addonName].Enabled != true {
+	if !p[addonName].Enabled {
 		t.Error("addon should be enabled")
 	}
 	v, ok := p[addonName].Config["opt1"]
@@ -244,7 +244,6 @@ func TestConvertToV20180331AddonProfile(t *testing.T) {
 
 func TestConvertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(t *testing.T) {
 	var kc *KubernetesConfig
-	kc = nil
 	enableRBAC := convertKubernetesConfigToEnableRBACV20180331AgentPoolOnly(kc)
 	if enableRBAC == nil {
 		t.Error("EnableRBAC expected not to be nil")

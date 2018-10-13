@@ -17,7 +17,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
@@ -45,12 +46,14 @@ var (
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
 	acceptLanguages []string
+	auxiliaryTokens []string
 	environment     azure.Environment
 	subscriptionID  string
 
 	authorizationClient             authorization.RoleAssignmentsClient
 	deploymentsClient               resources.DeploymentsClient
 	deploymentOperationsClient      resources.DeploymentOperationsClient
+	msiClient                       msi.UserAssignedIdentitiesClient
 	resourcesClient                 apimanagement.GroupClient
 	storageAccountsClient           storage.AccountsClient
 	interfacesClient                network.InterfacesClient
@@ -107,7 +110,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 
 	client := &autorest.Client{
-		PollingDuration: 1 * time.Hour,
+		PollingDuration: DefaultARMOperationTimeout,
 	}
 
 	deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, acsEngineClientID, env.ServiceManagementEndpoint)
@@ -157,6 +160,26 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 }
 
+// NewAzureClientWithClientSecretExternalTenant returns an AzureClient via client_id and client_secret from a tenant
+func NewAzureClientWithClientSecretExternalTenant(env azure.Environment, subscriptionID, tenantID, clientID, clientSecret string) (*AzureClient, error) {
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	armSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.ServiceManagementEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	graphSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.GraphEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	graphSpt.Refresh()
+
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
+}
+
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
 func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
 	certificateData, err := ioutil.ReadFile(certificatePath)
@@ -189,6 +212,20 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 		return nil, err
 	}
 
+	return newAzureClientWithCertificate(env, oauthConfig, subscriptionID, clientID, tenantID, certificate, privateKey)
+}
+
+// NewAzureClientWithClientCertificateExternalTenant returns an AzureClient via client_id and jwt certificate assertion against a 3rd party tenant
+func NewAzureClientWithClientCertificateExternalTenant(env azure.Environment, subscriptionID, tenantID, clientID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey) (*AzureClient, error) {
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	return newAzureClientWithCertificate(env, oauthConfig, subscriptionID, clientID, tenantID, certificate, privateKey)
+}
+
+func newAzureClientWithCertificate(env azure.Environment, oauthConfig *adal.OAuthConfig, subscriptionID, clientID, tenantID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey) (*AzureClient, error) {
 	if certificate == nil {
 		return nil, errors.New("certificate should not be nil")
 	}
@@ -272,6 +309,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		authorizationClient:             authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentsClient:               resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentOperationsClient:      resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		msiClient:                       msi.NewUserAssignedIdentitiesClient(subscriptionID),
 		resourcesClient:                 apimanagement.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient:           storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:                network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -290,6 +328,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.authorizationClient.Authorizer = authorizer
 	c.deploymentsClient.Authorizer = authorizer
 	c.deploymentOperationsClient.Authorizer = authorizer
+	c.msiClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
 	c.storageAccountsClient.Authorizer = authorizer
 	c.interfacesClient.Authorizer = authorizer
@@ -304,19 +343,19 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.resourcesClient.PollingDelay = time.Second * 5
 
 	// Set permissive timeouts to accommodate long-running operations
-	c.deploymentsClient.PollingDuration = time.Hour * 1
-	c.deploymentOperationsClient.PollingDuration = time.Hour * 1
-	c.applicationsClient.PollingDuration = time.Hour * 1
-	c.authorizationClient.PollingDuration = time.Hour * 1
-	c.disksClient.PollingDuration = time.Hour * 1
-	c.groupsClient.PollingDuration = time.Hour * 1
-	c.interfacesClient.PollingDuration = time.Hour * 1
-	c.providersClient.PollingDuration = time.Hour * 1
-	c.resourcesClient.PollingDuration = time.Hour * 1
-	c.storageAccountsClient.PollingDuration = time.Hour * 1
-	c.virtualMachineScaleSetsClient.PollingDuration = time.Hour * 1
-	c.virtualMachineScaleSetVMsClient.PollingDuration = time.Hour * 1
-	c.virtualMachinesClient.PollingDuration = time.Hour * 1
+	c.deploymentsClient.PollingDuration = DefaultARMOperationTimeout
+	c.deploymentOperationsClient.PollingDuration = DefaultARMOperationTimeout
+	c.applicationsClient.PollingDuration = DefaultARMOperationTimeout
+	c.authorizationClient.PollingDuration = DefaultARMOperationTimeout
+	c.disksClient.PollingDuration = DefaultARMOperationTimeout
+	c.groupsClient.PollingDuration = DefaultARMOperationTimeout
+	c.interfacesClient.PollingDuration = DefaultARMOperationTimeout
+	c.providersClient.PollingDuration = DefaultARMOperationTimeout
+	c.resourcesClient.PollingDuration = DefaultARMOperationTimeout
+	c.storageAccountsClient.PollingDuration = DefaultARMOperationTimeout
+	c.virtualMachineScaleSetsClient.PollingDuration = DefaultARMOperationTimeout
+	c.virtualMachineScaleSetVMsClient.PollingDuration = DefaultARMOperationTimeout
+	c.virtualMachinesClient.PollingDuration = DefaultARMOperationTimeout
 
 	graphAuthorizer := autorest.NewBearerAuthorizer(graphSpt)
 	c.applicationsClient.Authorizer = graphAuthorizer
@@ -327,7 +366,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 
 // EnsureProvidersRegistered checks if the AzureClient is registered to required resource providers and, if not, register subscription to providers
 func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultARMOperationTimeout)
 	defer cancel()
 	registeredProviders, err := az.providersClient.List(ctx, to.Int32Ptr(100), "")
 	if err != nil {
@@ -393,7 +432,6 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.authorizationClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
-	az.deploymentsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.resourcesClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.storageAccountsClient.Client.RequestInspector = az.addAcceptLanguages()
@@ -423,4 +461,50 @@ func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
 			return r, nil
 		})
 	}
+}
+
+func (az *AzureClient) setAuxiliaryTokens() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if r.Header == nil {
+				r.Header = make(http.Header)
+			}
+			if az.auxiliaryTokens != nil {
+				for _, token := range az.auxiliaryTokens {
+					if token == "" {
+						continue
+					}
+
+					r.Header.Set("x-ms-authorization-auxiliary", fmt.Sprintf("Bearer %s", token))
+				}
+			}
+			return r, nil
+		})
+	}
+}
+
+// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
+func (az *AzureClient) AddAuxiliaryTokens(tokens []string) {
+	az.auxiliaryTokens = tokens
+	requestWithTokens := az.setAuxiliaryTokens()
+
+	az.authorizationClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentsClient.Client.RequestInspector = requestWithTokens
+	az.deploymentOperationsClient.Client.RequestInspector = requestWithTokens
+	az.resourcesClient.Client.RequestInspector = requestWithTokens
+	az.storageAccountsClient.Client.RequestInspector = requestWithTokens
+	az.interfacesClient.Client.RequestInspector = requestWithTokens
+	az.groupsClient.Client.RequestInspector = requestWithTokens
+	az.providersClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachinesClient.Client.RequestInspector = requestWithTokens
+	az.virtualMachineScaleSetsClient.Client.RequestInspector = requestWithTokens
+	az.disksClient.Client.RequestInspector = requestWithTokens
+
+	az.applicationsClient.Client.RequestInspector = requestWithTokens
+	az.servicePrincipalsClient.Client.RequestInspector = requestWithTokens
 }

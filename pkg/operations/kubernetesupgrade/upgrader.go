@@ -503,7 +503,7 @@ func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
 				ku.logger.Errorf(
 					"Failed to delete VM %s in VMSS %s",
 					vmToUpgrade.Name,
-					vmssToUpgrade)
+					vmssToUpgrade.Name)
 				return err
 			}
 
@@ -512,7 +512,7 @@ func (ku *Upgrader) upgradeAgentScaleSets(ctx context.Context) error {
 				vmToUpgrade.Name,
 				vmssToUpgrade.Name)
 		}
-		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade)
+		ku.logger.Infof("Completed upgrading VMSS %s", vmssToUpgrade.Name)
 	}
 
 	ku.logger.Infoln("Completed upgrading all VMSS")
@@ -530,9 +530,15 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 		return nil, nil, ku.Translator.Errorf("failed to initialize template generator: %s", err.Error())
 	}
 
+	_, err = upgradeContainerService.SetPropertiesDefaults(true, false)
+	if err != nil {
+		return nil, nil, ku.Translator.Errorf("error in SetPropertiesDefaults: %s", err.Error())
+
+	}
+
 	var templateJSON string
 	var parametersJSON string
-	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, true, false, acsengineVersion); err != nil {
+	if templateJSON, parametersJSON, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode, acsengineVersion); err != nil {
 		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 

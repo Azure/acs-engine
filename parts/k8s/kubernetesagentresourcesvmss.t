@@ -1,6 +1,6 @@
-{{if UseManagedIdentity}}
+{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
   {
-    "apiVersion": "2014-10-01-preview",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
@@ -10,7 +10,7 @@
   },
 {{end}}
   {
-    "apiVersion": "[variables('apiVersionVirtualMachineScaleSets')]",
+    "apiVersion": "[variables('apiVersionCompute')]",
     "dependsOn": [
     {{if .IsCustomVNET}}
       "[variables('nsgID')]"
@@ -26,11 +26,23 @@
       "poolName" : "{{.Name}}"
     },
     "location": "[variables('location')]",
+    {{ if HasAvailabilityZones .}}
+    "zones": "[parameters('{{.Name}}AvailabilityZones')]",
+    {{ end }}
     "name": "[variables('{{.Name}}VMNamePrefix')]",
     {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+    "identity": {
+      "type": "userAssigned",
+        "identityIds": [
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
+      },
+    {{else}}
     "identity": {
       "type": "systemAssigned"
     },
+    {{end}}
     {{end}}
     "sku": {
       "tier": "Standard",
@@ -38,6 +50,7 @@
       "name": "[variables('{{.Name}}VMSize')]"
     },
     "properties": {
+      "singlePlacementGroup": {{UseSinglePlacementGroup .}},
       "overprovision": false,
       "upgradePolicy": {
         "mode": "Manual"
@@ -142,7 +155,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                  "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+                  "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
             }

@@ -1,4 +1,9 @@
 #!/bin/bash
+NODE_INDEX=$(hostname | tail -c 2)
+NODE_NAME=$(hostname)
+PRIVATE_IP=$(hostname -I | cut -d' ' -f1)
+ETCD_PEER_URL="https://${PRIVATE_IP}:2380"
+ETCD_CLIENT_URL="https://${PRIVATE_IP}:2379"
 
 function systemctlEnableAndStart() {
     systemctl_restart 100 5 30 $1
@@ -6,12 +11,12 @@ function systemctlEnableAndStart() {
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
     if [ $RESTART_STATUS -ne 0 ]; then
         echo "$1 could not be started"
-        exit $ERR_SYSTEMCTL_START_FAIL
+        return 1
     fi
     retrycmd_if_failure 10 5 3 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
-        exit $ERR_SYSTEMCTL_ENABLE_FAIL
+        return 1
     fi
 }
 
@@ -41,7 +46,7 @@ function configureEtcd() {
     chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
     chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
 
-    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
+    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${NODE_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
@@ -56,7 +61,7 @@ function configureEtcd() {
     chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
     chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
 
-    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
+    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${NODE_INDEX}.crt"
     touch "${ETCD_PEER_CERTIFICATE_PATH}"
     chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
     chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
@@ -72,16 +77,20 @@ function configureEtcd() {
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
     set -x
 
-    /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
+    ETCD_SETUP_FILE=/opt/azure/containers/setup-etcd.sh
+    wait_for_file 1200 1 $ETCD_SETUP_FILE || exit $ERR_ETCD_CONFIG_FAIL
+    $ETCD_SETUP_FILE > /opt/azure/containers/setup-etcd.log 2>&1
     RET=$?
     if [ $RET -ne 0 ]; then
         exit $RET
     fi
 
-    /opt/azure/containers/mountetcd.sh || exit $ERR_ETCD_VOL_MOUNT_FAIL
-    systemctlEnableAndStart etcd
+    MOUNT_ETCD_FILE=/opt/azure/containers/mountetcd.sh
+    wait_for_file 1200 1 $MOUNT_ETCD_FILE || exit $ERR_ETCD_CONFIG_FAIL
+    $MOUNT_ETCD_FILE || exit $ERR_ETCD_VOL_MOUNT_FAIL
+    systemctlEnableAndStart etcd || exit $ERR_ETCD_START_TIMEOUT
     for i in $(seq 1 600); do
-        MEMBER="$(sudo etcdctl member list | grep -E ${MASTER_VM_NAME} | cut -d':' -f 1)"
+        MEMBER="$(sudo etcdctl member list | grep -E ${NODE_NAME} | cut -d':' -f 1)"
         if [ "$MEMBER" != "" ]; then
             break
         else
@@ -92,8 +101,8 @@ function configureEtcd() {
 }
 
 function ensureRPC() {
-    systemctlEnableAndStart rpcbind
-    systemctlEnableAndStart rpc-statd
+    systemctlEnableAndStart rpcbind || exit $ERR_SYSTEMCTL_START_FAIL
+    systemctlEnableAndStart rpc-statd || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function runAptDaily() {
@@ -101,7 +110,9 @@ function runAptDaily() {
 }
 
 function generateAggregatedAPICerts() {
-    wait_for_file 1 1 /etc/kubernetes/generate-proxy-certs.sh && /etc/kubernetes/generate-proxy-certs.sh
+    AGGREGATED_API_CERTS_SETUP_FILE=/etc/kubernetes/generate-proxy-certs.sh
+    wait_for_file 1200 1 $AGGREGATED_API_CERTS_SETUP_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    $AGGREGATED_API_CERTS_SETUP_FILE
 }
 
 function configureK8s() {
@@ -123,6 +134,9 @@ function configureK8s() {
     set +x
     echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
     echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+    # Perform the required JSON escaping for special characters " and \
+    SERVICE_PRINCIPAL_CLIENT_SECRET=$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | sed "s|\\\\|\\\\\\\|g")
+    SERVICE_PRINCIPAL_CLIENT_SECRET=$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | sed 's|"|\\"|g')
     cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
@@ -149,6 +163,7 @@ function configureK8s() {
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "userAssignedIdentityID": "${USER_ASSIGNED_IDENTITY_ID}",
     "useInstanceMetadata": ${USE_INSTANCE_METADATA},
     "loadBalancerSku": "${LOAD_BALANCER_SKU}",
     "excludeMasterFromStandardLB": ${EXCLUDE_MASTER_FROM_STANDARD_LB},
@@ -158,14 +173,16 @@ function configureK8s() {
 }
 EOF
     set -x
-    generateAggregatedAPICerts
+    if [[ ! -z "${MASTER_NODE}" ]]; then
+        if [[ "${ENABLE_AGGREGATED_APIS}" = True ]]; then
+            generateAggregatedAPICerts
+        fi
+    fi
 }
 
 function configureCNI() {
-    # Turn on br_netfilter (needed for the iptables rules to work on bridges)
-    # and permanently enable it
+    # needed for the iptables rules to work on bridges
     retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
-    # /etc/modules-load.d is the location used by systemd to load modules
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -175,15 +192,16 @@ function configureCNI() {
 }
 
 function setKubeletOpts () {
-    sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
+    KUBELET_DEFAULT_FILE=/etc/default/kubelet
+    wait_for_file 1200 1 $KUBELET_DEFAULT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" $KUBELET_DEFAULT_FILE
 }
 
 function ensureCCProxy() {
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
-    # Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	systemctlEnableAndStart cc-proxy
+	systemctlEnableAndStart cc-proxy || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function setupContainerd() {
@@ -192,7 +210,7 @@ function setupContainerd() {
     CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
     echo "subreaper = false" > "$CRI_CONTAINERD_CONFIG"
     echo "oom_score = 0" >> "$CRI_CONTAINERD_CONFIG"
-    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG" 
+    echo "[plugins.cri]" >> "$CRI_CONTAINERD_CONFIG"
     echo "sandbox_image = \"$POD_INFRA_CONTAINER_SPEC\"" >> "$CRI_CONTAINERD_CONFIG"
     echo "[plugins.cri.containerd.untrusted_workload_runtime]" >> "$CRI_CONTAINERD_CONFIG"
     echo "runtime_type = 'io.containerd.runtime.v1.linux'" >> "$CRI_CONTAINERD_CONFIG"
@@ -212,27 +230,40 @@ function setupContainerd() {
 function ensureContainerd() {
     if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
         setupContainerd
-        # Enable and start cri-containerd service
-        # Make sure this is done after networking plugins are installed
         echo "Enabling and starting cri-containerd service..."
-        systemctlEnableAndStart containerd
+        systemctlEnableAndStart containerd || exit $ERR_SYSTEMCTL_START_FAIL
     fi
 }
 
 function ensureDocker() {
-    echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+    DOCKER_SERVICE_EXEC_START_FILE=/etc/systemd/system/docker.service.d/exec_start.conf
+    wait_for_file 1200 1 $DOCKER_SERVICE_EXEC_START_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> $DOCKER_SERVICE_EXEC_START_FILE
     usermod -aG docker ${ADMINUSER}
-    wait_for_file 600 1 $DOCKER || exit $ERR_FILE_WATCH_TIMEOUT
+    DOCKER_MOUNT_FLAGS_SYSTEMD_FILE=/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf
+    wait_for_file 1200 1 $DOCKER_MOUNT_FLAGS_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    DOCKER_JSON_FILE=/etc/docker/daemon.json
+    wait_for_file 1200 1 $DOCKER_JSON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
-    retrycmd_if_failure 6 1 10 docker pull busybox # pre-pull busybox, but don't exit if fail 
-    systemctlEnableAndStart docker-health-probe
+    DOCKER_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-monitor.service
+    wait_for_file 1200 1 $DOCKER_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart docker-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 function ensureKMS() {
-    systemctlEnableAndStart kms
+    systemctlEnableAndStart kms || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensureKubelet() {
-    systemctlEnableAndStart kubelet
+    KUBELET_DEFAULT_FILE=/etc/default/kubelet
+    wait_for_file 1200 1 $KUBELET_DEFAULT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    KUBECONFIG_FILE=/var/lib/kubelet/kubeconfig
+    wait_for_file 1200 1 $KUBECONFIG_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
+    wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
+    KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
+    wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensureJournal(){
@@ -240,7 +271,7 @@ function ensureJournal(){
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    systemctlEnableAndStart systemd-journald
+    systemctlEnableAndStart systemd-journald || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensurePodSecurityPolicy() {
@@ -255,12 +286,23 @@ function ensureK8sControlPlane() {
         return
     fi
     wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
-    retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681
+    if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
+        ensureKubelet
+        retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || ensureKubelet && retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    else
+        retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+    fi
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
     retrycmd_if_failure 120 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
+}
+
+function createKubeManifestDir() {
+    KUBEMANIFESTDIR=/etc/kubernetes/manifests
+    mkdir -p $KUBEMANIFESTDIR
 }
 
 function writeKubeConfig() {
@@ -272,8 +314,6 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-
-    # disable logging after secret output
     set +x
     echo "
 ---
@@ -296,32 +336,33 @@ users:
     client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
     client-key-data: \"$KUBECONFIG_KEY\"
 " > $KUBECONFIGFILE
-    # renable logging after secrets
     set -x
 }
 
 function configClusterAutoscalerAddon() {
+    CLUSTER_AUTOSCALER_ADDON_FILE=/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml
+    wait_for_file 1200 1 $CLUSTER_AUTOSCALER_ADDON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
         CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT="- mountPath: /var/lib/waagent/\n\          name: waagent\n\          readOnly: true"
         CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
         CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
 
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     fi
 
-    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
 }
 
 configACIConnectorAddon() {
@@ -331,10 +372,12 @@ configACIConnectorAddon() {
     ACI_CONNECTOR_KEY=$(base64 /etc/kubernetes/certs/aci-connector-key.pem -w0)
     ACI_CONNECTOR_CERT=$(base64 /etc/kubernetes/certs/aci-connector-cert.pem -w0)
 
-    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorResourceGroup>|$(echo $RESOURCE_GROUP)|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorCert>|$(echo $ACI_CONNECTOR_CERT)|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorKey>|$(echo $ACI_CONNECTOR_KEY)|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    ACI_CONNECTOR_ADDON_FILE=/etc/kubernetes/addons/aci-connector-deployment.yaml
+    wait_for_file 1200 1 $ACI_CONNECTOR_ADDON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<kubernetesACIConnectorResourceGroup>|$(echo $RESOURCE_GROUP)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<kubernetesACIConnectorCert>|$(echo $ACI_CONNECTOR_CERT)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<kubernetesACIConnectorKey>|$(echo $ACI_CONNECTOR_KEY)|g" $ACI_CONNECTOR_ADDON_FILE
 }
 
 configAddons() {
@@ -345,4 +388,20 @@ configAddons() {
     if [[ "${ACI_CONNECTOR_ADDON}" = True ]]; then
         configACIConnectorAddon
     fi
+}
+
+configGPUDrivers() {
+    retrycmd_if_failure 10 1 60 sh $GPU_DEST/nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}" || exit $ERR_GPU_DRIVERS_START_FAIL
+    echo "${GPU_DEST}/lib64" > /etc/ld.so.conf.d/nvidia.conf
+    ldconfig
+    umount -l /usr/lib/x86_64-linux-gnu
+    nvidia-modprobe -u -c0
+    $GPU_DEST/bin/nvidia-smi
+    ldconfig
+}
+
+ensureGPUDrivers() {
+    configGPUDrivers
+    systemctlEnableAndStart nvidia-modprobe || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 5 10 60 systemctl restart kubelet
 }

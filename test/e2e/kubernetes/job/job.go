@@ -161,13 +161,19 @@ func (j *Job) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 }
 
 // Delete will delete a Job in a given namespace
-func (j *Job) Delete() error {
-	cmd := exec.Command("kubectl", "delete", "job", "-n", j.Metadata.Namespace, j.Metadata.Name)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error while trying to delete Job %s in namespace %s:%s\n", j.Metadata.Namespace, j.Metadata.Name, string(out))
-		return err
+func (j *Job) Delete(retries int) error {
+	var kubectlOutput []byte
+	var kubectlError error
+	for i := 0; i < retries; i++ {
+		cmd := exec.Command("kubectl", "delete", "job", "-n", j.Metadata.Namespace, j.Metadata.Name)
+		util.PrintCommand(cmd)
+		kubectlOutput, kubectlError = cmd.CombinedOutput()
+		if kubectlError != nil {
+			log.Printf("Error while trying to delete Job %s in namespace %s:%s\n", j.Metadata.Namespace, j.Metadata.Name, string(kubectlOutput))
+			continue
+		}
+		break
 	}
-	return nil
+
+	return kubectlError
 }

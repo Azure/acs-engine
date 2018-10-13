@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/pkg/errors"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -40,7 +41,7 @@ func (l *LinuxProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *AADProfile) Validate(rbacEnabled *bool) error {
-	if rbacEnabled == nil || *rbacEnabled == false {
+	if !helpers.IsTrueBoolPointer(rbacEnabled) {
 		return ErrorRBACNotEnabledForAAD
 	}
 

@@ -14,7 +14,14 @@ write_files:
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
-  
+
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
+
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
   encoding: gzip
@@ -66,16 +73,40 @@ write_files:
       }{{end}}{{end}}
     }
 
-- path: "/etc/systemd/system/docker-health-probe.service"
+- path: "/usr/local/bin/health-monitor.sh"
+  permissions: "0544"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "healthMonitorScript"}}
+
+- path: "/etc/systemd/system/docker-monitor.service"
   permissions: "0644"
   owner: "root"
   content: |
     [Unit]
-    Description=runs a script that checks docker health; restart if needed
+    Description=a script that checks docker health and restarts if needed
     After=docker.service
     [Service]
-    ExecStart=/bin/bash -c "source /opt/azure/containers/provision_source.sh && docker_health_probe"
     Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh container-runtime
+    [Install]
+    WantedBy=multi-user.target
+
+- path: "/etc/systemd/system/kubelet-monitor.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a script that checks kubelet health and restarts if needed
+    After=kubelet.service
+    [Service]
+    Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh kubelet
     [Install]
     WantedBy=multi-user.target
 {{end}}
@@ -164,12 +195,13 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-{{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
-{{end}}
 {{if not EnablePodSecurityPolicy}}
     sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+{{end}}
+{{if IsHostedMaster}}
+    {{if IsAzureCNI}}
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsParameter "vnetCidr"}} -j MASQUERADE
+    {{end}}
 {{end}}
 {{if HasCustomSearchDomain}}
     sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
@@ -201,7 +233,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
     systemctl start rpcbind
     systemctl start rpc-statd
 
-    # Simulates runcmd completion
     touch /opt/azure/containers/runcmd.complete
 
 coreos:
@@ -209,7 +240,6 @@ coreos:
     - name: start-provision-setup.service
       command: "start"
       content: |
-        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
         [Unit]
         Description=Start provision setup service
 
@@ -221,9 +251,4 @@ runcmd:
 - . /opt/azure/containers/provision_source.sh
 - timeout 10 apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - timeout 10 apt-mark unhold walinuxagent
-- mkdir -p /var/log/azure && touch /var/log/azure/cloud-init.complete
-{{if IsNSeriesSKU .}}
-- . /opt/azure/containers/provision_source.sh
-  {{GetGPUDriversInstallScript .}}
-{{end}}
 {{end}}

@@ -234,6 +234,7 @@ type KubernetesAddon struct {
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
 	Config     map[string]string         `json:"config,omitempty"`
+	Data       string                    `json:"data,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
@@ -273,6 +274,8 @@ type KubernetesConfig struct {
 	MaxPods                         int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet              string            `json:"dockerBridgeSubnet,omitempty"`
 	UseManagedIdentity              bool              `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                  string            `json:"userAssignedID,omitempty"`
+	UserAssignedClientID            string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage            string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
@@ -297,16 +300,17 @@ type KubernetesConfig struct {
 	CloudControllerManagerConfig    map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig                 map[string]string `json:"apiServerConfig,omitempty"`
 	SchedulerConfig                 map[string]string `json:"schedulerConfig,omitempty"`
-	CloudProviderBackoff            bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoff            *bool             `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries     int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter      float64           `json:"cloudProviderBackoffJitter,omitempty"`
 	CloudProviderBackoffDuration    int               `json:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffExponent    float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit          bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimit          *bool             `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS       float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket    int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	LoadBalancerSku                 string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB     *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	AzureCNIVersion                 string            `json:"azureCNIVersion,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -361,6 +365,7 @@ type MasterProfile struct {
 	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
 	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	AgentVnetSubnetID        string            `json:"agentVnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 	StorageProfile           string            `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
@@ -372,6 +377,10 @@ type MasterProfile struct {
 	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef                 *ImageReference   `json:"imageReference,omitempty"`
 	CustomFiles              *[]CustomFile     `json:"customFiles,omitempty"`
+	AvailabilityProfile      string            `json:"availabilityProfile"`
+	AgentSubnet              string            `json:"agentSubnet,omitempty"`
+	AvailabilityZones        []string          `json:"availabilityZones,omitempty"`
+	SinglePlacementGroup     *bool             `json:"singlePlacementGroup,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -409,25 +418,26 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                         string               `json:"name" validate:"required"`
-	Count                        int                  `json:"count" validate:"required,min=1,max=100"`
-	VMSize                       string               `json:"vmSize" validate:"required"`
-	OSDiskSizeGB                 int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	DNSPrefix                    string               `json:"dnsPrefix,omitempty"`
-	OSType                       OSType               `json:"osType,omitempty"`
-	Ports                        []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
-	AvailabilityProfile          string               `json:"availabilityProfile"`
-	ScaleSetPriority             string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
-	ScaleSetEvictionPolicy       string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
-	StorageProfile               string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	DiskSizesGB                  []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
-	VnetSubnetID                 string               `json:"vnetSubnetID,omitempty"`
-	IPAddressCount               int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro                       Distro               `json:"distro,omitempty"`
-	KubernetesConfig             *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
-	ImageRef                     *ImageReference      `json:"imageReference,omitempty"`
-	Role                         AgentPoolProfileRole `json:"role,omitempty"`
-	AcceleratedNetworkingEnabled *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
+	Name                                string               `json:"name" validate:"required"`
+	Count                               int                  `json:"count" validate:"required,min=1,max=100"`
+	VMSize                              string               `json:"vmSize" validate:"required"`
+	OSDiskSizeGB                        int                  `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	DNSPrefix                           string               `json:"dnsPrefix,omitempty"`
+	OSType                              OSType               `json:"osType,omitempty"`
+	Ports                               []int                `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	AvailabilityProfile                 string               `json:"availabilityProfile"`
+	ScaleSetPriority                    string               `json:"scaleSetPriority,omitempty" validate:"eq=Regular|eq=Low|len=0"`
+	ScaleSetEvictionPolicy              string               `json:"scaleSetEvictionPolicy,omitempty" validate:"eq=Delete|eq=Deallocate|len=0"`
+	StorageProfile                      string               `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB                         []int                `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
+	VnetSubnetID                        string               `json:"vnetSubnetID,omitempty"`
+	IPAddressCount                      int                  `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro                              Distro               `json:"distro,omitempty"`
+	KubernetesConfig                    *KubernetesConfig    `json:"kubernetesConfig,omitempty"`
+	ImageRef                            *ImageReference      `json:"imageReference,omitempty"`
+	Role                                AgentPoolProfileRole `json:"role,omitempty"`
+	AcceleratedNetworkingEnabled        *bool                `json:"acceleratedNetworkingEnabled,omitempty"`
+	AcceleratedNetworkingEnabledWindows *bool                `json:"acceleratedNetworkingEnabledWindows,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -436,6 +446,8 @@ type AgentPoolProfile struct {
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
 	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
+	SinglePlacementGroup  *bool             `json:"singlePlacementGroup,omitempty"`
+	AvailabilityZones     []string          `json:"availabilityZones,omitempty"`
 }
 
 // AgentPoolProfileRole represents an agent role
@@ -496,6 +508,20 @@ func (p *Properties) HasWindows() bool {
 	return false
 }
 
+// HasAvailabilityZones returns true if the cluster contains any profile with zones
+func (p *Properties) HasAvailabilityZones() bool {
+	hasZones := p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()
+	if !hasZones && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.HasAvailabilityZones() {
+				hasZones = true
+				break
+			}
+		}
+	}
+	return hasZones
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -529,6 +555,45 @@ func (m *MasterProfile) IsRHEL() bool {
 // IsCoreOS returns true if the master specified a CoreOS distro
 func (m *MasterProfile) IsCoreOS() bool {
 	return m.Distro == CoreOS
+}
+
+// IsVirtualMachineScaleSets returns true if the master availability profile is VMSS
+func (m *MasterProfile) IsVirtualMachineScaleSets() bool {
+	return m.AvailabilityProfile == VirtualMachineScaleSets
+}
+
+// HasAvailabilityZones returns true if the master profile has availability zones
+func (m *MasterProfile) HasAvailabilityZones() bool {
+	return m.AvailabilityZones != nil && len(m.AvailabilityZones) > 0
+}
+
+// HasZonesForAllAgentPools returns true if all of the agent pools have zones
+func (p *Properties) HasZonesForAllAgentPools() bool {
+	for _, ap := range p.AgentPoolProfiles {
+		if !ap.HasAvailabilityZones() {
+			return false
+		}
+	}
+	return true
+}
+
+// MastersAndAgentsUseAvailabilityZones returns true if the cluster contains AZs for all agents and masters profiles
+func (p *Properties) MastersAndAgentsUseAvailabilityZones() bool {
+	return (p.MasterProfile != nil && p.MasterProfile.HasAvailabilityZones()) && p.HasZonesForAllAgentPools()
+}
+
+// IsClusterAllVirtualMachineScaleSets returns true if the cluster contains only Virtual Machine Scale Sets
+func (p *Properties) IsClusterAllVirtualMachineScaleSets() bool {
+	isAll := p.MasterProfile != nil && p.MasterProfile.IsVirtualMachineScaleSets()
+	if isAll && p.AgentPoolProfiles != nil {
+		for _, agentPoolProfile := range p.AgentPoolProfiles {
+			if agentPoolProfile.AvailabilityProfile == AvailabilitySet {
+				isAll = false
+				break
+			}
+		}
+	}
+	return isAll
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -594,6 +659,11 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// HasAvailabilityZones returns true if the agent pool has availability zones
+func (a *AgentPoolProfile) HasAvailabilityZones() bool {
+	return a.AvailabilityZones != nil && len(a.AvailabilityZones) > 0
 }
 
 // HasSearchDomain returns true if the customer specified secrets to install

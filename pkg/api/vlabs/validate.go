@@ -15,6 +15,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -28,7 +29,7 @@ var (
 		"3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.0.4", "3.0.5", "3.0.6", "3.0.7", "3.0.8", "3.0.9", "3.0.10", "3.0.11", "3.0.12", "3.0.13", "3.0.14", "3.0.15", "3.0.16", "3.0.17",
 		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
 		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9", "3.2.11", "3.2.12",
-		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.2.23", "3.3.0", "3.3.1"}
+		"3.2.13", "3.2.14", "3.2.15", "3.2.16", "3.2.23", "3.2.24", "3.3.0", "3.3.1", "3.3.8", "3.3.9"}
 	networkPluginPlusPolicyAllowed = []k8sNetworkConfig{
 		{
 			networkPlugin: "",
@@ -110,7 +111,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateMasterProfile(); e != nil {
 		return e
 	}
-	if e := a.validateAgentPoolProfiles(); e != nil {
+	if e := a.validateAgentPoolProfiles(isUpdate); e != nil {
+		return e
+	}
+	if e := a.validateZones(); e != nil {
 		return e
 	}
 	if e := a.validateLinuxProfile(); e != nil {
@@ -126,6 +130,10 @@ func (a *Properties) Validate(isUpdate bool) error {
 		return e
 	}
 	if e := a.validateServicePrincipalProfile(); e != nil {
+		return e
+	}
+
+	if e := a.validateManagedIdentity(); e != nil {
 		return e
 	}
 
@@ -183,6 +191,22 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				return errors.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: \"%s\", OrchestratorRelease: \"%s\", OrchestratorVersion: \"%s\". Please use one of the following versions: %v", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion, common.GetAllSupportedKubernetesVersions(false, false))
 			}
 
+			sv, err := semver.Make(version)
+			if err != nil {
+				return errors.Errorf("could not validate version %s", version)
+			}
+
+			if a.HasAvailabilityZones() {
+				minVersion, err := semver.Make("1.12.0")
+				if err != nil {
+					return errors.New("could not validate version")
+				}
+
+				if sv.LT(minVersion) {
+					return errors.New("availabilityZone is only available in Kubernetes version 1.12 or greater")
+				}
+			}
+
 			if o.KubernetesConfig != nil {
 				err := o.KubernetesConfig.Validate(version, a.HasWindows())
 				if err != nil {
@@ -191,10 +215,6 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				minVersion, err := semver.Make("1.7.0")
 				if err != nil {
 					return errors.New("could not validate version")
-				}
-				sv, err := semver.Make(version)
-				if err != nil {
-					return errors.Errorf("could not validate version %s", version)
 				}
 
 				if o.KubernetesConfig.EnableAggregatedAPIs {
@@ -256,6 +276,9 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 					if sv.LT(minVersion) {
 						return errors.Errorf("loadBalancerSku is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							minVersion.String(), o.OrchestratorVersion)
+					}
+					if helpers.IsFalseBoolPointer(a.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB) {
+						return errors.Errorf("standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"")
 					}
 				}
 			}
@@ -341,10 +364,24 @@ func (a *Properties) validateMasterProfile() error {
 			return err
 		}
 	}
+
+	if m.IsVirtualMachineScaleSets() && a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		log.Warnf("Clusters with VMSS masters are not yet upgradable! You will not be able to upgrade your cluster until a future version of acs-engine!")
+		e := validateVMSS(a.OrchestratorProfile, false, m.StorageProfile)
+		if e != nil {
+			return e
+		}
+		if !a.IsClusterAllVirtualMachineScaleSets() {
+			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
+		}
+	}
+	if m.SinglePlacementGroup != nil && m.AvailabilityProfile == AvailabilitySet {
+		return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")
+	}
 	return common.ValidateDNSPrefix(m.DNSPrefix)
 }
 
-func (a *Properties) validateAgentPoolProfiles() error {
+func (a *Properties) validateAgentPoolProfiles(isUpdate bool) error {
 
 	profileNames := make(map[string]bool)
 	for i, agentPoolProfile := range a.AgentPoolProfiles {
@@ -363,7 +400,7 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			return e
 		}
 
-		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) {
+		if helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabled) || helpers.IsTrueBoolPointer(agentPoolProfile.AcceleratedNetworkingEnabledWindows) {
 			if e := validatePoolAcceleratedNetworking(agentPoolProfile.VMSize); e != nil {
 				return e
 			}
@@ -393,13 +430,20 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			return e
 		}
 
-		if e := agentPoolProfile.validateVMSS(a.OrchestratorProfile); agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets && e != nil {
-			return e
+		if agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets {
+			e := validateVMSS(a.OrchestratorProfile, isUpdate, agentPoolProfile.StorageProfile)
+			if e != nil {
+				return e
+			}
 		}
 
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes {
 			if a.AgentPoolProfiles[i].AvailabilityProfile != a.AgentPoolProfiles[0].AvailabilityProfile {
 				return errors.New("mixed mode availability profiles are not allowed. Please set either VirtualMachineScaleSets or AvailabilitySet in availabilityProfile for all agent pools")
+			}
+
+			if a.AgentPoolProfiles[i].SinglePlacementGroup != nil && a.AgentPoolProfiles[i].AvailabilityProfile == AvailabilitySet {
+				return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")
 			}
 		}
 
@@ -409,7 +453,7 @@ func (a *Properties) validateAgentPoolProfiles() error {
 			}
 		}
 
-		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile); agentPoolProfile.OSType == Windows && e != nil {
+		if e := agentPoolProfile.validateWindows(a.OrchestratorProfile, a.WindowsProfile, isUpdate); agentPoolProfile.OSType == Windows && e != nil {
 			return e
 		}
 	}
@@ -420,6 +464,38 @@ func (a *Properties) validateAgentPoolProfiles() error {
 		}
 	}
 
+	return nil
+}
+
+func (a *Properties) validateZones() error {
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		// all zones or no zones should be defined for the cluster
+		if a.HasAvailabilityZones() {
+			if a.MastersAndAgentsUseAvailabilityZones() {
+				// master profile
+				if a.MasterProfile.AvailabilityProfile != VirtualMachineScaleSets {
+					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets")
+				}
+				if a.MasterProfile.Count < len(a.MasterProfile.AvailabilityZones)*2 {
+					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
+				}
+				// agent pool profiles
+				for _, agentPoolProfile := range a.AgentPoolProfiles {
+					if agentPoolProfile.AvailabilityProfile == AvailabilitySet {
+						return errors.New("Availability Zones are not supported with an AvailabilitySet. Please either remove availabilityProfile or set availabilityProfile to VirtualMachineScaleSets")
+					}
+					if agentPoolProfile.Count < len(agentPoolProfile.AvailabilityZones)*2 {
+						return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
+					}
+				}
+				if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "" && a.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
+					return errors.New("Availability Zones requires Standard LoadBalancer. Please set KubernetesConfig \"LoadBalancerSku\" to \"Standard\"")
+				}
+			} else {
+				return errors.New("Availability Zones need to be defined for master profile and all agent pool profiles. Please set \"availabilityZones\" for all profiles")
+			}
+		}
+	}
 	return nil
 }
 
@@ -446,6 +522,16 @@ func (a *Properties) validateAddons() error {
 		}
 
 		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
+
+			if addon.Data != "" {
+				if len(addon.Config) > 0 || len(addon.Containers) > 0 {
+					return errors.New("Config and containers should be empty when addon.Data is specified")
+				}
+				if _, err := base64.StdEncoding.DecodeString(addon.Data); err != nil {
+					return errors.Errorf("Addon %s's data should be base64 encoded", addon.Name)
+				}
+			}
+
 			switch addon.Name {
 			case "cluster-autoscaler":
 				if helpers.IsTrueBoolPointer(addon.Enabled) && isAvailabilitySets {
@@ -511,6 +597,10 @@ func (a *Properties) validateVNET() error {
 		}
 	}
 	if isCustomVNET {
+		if a.MasterProfile.IsVirtualMachineScaleSets() && a.MasterProfile.AgentVnetSubnetID == "" {
+			return errors.New("when master profile is using VirtualMachineScaleSets and is custom vnet, set \"vnetsubnetid\" and \"agentVnetSubnetID\" for master profile")
+		}
+
 		subscription, resourcegroup, vnetname, _, e := common.GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
@@ -529,7 +619,7 @@ func (a *Properties) validateVNET() error {
 		}
 
 		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
-		if masterFirstIP == nil {
+		if masterFirstIP == nil && !a.MasterProfile.IsVirtualMachineScaleSets() {
 			return errors.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 
@@ -575,6 +665,43 @@ func (a *Properties) validateServicePrincipalProfile() error {
 					return errors.Errorf("service principal client keyvault secret reference is of incorrect format")
 				}
 			}
+		}
+	}
+	return nil
+}
+
+func (a *Properties) validateManagedIdentity() error {
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		useManagedIdentity := a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+
+		if useManagedIdentity {
+			version := common.RationalizeReleaseAndVersion(
+				a.OrchestratorProfile.OrchestratorType,
+				a.OrchestratorProfile.OrchestratorRelease,
+				a.OrchestratorProfile.OrchestratorVersion,
+				false,
+				false)
+			if version == "" {
+				return errors.Errorf("the following user supplied OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", a.OrchestratorProfile.OrchestratorType, a.OrchestratorProfile.OrchestratorRelease, a.OrchestratorProfile.OrchestratorVersion)
+			}
+			sv, err := semver.Make(version)
+			if err != nil {
+				return errors.Errorf("could not validate version %s", version)
+			}
+			minVersion, err := semver.Make("1.12.0")
+			if err != nil {
+				return errors.New("could not validate version")
+			}
+
+			if a.MasterProfile.IsVirtualMachineScaleSets() {
+				if sv.LT(minVersion) {
+					return errors.New("managed identity and VMSS masters can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+				}
+			} else if a.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" && sv.LT(minVersion) {
+				return errors.New("user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"")
+			}
+
 		}
 	}
 	return nil
@@ -705,13 +832,13 @@ func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) err
 	return nil
 }
 
-func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
+func validateVMSS(o *OrchestratorProfile, isUpdate bool, storageProfile string) error {
 	if o.OrchestratorType == Kubernetes {
 		version := common.RationalizeReleaseAndVersion(
 			o.OrchestratorType,
 			o.OrchestratorRelease,
 			o.OrchestratorVersion,
-			false,
+			isUpdate,
 			false)
 		if version == "" {
 			return errors.Errorf("the following OrchestratorProfile configuration is not supported: OrchestratorType: %s, OrchestratorRelease: %s, OrchestratorVersion: %s. Please check supported Release or Version for this build of acs-engine", o.OrchestratorType, o.OrchestratorRelease, o.OrchestratorVersion)
@@ -738,14 +865,14 @@ func (a *AgentPoolProfile) validateVMSS(o *OrchestratorProfile) error {
 				return errors.Errorf("VirtualMachineScaleSets with instance metadata is supported for Kubernetes version %s or greater. Please set \"useInstanceMetadata\": false in \"kubernetesConfig\" or set \"orchestratorVersion\" to %s or above", minVersion.String(), minVersion.String())
 			}
 		}
-		if (a.AvailabilityProfile == VirtualMachineScaleSets || len(a.AvailabilityProfile) == 0) && a.StorageProfile == StorageAccount {
+		if storageProfile == StorageAccount {
 			return errors.Errorf("VirtualMachineScaleSets does not support %s disks.  Please specify \"storageProfile\": \"%s\" (recommended) or \"availabilityProfile\": \"%s\"", StorageAccount, ManagedDisks, AvailabilitySet)
 		}
 	}
 	return nil
 }
 
-func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsProfile) error {
+func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsProfile, isUpdate bool) error {
 	switch o.OrchestratorType {
 	case DCOS:
 	case Swarm:
@@ -755,7 +882,7 @@ func (a *AgentPoolProfile) validateWindows(o *OrchestratorProfile, w *WindowsPro
 			o.OrchestratorType,
 			o.OrchestratorRelease,
 			o.OrchestratorVersion,
-			false,
+			isUpdate,
 			true)
 		if version == "" {
 			return errors.Errorf("Orchestrator %s version %s does not support Windows", o.OrchestratorType, o.OrchestratorVersion)
@@ -855,23 +982,42 @@ func (w *WindowsProfile) Validate(orchestratorType string) error {
 	if e := validate.Var(w.AdminPassword, "required"); e != nil {
 		return errors.New("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 	}
+	if !validatePasswordComplexity(w.AdminUsername, w.AdminPassword) {
+		return errors.New("WindowsProfile.AdminPassword complexity not met. Windows password should contain 3 of the following categories - uppercase letters(A-Z), lowercase(a-z) letters, digits(0-9), special characters (~!@#$%^&*_-+=`|\\(){}[]:;<>,.?/')")
+	}
 	return validateKeyVaultSecrets(w.Secrets, true)
+}
+
+func validatePasswordComplexity(name string, password string) (out bool) {
+
+	if strings.EqualFold(name, password) {
+		return false
+	}
+
+	if len(password) == 0 {
+		return false
+	}
+
+	hits := 0
+	if regexp.MustCompile(`[0-9]+`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[A-Z]+`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[a-z]`).MatchString(password) {
+		hits++
+	}
+	if regexp.MustCompile(`[~!@#\$%\^&\*_\-\+=\x60\|\(\){}\[\]:;"'<>,\.\?/]+`).MatchString(password) {
+		hits++
+	}
+	return hits > 2
 }
 
 // Validate validates the KubernetesConfig
 func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = common.AllKubernetesSupportedVersions
-	// at present all supported versions allow for cloudprovider backoff
-	// disallow backoff for future versions thusly:
-	// for version := range []string{"1.11.0", "1.11.1", "1.11.2"} {
-	//     backoffEnabledVersions[version] = false
-	// }
-
-	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
-	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if k.ClusterSubnet != "" {
 		_, subnet, err := net.ParseCIDR(k.ClusterSubnet)
@@ -928,11 +1074,12 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 				}
 			}
 		}
-		if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
+		// Re-enable this unit test if --non-masquerade-cidr is re-introduced
+		/*if _, ok := k.KubeletConfig["--non-masquerade-cidr"]; ok {
 			if _, _, err := net.ParseCIDR(k.KubeletConfig["--non-masquerade-cidr"]); err != nil {
 				return errors.Errorf("--non-masquerade-cidr kubelet config '%s' is an invalid CIDR string", k.KubeletConfig["--non-masquerade-cidr"])
 			}
-		}
+		}*/
 	}
 
 	if _, ok := k.ControllerManagerConfig["--pod-eviction-timeout"]; ok {
@@ -946,18 +1093,6 @@ func (k *KubernetesConfig) Validate(k8sVersion string, hasWindows bool) error {
 		_, err := time.ParseDuration(k.ControllerManagerConfig["--route-reconciliation-period"])
 		if err != nil {
 			return errors.Errorf("--route-reconciliation-period '%s' is not a valid duration", k.ControllerManagerConfig["--route-reconciliation-period"])
-		}
-	}
-
-	if k.CloudProviderBackoff {
-		if !backoffEnabledVersions[k8sVersion] {
-			return errors.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
-		}
-	}
-
-	if k.CloudProviderRateLimit {
-		if !ratelimitEnabledVersions[k8sVersion] {
-			return errors.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 

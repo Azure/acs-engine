@@ -112,23 +112,15 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	case strings.HasPrefix(upgradeVersion, "1.8."):
 		upgrader18 := &Kubernetes18upgrader{}
 		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-
 		upgrader = upgrader18
 
-	case strings.HasPrefix(upgradeVersion, "1.9."):
-		upgrader19 := &Upgrader{}
-		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader19
-
-	case strings.HasPrefix(upgradeVersion, "1.10."):
-		upgrader110 := &Upgrader{}
-		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader110
-
-	case strings.HasPrefix(upgradeVersion, "1.11."):
-		upgrader111 := &Upgrader{}
-		upgrader111.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
-		upgrader = upgrader111
+	case strings.HasPrefix(upgradeVersion, "1.9."),
+		strings.HasPrefix(upgradeVersion, "1.10."),
+		strings.HasPrefix(upgradeVersion, "1.11."),
+		strings.HasPrefix(upgradeVersion, "1.12."):
+		u := &Upgrader{}
+		u.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
+		upgrader = u
 
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
@@ -145,7 +137,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourceGroup string) error {
 	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), armhelpers.DefaultARMOperationTimeout)
 	defer cancel()
 	for vmScaleSetPage, err := uc.Client.ListVirtualMachineScaleSets(ctx, resourceGroup); vmScaleSetPage.NotDone(); err = vmScaleSetPage.Next() {
 		if err != nil {

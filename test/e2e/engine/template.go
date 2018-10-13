@@ -76,7 +76,7 @@ func ParseConfig(cwd, clusterDefinition, name string) (*Config, error) {
 
 // Build takes a template path and will inject values based on provided environment variables
 // it will then serialize the structs back into json and save it to outputPath
-func Build(cfg *config.Config, subnetID string) (*Engine, error) {
+func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVMSS bool) (*Engine, error) {
 	config, err := ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
 	if err != nil {
 		log.Printf("Error while trying to build Engine Configuration:%s\n", err)
@@ -168,9 +168,17 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 	}
 
 	if config.CreateVNET {
-		cs.ContainerService.Properties.MasterProfile.VnetSubnetID = subnetID
-		for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
-			p.VnetSubnetID = subnetID
+		if isVMSS {
+			cs.ContainerService.Properties.MasterProfile.VnetSubnetID = masterSubnetID
+			cs.ContainerService.Properties.MasterProfile.AgentVnetSubnetID = agentSubnetID
+			for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
+				p.VnetSubnetID = agentSubnetID
+			}
+		} else {
+			cs.ContainerService.Properties.MasterProfile.VnetSubnetID = masterSubnetID
+			for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
+				p.VnetSubnetID = masterSubnetID
+			}
 		}
 	}
 
@@ -236,11 +244,7 @@ func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 
 // HasNetworkPolicy will return true if the specified network policy is enabled
 func (e *Engine) HasNetworkPolicy(name string) bool {
-	if strings.Contains(e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, name) {
-		return true
-	}
-
-	return false
+	return strings.Contains(e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy, name)
 }
 
 // Write will write the cluster definition to disk

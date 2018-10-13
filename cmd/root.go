@@ -85,6 +85,11 @@ func writeDefaultModel(out io.Writer) error {
 	return nil
 }
 
+type authProvider interface {
+	getAuthArgs() *authArgs
+	getClient() (armhelpers.ACSEngineClient, error)
+}
+
 type authArgs struct {
 	RawAzureEnvironment string
 	rawSubscriptionID   string
@@ -101,13 +106,18 @@ type authArgs struct {
 
 func addAuthFlags(authArgs *authArgs, f *flag.FlagSet) {
 	f.StringVar(&authArgs.RawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud")
-	f.StringVar(&authArgs.rawSubscriptionID, "subscription-id", "", "azure subscription id (required)")
+	f.StringVarP(&authArgs.rawSubscriptionID, "subscription-id", "s", "", "azure subscription id (required)")
 	f.StringVar(&authArgs.AuthMethod, "auth-method", "device", "auth method (default:`device`, `client_secret`, `client_certificate`)")
 	f.StringVar(&authArgs.rawClientID, "client-id", "", "client id (used with --auth-method=[client_secret|client_certificate])")
 	f.StringVar(&authArgs.ClientSecret, "client-secret", "", "client secret (used with --auth-mode=client_secret)")
 	f.StringVar(&authArgs.CertificatePath, "certificate-path", "", "path to client certificate (used with --auth-method=client_certificate)")
 	f.StringVar(&authArgs.PrivateKeyPath, "private-key-path", "", "path to private key (used with --auth-method=client_certificate)")
 	f.StringVar(&authArgs.language, "language", "en-us", "language to return error messages in")
+}
+
+//this allows the authArgs to be stubbed behind the authProvider interface, and be its own provider when not in tests.
+func (authArgs *authArgs) getAuthArgs() *authArgs {
+	return authArgs
 }
 
 func (authArgs *authArgs) validateAuthArgs() error {
@@ -180,7 +190,7 @@ func getCloudSubFromAzConfig(cloud string, f *ini.File) (uuid.UUID, error) {
 	return uuid.FromString(sub.String())
 }
 
-func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
+func (authArgs *authArgs) getClient() (armhelpers.ACSEngineClient, error) {
 	var client *armhelpers.AzureClient
 	env, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {
