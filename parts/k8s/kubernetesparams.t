@@ -625,15 +625,17 @@
         "cloudProviderRateLimitBucket": 0
       }
     },
-    "kubernetesKubeDNSSpec": {
-      "metadata": {
-        "description": "The container spec for kubedns-amd64."
-      },
-      "type": "string"
-    },
+{{if IsKubernetesVersionGe "1.12.0"}}
     "kubernetesCoreDNSSpec": {
       "metadata": {
         "description": "The container spec for coredns"
+      },
+      "type": "string"
+    },
+{{else}}
+    "kubernetesKubeDNSSpec": {
+      "metadata": {
+        "description": "The container spec for kubedns-amd64."
       },
       "type": "string"
     },
@@ -643,6 +645,7 @@
       },
       "type": "string"
     },
+{{end}}
     {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",
