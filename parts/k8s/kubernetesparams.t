@@ -280,7 +280,7 @@
       "defaultValue": false,
       "type": "bool"
     },
-{{if and (IsKubernetesVersionGe "1.7.0") (not (IsKubernetesVersionGe "1.9.0"))}}
+{{if NeedsKubeDNSPlusExecHealthz}}
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
