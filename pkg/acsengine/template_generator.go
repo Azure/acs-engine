@@ -375,7 +375,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
 		},
-		"NeedsKubeDNSPlusExecHealthz": func() bool {
+		"NeedsKubeDNSWithExecHealthz": func() bool {
 			return cs.Properties.OrchestratorProfile.NeedsExecHealthz()
 		},
 		"LoadBalancerSku": func() string {

@@ -1150,7 +1150,7 @@ func (o *OrchestratorProfile) RequireRouteTable() bool {
 func (o *OrchestratorProfile) NeedsExecHealthz() bool {
 	return o.IsKubernetes() &&
 		common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") &&
-		!common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.7.0")
+		!common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0")
 }
 
 // HasAadProfile  returns true if the has aad profile
