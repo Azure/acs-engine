@@ -106,8 +106,6 @@ spec:
           effect: NoSchedule
         - key: "CriticalAddonsOnly"
           operator: "Exists"
-      nodeSelector:
-        kubernetes.io/role: master
       containers:
       - name: coredns
         image: <kubernetesCoreDNSSpec>
@@ -150,6 +148,8 @@ spec:
             drop:
             - all
           readOnlyRootFilesystem: true
+        nodeSelector:
+          beta.kubernetes.io/os: linux
       dnsPolicy: Default
       volumes:
         - name: config-volume
