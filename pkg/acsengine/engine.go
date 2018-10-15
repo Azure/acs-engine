@@ -650,7 +650,7 @@ func getSecurityRules(ports []int) string {
 	return buf.String()
 }
 
-// getSingleLineForTemplate returns the file as a single line
+// getSingleLine returns the file as a single line
 func (t *TemplateGenerator) getSingleLine(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
