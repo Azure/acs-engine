@@ -144,12 +144,14 @@
     "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "vnetResourceGroupNameResourceSegmentIndex": 4,
     "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+    "masterSubnet": "",
   {{else}}
     "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "",
+    "masterSubnet": "[parameters('masterSubnet')]",
   {{end}}
 {{else}}
   {{if .MasterProfile.IsCustomVNET}}
@@ -161,6 +163,7 @@
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "vnetResourceGroupNameResourceSegmentIndex": 4,
     "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+    "masterSubnet": "",
   {{else}}
     "subnetName": "subnetmaster",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
@@ -168,6 +171,7 @@
     "vnetSubnetIDMaster": "[concat(variables('vnetID'),'/subnets/subnetmaster')]",
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "''",
+    "masterSubnet": "[parameters('masterSubnet')]",
   {{end}}
 {{end}}
 {{if IsHostedMaster }}

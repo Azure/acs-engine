@@ -59,7 +59,7 @@
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('masterSubnet')]"
+              "addressPrefix": "[variables('masterSubnet')]"
 {{if not IsOpenShift}}
               ,
               "networkSecurityGroup": {
