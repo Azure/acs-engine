@@ -650,8 +650,8 @@ func getSecurityRules(ports []int) string {
 	return buf.String()
 }
 
-// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
+// getSingleLine returns the file as a single line
+func (t *TemplateGenerator) getSingleLine(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
 		return "", t.Translator.Errorf("yaml file %s does not exist", textFilename)
@@ -668,6 +668,16 @@ func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *ap
 		return "", t.Translator.Errorf("error executing template for file %s: %v", textFilename, err)
 	}
 	expandedTemplate := buffer.String()
+
+	return expandedTemplate, nil
+}
+
+// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
+func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
+	expandedTemplate, err := t.getSingleLine(textFilename, cs, profile)
+	if err != nil {
+		return "", err
+	}
 
 	textStr := escapeSingleLine(string(expandedTemplate))
 
