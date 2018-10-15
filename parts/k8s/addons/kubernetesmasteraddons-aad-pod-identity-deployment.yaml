@@ -104,7 +104,7 @@ spec:
       hostNetwork: true
       containers:
       - name: nmi
-        image: "nikhilbh/nmi:1.2"
+        image: "mcr.microsoft.com/k8s/aad-pod-identity/nmi:1.2"
         imagePullPolicy: Always
         resources:
           requests:
@@ -202,7 +202,7 @@ spec:
       serviceAccountName: aad-pod-id-mic-service-account
       containers:
       - name: mic
-        image: "nikhilbh/mic:1.2"
+        image: "mcr.microsoft.com/k8s/aad-pod-identity/mic:1.2"
         imagePullPolicy: Always
         resources:
           requests:
