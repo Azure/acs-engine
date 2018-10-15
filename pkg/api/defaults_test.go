@@ -627,9 +627,10 @@ func TestMasterProfileDefaults(t *testing.T) {
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 	mockCS.SetPropertiesDefaults(false, false)
-	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != DefaultExcludeMasterFromStandardLB {
+	excludeMaster := DefaultExcludeMasterFromStandardLB
+	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != excludeMaster {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",
-			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, DefaultExcludeMasterFromStandardLB)
+			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, excludeMaster)
 	}
 }
 
@@ -780,9 +781,10 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 	properties.MasterProfile.AvailabilityProfile = VirtualMachineScaleSets
 	properties.MasterProfile.AvailabilityZones = []string{"1", "2"}
 	mockCS.SetPropertiesDefaults(false, false)
-	if *properties.MasterProfile.SinglePlacementGroup != DefaultSinglePlacementGroup {
+	singlePlacementGroup := DefaultSinglePlacementGroup
+	if *properties.MasterProfile.SinglePlacementGroup != singlePlacementGroup {
 		t.Fatalf("MasterProfile.SinglePlacementGroup default did not have the expected configuration, got %t, expected %t",
-			*properties.MasterProfile.SinglePlacementGroup, DefaultSinglePlacementGroup)
+			*properties.MasterProfile.SinglePlacementGroup, singlePlacementGroup)
 	}
 	if !properties.MasterProfile.HasAvailabilityZones() {
 		t.Fatalf("MasterProfile.HasAvailabilityZones did not have the expected return, got %t, expected %t",
@@ -792,9 +794,10 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")
 	}
-	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != DefaultExcludeMasterFromStandardLB {
+	excludeMaster := DefaultExcludeMasterFromStandardLB
+	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != excludeMaster {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",
-			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, DefaultExcludeMasterFromStandardLB)
+			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, excludeMaster)
 	}
 	// agents with vmss and no zones
 	mockCS = getMockBaseContainerService("1.12.0")
@@ -825,17 +828,19 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 		t.Fatalf("AgentPoolProfiles[0].HasAvailabilityZones did not have the expected return, got %t, expected %t",
 			properties.AgentPoolProfiles[0].HasAvailabilityZones(), true)
 	}
-	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != DefaultSinglePlacementGroup {
+	singlePlacementGroup = DefaultSinglePlacementGroup
+	if *properties.AgentPoolProfiles[0].SinglePlacementGroup != singlePlacementGroup {
 		t.Fatalf("AgentPoolProfile[0].SinglePlacementGroup default did not have the expected configuration, got %t, expected %t",
-			*properties.AgentPoolProfiles[0].SinglePlacementGroup, DefaultSinglePlacementGroup)
+			*properties.AgentPoolProfiles[0].SinglePlacementGroup, singlePlacementGroup)
 	}
 	if properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku != "Standard" {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.LoadBalancerSku did not have the expected configuration, got %s, expected %s",
 			properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku, "Standard")
 	}
-	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != DefaultExcludeMasterFromStandardLB {
+	excludeMaster = DefaultExcludeMasterFromStandardLB
+	if *properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB != excludeMaster {
 		t.Fatalf("OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB did not have the expected configuration, got %t, expected %t",
-			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, DefaultExcludeMasterFromStandardLB)
+			*properties.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB, excludeMaster)
 	}
 
 	properties.AgentPoolProfiles[0].Count = 110
