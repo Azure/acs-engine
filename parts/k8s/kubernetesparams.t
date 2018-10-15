@@ -661,6 +661,8 @@
         "description": "The docker engine version to install."
       },
       "allowedValues": [
+         "18.06.*",
+         "18.03.*",
          "17.05.*",
          "17.04.*",
          "17.03.*",
