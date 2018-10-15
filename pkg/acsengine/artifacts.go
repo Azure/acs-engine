@@ -261,37 +261,55 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesAddonSetti
 	}
 }
 
-func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeatureSetting {
-	return []kubernetesFeatureSetting{
+func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesAddonSetting {
+	return []kubernetesAddonSetting{
 		{
-			"kubernetesmaster-kube-scheduler.yaml",
-			"kube-scheduler.yaml",
-			true,
+			kubernetesFeatureSetting{
+				"kubernetesmaster-kube-scheduler.yaml",
+				"kube-scheduler.yaml",
+				true,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.SchedulerConfig["data"],
 		},
 		{
-			"kubernetesmaster-kube-controller-manager.yaml",
-			"kube-controller-manager.yaml",
-			true,
+			kubernetesFeatureSetting{
+				"kubernetesmaster-kube-controller-manager.yaml",
+				"kube-controller-manager.yaml",
+				true,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig["data"],
 		},
 		{
-			"kubernetesmaster-cloud-controller-manager.yaml",
-			"cloud-controller-manager.yaml",
-			profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager,
+			kubernetesFeatureSetting{
+				"kubernetesmaster-cloud-controller-manager.yaml",
+				"cloud-controller-manager.yaml",
+				profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig["data"],
 		},
 		{
-			"kubernetesmaster-pod-security-policy.yaml",
-			"pod-security-policy.yaml",
-			helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
+			kubernetesFeatureSetting{
+				"kubernetesmaster-pod-security-policy.yaml",
+				"pod-security-policy.yaml",
+				helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
+			},
+			profile.OrchestratorProfile.KubernetesConfig.PodSecurityPolicyConfig["data"],
 		},
 		{
-			"kubernetesmaster-kube-apiserver.yaml",
-			"kube-apiserver.yaml",
-			true,
+			kubernetesFeatureSetting{
+				"kubernetesmaster-kube-apiserver.yaml",
+				"kube-apiserver.yaml",
+				true,
+			},
+			profile.OrchestratorProfile.KubernetesConfig.APIServerConfig["data"],
 		},
 		{
-			"kubernetesmaster-kube-addon-manager.yaml",
-			"kube-addon-manager.yaml",
-			true,
+			kubernetesFeatureSetting{
+				"kubernetesmaster-kube-addon-manager.yaml",
+				"kube-addon-manager.yaml",
+				true,
+			},
+			"",
 		},
 	}
 }
