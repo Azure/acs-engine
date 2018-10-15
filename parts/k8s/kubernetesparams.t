@@ -280,12 +280,14 @@
       "defaultValue": false,
       "type": "bool"
     },
+{{if NeedsKubeDNSWithExecHealthz}}
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
       },
       "type": "string"
     },
+{{end}}
     "kubernetesDNSSidecarSpec": {
       "metadata": {
         "description": "The container spec for k8s-dns-sidecar-amd64."
