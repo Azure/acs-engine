@@ -314,31 +314,6 @@ func autofillApimodel(dc *deployCmd) error {
 	useManagedIdentity := k8sConfig != nil &&
 		k8sConfig.UseManagedIdentity
 
-	if dc.containerService.Properties.MasterProfile.IsVirtualMachineScaleSets() {
-		k8sConfig.UserAssignedID = acsengine.DefaultUserAssignedID
-	}
-	userAssignedID := k8sConfig != nil &&
-		k8sConfig.UseManagedIdentity &&
-		k8sConfig.UserAssignedID != ""
-
-	// Note: User assigned identity can be assigned from the ARM template, but the role assigment following that will
-	// fail due to a bug with the service. This code is added to wait till the newly created AAD identity is properly
-	// propogated.
-	if userAssignedID {
-		userID, err := dc.client.CreateUserAssignedID(dc.location, dc.resourceGroup, k8sConfig.UserAssignedID)
-		if err != nil {
-			return nil
-		}
-		// Fill up the client id for creating azure.json
-		k8sConfig.UserAssignedClientID = (*userID.ClientID).String()
-		err = dc.client.CreateRoleAssignmentSimple(ctx, dc.resourceGroup, (*userID.PrincipalID).String())
-		if err != nil {
-			return errors.Wrap(err, "apimodel: could not create role assignment for user assigned id ")
-		}
-		//TODO: Support e2e return fake user id.
-		return nil
-	}
-
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
 		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil && (dc.getAuthArgs().ClientID.String() == "" || dc.getAuthArgs().ClientID.String() == "00000000-0000-0000-0000-000000000000") && dc.getAuthArgs().ClientSecret == "" {

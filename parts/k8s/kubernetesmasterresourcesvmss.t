@@ -13,7 +13,13 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
-    {{ if UseManagedIdentity}}
+    {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+    "dependsOn": [
+     "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+     "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('userAssignedID'), 'roleAssignment'))]",
+    ],
+    {{else}}
     "dependsOn": 
     [
       "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
@@ -21,6 +27,7 @@
       ,"[variables('userAssignedIDReference')]"
       {{end}}
     ],
+    {{end}}
     {{end}}
     "properties": {
       "enabledForDeployment": "false",
