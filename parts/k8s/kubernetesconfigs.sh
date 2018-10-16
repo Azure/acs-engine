@@ -247,6 +247,7 @@ function ensureDocker() {
     systemctlEnableAndStart docker
     DOCKER_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-monitor.service
     wait_for_file 1200 1 $DOCKER_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    # TODO don't systemctl enable docker-monitor for 30 mins
     systemctlEnableAndStart docker-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 function ensureKMS() {
@@ -263,6 +264,7 @@ function ensureKubelet() {
     systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
     KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
     wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
+    # TODO don't systemctl enable docker-monitor for 30 mins
     systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
