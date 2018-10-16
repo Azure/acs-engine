@@ -38,7 +38,7 @@ func (cs *ContainerService) setKubeletConfig() {
 	staticWindowsKubeletConfig["--kubeconfig"] = "c:\\k\\config"
 	staticWindowsKubeletConfig["--cloud-config"] = "c:\\k\\azure.json"
 	staticWindowsKubeletConfig["--cgroups-per-qos"] = "false"
-	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"system-reserved\""
+	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "system-reserved"
 	staticWindowsKubeletConfig["--system-reserved"] = "memory=2Gi"
 	staticWindowsKubeletConfig["--client-ca-file"] = "c:\\k\\ca.crt"
 	staticWindowsKubeletConfig["--hairpin-mode"] = "promiscuous-bridge"
