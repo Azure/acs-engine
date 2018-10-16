@@ -1,10 +1,9 @@
-## Walkthrough
+# Kubernetes Walkthrough
 
 Once your Kubernetes cluster has been created you will have a resource group containing:
 
-1. 1 master accessible by SSH on port 22 or kubectl on port 443
-
-2. a set of nodes in an availability set.  The nodes can be accessed through a master.  See [agent forwarding](../ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+1. One master accessible by SSH on port 22 or kubectl on port 443
+2. A set of nodes in an availability set. The nodes can be accessed through a master. See [agent forwarding](../ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
 The following image shows the architecture of a container service cluster with 1 master, and 2 agents:
 
@@ -22,81 +21,70 @@ All VMs are in the same private VNET and are fully accessible to each other.
 ## Create your First Kubernetes Service
 
 After completing this walkthrough you will know how to:
- * access Kubernetes cluster via SSH,
- * deploy a simple Docker application and expose to the world,
- * the location of the Kube config file and how to access the Kubernetes cluster remotely,
- * use `kubectl exec` to run commands in a container,
- * and finally access the Kubernetes dashboard.
+
+* Access Kubernetes cluster via SSH,
+* Deploy a simple Docker application and expose to the world,
+* The location of the Kube config file and how to access the Kubernetes cluster remotely,
+* Use `kubectl exec` to run commands in a container,
+* And finally access the Kubernetes dashboard.
+
+Follow these steps:
 
 1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name).
-   1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
-   2. If using Portal, to get the output you need to:
-      1. navigate to "resource group"
-      2. click on the resource group you just created
-      3. then click on "Succeeded" under *last deployment*
-      4. then click on the "Microsoft.Template"
-      5. now you can copy the output FQDNs and sample SSH commands
+   * If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
+   * If using Portal, to get the output you need to:
+      1. Navigate to "resource group"
+      2. Click on the resource group you just created
+      3. Then click on "Succeeded" under *last deployment*
+      4. Then click on the "Microsoft.Template"
+      5. Now you can copy the output FQDNs and sample SSH commands
       ![Image of docker scaling](../images/portal-kubernetes-outputs.png)
-
 2. SSH to the master FQDN obtained in step 1.
-
 3. Explore your nodes and running pods:
-  1. to see a list of your nodes type `kubectl get nodes`.  If you want full detail of the nodes, add `-o yaml` to become `kubectl get nodes -o yaml`.
-  2. to see a list of running pods type `kubectl get pods --all-namespaces`.
-
+   * To see a list of your nodes type `kubectl get nodes`.  If you want full detail of the nodes, add `-o yaml` to become `kubectl get nodes -o yaml`.
+   * To see a list of running pods type `kubectl get pods --all-namespaces`.
 4. Start your first Docker image by typing `kubectl run nginx --image nginx`.  This will start the nginx Docker container in a pod on one of the nodes.
-
 5. Type `kubectl get pods -o yaml` to see the full details of the nginx deployment. You can see the host IP and the podIP.  The pod IP is assigned from the pod CIDR on the host.  Run curl to the pod ip to see the nginx output, eg. `curl 10.244.1.4`
-
   ![Image of curl to podIP](../images/kubernetes-nginx1.png)
-
 6. The next step is to expose the nginx deployment as a Kubernetes service on the private service network 10.0.0.0/16:
-  1. expose the service with command `kubectl expose deployment nginx --port=80`.
-  2. get the service IP `kubectl get service`
-  3. run curl to the IP, eg. `curl 10.0.105.199`
-
-  ![Image of curl to service IP](../images/kubernetes-nginx2.png)
-
+   1. Expose the service with command `kubectl expose deployment nginx --port=80`.
+   2. Get the service IP `kubectl get service`
+   3. Run curl to the IP, eg. `curl 10.0.105.199`
+   ![Image of curl to service IP](../images/kubernetes-nginx2.png)
 7. The final step is to expose the service to the world.  This is done by changing the service type from `ClusterIP` to `LoadBalancer`:
-  1. edit the service: `kubectl edit svc/nginx`
-  2. change `type` from `ClusterIP` to `LoadBalancer` and save it.  This will now cause Kubernetes to create an Azure Load Balancer with a public IP.
-  3. the change will take about 2-3 minutes.  To watch the service change from "pending" to an external ip type `watch 'kubectl get svc'`
-
-  ![Image of watching the transition from pending to external ip](../images/kubernetes-nginx3.png)
-
-  4. once you see the external IP, you can browse to it in your browser:
-
-  ![Image of browsing to nginx](../images/kubernetes-nginx4.png)
-
+   1. Edit the service: `kubectl edit svc/nginx`
+   2. Change `type` from `ClusterIP` to `LoadBalancer` and save it. This will now cause Kubernetes to create an Azure Load Balancer with a public IP.
+   3. The change will take about 2-3 minutes.  To watch the service change from "pending" to an external ip, type `watch 'kubectl get svc'`
+   ![Image of watching the transition from pending to external ip](../images/kubernetes-nginx3.png)
+   4. Once you see the external IP, you can browse to it in your browser:
+   ![Image of browsing to nginx](../images/kubernetes-nginx4.png)
 8. The next step in this walkthrough is to show you how to remotely manage your Kubernetes cluster.  First download Kubectl to your machine and put it in your path:
-  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/windows/amd64/kubectl.exe)
-  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/darwin/amd64/kubectl)
-  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl)
-
+   * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/windows/amd64/kubectl.exe)
+   * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/darwin/amd64/kubectl)
+   * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl)
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
-  * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](../ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
-  ```
-  # MASTERFQDN is obtained in step1
-  pscp -P 22 azureuser@MASTERFQDN:.kube/config .
-  SET KUBECONFIG=%CD%\config
-  kubectl get nodes
-  ```
-  * OS X or Linux:
-  ```
-  # MASTERFQDN is obtained in step1
-  scp azureuser@MASTERFQDN:.kube/config .
-  export KUBECONFIG=`pwd`/config
-  kubectl get nodes
-  ```
+   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](../ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
+      ```sh
+      # MASTERFQDN is obtained in step1
+      pscp -P 22 azureuser@MASTERFQDN:.kube/config .
+      SET KUBECONFIG=%CD%\config
+      kubectl get nodes
+      ```
+   * OS X or Linux:
+      ```sh
+      # MASTERFQDN is obtained in step1
+      scp azureuser@MASTERFQDN:.kube/config .
+      export KUBECONFIG=`pwd`/config
+      kubectl get nodes
+      ```
 10. The next step is to show you how to remotely run commands in a remote Docker container:
-  1. Run `kubectl get pods` to show the name of your nginx pod
-  2. using your pod name, you can run a remote command on your pod.  eg. `kubectl exec nginx-701339712-retbj date`
-  3. try running a remote bash session. eg. `kubectl exec nginx-701339712-retbj -it bash`.  The following screen shot shows these commands:
-
-  ![Image of curl to podIP](../images/kubernetes-remote.png)
-
-11. The final step of this tutorial is to show you the dashboard:
-  1. run `kubectl proxy` to directly connect to the proxy
-  2. in your browser browse to the [dashboard](http://127.0.0.1:8001/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=_all)
-  3. browse around and explore your pods and services.
-  ![Image of Kubernetes dashboard](../images/kubernetes-dashboard.png)
+    1. Run `kubectl get pods` to show the name of your nginx pod
+    2. Using your pod name, you can run a remote command on your pod.  eg. `kubectl exec nginx-701339712-retbj date`
+    3. Try running a remote bash session. eg. `kubectl exec nginx-701339712-retbj -it bash`. 
+    The following screen shot shows these commands:
+    ![Image of curl to podIP](../images/kubernetes-remote.png)
+12. The final step of this tutorial is to show you the dashboard:
+    1. Run `kubectl proxy` to directly connect to the proxy
+    2. In your browser browse to the [dashboard](http://127.0.0.1:8001/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=_all)
+    3. Browse around and explore your pods and services.
+    ![Image of Kubernetes dashboard](../images/kubernetes-dashboard.png)

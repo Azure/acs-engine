@@ -1,6 +1,6 @@
 # Deploy a Kubernetes Cluster
 
-## Install Pre-requisites
+## Install Prerequisites
 
 All the commands in this guide require both the Azure CLI and `acs-engine`. Follow the [installation instructions to download acs-engine before continuing](../acsengine.md#install-acs-engine) or [compile from source](../acsengine.md#build-from-source).
 
@@ -23,7 +23,7 @@ After the cluster is deployed the upgrade and [scale](scale.md) commands can be 
 * A `dnsPrefix` which forms part of the the hostname for your cluster (e.g. staging, prodwest, blueberry). The DNS prefix must be unique so pick a random name.
 * A location to provision the cluster e.g. `westus2`.
 
-```
+```sh
 $ az account list -o table
 Name                                             CloudName    SubscriptionId                        State    IsDefault
 -----------------------------------------------  -----------  ------------------------------------  -------  -----------
@@ -36,7 +36,7 @@ For this example, the subscription id is `51ac25de-afdg-9201-d923-8d8e8e8e8e8e`,
 
 Run `acs-engine deploy` with the appropriate arguments:
 
-```
+```sh
 $ acs-engine deploy --subscription-id 51ac25de-afdg-9201-d923-8d8e8e8e8e8e \
     --dns-prefix contoso-apple --location westus2 \
     --api-model examples/kubernetes.json
@@ -52,12 +52,12 @@ INFO[0393] Finished ARM Deployment (contoso-apple-1423145182).
 
 `acs-engine` will output Azure Resource Manager (ARM) templates, SSH keys, and a kubeconfig file in `_output/contoso-apple-59769a59` directory:
 
-   * `_output/contoso-apple-59769a59/azureuser_rsa`
-   * `_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json`
+* `_output/contoso-apple-59769a59/azureuser_rsa`
+* `_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json`
 
 acs-engine generates kubeconfig files for each possible region. Access the new cluster by using the kubeconfig generated for the cluster's location. This example used `westus2`, so the kubeconfig is `_output/<clustername>/kubeconfig/kubeconfig.westus2.json`:
 
-```
+```sh
 $ KUBECONFIG=_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json kubectl cluster-info
 Kubernetes master is running at https://contoso-apple-59769a59.westus2.cloudapp.azure.com
 Heapster is running at https://contoso-apple-59769a59.westus2.cloudapp.azure.com/api/v1/proxy/namespaces/kube-system/services/heapster
@@ -86,7 +86,6 @@ acs-engine deploy --resource-group "your-resource-group" \
   --set servicePrincipalProfile.secret="spn-client-secret"
 ```
 
-
 <a href="#the-long-way"></a>
 
 ## ACS Engine the Long Way
@@ -99,7 +98,7 @@ If you don't have an SSH key [cluster operators may generate a new one](../ssh.m
 
 ### Step 2: Create a Service Principal
 
-Kubernetes clusters have integrated support for various cloud providers as core functionality. On Azure, acs-engine uses a Service Principal to interact with Azure Resource Manager (ARM). Follow the instructions to [create a new service principal](../serviceprincipal.md)
+Kubernetes clusters have integrated support for various cloud providers as core functionality. On Azure, acs-engine uses a Service Principal to interact with Azure Resource Manager (ARM). Follow the [instructions](../serviceprincipal.md) to create a new service principal and grant it the necessary IAM role to create Azure resources.
 
 ### Step 3: Edit your Cluster Definition
 
@@ -124,31 +123,29 @@ Run `acs-engine generate examples/kubernetes.json`
 
 The generate command lets you override values from the cluster definition file without having to update the file. You can use the `--set` flag to do that:
 
-```bash
+```sh
 acs-engine generate --set linuxProfile.adminUsername=myNewUsername,masterProfile.count=3 clusterdefinition.json
 ```
 
 The `--set` flag only supports JSON properties under `properties`. You can also work with array, like the following:
 
-```bash
+```sh
 acs-engine generate --set agentPoolProfiles[0].count=5,agentPoolProfiles[1].name=myPoolName clusterdefinition.json
 ```
 
 ### Step 5: Submit your Templates to Azure Resource Manager (ARM)
 
 [Deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
-  * To enable the optional network policy enforcement using calico, you have to
-    set the parameter during this step according to this [guide](../kubernetes.md#optional-enable-network-policy-enforcement-using-calico)
-  * To enable the optional network policy enforcement using cilium, you have to
-    set the parameter during this step according to this [guide](../kubernetes.md#optional-enable-network-policy-enforcement-using-cilium)
 
+* To enable the optional network policy enforcement using calico, you have to set the parameter during this step according to this [guide](../kubernetes.md#optional-enable-network-policy-enforcement-using-calico)
+* To enable the optional network policy enforcement using cilium, you have to set the parameter during this step according to this [guide](../kubernetes.md#optional-enable-network-policy-enforcement-using-cilium)
 
 **Note**: If the cluster is using an existing VNET please see the [Custom VNET](features.md#feat-custom-vnet) feature documentation for additional steps that must be completed after cluster provisioning.
-
 
 ## Checking VM tags
 
 ### First we get list of Master and Agent VMs in the cluster
+
 ```sh
 az vm list -g <resource group of cluster> -o table
 Name                      ResourceGroup                    Location
