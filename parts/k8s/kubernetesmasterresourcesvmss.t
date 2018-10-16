@@ -155,7 +155,7 @@
       {
         "name": "subnetmaster",
         "properties": {
-          "addressPrefix": "[parameters('masterSubnet')]"
+          "addressPrefix": "[variables('masterSubnet')]"
           ,"networkSecurityGroup": {
             "id": "[variables('nsgID')]"
           }
