@@ -68,8 +68,10 @@
         "type": "Microsoft.Authorization/roleAssignments",       
         "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment'))]",
         "properties": {
-          "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
-          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]"
+          "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
+          "scope": "[resourceGroup().id]",
+          }
         },
         "dependsOn": [
           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
