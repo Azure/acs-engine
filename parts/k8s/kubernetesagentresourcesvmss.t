@@ -34,10 +34,10 @@
     {{if UserAssignedIDEnabled}}
     "identity": {
       "type": "userAssigned",
-        "identityIds": [
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
-        ]
-      },
+      "userAssignedIdentities": {
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+      }
+    },
     {{else}}
     "identity": {
       "type": "systemAssigned"
