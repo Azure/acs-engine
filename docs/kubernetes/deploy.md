@@ -58,8 +58,7 @@ INFO[0393] Finished ARM Deployment (contoso-apple-1423145182).
 acs-engine generates kubeconfig files for each possible region. Access the new cluster by using the kubeconfig generated for the cluster's location. This example used `westus2`, so the kubeconfig is `_output/<clustername>/kubeconfig/kubeconfig.westus2.json`:
 
 ```sh
-$ KUBECONFIG=_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json
-$ kubectl cluster-info
+$ KUBECONFIG=_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json kubectl cluster-info
 Kubernetes master is running at https://contoso-apple-59769a59.westus2.cloudapp.azure.com
 Heapster is running at https://contoso-apple-59769a59.westus2.cloudapp.azure.com/api/v1/proxy/namespaces/kube-system/services/heapster
 KubeDNS is running at https://contoso-apple-59769a59.westus2.cloudapp.azure.com/api/v1/proxy/namespaces/kube-system/services/kube-dns
@@ -99,7 +98,7 @@ If you don't have an SSH key [cluster operators may generate a new one](../ssh.m
 
 ### Step 2: Create a Service Principal
 
-Kubernetes clusters have integrated support for various cloud providers as core functionality. On Azure, acs-engine uses a Service Principal to interact with Azure Resource Manager (ARM). Follow the instructions to [create a new service principal and grant it the necessary IAM role to create Azure resources](../serviceprincipal.md).
+Kubernetes clusters have integrated support for various cloud providers as core functionality. On Azure, acs-engine uses a Service Principal to interact with Azure Resource Manager (ARM). Follow the [instructions](../serviceprincipal.md) to create a new service principal and grant it the necessary IAM role to create Azure resources.
 
 ### Step 3: Edit your Cluster Definition
 
