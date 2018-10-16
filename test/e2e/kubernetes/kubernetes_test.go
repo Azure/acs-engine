@@ -781,6 +781,27 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
 		})
+
+		It("should be able to schedule a pod to a master node", func() {
+			By("Creating a pod with master nodeSelector")
+			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default")
+			if err != nil {
+				p, err = pod.Get("nginx-master", "default")
+				Expect(err).NotTo(HaveOccurred())
+			}
+			running, err := p.WaitOnReady(5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			By("validating that master-scheduled pod has outbound internet connectivity")
+			pass, err := p.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pass).To(BeTrue())
+
+			By("Cleaning up after ourselves")
+			err = p.Delete(deleteResourceRetries)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("with a GPU-enabled agent pool", func() {
