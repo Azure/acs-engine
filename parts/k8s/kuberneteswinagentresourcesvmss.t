@@ -1,6 +1,6 @@
 {{if UseManagedIdentity}}
   {
-    "apiVersion": "[variables('apiVersionCompute')]",
+    "apiVersion": "[variables('apiVersionAuthorization')]",
     "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('{{.Name}}VMNamePrefix'), 'vmidentity'))]",
     "type": "Microsoft.Authorization/roleAssignments",
     "properties": {
