@@ -87,7 +87,7 @@
     "apiVersionStorage": "2018-07-01",
     "apiVersionKeyVault": "2018-02-14",
     "apiVersionNetwork": "2018-08-01",
-    "apiVersionManagedIdentity": "2015-08-31-PREVIEW",
+    "apiVersionManagedIdentity": "2015-08-31-preview",
     "apiVersionAuthorization": "2018-01-01-preview",
     "locations": [
          "[resourceGroup().location]",
