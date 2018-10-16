@@ -117,7 +117,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	case strings.HasPrefix(upgradeVersion, "1.9."),
 		strings.HasPrefix(upgradeVersion, "1.10."),
 		strings.HasPrefix(upgradeVersion, "1.11."),
-		strings.HasPrefix(upgradeVersion, "1.12."):
+		strings.HasPrefix(upgradeVersion, "1.12."),
+		strings.HasPrefix(upgradeVersion, "1.13."):
 		u := &Upgrader{}
 		u.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout, acsengineVersion)
 		upgrader = u
