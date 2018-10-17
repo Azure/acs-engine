@@ -55,9 +55,9 @@ function installGPUDrivers() {
 }
 
 function installMoby() {
-    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
-    if [[ "$CURRENT_VERSION" = ${MOBY_VERSION} ]]; then
-        echo "moby version ${MOBY_VERSION} is already installed, skipping download"
+    docker --version
+    if [ $? -eq 0 ]; then
+        echo "moby is already installed, skipping download"
     else
         #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
         #retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
