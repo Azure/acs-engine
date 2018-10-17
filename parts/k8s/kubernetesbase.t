@@ -71,8 +71,7 @@
           "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
           "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
           "principalType": "ServicePrincipal",
-          "scope": "[resourceGroup().id]",
-          }
+          "scope": "[resourceGroup().id]"
         },
         "dependsOn": [
           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
