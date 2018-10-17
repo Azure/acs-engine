@@ -298,31 +298,13 @@ workflows:
           filters:
             branches:
               ignore: master
-      - k8s-windows-1.10-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - k8s-windows-1.11-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - k8s-windows-1.12-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - k8s-windows-1.13-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
       - k8s-1.10-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
+      - k8s-windows-1.10-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
@@ -334,13 +316,31 @@ workflows:
           filters:
             branches:
               ignore: master
+      - k8s-windows-1.11-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
       - k8s-1.12-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
             branches:
               ignore: master
+      - k8s-windows-1.12-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
       - k8s-1.13-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
+      - k8s-windows-1.13-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
@@ -370,19 +370,31 @@ workflows:
           filters:
             branches:
               only: master
-      - k8s-1.12-release-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
       - k8s-windows-1.11-release-e2e:
           requires:
             - test
           filters:
             branches:
               only: master
+      - k8s-1.12-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
       - k8s-windows-1.12-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-1.13-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-windows-1.13-release-e2e:
           requires:
             - test
           filters:
