@@ -157,12 +157,14 @@
     "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+    "masterSubnet": "",
   {{else}}
     "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "",
+    "masterSubnet": "[parameters('masterSubnet')]",
   {{end}}
 {{else}}
   {{if .MasterProfile.IsCustomVNET}}
@@ -170,12 +172,14 @@
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
+    "masterSubnet": "",
   {{else}}
     "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(parameters('orchestratorName'), '-vnet-', parameters('nameSuffix'))]",
     "virtualNetworkResourceGroupName": "''",
+    "masterSubnet": "[parameters('masterSubnet')]",
   {{end}}
 {{end}}
 {{if IsHostedMaster }}
