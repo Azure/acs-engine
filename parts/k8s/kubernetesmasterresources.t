@@ -844,7 +844,7 @@
     {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "[variables('apiVersionCompute')]",
+      "apiVersion": "[variables('apiVersionAuthorization')]",
       "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"

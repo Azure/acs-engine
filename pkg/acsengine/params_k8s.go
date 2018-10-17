@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -45,8 +46,9 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 			addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonmanager"])
 			addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonresizer"])
-			addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dnsmasq"])
-			addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["exechealthz"])
+			if orchestratorProfile.NeedsExecHealthz() {
+				addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["exechealthz"])
+			}
 			addValue(parametersMap, "kubernetesDNSSidecarSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["k8s-dns-sidecar"])
 			addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["heapster"])
 			if kubernetesConfig.IsTillerEnabled() {
@@ -246,8 +248,12 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					}
 				}
 			}
-			addValue(parametersMap, "kubernetesCoreDNSSpec", "coredns/coredns:1.2.2")
-			addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dns"])
+			if common.IsKubernetesVersionGe(properties.OrchestratorProfile.OrchestratorVersion, "1.12.0") {
+				addValue(parametersMap, "kubernetesCoreDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["coredns"])
+			} else {
+				addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["kube-dns"])
+				addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["dnsmasq"])
+			}
 			addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["pause"])
 			addValue(parametersMap, "cloudproviderConfig", api.CloudProviderConfig{
 				CloudProviderBackoff:         kubernetesConfig.CloudProviderBackoff,

@@ -280,12 +280,14 @@
       "defaultValue": false,
       "type": "bool"
     },
+{{if NeedsKubeDNSWithExecHealthz}}
     "kubernetesExecHealthzSpec": {
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
       },
       "type": "string"
     },
+{{end}}
     "kubernetesDNSSidecarSpec": {
       "metadata": {
         "description": "The container spec for k8s-dns-sidecar-amd64."
@@ -625,15 +627,17 @@
         "cloudProviderRateLimitBucket": 0
       }
     },
-    "kubernetesKubeDNSSpec": {
-      "metadata": {
-        "description": "The container spec for kubedns-amd64."
-      },
-      "type": "string"
-    },
+{{if IsKubernetesVersionGe "1.12.0"}}
     "kubernetesCoreDNSSpec": {
       "metadata": {
         "description": "The container spec for coredns"
+      },
+      "type": "string"
+    },
+{{else}}
+    "kubernetesKubeDNSSpec": {
+      "metadata": {
+        "description": "The container spec for kubedns-amd64."
       },
       "type": "string"
     },
@@ -643,6 +647,7 @@
       },
       "type": "string"
     },
+{{end}}
     {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",

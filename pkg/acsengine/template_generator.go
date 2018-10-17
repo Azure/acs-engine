@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"archive/zip"
 	"bytes"
 	"encoding/base64"
 	"fmt"
@@ -375,6 +376,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
 		},
+		"NeedsKubeDNSWithExecHealthz": func() bool {
+			return cs.Properties.OrchestratorProfile.NeedsExecHealthz()
+		},
 		"LoadBalancerSku": func() string {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku
 		},
@@ -664,16 +668,54 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := getBase64CustomScript(swarmModeWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
+		"GetKubernetesWindowsAgentFunctions": func() string {
+			// Collect all the parts into a zip
+			var parts = []string{
+				kubernetesWindowsAgentFunctionsPS1,
+				kubernetesWindowsConfigFunctionsPS1,
+				kubernetesWindowsKubeletFunctionsPS1,
+				kubernetesWindowsCniFunctionsPS1,
+				kubernetesWindowsAzureCniFunctionsPS1}
+
+			// Create a buffer, new zip
+			buf := new(bytes.Buffer)
+			zw := zip.NewWriter(buf)
+
+			for _, part := range parts {
+				f, err := zw.Create(part)
+				if err != nil {
+					panic(err)
+				}
+				partContents, err := Asset(part)
+				if err != nil {
+					panic(err)
+				}
+				_, err = f.Write([]byte(partContents))
+				if err != nil {
+					panic(err)
+				}
+			}
+			err := zw.Close()
+			if err != nil {
+				panic(err)
+			}
+			return base64.StdEncoding.EncodeToString(buf.Bytes())
+		},
 		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1, cs, profile)
+
 			if e != nil {
 				panic(e)
 			}
+
 			preprovisionCmd := ""
+
 			if profile.PreprovisionExtension != nil {
 				preprovisionCmd = makeAgentExtensionScriptCommands(cs, profile)
 			}
+
 			str = strings.Replace(str, "PREPROVISION_EXTENSION", escapeSingleLine(strings.TrimSpace(preprovisionCmd)), -1)
+
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetMasterSwarmModeCustomData": func() string {

@@ -42,6 +42,61 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionConfigs"}}
 
+- path: "/usr/local/bin/health-monitor.sh"
+  permissions: "0544"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "healthMonitorScript"}}
+
+- path: "/etc/systemd/system/kubelet-monitor.timer"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a timer that delays kubelet-monitor from starting too soon after boot
+    [Timer]
+    OnBootSec=30min
+    [Install]
+    WantedBy=multi-user.target
+
+- path: "/etc/systemd/system/kubelet-monitor.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a script that checks kubelet health and restarts if needed
+    After=kubelet.service
+    [Service]
+    Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh kubelet
+
+- path: "/etc/systemd/system/docker-monitor.timer"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a timer that delays docker-monitor from starting too soon after boot
+    [Timer]
+    OnBootSec=30min
+    [Install]
+    WantedBy=multi-user.target
+
+- path: "/etc/systemd/system/docker-monitor.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a script that checks docker health and restarts if needed
+    After=docker.service
+    [Service]
+    Restart=always
+    RestartSec=10
+    RemainAfterExit=yes
+    ExecStart=/usr/local/bin/health-monitor.sh container-runtime
+
 {{if .OrchestratorProfile.KubernetesConfig.RequiresDocker}}
     {{if not .MasterProfile.IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -75,43 +130,6 @@ write_files:
          "max-file": "5"
       }
     }
-
-- path: "/usr/local/bin/health-monitor.sh"
-  permissions: "0544"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    {{WrapAsVariable "healthMonitorScript"}}
-
-- path: "/etc/systemd/system/docker-monitor.service"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    [Unit]
-    Description=a script that checks docker health and restarts if needed
-    After=docker.service
-    [Service]
-    Restart=always
-    RestartSec=10
-    RemainAfterExit=yes
-    ExecStart=/usr/local/bin/health-monitor.sh container-runtime
-    [Install]
-    WantedBy=multi-user.target
-
-- path: "/etc/systemd/system/kubelet-monitor.service"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    [Unit]
-    Description=a script that checks kubelet health and restarts if needed
-    After=kubelet.service
-    [Service]
-    Restart=always
-    RestartSec=10
-    RemainAfterExit=yes
-    ExecStart=/usr/local/bin/health-monitor.sh kubelet
-    [Install]
-    WantedBy=multi-user.target
 {{end}}
 
 - path: "/etc/kubernetes/certs/ca.crt"
@@ -255,11 +273,14 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
-{{if IsKubernetesVersionGe "1.12.0"}}
+{{if NeedsKubeDNSWithExecHealthz}}
+    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsParameter "kubernetesExecHealthzSpec"}}|g; s|<kubernetesDNSSidecarSpec>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+{{else if IsKubernetesVersionGe "1.12.0"}}
     sed -i "s|<kubernetesCoreDNSSpec>|{{WrapAsParameter "kubernetesCoreDNSSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/coredns.yaml"
 {{else}}
-    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsParameter "kubernetesExecHealthzSpec"}}|g; s|<kubernetesDNSSidecarSpec>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<kubernetesDNSSidecarSpec>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<kubernetesKubeletClusterDomain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<kubeDNSServiceIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
 {{end}}
+    sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsParameter "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsParameter "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsParameter "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsParameter "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}

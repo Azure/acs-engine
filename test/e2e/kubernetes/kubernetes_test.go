@@ -70,11 +70,9 @@ var _ = BeforeSuite(func() {
 		masterSSHPort = "22"
 	}
 	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
-	// TODO
-	// If no user-configurable stability iteration value is passed in, run stability tests once
-	/*if cfg.StabilityIterations == 0 {
-		cfg.StabilityIterations = 1
-	}*/
+	if cfg.StabilityIterations == 0 && !eng.HasWindowsAgents() {
+		cfg.StabilityIterations = 10
+	}
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
@@ -408,7 +406,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should have stable external container networking", func() {
+		It("should have stable external container networking as we recycle a bunch of pods", func() {
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53")
 			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
@@ -416,7 +414,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
-		It("should have stable internal container networking", func() {
+		It("should have stable internal container networking as we recycle a bunch of pods", func() {
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			var command string
 			if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.12.0") {
@@ -546,7 +544,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ready).To(Equal(true))
 
-			By("Ensuring that we have stable external DNS resolution from a container")
+			By("Ensuring that we have stable external DNS resolution as we recycle a bunch of pods")
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
 			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
@@ -782,6 +780,27 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
+		})
+
+		It("should be able to schedule a pod to a master node", func() {
+			By("Creating a pod with master nodeSelector")
+			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default")
+			if err != nil {
+				p, err = pod.Get("nginx-master", "default")
+				Expect(err).NotTo(HaveOccurred())
+			}
+			running, err := p.WaitOnReady(5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			By("validating that master-scheduled pod has outbound internet connectivity")
+			pass, err := p.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pass).To(BeTrue())
+
+			By("Cleaning up after ourselves")
+			err = p.Delete(deleteResourceRetries)
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 

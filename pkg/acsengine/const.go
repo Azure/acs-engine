@@ -122,7 +122,13 @@ const (
 	kubernetesAgentCustomDataYaml            = "k8s/kubernetesagentcustomdata.yml"
 	kubernetesJumpboxCustomDataYaml          = "k8s/kubernetesjumpboxcustomdata.yml"
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
-	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
+	// Windows custom scripts
+	kubernetesWindowsAgentCustomDataPS1   = "k8s/kuberneteswindowssetup.ps1"
+	kubernetesWindowsAgentFunctionsPS1    = "k8s/kuberneteswindowsfunctions.ps1"
+	kubernetesWindowsConfigFunctionsPS1   = "k8s/windowsconfigfunc.ps1"
+	kubernetesWindowsKubeletFunctionsPS1  = "k8s/windowskubeletfunc.ps1"
+	kubernetesWindowsCniFunctionsPS1      = "k8s/windowscnifunc.ps1"
+	kubernetesWindowsAzureCniFunctionsPS1 = "k8s/windowsazurecnifunc.ps1"
 	// OpenShift custom scripts
 	openshiftNodeScript     = "openshift/unstable/openshiftnodescript.sh"
 	openshiftMasterScript   = "openshift/unstable/openshiftmasterscript.sh"
