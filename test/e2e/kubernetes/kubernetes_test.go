@@ -427,6 +427,45 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
 
+		It("should have stable pod-to-pod networking", func() {
+			if eng.HasLinuxAgents() {
+				By("Creating a test php-apache deployment with request limit thresholds")
+				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
+				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", phpApacheName, "default", "--requests=cpu=10m,memory=10M")
+				if err != nil {
+					fmt.Println(err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring that php-apache pod is running")
+				running, err := pod.WaitOnReady(phpApacheName, "default", 3, 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Exposing TCP 80 internally on the php-apache deployment")
+				err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				s, err := service.Get(phpApacheName, "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Creating another pod that will connect to the php-apache pod")
+				// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
+				commandString := fmt.Sprintf("nc -vz %s.default.svc.cluster.local 80", phpApacheName)
+				consumerPodName := fmt.Sprintf("consumer-pod-%s-%v", cfg.Name, r.Intn(99999))
+				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(successes).To(Equal(cfg.StabilityIterations))
+
+				By("Cleaning up after ourselves")
+				err = phpApacheDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+				err = s.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+			}
+		})
+
 		It("should be able to launch a long-running container networking DNS liveness pod", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
@@ -667,45 +706,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
-			}
-		})
-
-		It("should be able to have pod-to-pod networking", func() {
-			if eng.HasLinuxAgents() {
-				By("Creating a test php-apache deployment with request limit thresholds")
-				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
-				r := rand.New(rand.NewSource(time.Now().UnixNano()))
-				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-				phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", phpApacheName, "default", "--requests=cpu=10m,memory=10M")
-				if err != nil {
-					fmt.Println(err)
-				}
-				Expect(err).NotTo(HaveOccurred())
-
-				By("Ensuring that php-apache pod is running")
-				running, err := pod.WaitOnReady(phpApacheName, "default", 3, 5*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(running).To(Equal(true))
-
-				By("Exposing TCP 80 internally on the php-apache deployment")
-				err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
-				Expect(err).NotTo(HaveOccurred())
-				s, err := service.Get(phpApacheName, "default")
-				Expect(err).NotTo(HaveOccurred())
-
-				By("Creating another pod that will connect to the php-apache pod")
-				// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
-				commandString := fmt.Sprintf("nc -vz %s.default.svc.cluster.local 80", phpApacheName)
-				consumerPodName := fmt.Sprintf("consumer-pod-%s-%v", cfg.Name, r.Intn(99999))
-				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(successes).To(Equal(cfg.StabilityIterations))
-
-				By("Cleaning up after ourselves")
-				err = phpApacheDeploy.Delete(deleteResourceRetries)
-				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete(deleteResourceRetries)
-				Expect(err).NotTo(HaveOccurred())
 			}
 		})
 
