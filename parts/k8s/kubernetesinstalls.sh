@@ -13,7 +13,7 @@ function removeEtcd() {
 function installEtcd() {
     CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2 | tr -d '[:space:]')
     if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
-        echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
+        echo "etcd version ${ETCD_VERSION} is available locally, skipping download" > /var/log/azure/local.etcd.log
     else
         retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
         removeEtcd
@@ -59,7 +59,7 @@ function installContainerRuntime() {
 function installDocker() {
     CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
     if [[ "$CURRENT_VERSION" = ${DOCKER_ENGINE_VERSION} ]]; then
-        echo "docker version ${DOCKER_ENGINE_VERSION} is already installed, skipping download"
+        echo "docker version ${DOCKER_ENGINE_VERSION} is available locally, skipping download" > /var/log/azure/local.docker.log
     else
         retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
         retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
@@ -87,7 +87,7 @@ function installKataContainersRuntime() {
 function installClearContainersRuntime() {
     cc-runtime --version
     if [ $? -eq 0 ]; then
-        echo "cc-runtime is already installed, skipping download"
+        echo "cc-runtime is available locally, skipping download" > /var/log/azure/local.cc-runtime.log
     else
         echo "Adding Clear Containers repository key..."
         CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
@@ -130,7 +130,7 @@ function installCNI() {
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadCNI
     else
-        echo "Using local CNI binaries at $CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" > /var/log/azure/local.cni.log
+        echo "CNI ${CNI_TGZ_TMP} is available locally," > /var/log/azure/local.cni.log
     fi
     mkdir -p $CNI_BIN_DIR
     tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" -C $CNI_BIN_DIR
@@ -143,7 +143,7 @@ function installAzureCNI() {
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadAzureCNI
     else
-        echo "Using local Azure CNI at $CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" > /var/log/azure/local.azurecni.log
+        echo "Azure CNI ${CNI_TGZ_TMP} is available locally, skipping download" > /var/log/azure/local.azurecni.log
     fi
     mkdir -p $CNI_CONFIG_DIR
     chown -R root:root $CNI_CONFIG_DIR
@@ -155,8 +155,7 @@ function installAzureCNI() {
 function installContainerd() {
     containerd --version
     if [ $? -eq 0 ]; then
-        echo "containerd is already installed, skipping download"
-        echo "Using local containerd" > /var/log/azure/local.containerd.log
+        echo "containerd is  is available locally, skipping download" > /var/log/azure/local.containerd.log
     else
         CRI_CONTAINERD_VERSION="1.1.0"
         CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
@@ -194,7 +193,7 @@ function extractHyperkube() {
         installImg
         pullHyperkube
     else
-        echo "Using local kubelet at /usr/local/bin/kubelet-${KUBERNETES_VERSION} > /var/log/azure/local.hyperkube.log       
+        echo "Hyperkube version ${KUBERNETES_VERSION} is available locally, skipping download" > /var/log/azure/local.hyperkube.log       
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
