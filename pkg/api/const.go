@@ -299,8 +299,8 @@ const (
 	DefaultNetworkPluginWindows = NetworkPluginKubenet
 	// DefaultNetworkPolicyWindows defines the network policy implementation to use by default for clusters with Windows agent pools
 	DefaultNetworkPolicyWindows = ""
-	// DefaultContainerRuntime is docker
-	DefaultContainerRuntime = "docker"
+	// DefaultContainerRuntime is moby
+	DefaultContainerRuntime = "moby"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
 	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/

@@ -691,7 +691,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.UserAssignedID = vlabs.UserAssignedID
 	api.UserAssignedClientID = vlabs.UserAssignedClientID
 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
-	api.DockerEngineVersion = vlabs.DockerEngineVersion
 	api.CustomCcmImage = vlabs.CustomCcmImage
 	api.UseCloudControllerManager = vlabs.UseCloudControllerManager
 	api.CustomWindowsPackageURL = vlabs.CustomWindowsPackageURL

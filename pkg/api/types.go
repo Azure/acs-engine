@@ -320,8 +320,8 @@ type KubernetesConfig struct {
 	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 	UserAssignedClientID             string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
-	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
-	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"` // Deprecated
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`      // Image for cloud-controller-manager
 	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
@@ -1293,7 +1293,7 @@ func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
 // RequiresDocker returns if the kubernetes settings require docker binary to be installed.
 func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
-	return runtime == "docker" || runtime == "moby" || runtime == ""
+	return runtime == "moby" || runtime == ""
 }
 
 // SetCloudProviderBackoffDefaults sets default cloudprovider backoff config

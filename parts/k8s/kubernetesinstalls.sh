@@ -54,34 +54,20 @@ function installGPUDrivers() {
     mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=$GPU_DEST/lib64,workdir=$GPU_DEST/overlay-workdir none /usr/lib/x86_64-linux-gnu
 }
 
-function installDocker() {
-    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
-    if [[ "$CURRENT_VERSION" = ${DOCKER_ENGINE_VERSION} ]]; then
-        echo "docker version ${DOCKER_ENGINE_VERSION} is already installed, skipping download"
-    else
-        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-        retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
-        echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-        printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
-        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-        apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
-    fi
-}
-
 function installMoby() {
-    # TODO CURRENT_VERSION=$(moby --version | cut -d " " -f 3 | cut -d "," -f 1)
-    # TODO if [[ "$CURRENT_VERSION" = ${MOBY_VERSION} ]]; then
-        # TODO echo "moby version ${MOBY_VERSION} is already installed, skipping download"
-    # TODO else
-    # TODO fi
-    #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
-    #retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
-    #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
-    #retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 20 1 30 curl -L "https://azurek8scishared.blob.core.windows.net/shared/moby-engine_3.0.1_amd64.deb?sp=r&st=2018-10-15T22:20:13Z&se=2018-10-18T06:20:13Z&spr=https&sv=2017-11-09&sig=FB%2BmP4%2BmGmpctW4LXbseUYjPQNcgna5ROHDbcjxvPoM%3D&sr=b" > /tmp/moby-engine_3-az-09f5e9d_amd64.deb
-    retrycmd_if_failure 20 1 60 dpkg -i /tmp/moby-engine_3-az-09f5e9d_amd64.deb
-    apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
+    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
+    if [[ "$CURRENT_VERSION" = ${MOBY_VERSION} ]]; then
+        echo "moby version ${MOBY_VERSION} is already installed, skipping download"
+    else
+        #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
+        #retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
+        #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+        #retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+        retrycmd_if_failure 20 1 30 curl -L "https://azurek8scishared.blob.core.windows.net/shared/moby-engine_3.0.1_amd64.deb?sp=r&st=2018-10-15T22:20:13Z&se=2018-10-18T06:20:13Z&spr=https&sv=2017-11-09&sig=FB%2BmP4%2BmGmpctW4LXbseUYjPQNcgna5ROHDbcjxvPoM%3D&sr=b" > /tmp/moby-engine_3-az-09f5e9d_amd64.deb
+        retrycmd_if_failure 20 1 60 dpkg -i /tmp/moby-engine_3-az-09f5e9d_amd64.deb
+        apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
+        apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
+    fi
 }
 
 function installKataContainersRuntime() {
@@ -120,9 +106,7 @@ function installClearContainersRuntime() {
 }
 
 function installContainerRuntime() {
-    if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
-        installDocker
-    elif [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
+    if [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
         installMoby
     elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	    # Ensure we can nest virtualization

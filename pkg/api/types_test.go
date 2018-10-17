@@ -2444,11 +2444,11 @@ func TestKubernetesConfig_RequiresDocker(t *testing.T) {
 
 	// k8sConfig with empty runtime string
 	k = &KubernetesConfig{
-		ContainerRuntime: "docker",
+		ContainerRuntime: "moby",
 	}
 
 	if !k.RequiresDocker() {
-		t.Error("expected RequiresDocker to return true for docker runtime")
+		t.Error("expected RequiresDocker to return true for moby runtime")
 	}
 }
 

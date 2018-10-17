@@ -8,9 +8,6 @@ ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
 installEtcd
 
 installDeps
-
-DOCKER_REPO="https://apt.dockerproject.org/repo"
-DOCKER_ENGINE_VERSION="1.13.*"
 installMoby
 
 installClearContainersRuntime

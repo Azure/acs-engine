@@ -185,7 +185,7 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 					OpenShiftConfig: &vlabs.OpenShiftConfig{
 						KubernetesConfig: &vlabs.KubernetesConfig{
 							NetworkPlugin:    "azure",
-							ContainerRuntime: "docker",
+							ContainerRuntime: "moby",
 						},
 					},
 				},
@@ -195,12 +195,12 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 				OrchestratorVersion: common.OpenShiftDefaultVersion,
 				KubernetesConfig: &KubernetesConfig{
 					NetworkPlugin:    "azure",
-					ContainerRuntime: "docker",
+					ContainerRuntime: "moby",
 				},
 				OpenShiftConfig: &OpenShiftConfig{
 					KubernetesConfig: &KubernetesConfig{
 						NetworkPlugin:    "azure",
-						ContainerRuntime: "docker",
+						ContainerRuntime: "moby",
 					},
 				},
 			},
