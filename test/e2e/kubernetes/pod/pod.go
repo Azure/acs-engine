@@ -210,9 +210,9 @@ func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command str
 		if err != nil {
 			return successfulAttempts, err
 		}
-		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 2*time.Minute)
+		succeeded, _ := p.WaitOnSucceeded(1*time.Second, 10*time.Minute)
 		cmd := exec.Command("kubectl", "logs", podName, "-n", "default")
-		out, err := util.RunAndLogCommand(cmd)
+		out, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Unable to get logs from pod %s\n", podName)
 		} else {
