@@ -129,6 +129,8 @@ function installCNI() {
     CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadCNI
+    else
+        echo "Using local CNI binaries at $CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" > /var/log/azure/local.cni.log
     fi
     mkdir -p $CNI_BIN_DIR
     tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" -C $CNI_BIN_DIR
@@ -140,6 +142,8 @@ function installAzureCNI() {
     CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadAzureCNI
+    else
+        echo "Using local Azure CNI at $CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" > /var/log/azure/local.azurecni.log
     fi
     mkdir -p $CNI_CONFIG_DIR
     chown -R root:root $CNI_CONFIG_DIR
@@ -152,6 +156,7 @@ function installContainerd() {
     containerd --version
     if [ $? -eq 0 ]; then
         echo "containerd is already installed, skipping download"
+        echo "Using local containerd" > /var/log/azure/local.containerd.log
     else
         CRI_CONTAINERD_VERSION="1.1.0"
         CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
@@ -188,6 +193,8 @@ function extractHyperkube() {
     if [[ ! -f "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" ]]; then
         installImg
         pullHyperkube
+    else
+        echo "Using local kubelet at /usr/local/bin/kubelet-${KUBERNETES_VERSION} > /var/log/azure/local.hyperkube.log       
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
