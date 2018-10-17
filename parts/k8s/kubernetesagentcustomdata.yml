@@ -43,6 +43,17 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "healthMonitorScript"}}
 
+- path: "/etc/systemd/system/kubelet-monitor.timer"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a timer that delays kubelet-monitor from starting too soon after boot
+    [Timer]
+    OnBootSec=30min
+    [Install]
+    WantedBy=multi-user.target
+
 - path: "/etc/systemd/system/kubelet-monitor.service"
   permissions: "0644"
   owner: "root"
@@ -55,6 +66,15 @@ write_files:
     RestartSec=10
     RemainAfterExit=yes
     ExecStart=/usr/local/bin/health-monitor.sh kubelet
+
+- path: "/etc/systemd/system/docker-monitor.timer"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=a timer that delays docker-monitor from starting too soon after boot
+    [Timer]
+    OnBootSec=30min
     [Install]
     WantedBy=multi-user.target
 
@@ -70,8 +90,6 @@ write_files:
     RestartSec=10
     RemainAfterExit=yes
     ExecStart=/usr/local/bin/health-monitor.sh container-runtime
-    [Install]
-    WantedBy=multi-user.target
 
 {{if .KubernetesConfig.RequiresDocker}}
     {{if not .IsCoreOS}}
