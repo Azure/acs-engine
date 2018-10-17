@@ -873,8 +873,8 @@
         "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
       }
     },
-    {{end}}     
-      {
+    {{end}}
+     {
        "type": "Microsoft.Compute/virtualMachines/extensions",
        "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
        "copy": {
@@ -885,13 +885,13 @@
        "location": "[resourceGroup().location]",
        {{if UserAssignedIDEnabled}}
        "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
-        "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('userAssignedID'), 'roleAssignment')))]"
+         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('userAssignedID'), 'roleAssignment')))]"
        ],
        {{else}}
        "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
-        "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
+         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
        ],
        {{end}}
        "properties": {

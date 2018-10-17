@@ -311,8 +311,11 @@ func autofillApimodel(dc *deployCmd) error {
 
 	k8sConfig := dc.containerService.Properties.OrchestratorProfile.KubernetesConfig
 
-	useManagedIdentity := k8sConfig != nil &&
-		k8sConfig.UseManagedIdentity
+	useManagedIdentity := k8sConfig != nil && k8sConfig.UseManagedIdentity
+
+	if dc.containerService.Properties.MasterProfile.IsVirtualMachineScaleSets() {
+		k8sConfig.UserAssignedID = acsengine.DefaultUserAssignedID
+	}
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile

@@ -65,11 +65,12 @@
       },
       {
         "apiVersion": "[variables('apiVersionAuthorization')]",
-        "type": "Microsoft.Authorization/roleAssignments",       
+        "type": "Microsoft.Authorization/roleAssignments",
         "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment'))]",
         "properties": {
           "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
           "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
+          "principalType": "ServicePrincipal",
           "scope": "[resourceGroup().id]",
           }
         },

@@ -91,7 +91,7 @@ const (
 	// DefaultMasterEtcdClientPort is the default etcd client port for Kubernetes master nodes
 	DefaultMasterEtcdClientPort = 2379
 	// DefaultUserAssignedID specifies the default name for the user assigned identity
-	DefaultUserAssignedID = "acsenginetestid"
+	DefaultUserAssignedID = "acsengineuserid"
 )
 
 const (

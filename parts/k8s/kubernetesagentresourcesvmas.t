@@ -258,7 +258,7 @@
       "type": "Microsoft.Compute/virtualMachines"
     },
     {{if UseManagedIdentity}}
-    {{if (not UserAssignedIDEnabled)}}     
+    {{if (not UserAssignedIDEnabled)}}
     {
       "apiVersion": "[variables('apiVersionAuthorization')]",
       "copy": {
