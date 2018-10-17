@@ -245,9 +245,12 @@ function ensureDocker() {
     DOCKER_JSON_FILE=/etc/docker/daemon.json
     wait_for_file 1200 1 $DOCKER_JSON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart docker
+    # Delay start of docker-monitor for 30 mins after booting
+    DOCKER_MONITOR_SYSTEMD_TIMER_FILE=/etc/systemd/system/docker-monitor.timer
+    wait_for_file 1200 1 $DOCKER_MONITOR_SYSTEMD_TIMER_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     DOCKER_MONITOR_SYSTEMD_FILE=/etc/systemd/system/docker-monitor.service
     wait_for_file 1200 1 $DOCKER_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart docker-monitor || exit $ERR_SYSTEMCTL_START_FAIL
+    systemctlEnableAndStart docker-monitor.timer || exit $ERR_SYSTEMCTL_START_FAIL
 }
 function ensureKMS() {
     systemctlEnableAndStart kms || exit $ERR_SYSTEMCTL_START_FAIL
@@ -261,9 +264,12 @@ function ensureKubelet() {
     KUBELET_RUNTIME_CONFIG_SCRIPT_FILE=/opt/azure/containers/kubelet.sh
     wait_for_file 1200 1 $KUBELET_RUNTIME_CONFIG_SCRIPT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     systemctlEnableAndStart kubelet || exit $ERR_KUBELET_START_FAIL
+    # Delay start of kubelet-monitor for 30 mins after booting
+    KUBELET_MONITOR_SYSTEMD_TIMER_FILE=/etc/systemd/system/kubelet-monitor.timer
+    wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_TIMER_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     KUBELET_MONITOR_SYSTEMD_FILE=/etc/systemd/system/kubelet-monitor.service
     wait_for_file 1200 1 $KUBELET_MONITOR_SYSTEMD_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    systemctlEnableAndStart kubelet-monitor || exit $ERR_SYSTEMCTL_START_FAIL
+    systemctlEnableAndStart kubelet-monitor.timer || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
 function ensureJournal(){
