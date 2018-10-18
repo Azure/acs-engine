@@ -35,6 +35,7 @@ type Config struct {
 	ForceDeploy         bool   `envconfig:"FORCE_DEPLOY"`
 	UseDeployCommand    bool   `envconfig:"USE_DEPLOY_COMMAND"`
 	GinkgoFocus         string `envconfig:"GINKGO_FOCUS"`
+	GinkgoSkip          string `envconfig:"GINKGO_SKIP"`
 }
 
 const (
