@@ -17,7 +17,7 @@ installClearContainersRuntime
 
 installGPUDrivers
 
-VNET_CNI_VERSIONS="1.0.10 1.0.11"
+VNET_CNI_VERSIONS="1.0.10 1.0.11 1.0.12"
 CNI_PLUGIN_VERSIONS="0.7.1"
 
 for VNET_CNI_VERSION in $VNET_CNI_VERSIONS; do
