@@ -63,7 +63,7 @@ function installMoby() {
         #retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
         #retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
         #retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
-        retrycmd_if_failure 20 1 30 curl -L "https://azurek8scishared.blob.core.windows.net/shared/moby-engine_3.0.1_amd64.deb?sp=r&st=2018-10-15T22:20:13Z&se=2018-10-18T06:20:13Z&spr=https&sv=2017-11-09&sig=FB%2BmP4%2BmGmpctW4LXbseUYjPQNcgna5ROHDbcjxvPoM%3D&sr=b" > /tmp/moby-engine_3.0.1_amd64.deb || exit $ERR_MOBY_INSTALL_TIMEOUT
+        retrycmd_if_failure 20 1 30 curl -L "https://azurek8scishared.blob.core.windows.net/shared/moby-engine_3.0.1_amd64.deb?sp=r&st=2018-10-17T20:43:52Z&se=2019-01-01T05:43:52Z&spr=https&sv=2017-11-09&sig=vFopjpkRePe9W6InOZqfyYV%2FYqNn8pjz66l7kffyRes%3D&sr=b" > /tmp/moby-engine_3.0.1_amd64.deb || exit $ERR_MOBY_INSTALL_TIMEOUT
         retrycmd_if_failure 20 1 60 dpkg -i /tmp/moby-engine_3.0.1_amd64.deb || exit $ERR_MOBY_INSTALL_TIMEOUT
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
         apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
