@@ -376,6 +376,12 @@ func (p *Properties) setVMSSDefaultsForMasters() {
 		p.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = "Standard"
 		p.OrchestratorProfile.KubernetesConfig.ExcludeMasterFromStandardLB = helpers.PointerToBool(DefaultExcludeMasterFromStandardLB)
 	}
+	k8sConfig := p.OrchestratorProfile.KubernetesConfig
+	// We use user assigned identity (a known default one) for vmss masters.
+	if k8sConfig != nil {
+		k8sConfig.UseManagedIdentity = true
+		k8sConfig.UserAssignedID = DefaultUserAssignedID
+	}
 }
 
 // setVMSSDefaultsForAgents

@@ -313,10 +313,6 @@ func autofillApimodel(dc *deployCmd) error {
 
 	useManagedIdentity := k8sConfig != nil && k8sConfig.UseManagedIdentity
 
-	if dc.containerService.Properties.MasterProfile.IsVirtualMachineScaleSets() {
-		k8sConfig.UserAssignedID = acsengine.DefaultUserAssignedID
-	}
-
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
 		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil && (dc.getAuthArgs().ClientID.String() == "" || dc.getAuthArgs().ClientID.String() == "00000000-0000-0000-0000-000000000000") && dc.getAuthArgs().ClientSecret == "" {
