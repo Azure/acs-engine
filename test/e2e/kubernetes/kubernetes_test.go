@@ -726,7 +726,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to autoscale", func() {
 			if eng.HasLinuxAgents() && eng.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
-				By("Creating a test php-apache deployment with request limit thresholds")
+				By("Getting the long-running php-apache deployment")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheDeploy, err := deployment.Get(longRunningApacheDeploymentName, "default")
@@ -769,14 +769,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(len(loadTestPods)).To(Equal(numLoadTestPods))
 
 				By("Ensuring we have more than 1 apache-php pods due to hpa enforcement")
-				_, err = phpApacheDeploy.WaitForReplicas(2, 5*time.Second, cfg.Timeout)
+				_, err = phpApacheDeploy.WaitForReplicas(2, -1, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 
-				By("Cleaning up after ourselves")
+				By("Stopping load")
 				err = loadTestDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring we only have 1 apache-php pod after stopping load")
+				_, err = phpApacheDeploy.WaitForReplicas(-1, 1, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
+
+				By("Deleting HPA configuration")
 				err = h.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
