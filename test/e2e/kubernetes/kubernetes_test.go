@@ -413,7 +413,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
-				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default", 1*time.Second, 2*time.Minute)
 				if cfg.SoakClusterName == "" {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
@@ -430,11 +430,18 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to launch a long running HTTP listener and svc endpoint", func() {
 			By("Creating a php-apache deployment")
-			phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", longRunningApacheDeploymentName, "default", "--requests=cpu=10m,memory=10M")
-			if err != nil {
-				fmt.Println(err)
+			var phpApacheDeploy *deployment.Deployment
+			d, _ := deployment.Get(longRunningApacheDeploymentName, "default")
+			if d == nil {
+				var err error
+				phpApacheDeploy, err = deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", longRunningApacheDeploymentName, "default", "--requests=cpu=10m,memory=10M")
+				if err != nil {
+					fmt.Println(err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				phpApacheDeploy = d
 			}
-			Expect(err).NotTo(HaveOccurred())
 
 			By("Ensuring that php-apache pod is running")
 			running, err := pod.WaitOnReady(longRunningApacheDeploymentName, "default", 3, 5*time.Second, cfg.Timeout)
@@ -449,16 +456,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			By("Exposing TCP 80 internally on the php-apache deployment")
-			err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
-			Expect(err).NotTo(HaveOccurred())
-			_, err = service.Get(longRunningApacheDeploymentName, "default")
-			Expect(err).NotTo(HaveOccurred())
+			s, _ := service.Get(longRunningApacheDeploymentName, "default")
+			if s == nil {
+				err := phpApacheDeploy.Expose("ClusterIP", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = service.Get(longRunningApacheDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+			}
 		})
 
 		It("should have stable external container networking as we recycle a bunch of pods", func() {
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -471,7 +481,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				command = fmt.Sprintf("nc -vz kubernetes 443")
 			}
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -483,7 +493,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Creating another pod that will connect to the php-apache pod")
 				commandString := fmt.Sprintf("nc -vz %s.default.svc.cluster.local 80", longRunningApacheDeploymentName)
 				consumerPodName := fmt.Sprintf("consumer-pod-%s-%v", cfg.Name, r.Intn(99999))
-				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 			}
@@ -590,7 +600,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			By("Ensuring that we have stable external DNS resolution as we recycle a bunch of pods")
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -820,7 +830,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to schedule a pod to a master node", func() {
 			By("Creating a pod with master nodeSelector")
-			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default")
+			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default", 1*time.Second, cfg.Timeout)
 			if err != nil {
 				p, err = pod.Get("nginx-master", "default")
 				Expect(err).NotTo(HaveOccurred())
@@ -949,7 +959,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Launching a pod using the volume claim")
 				podName := "zone-pv-pod" // should be the same as in pod-pvc.yaml
-				testPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "pod-pvc.yaml"), podName, "default")
+				testPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "pod-pvc.yaml"), podName, "default", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				ready, err = testPod.WaitOnReady(5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
@@ -1184,21 +1194,21 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Connecting to Windows from another Windows deployment")
 				name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
 				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
-				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Linux from Windows deployment")
 				name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
 				command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
-				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Windows from Linux deployment")
 				name = fmt.Sprintf("linux-2-windows-%s", cfg.Name)
 				command = fmt.Sprintf("wget %s", windowsService.Metadata.Name)
-				successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, 5*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
@@ -1287,8 +1297,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(ready).To(Equal(true))
 
 					By("Launching an IIS pod using the volume claim")
-					podName := "iis-azurefile"                                                                                 // should be the same as in iis-azurefile.yaml
-					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default") // BUG: this should support OS versioning
+					podName := "iis-azurefile"                                                                                                             // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default", 1*time.Second, cfg.Timeout) // BUG: this should support OS versioning
 					Expect(err).NotTo(HaveOccurred())
 					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
