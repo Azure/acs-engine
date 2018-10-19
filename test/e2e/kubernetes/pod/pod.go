@@ -256,7 +256,6 @@ func GetWithRetry(podPrefix, namespace string, sleep, duration time.Duration) (*
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
-	fmt.Print("\n")
 	go func() {
 		for {
 			select {
@@ -277,8 +276,10 @@ func GetWithRetry(podPrefix, namespace string, sleep, duration time.Duration) (*
 	for {
 		select {
 		case err := <-errCh:
+			fmt.Print("\n")
 			return nil, err
 		case p := <-podCh:
+			fmt.Print("\n")
 			return p, nil
 		}
 	}

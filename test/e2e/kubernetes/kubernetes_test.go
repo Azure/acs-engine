@@ -808,16 +808,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
-				By("Ensuring we have outbound internet access from the nginx pods")
-				nginxPods, err := nginxDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(nginxPods)).ToNot(BeZero())
-				for _, nginxPod := range nginxPods {
-					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(pass).To(BeTrue())
-				}
-
 				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
