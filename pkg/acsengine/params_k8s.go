@@ -148,7 +148,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 			if kubernetesConfig.IsDashboardEnabled() {
 				dashboardAddon := kubernetesConfig.GetAddonByName(DefaultDashboardAddonName)
-				dashboardAddon.GetAddonContainersIndexByName(DefaultDashboardAddonName)
+				c := dashboardAddon.GetAddonContainersIndexByName(DefaultDashboardAddonName)
 				if c > -1 {
 					addValue(parametersMap, "kubernetesDashboardCPURequests", dashboardAddon.Containers[c].CPURequests)
 					addValue(parametersMap, "kubernetesDashboardCPULimit", dashboardAddon.Containers[c].CPULimits)

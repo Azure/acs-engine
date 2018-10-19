@@ -87,3 +87,48 @@ func CreateMockContainerService(containerServiceName, orchestratorVersion string
 
 	return &cs
 }
+
+// GetK8sDefaultProperties returns a struct of type api.Properties for testing purposes.
+func GetK8sDefaultProperties(hasWindows bool) *Properties {
+	p := &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+			KubernetesConfig: &KubernetesConfig{},
+		},
+		MasterProfile: &MasterProfile{
+			Count:     1,
+			DNSPrefix: "foo",
+			VMSize:    "Standard_DS2_v2",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+			},
+		},
+		ServicePrincipalProfile: &ServicePrincipalProfile{
+			ClientID: "clientID",
+			Secret:   "clientSecret",
+		},
+	}
+
+	if hasWindows {
+		p.AgentPoolProfiles = []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+				OSType:              Windows,
+			},
+		}
+		p.WindowsProfile = &WindowsProfile{
+			AdminUsername: "azureuser",
+			AdminPassword: "replacepassword1234$",
+		}
+	}
+
+	return p
+}
