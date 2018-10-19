@@ -120,10 +120,17 @@ wait_for_file() {
         fi
     done
 }
+wait_for_apt_locks() {
+    while fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+        echo 'Waiting for release of apt locks'
+        sleep 3
+    done
+}
 apt_get_update() {
     retries=10
     apt_update_output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
+        wait_for_apt_locks
         timeout 30 dpkg --configure -a
         timeout 30 apt-get -f -y install
         timeout 120 apt-get update 2>&1 | tee $apt_update_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
@@ -135,10 +142,12 @@ apt_get_update() {
         fi
     done
     echo Executed apt-get update $i times
+    wait_for_apt_locks
 }
 apt_get_install() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
     for i in $(seq 1 $retries); do
+        wait_for_apt_locks
         timeout 30 dpkg --configure -a
         timeout $timeout apt-get install --no-install-recommends -y ${@}
         [ $? -eq 0  ] && break || \
@@ -150,6 +159,7 @@ apt_get_install() {
         fi
     done
     echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
+    wait_for_apt_locks
 }
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4
