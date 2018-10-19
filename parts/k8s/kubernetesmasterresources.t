@@ -640,6 +640,9 @@
        {{ if UseManagedIdentity}}
        "dependsOn": 
        [
+       {{if UserAssignedIDEnabled}}
+       "[variables('userAssignedIDReference')]"
+       {{else}}
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
           {{range $i := loop 0 $max}}
@@ -653,6 +656,7 @@
                 {{end}}
             {{end}}
           {{end}}
+        {{end}}
         ],
        {{end}}
        "properties": {
@@ -661,6 +665,18 @@
          "enabledForTemplateDeployment": "false",
          "tenantId": "[variables('tenantID')]",
  {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+        "accessPolicies": 
+        [
+          {
+            "tenantId": "[variables('tenantID')]",
+            "objectId": "[reference(variables('userAssignedIDReference'), variables('apiVersionManagedIdentity')).principalId]",
+            "permissions": {
+              "keys": ["create", "encrypt", "decrypt", "get", "list"]
+            }
+          }
+        ],
+    {{else}}
         "accessPolicies":
         [
           {{$max := .MasterProfile.Count}}
@@ -699,6 +715,7 @@
             {{end}}
           {{end}}
          ],
+    {{end}}
  {{else}}
           "accessPolicies": [
             {
@@ -745,7 +762,7 @@
       "identity": {
         "type": "userAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+          "[variables('userAssignedIDReference')]":{}
         }
       },
       {{else}}
