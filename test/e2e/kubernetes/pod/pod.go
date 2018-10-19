@@ -235,9 +235,10 @@ func RunCommandMultipleTimes(podRunnerCmd podRunnerCmd, image, name, command str
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
 	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
-	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Error getting pod:\n")
+		util.PrintCommand(cmd)
 		return nil, err
 	}
 	pl := List{}
@@ -255,6 +256,7 @@ func GetWithRetry(podPrefix, namespace string, sleep, duration time.Duration) (*
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
+	fmt.Print("\n")
 	go func() {
 		for {
 			select {
@@ -267,6 +269,7 @@ func GetWithRetry(podPrefix, namespace string, sleep, duration time.Duration) (*
 				} else if p != nil {
 					podCh <- p
 				}
+				fmt.Print(".")
 				time.Sleep(sleep)
 			}
 		}
@@ -284,9 +287,10 @@ func GetWithRetry(podPrefix, namespace string, sleep, duration time.Duration) (*
 // Get will return a pod with a given name and namespace
 func Get(podName, namespace string) (*Pod, error) {
 	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
-	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Error getting pod:\n")
+		util.PrintCommand(cmd)
 		return nil, err
 	}
 	p := Pod{}

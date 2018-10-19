@@ -115,55 +115,55 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			var running bool
 			if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.12.0") {
 				By("Ensuring that coredns is running")
-				running, err = pod.WaitOnReady("coredns", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err = pod.WaitOnReady("coredns", "kube-system", 3, 1*time.Second, cfg.Timeout)
 
 			} else {
 				By("Ensuring that kube-dns is running")
-				running, err = pod.WaitOnReady("kube-dns", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err = pod.WaitOnReady("kube-dns", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			}
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-proxy running", func() {
-			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have heapster running", func() {
-			running, err := pod.WaitOnReady("heapster", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("heapster", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-addon-manager running", func() {
-			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-apiserver running", func() {
-			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-controller-manager running", func() {
-			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-scheduler running", func() {
-			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have tiller running", func() {
 			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
-				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
@@ -184,7 +184,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have ip-masq-agent running", func() {
 			if hasIPMasqAgent, IPMasqAgentAddon := eng.HasAddon("ip-masq-agent"); hasIPMasqAgent {
-				running, err := pod.WaitOnReady("azure-ip-masq-agent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("azure-ip-masq-agent", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -203,7 +203,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have aci-connector running", func() {
 			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
-				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -222,7 +222,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-autoscaler running", func() {
 			if hasClusterAutoscaler, clusterAutoscalerAddon := eng.HasAddon("autoscaler"); hasClusterAutoscaler {
-				running, err := pod.WaitOnReady("cluster-autoscaler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("cluster-autoscaler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -239,7 +239,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have keyvault-flexvolume running", func() {
 			if hasKeyVaultFlexVolume, KeyVaultFlexVolumeAddon := eng.HasAddon("keyvault-flexvolume"); hasKeyVaultFlexVolume {
-				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -257,7 +257,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have blobfuse-flexvolume running", func() {
 			if hasBlobfuseFlexVolume, BlobfuseFlexVolumeAddon := eng.HasAddon("blobfuse-flexvolume"); hasBlobfuseFlexVolume {
-				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -275,7 +275,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have smb-flexvolume running", func() {
 			if hasSMBFlexVolume, SMBFlexVolumeAddon := eng.HasAddon("smb-flexvolume"); hasSMBFlexVolume {
-				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -293,7 +293,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-omsagent daemonset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -310,7 +310,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-omsagent replicaset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -327,13 +327,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running kubepodinventory plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the kubepodinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("kubePodInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("kubePodInventoryEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -349,7 +349,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the kubenodeinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("kubeNodeInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("kubeNodeInventoryEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -359,13 +359,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running cadvisor_perf plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the cadvisor_perf plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("cAdvisorPerfEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("cAdvisorPerfEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -375,7 +375,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have rescheduler running", func() {
 			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
-				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -394,7 +394,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should have nvidia-device-plugin running", func() {
 			if eng.HasGPUNodes() {
 				if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
-					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
+					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 1*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(running).To(Equal(true))
 					pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
