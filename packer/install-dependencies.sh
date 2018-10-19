@@ -8,7 +8,12 @@ ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
 installEtcd
 
 installDeps
-installMoby
+
+if [[ "$CONTAINER_RUNTIME" == "docker-engine" ]]
+    installDocker
+elif [[ "$CONTAINER_RUNTIME" == "moby" ]]
+    installMoby
+fi
 
 installClearContainersRuntime
 
