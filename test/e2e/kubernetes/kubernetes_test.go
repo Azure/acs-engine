@@ -1343,12 +1343,5 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			err = phpApacheDeploy.Delete(deleteResourceRetries)
 			Expect(err).NotTo(HaveOccurred())
 		})
-
-		It("should be able to cleanup hpa", func() {
-			h, err := hpa.Get(longRunningApacheDeploymentName, "default")
-			Expect(err).NotTo(HaveOccurred())
-			err = h.Delete(deleteResourceRetries)
-			Expect(err).NotTo(HaveOccurred())
-		})
 	})
 })
