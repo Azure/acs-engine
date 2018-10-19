@@ -413,7 +413,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
-				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default", 1*time.Second, 2*time.Minute)
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default", 1*time.Second, cfg.Timeout)
 				if cfg.SoakClusterName == "" {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
@@ -1330,18 +1330,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be able to cleanup the long running php-apache stuff", func() {
-			phpApacheDeploy, err := deployment.Get(longRunningApacheDeploymentName, "default")
-			if err != nil {
-				fmt.Println(err)
-			}
-			Expect(err).NotTo(HaveOccurred())
-			s, err := service.Get(longRunningApacheDeploymentName, "default")
-			Expect(err).NotTo(HaveOccurred())
+			if cfg.SoakClusterName == "" {
+				phpApacheDeploy, err := deployment.Get(longRunningApacheDeploymentName, "default")
+				if err != nil {
+					fmt.Println(err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				s, err := service.Get(longRunningApacheDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
 
-			err = s.Delete(deleteResourceRetries)
-			Expect(err).NotTo(HaveOccurred())
-			err = phpApacheDeploy.Delete(deleteResourceRetries)
-			Expect(err).NotTo(HaveOccurred())
+				err = s.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+				err = phpApacheDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+			}
 		})
 	})
 })
