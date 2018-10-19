@@ -48,7 +48,7 @@ func Get(name, namespace string) (*HPA, error) {
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get svc':%s\n", string(out))
+		log.Printf("Error trying to run 'kubectl get hpa':%s\n", string(out))
 		return nil, err
 	}
 	h := HPA{}

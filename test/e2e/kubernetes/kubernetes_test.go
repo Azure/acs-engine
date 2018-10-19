@@ -34,6 +34,7 @@ const (
 	WorkloadDir           = "workloads"
 	PolicyDir             = "workloads/policies"
 	deleteResourceRetries = 10
+	retryCommandsTimeout  = 5 * time.Minute
 )
 
 var (
@@ -115,55 +116,55 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			var running bool
 			if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.12.0") {
 				By("Ensuring that coredns is running")
-				running, err = pod.WaitOnReady("coredns", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err = pod.WaitOnReady("coredns", "kube-system", 3, 1*time.Second, cfg.Timeout)
 
 			} else {
 				By("Ensuring that kube-dns is running")
-				running, err = pod.WaitOnReady("kube-dns", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err = pod.WaitOnReady("kube-dns", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			}
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-proxy running", func() {
-			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have heapster running", func() {
-			running, err := pod.WaitOnReady("heapster", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("heapster", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-addon-manager running", func() {
-			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-apiserver running", func() {
-			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-controller-manager running", func() {
-			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-scheduler running", func() {
-			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have tiller running", func() {
 			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
-				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
@@ -184,7 +185,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have ip-masq-agent running", func() {
 			if hasIPMasqAgent, IPMasqAgentAddon := eng.HasAddon("ip-masq-agent"); hasIPMasqAgent {
-				running, err := pod.WaitOnReady("azure-ip-masq-agent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("azure-ip-masq-agent", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -203,7 +204,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have aci-connector running", func() {
 			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
-				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -222,7 +223,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-autoscaler running", func() {
 			if hasClusterAutoscaler, clusterAutoscalerAddon := eng.HasAddon("autoscaler"); hasClusterAutoscaler {
-				running, err := pod.WaitOnReady("cluster-autoscaler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("cluster-autoscaler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -239,7 +240,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have keyvault-flexvolume running", func() {
 			if hasKeyVaultFlexVolume, KeyVaultFlexVolumeAddon := eng.HasAddon("keyvault-flexvolume"); hasKeyVaultFlexVolume {
-				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("keyvault-flexvolume", "kv", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -257,7 +258,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have blobfuse-flexvolume running", func() {
 			if hasBlobfuseFlexVolume, BlobfuseFlexVolumeAddon := eng.HasAddon("blobfuse-flexvolume"); hasBlobfuseFlexVolume {
-				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("blobfuse-flexvol-installer", "flex", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -275,7 +276,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have smb-flexvolume running", func() {
 			if hasSMBFlexVolume, SMBFlexVolumeAddon := eng.HasAddon("smb-flexvolume"); hasSMBFlexVolume {
-				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 30*time.Second, 2*time.Minute)
+				running, err := pod.WaitOnReady("smb-flexvol-installer", "flex", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -293,7 +294,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-omsagent daemonset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -310,7 +311,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have cluster-omsagent replicaset running", func() {
 			if hasContainerMonitoring, clusterContainerMonitoringAddon := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -327,13 +328,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running kubepodinventory plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent-rs", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the kubepodinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("kubePodInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("kubePodInventoryEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -349,7 +350,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the kubenodeinventory plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent-rs", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("kubeNodeInventoryEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("kubeNodeInventoryEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -359,13 +360,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be successfully running cadvisor_perf plugin - ContainerMonitoring", func() {
 			if hasContainerMonitoring, _ := eng.HasAddon("container-monitoring"); hasContainerMonitoring {
-				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("omsagent", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the cadvisor_perf plugin is writing data successfully")
 				pods, err := pod.GetAllByPrefix("omsagent", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				pass, err := pods[0].ValidateOmsAgentLogs("cAdvisorPerfEmitStreamSuccess", 30*time.Second, cfg.Timeout)
+				pass, err := pods[0].ValidateOmsAgentLogs("cAdvisorPerfEmitStreamSuccess", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(pass).To(BeTrue())
 			} else {
@@ -375,7 +376,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have rescheduler running", func() {
 			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
-				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
@@ -394,7 +395,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should have nvidia-device-plugin running", func() {
 			if eng.HasGPUNodes() {
 				if hasNVIDIADevicePlugin, NVIDIADevicePluginAddon := eng.HasAddon("nvidia-device-plugin"); hasNVIDIADevicePlugin {
-					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
+					running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 1*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(running).To(Equal(true))
 					pods, err := pod.GetAllByPrefix("nvidia-device-plugin", "kube-system")
@@ -413,7 +414,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
-				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default")
+				p, err = pod.CreatePodFromFile(filepath.Join(WorkloadDir, "dns-liveness.yaml"), "dns-liveness", "default", 1*time.Second, cfg.Timeout)
 				if cfg.SoakClusterName == "" {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
@@ -430,11 +431,18 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to launch a long running HTTP listener and svc endpoint", func() {
 			By("Creating a php-apache deployment")
-			phpApacheDeploy, err := deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", longRunningApacheDeploymentName, "default", "--requests=cpu=10m,memory=10M")
-			if err != nil {
-				fmt.Println(err)
+			var phpApacheDeploy *deployment.Deployment
+			d, _ := deployment.Get(longRunningApacheDeploymentName, "default")
+			if d == nil {
+				var err error
+				phpApacheDeploy, err = deployment.CreateLinuxDeploy("k8s.gcr.io/hpa-example", longRunningApacheDeploymentName, "default", "--requests=cpu=10m,memory=10M")
+				if err != nil {
+					fmt.Println(err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				phpApacheDeploy = d
 			}
-			Expect(err).NotTo(HaveOccurred())
 
 			By("Ensuring that php-apache pod is running")
 			running, err := pod.WaitOnReady(longRunningApacheDeploymentName, "default", 3, 5*time.Second, cfg.Timeout)
@@ -449,16 +457,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 
 			By("Exposing TCP 80 internally on the php-apache deployment")
-			err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
-			Expect(err).NotTo(HaveOccurred())
-			_, err = service.Get(longRunningApacheDeploymentName, "default")
-			Expect(err).NotTo(HaveOccurred())
+			s, _ := service.Get(longRunningApacheDeploymentName, "default")
+			if s == nil {
+				err := phpApacheDeploy.Expose("ClusterIP", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = service.Get(longRunningApacheDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+			}
 		})
 
 		It("should have stable external container networking as we recycle a bunch of pods", func() {
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -471,7 +482,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			} else {
 				command = fmt.Sprintf("nc -vz kubernetes 443")
 			}
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -483,7 +494,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Creating another pod that will connect to the php-apache pod")
 				commandString := fmt.Sprintf("nc -vz %s.default.svc.cluster.local 80", longRunningApacheDeploymentName)
 				consumerPodName := fmt.Sprintf("consumer-pod-%s-%v", cfg.Name, r.Intn(99999))
-				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 			}
@@ -590,7 +601,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			By("Ensuring that we have stable external DNS resolution as we recycle a bunch of pods")
 			name := fmt.Sprintf("alpine-%s", cfg.Name)
 			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -798,16 +809,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
-				By("Ensuring we have outbound internet access from the nginx pods")
-				nginxPods, err := nginxDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(nginxPods)).ToNot(BeZero())
-				for _, nginxPod := range nginxPods {
-					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(pass).To(BeTrue())
-				}
-
 				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
@@ -820,7 +821,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to schedule a pod to a master node", func() {
 			By("Creating a pod with master nodeSelector")
-			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default")
+			p, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "nginx-master.yaml"), "nginx-master", "default", 1*time.Second, cfg.Timeout)
 			if err != nil {
 				p, err = pod.Get("nginx-master", "default")
 				Expect(err).NotTo(HaveOccurred())
@@ -949,7 +950,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Launching a pod using the volume claim")
 				podName := "zone-pv-pod" // should be the same as in pod-pvc.yaml
-				testPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "pod-pvc.yaml"), podName, "default")
+				testPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "pod-pvc.yaml"), podName, "default", 1*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				ready, err = testPod.WaitOnReady(5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
@@ -1184,21 +1185,21 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Connecting to Windows from another Windows deployment")
 				name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
 				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
-				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Linux from Windows deployment")
 				name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
 				command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
-				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Windows from Linux deployment")
 				name = fmt.Sprintf("linux-2-windows-%s", cfg.Name)
 				command = fmt.Sprintf("wget %s", windowsService.Metadata.Name)
-				successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
@@ -1287,8 +1288,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(ready).To(Equal(true))
 
 					By("Launching an IIS pod using the volume claim")
-					podName := "iis-azurefile"                                                                                 // should be the same as in iis-azurefile.yaml
-					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default") // BUG: this should support OS versioning
+					podName := "iis-azurefile"                                                                                                             // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default", 1*time.Second, cfg.Timeout) // BUG: this should support OS versioning
 					Expect(err).NotTo(HaveOccurred())
 					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
@@ -1330,18 +1331,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be able to cleanup the long running php-apache stuff", func() {
-			phpApacheDeploy, err := deployment.Get(longRunningApacheDeploymentName, "default")
-			if err != nil {
-				fmt.Println(err)
-			}
-			Expect(err).NotTo(HaveOccurred())
-			s, err := service.Get(longRunningApacheDeploymentName, "default")
-			Expect(err).NotTo(HaveOccurred())
+			if cfg.SoakClusterName == "" {
+				phpApacheDeploy, err := deployment.Get(longRunningApacheDeploymentName, "default")
+				if err != nil {
+					fmt.Println(err)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				s, err := service.Get(longRunningApacheDeploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
 
-			err = s.Delete(deleteResourceRetries)
-			Expect(err).NotTo(HaveOccurred())
-			err = phpApacheDeploy.Delete(deleteResourceRetries)
-			Expect(err).NotTo(HaveOccurred())
+				err = s.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+				err = phpApacheDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+			}
 		})
 	})
 })
