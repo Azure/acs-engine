@@ -153,6 +153,7 @@
             }
           },
 {{end}}
+{{if not IsHostedMaster}}
           {
             "name": "allow_ssh",
             "properties": {
@@ -181,6 +182,7 @@
               "sourcePortRange": "*"
             }
           }
+{{end}}
         ]
       },
       "type": "Microsoft.Network/networkSecurityGroups"
