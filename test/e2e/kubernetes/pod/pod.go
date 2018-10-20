@@ -445,7 +445,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 					if successCount > 1 {
 						failureCount = failureCount + 1
 						if failureCount >= successesNeeded {
-							errCh <- errors.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, failureCount, successesNeeded)
+							errCh <- errors.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, successCount, failureCount)
 						}
 					}
 					time.Sleep(sleep)
