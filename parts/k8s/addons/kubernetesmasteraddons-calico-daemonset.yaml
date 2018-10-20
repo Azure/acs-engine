@@ -298,10 +298,8 @@ spec:
       tolerations:
         # Allow the pod to run on the master.  This is required for
         # the master to communicate with pods.
-        - key: node-role.kubernetes.io/master
-          operator: Equal
-          value: "true"
-          effect: NoSchedule
+        - effect: NoSchedule
+          operator: Exists
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
           operator: Exists
