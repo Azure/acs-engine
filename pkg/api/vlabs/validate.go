@@ -281,6 +281,10 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 						return errors.Errorf("standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"")
 					}
 				}
+
+				if o.KubernetesConfig.DockerEngineVersion != "" {
+					log.Warnf("docker-engine is deprecated, but you passed in a dockerEngineVersion configuration. This will be ignored.")
+				}
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
