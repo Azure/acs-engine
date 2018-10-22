@@ -10,9 +10,9 @@ installEtcd
 
 installDeps
 
-if [[ "$CONTAINER_RUNTIME" == "docker-engine" ]]
+if [[ $FEATURE_FLAGS == *"docker-engine"* ]]; then
     installDockerEngine
-elif [[ "$CONTAINER_RUNTIME" == "moby" ]]
+else
     installMoby
 fi
 
