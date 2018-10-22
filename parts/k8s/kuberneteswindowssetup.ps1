@@ -119,6 +119,14 @@ Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
 . c:\AzureData\k8s\windowscnifunc.ps1
 . c:\AzureData\k8s\windowsazurecnifunc.ps1
 
+function
+Update-ServiceFailureActions()
+{
+    sc.exe failure "kubelet" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "kubeproxy" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "docker" actions= restart/60000/restart/60000/restart/60000 reset= 900
+}
+
 try
 {
     # Set to false for debugging.  This will output the start script to
@@ -217,6 +225,9 @@ try
 
         Write-Log "Start preProvisioning script"
         PREPROVISION_EXTENSION
+
+        Write-Log "Update service failure actions"
+        Update-ServiceFailureActions
 
         Write-Log "Setup Complete, reboot computer"
         Restart-Computer
