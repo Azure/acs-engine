@@ -467,9 +467,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have stable external container networking as we recycle a bunch of pods", func() {
-			name := fmt.Sprintf("alpine-%s", cfg.Name)
-			command := fmt.Sprintf("nc -vz 8.8.8.8 53 || nc -vz 8.8.4.4 53")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
+			name := fmt.Sprintf("debian-%s", cfg.Name)
+			command := fmt.Sprintf("ping -c 1 8.8.8.8 || ping -c 1 8.8.4.4 || sleep 5 && ping -c 1 8.8.8.8 || ping -c 1 8.8.4.4")
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "debian", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
@@ -599,9 +599,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(ready).To(Equal(true))
 
 			By("Ensuring that we have stable external DNS resolution as we recycle a bunch of pods")
-			name := fmt.Sprintf("alpine-%s", cfg.Name)
-			command := fmt.Sprintf("nc -vz bbc.co.uk 80 || nc -vz google.com 443 || nc -vz microsoft.com 80")
-			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "alpine", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
+			name := fmt.Sprintf("debian-%s", cfg.Name)
+			command := fmt.Sprintf("ping -c 1 bbc.co.uk || ping -c 1 google.com || ping -c 1 www.bing.com")
+			successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "debian", name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(successes).To(Equal(cfg.StabilityIterations))
 		})
