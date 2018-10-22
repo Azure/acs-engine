@@ -1,14 +1,3 @@
-{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
-  {
-    "apiVersion": "[variables('apiVersionAuthorization')]",
-    "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
-    "type": "Microsoft.Authorization/roleAssignments",
-    "properties": {
-      "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-      "principalId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]"
-    }
-  },
-{{end}}
 {{if EnableEncryptionWithExternalKms}}
   {
     "type": "Microsoft.Storage/storageAccounts",
@@ -27,8 +16,10 @@
     {{ if UseManagedIdentity}}
     "dependsOn": 
     [
-      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]",
-      "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity')))]",
+      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
+      {{if UserAssignedIDEnabled}}
+      ,"[variables('userAssignedIDReference')]"
+      {{end}}
     ],
     {{end}}
     "properties": {
@@ -36,35 +27,22 @@
       "enabledForDiskEncryption": "false",
       "enabledForTemplateDeployment": "false",
       "tenantId": "[variables('tenantID')]",
-  {{if UseManagedIdentity}}
     "accessPolicies": 
       [
         {
-          "objectId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]",
-          "permissions": {
-            "keys": [
-              "create",
-              "encrypt",
-              "decrypt",
-              "get",
-              "list"
-            ]
-          },
-          "tenantId": "[variables('tenantID')]"
-        },
-      ],
-  {{else}}
-      "accessPolicies": 
-      [
-        {
           "tenantId": "[variables('tenantID')]",
+          {{if UseManagedIdentity}}
+          {{if UserAssignedIDEnabled}}
+          "objectId": "[reference(variables('userAssignedIDReference'), variables('apiVersionManagedIdentity')).principalId]",
+          {{end}}
+          {{else}}
           "objectId": "[parameters('servicePrincipalObjectId')]",
+          {{end}}
           "permissions": {
             "keys": ["create", "encrypt", "decrypt", "get", "list"]
           }
         }
       ],
-  {{end}}
       "sku": {
         "name": "[parameters('clusterKeyVaultSku')]",
         "family": "A"
@@ -309,12 +287,8 @@
     "identity": {
       "type": "userAssigned",
       "userAssignedIdentities": {
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        "[variables('userAssignedIDReference')]":{}
       }
-    },
-    {{else}}
-    "identity": {
-      "type": "systemAssigned"
     },
     {{end}}
     {{end}}
