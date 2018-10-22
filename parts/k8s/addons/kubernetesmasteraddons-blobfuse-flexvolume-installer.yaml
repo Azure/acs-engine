@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: blobfuse-flexvol-installer
-        image: andyzhangx/blobfuse-flexvol-installer:1.0.6
+        image: andyzhangx/blobfuse-flexvol-installer
         imagePullPolicy: Always
         resources:
           requests:
