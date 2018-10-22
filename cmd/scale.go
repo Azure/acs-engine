@@ -24,7 +24,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
 	"github.com/pkg/errors"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -452,22 +451,21 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 }
 
 func (sc *scaleCmd) vmInAgentPool(vmName string, tags map[string]*string) bool {
-	// First try to locate the VM by expected tags.
+	// Try to locate the VM's agent pool by expected tags.
 	if tags != nil {
-		poolName := *tags["poolName"]
-		nameSuffix := *tags["resourceNameSuffix"]
-		// Use strings.Contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-		if strings.EqualFold(poolName, sc.agentPoolToScale) && strings.Contains(sc.nameSuffix, nameSuffix) {
-			return true
+		if poolName, ok := tags["poolName"]; ok {
+			if nameSuffix, ok := tags["resourceNameSuffix"]; ok {
+				// Use strings.Contains for the nameSuffix as the Windows Agent Pools use only
+				// a substring of the first 5 characters of the entire nameSuffix.
+				if strings.EqualFold(*poolName, sc.agentPoolToScale) && strings.Contains(sc.nameSuffix, *nameSuffix) {
+					return true
+				}
+			}
 		}
 	}
 
-	// Finally check the VM's name to see if it fits the naming pattern.
-	if strings.Contains(vmName, sc.nameSuffix[:5]) && strings.Contains(vmName, sc.agentPoolToScale) {
-		return true
-	}
-
-	return false
+	// Fall back to checking the VM name to see if it fits the naming pattern.
+	return strings.Contains(vmName, sc.nameSuffix[:5]) && strings.Contains(vmName, sc.agentPoolToScale)
 }
 
 type paramsMap map[string]interface{}
