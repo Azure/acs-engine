@@ -435,6 +435,10 @@ func setOrchestratorDefaults(cs *api.ContainerService, isUpdate bool) {
 			} else {
 				a.OrchestratorProfile.KubernetesConfig.AzureCNIVersion = AzureCniPluginVerLinux
 			}
+
+			if a.OrchestratorProfile.KubernetesConfig.AzureCNIWindowsPluginsDownloadURL == "" {
+				a.OrchestratorProfile.KubernetesConfig.AzureCNIWindowsPluginsDownloadURL = DefaultKubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL
+			}
 		}
 
 		// Configure addons

@@ -710,6 +710,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	api.EtcdEncryptionKey = vlabs.EtcdEncryptionKey
 	api.AzureCNIVersion = vlabs.AzureCNIVersion
+	api.AzureCNIWindowsPluginsDownloadURL = vlabs.AzureCNIWindowsPluginsDownloadURL
 	convertAddonsToAPI(vlabs, api)
 	convertKubeletConfigToAPI(vlabs, api)
 	convertControllerManagerConfigToAPI(vlabs, api)
