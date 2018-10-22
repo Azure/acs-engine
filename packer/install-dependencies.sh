@@ -134,3 +134,4 @@ echo "Install completed successfully on " `date` > /var/log/azure/golden-image-i
 echo "VSTS Build NUMBER: ${BUILD_NUMBER}" >> /var/log/azure/golden-image-install.complete
 echo "VSTS Build ID: ${BUILD_ID}" >> /var/log/azure/golden-image-install.complete
 echo "Commit: ${COMMIT}" >> /var/log/azure/golden-image-install.complete
+echo "Feature flags: ${FEATURE_FLAGS}" >> /var/log/azure/golden-image-install.complete
