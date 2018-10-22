@@ -229,7 +229,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		log.Fatalf("failed to generate kube config: %v", err) // TODO: cleanup
 	}
 
-	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, kubeConfig, uc.resourceGroupName,
+	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.client, kubeConfig, uc.resourceGroupName,
 		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade, BuildTag); err != nil {
 		log.Fatalf("Error upgrading cluster: %v\n", err)
 	}
