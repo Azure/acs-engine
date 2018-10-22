@@ -360,6 +360,8 @@ type KubernetesConfig struct {
 	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 	AzureCNIVersion                  string            `json:"azureCNIVersion,omitempty"`
+	AzureCNIURLLinux                 string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -1320,6 +1322,22 @@ func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
 	if k.CloudProviderRateLimitBucket == 0 {
 		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 	}
+}
+
+// GetAzureCNIURLLinux returns the full URL to source Azure CNI binaries from
+func (k *KubernetesConfig) GetAzureCNIURLLinux(cloudSpecConfig AzureEnvironmentSpecConfig) string {
+	if k.AzureCNIURLLinux != "" {
+		return k.AzureCNIURLLinux
+	}
+	return cloudSpecConfig.KubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL
+}
+
+// GetAzureCNIURLWindows returns the full URL to source Azure CNI binaries from
+func (k *KubernetesConfig) GetAzureCNIURLWindows(cloudSpecConfig AzureEnvironmentSpecConfig) string {
+	if k.AzureCNIURLWindows != "" {
+		return k.AzureCNIURLWindows
+	}
+	return cloudSpecConfig.KubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL
 }
 
 //GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
