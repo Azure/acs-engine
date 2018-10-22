@@ -28,6 +28,30 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		os.RemoveAll("_output")
 	})
 
+	It("Should succeed when cluster VMs are missing expected tags during upgrade operation", func() {
+		cs := api.CreateMockContainerService("testcluster", "1.6.9", 1, 1, false)
+
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.16"
+
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{},
+			Logger:     log.NewEntry(log.New()),
+		}
+
+		mockClient := armhelpers.MockACSEngineClient{}
+		mockClient.FailListVirtualMachinesTags = true
+		uc.Client = &mockClient
+
+		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
+
+		err := uc.UpgradeCluster(subID, &mockClient, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		Expect(err).To(BeNil())
+		Expect(uc.ClusterTopology.AgentPools).NotTo(BeEmpty())
+
+		// Clean up
+		os.RemoveAll("./translations")
+	})
+
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
 		cs := api.CreateMockContainerService("testcluster", "1.6.9", 1, 1, false)
 
@@ -44,7 +68,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("Error while querying ARM for resources: ListVirtualMachines failed"))
 
@@ -67,7 +91,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteVirtualMachine failed"))
 	})
@@ -86,7 +110,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeployTemplate failed"))
 	})
@@ -105,7 +129,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetVirtualMachine failed"))
 	})
@@ -124,7 +148,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetStorageClient failed"))
 	})
@@ -143,7 +167,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteNetworkInterface failed"))
 	})
@@ -161,7 +185,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		fmt.Print("GOT :   ", err.Error())
 		Expect(err.Error()).To(ContainSubstring("Error while querying ARM for resources: Kubernetes:1.6.9 cannot be upgraded to 1.8.15"))
@@ -184,7 +208,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteRoleAssignmentByID failed"))
 	})
@@ -204,7 +228,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
+		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).To(BeNil())
 	})
 })
