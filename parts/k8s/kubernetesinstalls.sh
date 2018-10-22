@@ -46,6 +46,17 @@ function installGPUDrivers() {
     mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=$GPU_DEST/lib64,workdir=$GPU_DEST/overlay-workdir none /usr/lib/x86_64-linux-gnu
 }
 
+function installContainerRuntime() {
+    if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+        installMoby
+    elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	    # Ensure we can nest virtualization
+        if grep -q vmx /proc/cpuinfo; then
+            installClearContainersRuntime
+        fi
+    fi
+}
+
 function installMoby() {
     dockerd --version
     if [ $? -eq 0 ]; then
@@ -92,17 +103,6 @@ function installClearContainersRuntime() {
         local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
         retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
         retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
-    fi
-}
-
-function installContainerRuntime() {
-    if [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
-        installMoby
-    elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	    # Ensure we can nest virtualization
-        if grep -q vmx /proc/cpuinfo; then
-            installClearContainersRuntime
-        fi
     fi
 }
 

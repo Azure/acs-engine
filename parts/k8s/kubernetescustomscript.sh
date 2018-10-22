@@ -71,7 +71,7 @@ if [ -f $CUSTOM_SEARCH_DOMAIN_SCRIPT ]; then
     $CUSTOM_SEARCH_DOMAIN_SCRIPT > /opt/azure/containers/setup-custom-search-domain.log 2>&1 || exit $ERR_CUSTOM_SEARCH_DOMAINS_FAIL
 fi
 
-if [[ "$CONTAINER_RUNTIME" == "moby" ]]; then
+if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
     ensureDocker
 elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	if grep -q vmx /proc/cpuinfo; then
