@@ -35,7 +35,7 @@
     "identity": {
       "type": "userAssigned",
       "userAssignedIdentities": {
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        "[variables('userAssignedIDReference')]":{}
       }
     },
     {{else}}

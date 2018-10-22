@@ -68,6 +68,7 @@
     "useManagedIdentityExtension": "{{ UseManagedIdentity }}",
     "userAssignedID": "{{UserAssignedID}}",
     "userAssignedClientID": "{{UserAssignedClientID}}",
+    "userAssignedIDReference": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]",
     "useInstanceMetadata": "{{ UseInstanceMetadata }}",
     "loadBalancerSku": "{{ LoadBalancerSku }}",
     "excludeMasterFromStandardLB": "{{ ExcludeMasterFromStandardLB }}",
