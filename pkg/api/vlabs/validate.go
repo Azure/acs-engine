@@ -575,54 +575,56 @@ func (a *Properties) validateAddons() error {
 }
 
 func (a *Properties) validateCustomManifestData() error {
-	if a.OrchestratorProfile.KubernetesConfig.PodSecurityPolicyConfig["data"] != "" {
-		gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.PodSecurityPolicyConfig["data"])
-		if err != nil {
-			return errors.New("podSecurityPolicyConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+	if a.OrchestratorProfile.KubernetesConfig != nil {
+		if a.OrchestratorProfile.KubernetesConfig.PodSecurityPolicyConfig["data"] != "" {
+			gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.PodSecurityPolicyConfig["data"])
+			if err != nil {
+				return errors.New("podSecurityPolicyConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+			}
+			_, err = gzip.NewReader(bytes.NewReader(gzData))
+			if err != nil {
+				return errors.New("podSecurityPolicyConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+			}
 		}
-		_, err = gzip.NewReader(bytes.NewReader(gzData))
-		if err != nil {
-			return errors.New("podSecurityPolicyConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+		if a.OrchestratorProfile.KubernetesConfig.SchedulerConfig["data"] != "" {
+			gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.SchedulerConfig["data"])
+			if err != nil {
+				return errors.New("schedulerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+			}
+			_, err = gzip.NewReader(bytes.NewReader(gzData))
+			if err != nil {
+				return errors.New("schedulerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+			}
 		}
-	}
-	if a.OrchestratorProfile.KubernetesConfig.SchedulerConfig["data"] != "" {
-		gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.SchedulerConfig["data"])
-		if err != nil {
-			return errors.New("schedulerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+		if a.OrchestratorProfile.KubernetesConfig.APIServerConfig["data"] != "" {
+			gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.APIServerConfig["data"])
+			if err != nil {
+				return errors.New("apiServerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+			}
+			_, err = gzip.NewReader(bytes.NewReader(gzData))
+			if err != nil {
+				return errors.New("apiServerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+			}
 		}
-		_, err = gzip.NewReader(bytes.NewReader(gzData))
-		if err != nil {
-			return errors.New("schedulerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+		if a.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig["data"] != "" {
+			gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig["data"])
+			if err != nil {
+				return errors.New("controllerManagerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+			}
+			_, err = gzip.NewReader(bytes.NewReader(gzData))
+			if err != nil {
+				return errors.New("controllerManagerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+			}
 		}
-	}
-	if a.OrchestratorProfile.KubernetesConfig.APIServerConfig["data"] != "" {
-		gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.APIServerConfig["data"])
-		if err != nil {
-			return errors.New("apiServerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
-		}
-		_, err = gzip.NewReader(bytes.NewReader(gzData))
-		if err != nil {
-			return errors.New("apiServerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
-		}
-	}
-	if a.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig["data"] != "" {
-		gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig["data"])
-		if err != nil {
-			return errors.New("controllerManagerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
-		}
-		_, err = gzip.NewReader(bytes.NewReader(gzData))
-		if err != nil {
-			return errors.New("controllerManagerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
-		}
-	}
-	if a.OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig["data"] != "" {
-		gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig["data"])
-		if err != nil {
-			return errors.New("cloudControllerManagerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
-		}
-		_, err = gzip.NewReader(bytes.NewReader(gzData))
-		if err != nil {
-			return errors.New("cloudControllerManagerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+		if a.OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig["data"] != "" {
+			gzData, err := base64.StdEncoding.DecodeString(a.OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig["data"])
+			if err != nil {
+				return errors.New("cloudControllerManagerConfig data must be base64 encoded. Please provide a valid base64 encoded value")
+			}
+			_, err = gzip.NewReader(bytes.NewReader(gzData))
+			if err != nil {
+				return errors.New("cloudControllerManagerConfig data must be gzip compressed first and then base64 encoded. Please provide a valid 'gzip + base64' encoded value")
+			}
 		}
 	}
 	return nil
