@@ -54,4 +54,8 @@ function Install-Docker
     }
 }
 
-# TODO: Pagefile adjustments
+# Pagefile adjustments
+function Adjust-PageFileSize()
+{
+    wmic pagefileset set InitialSize=8096,MaximumSize=8096
+}

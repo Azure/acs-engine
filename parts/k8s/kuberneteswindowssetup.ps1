@@ -229,6 +229,9 @@ try
         Write-Log "Disable Internet Explorer compat mode and set homepage"
         Set-Explorer
 
+        Write-Log "Adjust pagefile size"
+        Adjust-PageFileSize
+
         Write-Log "Start preProvisioning script"
         PREPROVISION_EXTENSION
 
