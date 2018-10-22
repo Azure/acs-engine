@@ -283,7 +283,7 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 				}
 
 				if o.KubernetesConfig.DockerEngineVersion != "" {
-					log.Warnf("docker-engine is deprecated, but you passed in a dockerEngineVersion configuration. This will be ignored.")
+					log.Warnf("docker-engine is deprecated in favor of moby, but you passed in a dockerEngineVersion configuration. This will be ignored.")
 				}
 			}
 		case OpenShift:
