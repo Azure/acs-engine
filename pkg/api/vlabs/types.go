@@ -694,5 +694,5 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // RequiresDocker returns if the kubernetes settings require docker binary to be installed.
 func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
-	return runtime == "moby" || runtime == ""
+	return runtime == "docker" || runtime == ""
 }

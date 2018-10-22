@@ -217,9 +217,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsKubernetesVersionLt": func(version string) bool {
 			return cs.Properties.OrchestratorProfile.IsKubernetes() && !common.IsKubernetesVersionGe(cs.Properties.OrchestratorProfile.OrchestratorVersion, version)
 		},
-		"HasMoby": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.ContainerRuntime == "moby"
-		},
 		"GetMasterKubernetesLabels": func(rg string) string {
 			var buf bytes.Buffer
 			buf.WriteString("kubernetes.io/role=master")

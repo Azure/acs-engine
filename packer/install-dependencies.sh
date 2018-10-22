@@ -2,6 +2,7 @@
 
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
+source /home/packer/feature-flagged.sh
 
 ETCD_VERSION="3.2.24"
 ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
@@ -10,7 +11,7 @@ installEtcd
 installDeps
 
 if [[ "$CONTAINER_RUNTIME" == "docker-engine" ]]
-    installDocker
+    installDockerEngine
 elif [[ "$CONTAINER_RUNTIME" == "moby" ]]
     installMoby
 fi
