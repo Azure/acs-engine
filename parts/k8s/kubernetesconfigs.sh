@@ -13,7 +13,7 @@ function systemctlEnableAndStart() {
         echo "$1 could not be started"
         return 1
     fi
-    retrycmd_if_failure 10 5 3 systemctl enable $1
+    retrycmd_if_failure 120 5 25 systemctl enable $1
     if [ $? -ne 0 ]; then
         echo "$1 could not be enabled by systemctl"
         return 1
@@ -97,7 +97,7 @@ function configureEtcd() {
             sleep 1
         fi
     done
-    retrycmd_if_failure 10 1 5 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
+    retrycmd_if_failure 120 5 25 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
 function ensureRPC() {
@@ -106,6 +106,7 @@ function ensureRPC() {
 }
 
 function runAptDaily() {
+    wait_for_apt_locks
     /usr/lib/apt/apt.systemd.daily
 }
 
@@ -182,7 +183,7 @@ EOF
 
 function configureCNI() {
     # needed for the iptables rules to work on bridges
-    retrycmd_if_failure 30 6 10 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
+    retrycmd_if_failure 120 5 25 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -292,19 +293,19 @@ function ensureK8sControlPlane() {
     if $REBOOTREQUIRED; then
         return
     fi
-    wait_for_file 600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
+    wait_for_file 3600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
     # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681
     if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
         ensureKubelet
-        retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || ensureKubelet && retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+        retrycmd_if_failure 120 5 25 $KUBECTL 2>/dev/null cluster-info || ensureKubelet && retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     else
-        retrycmd_if_failure 900 1 20 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
+        retrycmd_if_failure 120 5 25 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     fi
     ensurePodSecurityPolicy
 }
 
 function ensureEtcd() {
-    retrycmd_if_failure 120 5 10 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
+    retrycmd_if_failure 120 5 25 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
 }
 
 function createKubeManifestDir() {
