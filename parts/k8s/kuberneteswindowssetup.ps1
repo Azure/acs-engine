@@ -54,6 +54,7 @@ $global:AgentCertificate = "{{WrapAsParameter "clientCertificate"}}"
 
 ## Download sources provided by acs-engine
 $global:KubeBinariesPackageSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
+$global:WindowsKubeBinariesURL = "{{WrapAsParameter "windowsKubeBinariesURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
 
 ## Docker Version
@@ -148,7 +149,12 @@ try
         Install-Docker -DockerVersion $global:DockerVersion
 
         Write-Log "download kubelet binaries and unzip"
-        Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
+        if ($global:WindowsKubeBinariesURL){
+            Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
+        }else{
+            Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
+        }
+
 
         Write-Log "Write Azure cloud provider config"
         Write-AzureConfig `

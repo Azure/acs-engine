@@ -10,6 +10,12 @@
         },
         "type": "string"
       },
+      "windowsKubeBinariesURL": {
+        "metadata": {
+          "description": "The download url for kubernetes windows binaries produce by Kubernetes. This contains only the node binaries (example: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1)"
+        },
+        "type": "string"
+      },
       "kubeBinariesVersion": {
         "metadata": {
           "description": "Kubernetes windows binaries version"

@@ -282,6 +282,7 @@ type KubernetesConfig struct {
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
 	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
 	CustomWindowsPackageURL         string            `json:"customWindowsPackageURL,omitempty"`
+	WindowsNodeBinariesURL          string            `json:"windowsNodeBinariesURL,omitempty"`
 	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`

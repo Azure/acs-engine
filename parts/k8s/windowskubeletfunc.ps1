@@ -183,6 +183,40 @@ Get-KubePackage
     Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
+function
+Get-KubeBinaries
+{
+    Param(
+        [Parameter(Mandatory=$true)][string]
+        $KubeBinariesURL
+    )
+
+    if ($computerInfo.WindowsVersion -eq "1709") 
+    {        
+        Write-Log "Server version 1709 does not support using kubernetes binaries in tar file."    
+        return
+    }
+    
+    $binaryPacakge = "c:\k.tar.gz"
+    for ($i=0; $i -le 10; $i++)
+    {
+        DownloadFileOverHttp -Url $KubeBinariesURL -DestinationPath $zipfile
+        if ($?) {
+            break
+        } else {
+            Write-Log $Error[0].Exception.Message
+        }
+    }
+
+      # using tar to minimize dependencies    
+      # tar should be avalible on 1803+
+      tar -xzf $binaryPacakge -C C:\    
+      move c:\kubernetes\node\bin\* c:\k\     
+      
+      #remove the downloaded file and temp folder created when unzipping    
+      del $binaryPacakge     
+      del C:\kubernetes -Recurse
+}
 
 # TODO: replace KubeletStartFile with a Kubelet config, remove NSSM, and use built-in service integration
 function
