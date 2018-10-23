@@ -171,7 +171,7 @@
     "dnsSettings": {
       "domainNameLabel": "[variables('masterFqdnPrefix')]"
     },
-    {{ if .MasterProfile.HasAvailabilityZones}}
+    {{ if eq LoadBalancerSku "Standard"}}
     "publicIPAllocationMethod": "Static"
     {{else}}
     "publicIPAllocationMethod": "Dynamic"
