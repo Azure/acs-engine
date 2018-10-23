@@ -237,7 +237,6 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			}
 
 			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
-			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 		}

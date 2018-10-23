@@ -163,7 +163,7 @@ New-InfraContainer
 # TODO: Deprecate this and replace with methods that get individual components instead of zip containing everything
 # This expects the ZIP file to be created by scripts/build-windows-k8s.sh
 function
-Get-KubeBinaries
+Get-KubePackage
 {
     Param(
         [Parameter(Mandatory=$true)][string]
