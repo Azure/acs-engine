@@ -229,11 +229,11 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:              "gcr.akscn.io/google_containers/",
-			TillerImageBase:                  "gcr.akscn.io/kubernetes-helm/",
-			ACIConnectorImageBase:            "dockerhub.akscn.io/microsoft/",
-			NVIDIAImageBase:                  "dockerhub.akscn.io/nvidia/",
-			AzureCNIImageBase:                "dockerhub.akscn.io/containernetworking/",
+			KubernetesImageBase:              "gcr.azk8s.cn/google_containers/",
+			TillerImageBase:                  "gcr.azk8s.cn/kubernetes-helm/",
+			ACIConnectorImageBase:            "dockerhub.azk8s.cn/microsoft/",
+			NVIDIAImageBase:                  "dockerhub.azk8s.cn/nvidia/",
+			AzureCNIImageBase:                "dockerhub.azk8s.cn/containernetworking/",
 			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
 			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
 			WindowsPackageSASURLBase:         DefaultKubernetesSpecConfig.WindowsPackageSASURLBase,
