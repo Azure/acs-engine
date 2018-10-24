@@ -25,7 +25,6 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
-		"--profiling":                  "false",
 		"--repair-malformed-updates":   "false",
 		"--service-account-key-file":   "/etc/kubernetes/certs/apiserver.key",
 		"--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
@@ -40,6 +39,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--audit-log-maxage":    "30",
 		"--audit-log-maxbackup": "10",
 		"--audit-log-maxsize":   "100",
+		"--profiling":           DefaultKubernetesAPIServerEnableProfiling,
 	}
 
 	// Data Encryption at REST configuration conditions

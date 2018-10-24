@@ -4,12 +4,12 @@ package api
 var staticSchedulerConfig = map[string]string{
 	"--kubeconfig":   "/var/lib/kubelet/kubeconfig",
 	"--leader-elect": "true",
-	"--profiling":    "false",
 }
 
 // defaultSchedulerConfig provides targeted defaults, but is user-overridable
 var defaultSchedulerConfig = map[string]string{
-	"--v": "2",
+	"--v":         "2",
+	"--profiling": DefaultKubernetesSchedulerEnableProfiling,
 }
 
 func (cs *ContainerService) setSchedulerConfig() {

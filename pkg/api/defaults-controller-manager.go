@@ -19,7 +19,6 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
 		"--v":                                "2",
-		"--profiling":                        "false",
 	}
 
 	// Set --cluster-name based on appropriate DNS prefix
@@ -42,6 +41,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--route-reconciliation-period":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 		"--terminated-pod-gc-threshold":     DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
 		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
+		"--profiling":                       DefaultKubernetesCtrMgrEnableProfiling,
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults
