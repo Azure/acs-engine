@@ -138,14 +138,14 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
+    "subnetNameResourceSegmentIndex": 10,
+    "vnetNameResourceSegmentIndex": 8,
+    "vnetResourceGroupNameResourceSegmentIndex": 4,
 {{if IsHostedMaster}}
     {{if IsCustomVNET}}
     "vnetSubnetID": "[parameters('{{ (index .AgentPoolProfiles 0).Name }}VnetSubnetID')]",
-    "subnetNameResourceSegmentIndex": 10,
     "subnetName": "[split(variables('vnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
-    "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(variables('vnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-    "vnetResourceGroupNameResourceSegmentIndex": 4,
     "virtualNetworkResourceGroupName": "[split(variables('vnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
   {{else}}
     "subnetName": "[concat(parameters('orchestratorName'), '-subnet')]",
@@ -158,11 +158,8 @@
   {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('agentVnetSubnetID')]",
     "vnetSubnetIDMaster": "[parameters('masterVnetSubnetID')]",
-    "subnetNameResourceSegmentIndex": 10,
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
-    "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-    "vnetResourceGroupNameResourceSegmentIndex": 4,
     "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
   {{else}}
     "subnetName": "subnetmaster",
