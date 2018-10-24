@@ -161,7 +161,7 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 	}
 
 	// add manifests
-	str = substituteAddonConfigString(str,
+	str = substituteConfigString(str,
 		kubernetesManifestSettingsInit(profile),
 		"k8s/manifests",
 		"/etc/kubernetes/manifests",
@@ -177,7 +177,7 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		profile.OrchestratorProfile.OrchestratorVersion)
 
 	// add addons
-	str = substituteAddonConfigString(str,
+	str = substituteConfigString(str,
 		kubernetesAddonSettingsInit(profile),
 		"k8s/addons",
 		"/etc/kubernetes/addons",

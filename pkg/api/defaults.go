@@ -232,8 +232,6 @@ func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 		cs.setAPIServerConfig()
 		// Configure scheduler
 		cs.setSchedulerConfig()
-		// Configure Pod Security
-		cs.setPodSecurityPolicyConfig()
 
 	case DCOS:
 		if o.DcosConfig == nil {
