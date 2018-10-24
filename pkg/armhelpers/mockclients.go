@@ -30,6 +30,7 @@ type MockACSEngineClient struct {
 	FailDeployTemplateWithProperties      bool
 	FailEnsureResourceGroup               bool
 	FailListVirtualMachines               bool
+	FailListVirtualMachinesTags           bool
 	FailListVirtualMachineScaleSets       bool
 	FailGetVirtualMachine                 bool
 	FailDeleteVirtualMachine              bool
@@ -189,6 +190,7 @@ func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
 	}
 	node := &v1.Node{}
 	node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{Type: v1.NodeReady, Status: v1.ConditionTrue})
+	node.Status.NodeInfo.KubeletVersion = "1.6.9"
 	return node, nil
 }
 
@@ -383,6 +385,9 @@ func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resource
 		orchestratorString:       &orchestrator,
 		resourceNameSuffixString: &resourceNameSuffix,
 		poolnameString:           &poolname,
+	}
+	if mc.FailListVirtualMachinesTags {
+		tags = nil
 	}
 
 	vm1 := compute.VirtualMachine{
