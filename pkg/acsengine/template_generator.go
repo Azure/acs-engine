@@ -553,10 +553,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataYaml, profile)
 			return str
 		},
-		"GetKubernetesMasterCustomDataVMSS": func(profile *api.Properties) string {
-			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataVMSSYaml, profile)
-			return str
-		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 
