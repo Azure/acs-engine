@@ -10,7 +10,7 @@ installEtcd
 
 installDeps
 
-if [[ $FEATURE_FLAGS == *"docker-engine"* ]]; then
+if [[ ${FEATURE_FLAGS} == *"docker-engine"* ]]; then
     installDockerEngine
 else
     installMoby
