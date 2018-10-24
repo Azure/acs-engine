@@ -397,17 +397,17 @@ configAddons() {
 }
 
 configGPUDrivers() {
-    retrycmd_if_failure 10 1 60 sh $GPU_DEST/nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}" || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 30 1 120 sh $GPU_DEST/nvidia-drivers-$GPU_DV --silent --accept-license --no-drm --dkms --utility-prefix="${GPU_DEST}" --opengl-prefix="${GPU_DEST}" || exit $ERR_GPU_DRIVERS_START_FAIL
     echo "${GPU_DEST}/lib64" > /etc/ld.so.conf.d/nvidia.conf
-    ldconfig
-    umount -l /usr/lib/x86_64-linux-gnu
-    nvidia-modprobe -u -c0
-    $GPU_DEST/bin/nvidia-smi
-    ldconfig
+    retrycmd_if_failure 120 5 25 ldconfig || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 120 5 25 umount -l /usr/lib/x86_64-linux-gnu || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 120 5 25 nvidia-modprobe -u -c0 || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 120 5 25 $GPU_DEST/bin/nvidia-smi || exit $ERR_GPU_DRIVERS_START_FAIL
+    retrycmd_if_failure 120 5 25 ldconfig || exit $ERR_GPU_DRIVERS_START_FAIL
 }
 
 ensureGPUDrivers() {
     configGPUDrivers
     systemctlEnableAndStart nvidia-modprobe || exit $ERR_GPU_DRIVERS_START_FAIL
-    retrycmd_if_failure 5 10 60 systemctl restart kubelet
+    retrycmd_if_failure 30 1 120 systemctl restart kubelet || exit $ERR_GPU_DRIVERS_START_FAIL
 }
