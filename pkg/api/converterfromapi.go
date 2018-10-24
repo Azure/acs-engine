@@ -596,6 +596,7 @@ func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.Windo
 	vlabsProfile.WindowsPublisher = api.WindowsPublisher
 	vlabsProfile.WindowsOffer = api.WindowsOffer
 	vlabsProfile.WindowsSku = api.WindowsSku
+	vlabsProfile.WindowsDockerVersion = api.WindowsDockerVersion
 	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
 	for _, s := range api.Secrets {
 		secret := &vlabs.KeyVaultSecrets{}

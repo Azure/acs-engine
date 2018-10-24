@@ -794,6 +794,11 @@ func TestWindowsProfile(t *testing.T) {
 		t.Fatalf("Expected HasSecrets() and HasCustomImage() to return false when WindowsProfile is empty")
 	}
 
+	dv := w.GetWindowsDockerVersion()
+	if dv != KubernetesWindowsDockerVersion {
+		t.Fatalf("Expected GetWindowsDockerVersion() to equal default KubernetesWindowsDockerVersion, got %s", dv)
+	}
+
 	w = WindowsProfile{
 		Secrets: []KeyVaultSecrets{
 			{
@@ -811,6 +816,15 @@ func TestWindowsProfile(t *testing.T) {
 
 	if !(w.HasSecrets() && w.HasCustomImage()) {
 		t.Fatalf("Expected HasSecrets() and HasCustomImage() to return true")
+	}
+
+	w = WindowsProfile{
+		WindowsDockerVersion: "18.03.1-ee-3",
+	}
+
+	dv = w.GetWindowsDockerVersion()
+	if dv != "18.03.1-ee-3" {
+		t.Fatalf("Expected GetWindowsDockerVersion() to equal 18.03.1-ee-3, got %s", dv)
 	}
 }
 
