@@ -21,6 +21,8 @@ function DownloadFile([string] $URI, [string] $fullName)
     }
 }
 
+Write-Host "Stopping kubelet to prevent pods from being scheduled until next reboot"
+Stop-Service kubelet -Force
 
 $URIs | ForEach-Object {
     Write-Host "Processing $_"
@@ -82,5 +84,5 @@ $URIs | ForEach-Object {
 
 # No failures, schedule reboot now
 
-schtasks /create /TN RebootAfterPatch /RU SYSTEM /TR "shutdown.exe /r /t 0 /d 2:17" /SC ONCE /ST $(([System.DateTime]::Now + [timespan]::FromMinutes(5)).ToString("HH:mm")) /V1 /Z
+schtasks /create /TN RebootAfterPatch /RU SYSTEM /TR "shutdown.exe /r /t 0 /d 2:17" /SC ONCE /ST $(([System.DateTime]::Now + [timespan]::FromMinutes(1)).ToString("HH:mm")) /V1 /Z
 exit 0
