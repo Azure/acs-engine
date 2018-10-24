@@ -373,7 +373,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	orchestrator := "unknown"
-	if vm.Tags != nil {
+	if vm.Tags != nil && vm.Tags["orchestrator"] != nil {
 		orchestrator = *vm.Tags["orchestrator"]
 	}
 	if isUpgradableVM {
