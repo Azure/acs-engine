@@ -648,29 +648,6 @@
       "type": "string"
     },
 {{end}}
-    {{if not IsOpenShift}}
-    "dockerEngineDownloadRepo": {
-      "defaultValue": "https://aptdocker.azureedge.net/repo",
-      "metadata": {
-        "description": "The docker engine download url for kubernetes."
-      },
-      "type": "string"
-    },
-    "dockerEngineVersion": {
-      "metadata": {
-        "description": "The docker engine version to install."
-      },
-      "allowedValues": [
-         "17.05.*",
-         "17.04.*",
-         "17.03.*",
-         "1.13.*",
-         "1.12.*",
-         "1.11.*"
-       ],
-      "type": "string"
-    },
-    {{end}}
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {

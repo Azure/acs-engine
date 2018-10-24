@@ -2,6 +2,7 @@
 
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
+source /home/packer/feature-flagged.sh
 
 ETCD_VERSION="3.2.24"
 ETCD_DOWNLOAD_URL="https://acs-mirror.azureedge.net/github-coreos"
@@ -9,9 +10,11 @@ installEtcd
 
 installDeps
 
-DOCKER_REPO="https://apt.dockerproject.org/repo"
-DOCKER_ENGINE_VERSION="1.13.*"
-installDocker
+if [[ ${FEATURE_FLAGS} == *"docker-engine"* ]]; then
+    installDockerEngine
+else
+    installMoby
+fi
 
 installClearContainersRuntime
 
@@ -131,3 +134,4 @@ echo "Install completed successfully on " `date` > /var/log/azure/golden-image-i
 echo "VSTS Build NUMBER: ${BUILD_NUMBER}" >> /var/log/azure/golden-image-install.complete
 echo "VSTS Build ID: ${BUILD_ID}" >> /var/log/azure/golden-image-install.complete
 echo "Commit: ${COMMIT}" >> /var/log/azure/golden-image-install.complete
+echo "Feature flags: ${FEATURE_FLAGS}" >> /var/log/azure/golden-image-install.complete

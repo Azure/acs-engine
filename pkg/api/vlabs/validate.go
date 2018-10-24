@@ -281,6 +281,10 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 						return errors.Errorf("standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"")
 					}
 				}
+
+				if o.KubernetesConfig.DockerEngineVersion != "" {
+					log.Warnf("docker-engine is deprecated in favor of moby, but you passed in a dockerEngineVersion configuration. This will be ignored.")
+				}
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
@@ -1250,7 +1254,7 @@ func (a *Properties) validateContainerRuntime() error {
 		return errors.Errorf("unknown containerRuntime %q specified", containerRuntime)
 	}
 
-	// Make sure we don't use clear containers on windows.
+	// Make sure we don't use unsupported container runtimes on windows.
 	if (containerRuntime == "clear-containers" || containerRuntime == "kata-containers" || containerRuntime == "containerd") && a.HasWindows() {
 		return errors.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}

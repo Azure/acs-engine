@@ -21,9 +21,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 	if orchestratorProfile.IsKubernetes() ||
 		orchestratorProfile.IsOpenShift() {
 		k8sComponents := api.K8sComponentsByVersionMap[orchestratorProfile.OrchestratorVersion]
-
-		dockerEngineVersion := k8sComponents["dockerEngineVersion"]
-
 		kubernetesConfig := orchestratorProfile.KubernetesConfig
 
 		if kubernetesConfig != nil {
@@ -301,10 +298,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				addValue(parametersMap, "jumpboxStorageProfile", kubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile)
 			}
 
-			if kubernetesConfig.DockerEngineVersion != "" {
-				dockerEngineVersion = kubernetesConfig.DockerEngineVersion
-			}
-
 			addValue(parametersMap, "enableAggregatedAPIs", kubernetesConfig.EnableAggregatedAPIs)
 		}
 
@@ -392,11 +385,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
-		}
-
-		if !orchestratorProfile.IsOpenShift() {
-			addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-			addValue(parametersMap, "dockerEngineVersion", dockerEngineVersion)
 		}
 
 		if properties.AADProfile != nil {

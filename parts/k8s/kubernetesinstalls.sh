@@ -48,25 +48,26 @@ function installGPUDrivers() {
 
 function installContainerRuntime() {
     if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
-        installDocker
+        installMoby
     elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	    # Ensure we can nest virtualization
         if grep -q vmx /proc/cpuinfo; then
             installClearContainersRuntime
         fi
     fi
 }
 
-function installDocker() {
-    CURRENT_VERSION=$(docker --version | cut -d " " -f 3 | cut -d "," -f 1)
-    if [[ "$CURRENT_VERSION" = ${DOCKER_ENGINE_VERSION} ]]; then
-        echo "docker version ${DOCKER_ENGINE_VERSION} is already installed, skipping download"
+function installMoby() {
+    dockerd --version
+    if [ $? -eq 0 ]; then
+        echo "dockerd is already installed, skipping download"
     else
-        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg || exit $ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT
-        retrycmd_if_failure 10 5 10 apt-key add /tmp/aptdocker.gpg || exit $ERR_DOCKER_APT_KEY_TIMEOUT
-        echo "deb ${DOCKER_REPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-        printf "Package: docker-engine\nPin: version ${DOCKER_ENGINE_VERSION}\nPin-Priority: 550\n" > /etc/apt/preferences.d/docker.pref
+        retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
+        retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
+        retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+        retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-        apt_get_install 20 30 120 docker-engine || exit $ERR_DOCKER_INSTALL_TIMEOUT
+        apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
     fi
 }
 
