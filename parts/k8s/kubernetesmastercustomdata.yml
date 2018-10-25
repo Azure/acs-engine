@@ -176,9 +176,9 @@ write_files:
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
       {{if IsMasterVirtualMachineScaleSets}}
-        server: {{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
-      {{else}}
         server: <SERVERIP>
+      {{else}}
+        server: {{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
       {{end}}
     users:
     - name: client
