@@ -42,6 +42,8 @@ const (
 	DockerCEVersion = "17.03.*"
 	// DockerCEDockerComposeVersion is the Docker Compose version
 	DockerCEDockerComposeVersion = "1.14.0"
+	// KubernetesWindowsDockerVersion is the default version for docker on Windows nodes in kubernetes
+	KubernetesWindowsDockerVersion = "17.06.2-ee-16"
 )
 
 // validation values
