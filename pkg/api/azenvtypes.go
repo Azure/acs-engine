@@ -142,7 +142,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-201810",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.10.18",
+		ImageVersion:   "2018.10.25",
 	}
 
 	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 16.04.
