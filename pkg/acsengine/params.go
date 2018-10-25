@@ -242,8 +242,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 
 			// Kubernetes node binaries as packaged by upstream kubernetes
 			// example at https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1
-			windowsKubeBinariesURL := properties.OrchestratorProfile.KubernetesConfig.WindowsNodeBinariesURL
-			addValue(parametersMap, "windowsKubeBinariesURL", windowsKubeBinariesURL)
+			addValue(parametersMap, "windowsKubeBinariesURL", properties.OrchestratorProfile.KubernetesConfig.WindowsNodeBinariesURL)
 
 			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
