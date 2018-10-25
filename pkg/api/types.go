@@ -185,6 +185,7 @@ type WindowsProfile struct {
 	WindowsPublisher      string            `json:"windowsPublisher"`
 	WindowsOffer          string            `json:"windowsOffer"`
 	WindowsSku            string            `json:"windowsSku"`
+	WindowsDockerVersion  string            `json:"windowsDockerVersion"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
@@ -1078,6 +1079,14 @@ func (w *WindowsProfile) HasSecrets() bool {
 // HasCustomImage returns true if there is a custom windows os image url specified
 func (w *WindowsProfile) HasCustomImage() bool {
 	return len(w.WindowsImageSourceURL) > 0
+}
+
+// GetWindowsDockerVersion gets the docker version specified or returns default value
+func (w *WindowsProfile) GetWindowsDockerVersion() string {
+	if w.WindowsDockerVersion != "" {
+		return w.WindowsDockerVersion
+	}
+	return KubernetesWindowsDockerVersion
 }
 
 // HasSecrets returns true if the customer specified secrets to install

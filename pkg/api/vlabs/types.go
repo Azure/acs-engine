@@ -157,6 +157,7 @@ type WindowsProfile struct {
 	WindowsPublisher      string            `json:"WindowsPublisher"`
 	WindowsOffer          string            `json:"WindowsOffer"`
 	WindowsSku            string            `json:"WindowsSku"`
+	WindowsDockerVersion  string            `json:"windowsDockerVersion"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 

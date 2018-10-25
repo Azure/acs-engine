@@ -226,6 +226,9 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		if properties.WindowsProfile.WindowsSku != "" {
 			addValue(parametersMap, "agentWindowsSku", properties.WindowsProfile.WindowsSku)
 		}
+
+		addValue(parametersMap, "windowsDockerVersion", properties.WindowsProfile.GetWindowsDockerVersion())
+
 		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
 			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
