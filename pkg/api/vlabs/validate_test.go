@@ -1153,11 +1153,11 @@ func TestAgentPoolProfileDistro(t *testing.T) {
 	p.OrchestratorProfile = &OrchestratorProfile{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 	p.AgentPoolProfiles = []*AgentPoolProfile{
-		&AgentPoolProfile{
+		{
 			Distro: AKS,
 			VMSize: "Standard_NC6",
 		},
-		&AgentPoolProfile{
+		{
 			Distro: AKSDockerEngine,
 			VMSize: "Standard_NC6",
 		},
