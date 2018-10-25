@@ -152,7 +152,7 @@ apt_get_install() {
     for i in $(seq 1 $retries); do
         wait_for_apt_locks
         dpkg --configure -a
-        timeout $timeout apt-get install --no-install-recommends -y ${@}
+        apt-get install --no-install-recommends -y ${@}
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
