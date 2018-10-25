@@ -24,10 +24,11 @@ const (
 
 // the LinuxDistros supported by vlabs
 const (
-	Ubuntu Distro = "ubuntu"
-	RHEL   Distro = "rhel"
-	CoreOS Distro = "coreos"
-	AKS    Distro = "aks"
+	Ubuntu          Distro = "ubuntu"
+	RHEL            Distro = "rhel"
+	CoreOS          Distro = "coreos"
+	AKS             Distro = "aks"
+	AKSDockerEngine Distro = "aks-docker-engine"
 	// Supported distros by OpenShift
 	OpenShift39RHEL Distro = "openshift39_rhel"
 	OpenShiftCentOS Distro = "openshift39_centos"
