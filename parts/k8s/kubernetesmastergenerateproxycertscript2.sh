@@ -21,14 +21,12 @@ export ETCDCTL_CERT_FILE="${ETCDCTL_CERT_FILE:=/etc/kubernetes/certs/etcdclient.
 export RANDFILE=$(mktemp)
 
 # generate root CA
-# stdout supressed to avoid leaking sensitive data
-echo "---Generating certificates---"
-openssl genrsa -out $PROXY_CA_KEY 2048  > /dev/null 2>&1
-openssl req -new -x509 -days 1826 -key $PROXY_CA_KEY -out $PROXY_CRT -subj '/CN=proxyClientCA' > /dev/null 2>&1
+openssl genrsa -out $PROXY_CA_KEY 2048
+openssl req -new -x509 -days 1826 -key $PROXY_CA_KEY -out $PROXY_CRT -subj '/CN=proxyClientCA'
 # generate new cert
-openssl genrsa -out $PROXY_CLIENT_KEY 2048 > /dev/null 2>&1
-openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters' > /dev/null 2>&1
-openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT > /dev/null 2>&1
+openssl genrsa -out $PROXY_CLIENT_KEY 2048
+openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters'
+openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT
 
 write_certs_to_disk() {
     etcdctl get $ETCD_REQUESTHEADER_CLIENT_CA > $K8S_PROXY_CA_CRT_FILEPATH
