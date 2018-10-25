@@ -12,13 +12,12 @@ installDeps
 
 if [[ ${FEATURE_FLAGS} == *"docker-engine"* ]]; then
     installDockerEngine
+    installGPUDrivers
 else
     installMoby
 fi
 
 installClearContainersRuntime
-
-installGPUDrivers
 
 VNET_CNI_VERSIONS="1.0.10 1.0.11 1.0.12"
 CNI_PLUGIN_VERSIONS="0.7.1"
