@@ -42,7 +42,7 @@ function installGPUDrivers() {
     retrycmd_if_failure_no_stats 120 5 25 cat /tmp/nvidia-docker.list > /etc/apt/sources.list.d/nvidia-docker.list
     apt_get_update
     retrycmd_if_failure 30 5 300 apt-get install -y linux-headers-$(uname -r) gcc make dkms || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
-    retrycmd_if_failure 30 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=${NVIDIA_DOCKER_VERSION}+docker${DOCKER_VERSION} nvidia-container-runtime=${NVIDIA_CONTAINER_RUNTIME_VERSION}+docker${DOCKER_VERSION} || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
+    retrycmd_if_failure 30 5 3600 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2=${NVIDIA_DOCKER_VERSION}+docker${DOCKER_VERSION} nvidia-container-runtime=${NVIDIA_CONTAINER_RUNTIME_VERSION}+docker${DOCKER_VERSION} || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     retrycmd_if_failure 120 5 25 pkill -SIGHUP dockerd || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     retrycmd_if_failure 30 5 60 curl -fLS https://us.download.nvidia.com/tesla/$GPU_DV/NVIDIA-Linux-x86_64-${GPU_DV}.run -o ${GPU_DEST}/nvidia-drivers-${GPU_DV} || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
     mkdir -p $GPU_DEST/lib64 $GPU_DEST/overlay-workdir
@@ -80,7 +80,7 @@ function installKataContainersRuntime() {
     KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
     KATA_URL=http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/Release.key
     retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $KATA_URL > $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 10 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
+    retrycmd_if_failure 10 5 30 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
     echo "Adding Kata Containers repository..."
     echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/kata-containers.list
     echo "Installing Kata Containers runtime..."
