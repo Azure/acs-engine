@@ -150,7 +150,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-docker-engine",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.10.24",
+		ImageVersion:   "2018.10.25",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
