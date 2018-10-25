@@ -148,11 +148,15 @@ try
         Write-Log "install docker"
         Install-Docker -DockerVersion $global:DockerVersion
 
-        Write-Log "download kubelet binaries and unzip"
+        Write-Log "Download kubelet binaries and unzip"
+        Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
+
+        # this overwrite the binaries that are download from the custom packge with binaries 
+        # The custom package has a few files that are nessary for future steps (nssm.exe)
+        # this is a temporary work around to get the binaries until we depreciate 
+        # custom package and nssm.exe as defined in #3851.
         if ($global:WindowsKubeBinariesURL){
             Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
-        }else{
-            Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
         }
 
 
