@@ -211,7 +211,7 @@ Get-KubeBinaries
       # using tar to minimize dependencies    
       # tar should be avalible on 1803+
       tar -xzf $binaryPackage -C C:\    
-      move c:\kubernetes\node\bin\* c:\k\     
+      cp c:\kubernetes\node\bin\ c:\k\ -Recurse       
       
       #remove the downloaded file and temp folder created when unzipping    
       del $binaryPackage     
