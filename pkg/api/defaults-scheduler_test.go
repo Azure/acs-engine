@@ -53,3 +53,29 @@ func TestSchedulerStaticConfig(t *testing.T) {
 		}
 	}
 }
+
+func TestSchedulerConfigEnableProfiling(t *testing.T) {
+	// Test
+	// "schedulerConfig": {
+	// 	"--profiling": "true"
+	// },
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig = map[string]string{
+		"--profiling": "true",
+	}
+	cs.setSchedulerConfig()
+	s := cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig
+	if s["--profiling"] != "true" {
+		t.Fatalf("got unexpected '--profiling' Scheduler config value for \"--profiling\": \"true\": %s",
+			s["--profiling"])
+	}
+
+	// Test default
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.setSchedulerConfig()
+	s = cs.Properties.OrchestratorProfile.KubernetesConfig.SchedulerConfig
+	if s["--profiling"] != DefaultKubernetesSchedulerEnableProfiling {
+		t.Fatalf("got unexpected default value for '--profiling' Scheduler config: %s",
+			s["--profiling"])
+	}
+}
