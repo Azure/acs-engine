@@ -139,13 +139,13 @@ try
     if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
-        Write-Log "apply telemetry data setting"
+        Write-Log "Apply telemetry data setting"
         Set-TelemetrySetting -WindowsTelemetryGUID $global:WindowsTelemetryGUID
 
-        Write-Log "resize os drive if possible"
+        Write-Log "Resize os drive if possible"
         Resize-OSDrive
 
-        Write-Log "install docker"
+        Write-Log "Install docker"
         Install-Docker -DockerVersion $global:DockerVersion
 
         Write-Log "Download kubelet binaries and unzip"
@@ -156,6 +156,7 @@ try
         # this is a temporary work around to get the binaries until we depreciate 
         # custom package and nssm.exe as defined in #3851.
         if ($global:WindowsKubeBinariesURL){
+            Write-Log "Overwriting kube node binaries from $global:WindowsKubeBinariesURL"
             Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
         }
 
@@ -215,7 +216,7 @@ try
             Get-HnsPsm1 -HNSModule $global:HNSModule
         }
 
-        Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
+        Write-Log "Write kubelet startfile with pod CIDR of $podCIDR"
         Install-KubernetesServices `
             -KubeletConfigArgs $global:KubeletConfigArgs `
             -KubeBinariesVersion $global:KubeBinariesVersion `
