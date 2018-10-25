@@ -69,6 +69,7 @@ type Properties struct {
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+	Debug                   *Debug                   `json:"debug,omitempty"`
 }
 
 // ClusterMetadata represents the metadata of the ACS cluster.
@@ -95,6 +96,11 @@ type AzProfile struct {
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	ResourceGroup  string `json:"resourceGroup,omitempty"`
 	Location       string `json:"location,omitempty"`
+}
+
+// Debug defines feature-flag restricted functionality, or debug config for tests
+type Debug struct {
+	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD

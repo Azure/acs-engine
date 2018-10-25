@@ -399,6 +399,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate b
 		api.AzProfile = &AzProfile{}
 		convertVLabsAZProfile(vlabs.AzProfile, api.AzProfile)
 	}
+
+	if vlabs.Debug != nil {
+		api.Debug = &Debug{}
+		convertVLabsDebug(vlabs.Debug, api.Debug)
+	}
 }
 
 func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
@@ -406,6 +411,10 @@ func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
 	api.ResourceGroup = vlabs.ResourceGroup
 	api.SubscriptionID = vlabs.SubscriptionID
 	api.TenantID = vlabs.TenantID
+}
+
+func convertVLabsDebug(vlabs *vlabs.Debug, api *Debug) {
+	api.EnableCSERunInBackground = vlabs.EnableCSERunInBackground
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
