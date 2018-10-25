@@ -857,6 +857,30 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 
 }
 
+func TestAKSDockerEngineDistro(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.10.9")
+	properties := mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_D2_V2"
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != AKS {
+		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKS, properties.AgentPoolProfiles[0].Distro)
+	}
+}
+
 func TestAzureCNIVersionString(t *testing.T) {
 	mockCS := getMockBaseContainerService("1.10.3")
 	properties := mockCS.Properties

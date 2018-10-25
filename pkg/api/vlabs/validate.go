@@ -835,6 +835,18 @@ func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) err
 	return nil
 }
 
+func (a *AgentPoolProfile) validateKubernetesDistro() error {
+	switch a.Distro {
+	case AKS:
+		if a.IsNSeriesSKU() {
+			return errors.Errorf("The %s VM SKU must use the %s Distro as they require the docker-engine container runtime", a.VMSize, AKS)
+		}
+	default:
+		return nil
+	}
+	return nil
+}
+
 func validateVMSS(o *OrchestratorProfile, isUpdate bool, storageProfile string) error {
 	if o.OrchestratorType == Kubernetes {
 		version := common.RationalizeReleaseAndVersion(
