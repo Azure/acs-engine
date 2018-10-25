@@ -21,14 +21,12 @@ export ETCDCTL_CERT_FILE="${ETCDCTL_CERT_FILE:=/etc/kubernetes/certs/etcdclient.
 export RANDFILE=$(mktemp)
 
 # generate root CA
-# stdout supressed to avoid leaking sensitive data
-echo "---Generating certificates---"
-openssl genrsa -out $PROXY_CA_KEY 2048  > /dev/null 2>&1
-openssl req -new -x509 -days 1826 -key $PROXY_CA_KEY -out $PROXY_CRT -subj '/CN=proxyClientCA' > /dev/null 2>&1
+openssl genrsa -out $PROXY_CA_KEY 2048
+openssl req -new -x509 -days 1826 -key $PROXY_CA_KEY -out $PROXY_CRT -subj '/CN=proxyClientCA'
 # generate new cert
-openssl genrsa -out $PROXY_CLIENT_KEY 2048 > /dev/null 2>&1
-openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters' > /dev/null 2>&1
-openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT > /dev/null 2>&1
+openssl genrsa -out $PROXY_CLIENT_KEY 2048
+openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters'
+openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT
 
 write_certs_to_disk() {
     etcdctl get $ETCD_REQUESTHEADER_CLIENT_CA > $K8S_PROXY_CA_CRT_FILEPATH
@@ -49,9 +47,10 @@ write_certs_to_disk_with_retry() {
 # block until all etcd is ready
 retrycmd_if_failure 100 5 10 etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
-if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
-    etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"
-    etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})"
+# etcdctl will output the data it's given, stdout is redirected to dev null to avoid capturing sensitive data in logs
+if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})" > /dev/null 2>&1; then
+    etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})" > /dev/null 2>&1
+    etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})" > /dev/null 2>&1
     sleep 5
     write_certs_to_disk_with_retry
 # If the etcdtl mk command failed, that means the key already exists
