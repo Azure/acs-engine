@@ -839,7 +839,7 @@ func (a *AgentPoolProfile) validateKubernetesDistro() error {
 	switch a.Distro {
 	case AKS:
 		if a.IsNSeriesSKU() {
-			return errors.Errorf("The %s VM SKU must use the %s Distro as they require the docker-engine container runtime", a.VMSize, AKS)
+			return errors.Errorf("The %s VM SKU must use the %s Distro as they require the docker-engine container runtime", a.VMSize, AKSDockerEngine)
 		}
 	}
 	return nil
