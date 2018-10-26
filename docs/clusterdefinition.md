@@ -183,9 +183,11 @@ Additionally above, we specified a custom docker image for tiller, let's say we 
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
-We also support external yaml scripts for these supported addons. In order to do this, you will need to pass in a base64 encoded string of the kubernetes addon YAML file that you wish to use to `addons.Data` property. When `addons.Data` is provided with a value, the `containers` and `config` are required to be empty.
+#### External Custom YAML scripts
 
-CAVEAT: Please note that this is an experimental feature. Since Addon.Data allows you to provide your own scripts, you face the risk of any unintended/undesirable consequences of the errors and failures from running that script.
+External YAML scripts can be configured for these supported addons and the manifest files for kube-scheduler, kube-controller-manager, cloud-controller-manager, kube-apiserver and PodSecurityPolicy. For addons, you will need to pass in a _base64_ encoded string of the kubernetes addon YAML file that you wish to use to `addons.Data` property. When `addons.Data` is provided with a value, the `containers` and `config` are required to be empty.
+
+CAVEAT: Please note that this is an experimental feature. Since Addons.Data allows you to provide your own scripts, you face the risk of any unintended/undesirable consequences of the errors and failures from running that script.
  
 ```
 "kubernetesConfig": {
@@ -198,7 +200,24 @@ CAVEAT: Please note that this is an experimental feature. Since Addon.Data allow
     ]
 }
 ```
+For kubernetes component manifests, you will need to pass in a _base64_ encoded string of the kubernetes manifest YAML file to _KubernetesComponentConfig["data"]_ . For example, to pass a custom kube-scheduler config, do the following:
 
+```
+"kubernetesConfig": {
+    "schedulerConfig": {
+            "data" : "<base64 encoded string of your k8s manifest YAML>"
+        }
+}
+```
+and to pass a custom pod security policy config, do the following:
+
+```
+"kubernetesConfig": {
+    "podSecurityPolicyConfig": {
+            "data" : "<base64 encoded string of your k8s manifest YAML>"
+        }
+}
+```
 <a name="feat-kubelet-config"></a>
 
 #### kubeletConfig
