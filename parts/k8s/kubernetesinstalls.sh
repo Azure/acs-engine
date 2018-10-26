@@ -176,7 +176,7 @@ function installImg() {
 }
 
 function pullHyperkube() {
-    retrycmd_if_failure 60 1 120 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 60 1 1200 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     img unpack -o "/home/rootfs-${KUBERNETES_VERSION}" $HYPERKUBE_URL
     path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
 
@@ -204,5 +204,5 @@ function extractHyperkube() {
 function pullContainerImage() {
     CLI_TOOL=$1
     DOCKER_IMAGE_URL=$2
-    retrycmd_if_failure 60 1 120 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
