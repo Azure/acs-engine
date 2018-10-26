@@ -102,6 +102,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should display the installed docker runtime on the master node", func() {
+			if eng.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.RequiresDocker() {
+				kubeConfig, err := GetConfig()
+				Expect(err).NotTo(HaveOccurred())
+				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+
+				dockerVersionCmd := fmt.Sprintf("sudo docker version")
+				cmd := exec.Command("ssh", "-i", masterSSHPrivateKeyFilepath, "-p", masterSSHPort, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, dockerVersionCmd)
+				util.PrintCommand(cmd)
+				out, err := cmd.CombinedOutput()
+				log.Printf("%s\n", out)
+				if err != nil {
+					log.Printf("Error while getting docker version: %s\n", err)
+				}
+			}
+		})
+
 		It("should have have the appropriate node count", func() {
 			nodeList, err := node.Get()
 			Expect(err).NotTo(HaveOccurred())
