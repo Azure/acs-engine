@@ -596,6 +596,7 @@ func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.Windo
 	vlabsProfile.WindowsPublisher = api.WindowsPublisher
 	vlabsProfile.WindowsOffer = api.WindowsOffer
 	vlabsProfile.WindowsSku = api.WindowsSku
+	vlabsProfile.WindowsDockerVersion = api.WindowsDockerVersion
 	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
 	for _, s := range api.Secrets {
 		secret := &vlabs.KeyVaultSecrets{}
@@ -758,6 +759,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	convertAPIServerConfigToVlabs(api, vlabs)
 	convertSchedulerConfigToVlabs(api, vlabs)
 	convertPrivateClusterToVlabs(api, vlabs)
+	convertPodSecurityPolicyConfigToVlabs(api, vlabs)
 }
 
 func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
@@ -804,6 +806,13 @@ func convertSchedulerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfi
 	v.SchedulerConfig = map[string]string{}
 	for key, val := range a.SchedulerConfig {
 		v.SchedulerConfig[key] = val
+	}
+}
+
+func convertPodSecurityPolicyConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.PodSecurityPolicyConfig = map[string]string{}
+	for key, val := range a.PodSecurityPolicyConfig {
+		v.PodSecurityPolicyConfig[key] = val
 	}
 }
 

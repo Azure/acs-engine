@@ -524,7 +524,6 @@ func (a *Properties) validateAddons() error {
 				IsNSeriesSKU = true
 			}
 		}
-
 		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
 
 			if addon.Data != "" {

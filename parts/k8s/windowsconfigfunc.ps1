@@ -34,4 +34,28 @@ function Set-Explorer
     New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main" -Name "Start Page" -Type String -Value http://bing.com
 }
 
-# TODO: Pagefile adjustments
+function Install-Docker
+{
+    Param(
+        [Parameter(Mandatory=$true)][string]
+        $DockerVersion
+    )
+
+    try {
+        Find-Package -Name Docker -ProviderName DockerMsftProvider -RequiredVersion $DockerVersion -ErrorAction Stop
+        Write-Log "Found version $DockerVersion. Installing..."
+        Install-Package -Name Docker -ProviderName DockerMsftProvider -Update -Force -RequiredVersion $DockerVersion
+        net start docker
+        Write-Log "Installed version $DockerVersion"
+    } catch {
+        Write-Log "Error while installing package: $_.Exception.Message"
+        $currentDockerVersion = (Get-Package -Name Docker -ProviderName DockerMsftProvider).Version
+        Write-Log "Not able to install docker version. Using default version $currentDockerVersion"
+    }
+}
+
+# Pagefile adjustments
+function Adjust-PageFileSize()
+{
+    wmic pagefileset set InitialSize=8096,MaximumSize=8096
+}

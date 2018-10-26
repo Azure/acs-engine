@@ -44,4 +44,11 @@
         "description": "The SKU of windows image for the agent virtual machines."
       },
       "type": "string"
+    },
+    "windowsDockerVersion": {
+      "defaultValue": "17.06.2-ee-16",
+      "metadata": {
+        "description": "The version of Docker to be installed on Windows Nodes"
+      },
+      "type": "string"
     }

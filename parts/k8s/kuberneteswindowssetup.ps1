@@ -57,6 +57,9 @@ $global:KubeBinariesSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
 $global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"}}"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
 
+## Docker Version
+$global:DockerVersion = "{{WrapAsParameter "windowsDockerVersion"}}"
+
 ## VM configuration passed by Azure
 $global:WindowsTelemetryGUID = "{{WrapAsParameter "windowsTelemetryGUID"}}"
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
@@ -142,6 +145,9 @@ try
         Write-Log "resize os drive if possible"
         Resize-OSDrive
 
+        Write-Log "install docker"
+        Install-Docker -DockerVersion $global:DockerVersion
+
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries -KubeBinariesSASURL $global:KubeBinariesSASURL
 
@@ -222,6 +228,9 @@ try
 
         Write-Log "Disable Internet Explorer compat mode and set homepage"
         Set-Explorer
+
+        Write-Log "Adjust pagefile size"
+        Adjust-PageFileSize
 
         Write-Log "Start preProvisioning script"
         PREPROVISION_EXTENSION
