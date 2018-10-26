@@ -438,7 +438,11 @@ func (p *Properties) setAgentProfileDefaults(isUpgrade, isScale bool) {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < VHDDiskSizeAKS {
 					profile.Distro = Ubuntu
 				} else {
-					profile.Distro = AKS
+					if IsNSeriesSKU(p) {
+						profile.Distro = AKSDockerEngine
+					} else {
+						profile.Distro = AKS
+					}
 				}
 			} else if !p.OrchestratorProfile.IsOpenShift() {
 				profile.Distro = Ubuntu

@@ -142,7 +142,15 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-201810",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.10.18",
+		ImageVersion:   "2018.10.25",
+	}
+
+	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 16.04.
+	DefaultAKSDockerEngineOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "aks",
+		ImageSku:       "aks-ubuntu-1604-docker-engine",
+		ImagePublisher: "microsoft-aks",
+		ImageVersion:   "2018.10.25",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
@@ -175,10 +183,11 @@ var (
 		},
 
 		OSImageConfig: map[Distro]AzureOSImageConfig{
-			Ubuntu: DefaultUbuntuImageConfig,
-			RHEL:   DefaultRHELOSImageConfig,
-			CoreOS: DefaultCoreOSImageConfig,
-			AKS:    DefaultAKSOSImageConfig,
+			Ubuntu:          DefaultUbuntuImageConfig,
+			RHEL:            DefaultRHELOSImageConfig,
+			CoreOS:          DefaultCoreOSImageConfig,
+			AKS:             DefaultAKSOSImageConfig,
+			AKSDockerEngine: DefaultAKSDockerEngineOSImageConfig,
 			// Image config supported for OpenShift
 			OpenShift39RHEL: DefaultOpenShift39RHELImageConfig,
 			OpenShiftCentOS: DefaultOpenShift39CentOSImageConfig,
