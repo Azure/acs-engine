@@ -352,6 +352,9 @@ Install-KubernetesServices
         $kubeStartStr += @"
 Write-Host "NetworkPlugin azure, starting kubelet."
 
+# Temporary workaround for #4118 - don't merge to acs-engine master
+`$ENV:DOCKER_API_VERSION="1.37"
+
 # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
 netsh advfirewall set allprofiles state off
 # startup the service
@@ -417,6 +420,9 @@ $KubeletCommandLine
     {
         $KubeNetwork = "l2bridge"
         $kubeStartStr += @"
+
+# Temporary workaround for #4118 - don't merge to acs-engine master
+`$ENV:DOCKER_API_VERSION="1.37"
 
 function
 Get-DefaultGateway(`$CIDR)
