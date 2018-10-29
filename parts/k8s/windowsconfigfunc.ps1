@@ -41,6 +41,28 @@ function Install-Docker
         $DockerVersion
     )
 
+    # Note: to get a list of all versions, use this snippet
+    # $versions = (curl.exe -L "https://go.microsoft.com/fwlink/?LinkID=825636&clcid=0x409" | ConvertFrom-Json).Versions | Get-Member -Type NoteProperty | Select-Object Name
+    # Docker version to API version decoder: https://docs.docker.com/develop/sdk/#api-version-matrix
+
+    switch ($DockerVersion.Substring(0,5))
+    {
+        "17.06" {
+            Write-Log "Docker 17.06 found, setting DOCKER_API_VERSION to 1.30"
+            [System.Environment]::SetEnvironmentVariable('DOCKER_API_VERSION', '1.30', [System.EnvironmentVariableTarget]::Machine)
+        }
+
+        "18.03" {
+            Write-Log "Docker 18.03 found, setting DOCKER_API_VERSION to 1.37"
+            [System.Environment]::SetEnvironmentVariable('DOCKER_API_VERSION', '1.37', [System.EnvironmentVariableTarget]::Machine)
+        }
+
+        default {
+            Write-Log "Docker version $DockerVersion found, clearing DOCKER_API_VERSION"
+            [System.Environment]::SetEnvironmentVariable('DOCKER_API_VERSION', $null, [System.EnvironmentVariableTarget]::Machine)
+        }
+    }
+
     try {
         Find-Package -Name Docker -ProviderName DockerMsftProvider -RequiredVersion $DockerVersion -ErrorAction Stop
         Write-Log "Found version $DockerVersion. Installing..."
