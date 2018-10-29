@@ -58,7 +58,7 @@ function Install-Docker
         }
 
         default {
-            Write-Log "Docker version $DockerVersion found, clearing DOCKER_API_VERSION")
+            Write-Log "Docker version $DockerVersion found, clearing DOCKER_API_VERSION"
             [System.Environment]::SetEnvironmentVariable('DOCKER_API_VERSION', $null, [System.EnvironmentVariableTarget]::Machine)
         }
     }
