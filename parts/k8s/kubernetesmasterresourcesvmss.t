@@ -14,20 +14,13 @@
     "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
     {{if UseManagedIdentity}}
-    {{if UserAssignedIDEnabled}}
-    "dependsOn": [
-     "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
-     "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('userAssignedID'), 'roleAssignment'))]",
-    ],
-    {{else}}
-    "dependsOn": 
+    "dependsOn":
     [
       "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
       {{if UserAssignedIDEnabled}}
       ,"[variables('userAssignedIDReference')]"
       {{end}}
     ],
-    {{end}}
     {{end}}
     "properties": {
       "enabledForDeployment": "false",
