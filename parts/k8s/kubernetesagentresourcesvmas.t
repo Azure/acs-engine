@@ -285,7 +285,7 @@
        {{if UserAssignedIDEnabled}}
        "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-        "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment')))]"
+        "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id)))]"
        ],
        {{else}}
        "dependsOn": [

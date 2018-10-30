@@ -66,7 +66,7 @@
       {
         "apiVersion": "[variables('apiVersionAuthorization')]",
         "type": "Microsoft.Authorization/roleAssignments",
-        "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment'))]",
+        "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id))]",
         "properties": {
           "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
           "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
