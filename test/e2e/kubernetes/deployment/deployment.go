@@ -81,6 +81,16 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 	return d, nil
 }
 
+// CreateLinuxDeployIfNotExist first checks if a deployment already exists, and return it if so
+// If not, we call CreateLinuxDeploy
+func CreateLinuxDeployIfNotExist(image, name, namespace, miscOpts string) (*Deployment, error) {
+	deployment, err := Get(name, namespace)
+	if err != nil {
+		return CreateLinuxDeploy(image, name, namespace, miscOpts)
+	}
+	return deployment, nil
+}
+
 // RunLinuxDeploy will create a deployment that runs a bash command in a pod
 // --overrides=' "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
