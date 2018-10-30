@@ -382,8 +382,10 @@ const (
 )
 
 const (
-	azurePublicCloud       = "AzurePublicCloud"
-	azureChinaCloud        = "AzureChinaCloud"
+	// AzurePublicCloud is Azure Public Cloud
+	AzurePublicCloud = "AzurePublicCloud"
+	// AzureChinaCloud is Azure China Cloud
+	AzureChinaCloud        = "AzureChinaCloud"
 	azureGermanCloud       = "AzureGermanCloud"
 	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )

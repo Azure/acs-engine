@@ -204,7 +204,3 @@ const (
 	swarmWinAgentResourcesVMSS    = "swarm/swarmwinagentresourcesvmss.t"
 	windowsParams                 = "windowsparams.t"
 )
-
-const (
-	azurePublicCloud = "AzurePublicCloud"
-)
