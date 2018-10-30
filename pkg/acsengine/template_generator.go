@@ -418,6 +418,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
+		"CSERunInBackground": func() bool {
+			if cs.Properties.FeatureFlags != nil {
+				return cs.Properties.FeatureFlags.EnableCSERunInBackground
+			}
+			return false
+		},
 		"GetDCOSBootstrapCustomData": func() string {
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			for i, v := range masterIPList {
