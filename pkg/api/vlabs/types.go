@@ -42,7 +42,7 @@ type Properties struct {
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
-	Debug                   *Debug                   `json:"debug,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 // AzProfile holds the azure context for where the cluster resides
@@ -53,8 +53,8 @@ type AzProfile struct {
 	Location       string `json:"location,omitempty"`
 }
 
-// Debug defines feature-flag restricted functionality, or debug config for tests
-type Debug struct {
+// FeatureFlags defines feature-flag restricted functionality
+type FeatureFlags struct {
 	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
 }
 

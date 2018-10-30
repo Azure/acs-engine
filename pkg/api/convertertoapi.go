@@ -400,9 +400,9 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate b
 		convertVLabsAZProfile(vlabs.AzProfile, api.AzProfile)
 	}
 
-	if vlabs.Debug != nil {
-		api.Debug = &Debug{}
-		convertVLabsDebug(vlabs.Debug, api.Debug)
+	if vlabs.FeatureFlags != nil {
+		api.FeatureFlags = &FeatureFlags{}
+		convertVLabsFeatureFlags(vlabs.FeatureFlags, api.FeatureFlags)
 	}
 }
 
@@ -413,7 +413,7 @@ func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
 	api.TenantID = vlabs.TenantID
 }
 
-func convertVLabsDebug(vlabs *vlabs.Debug, api *Debug) {
+func convertVLabsFeatureFlags(vlabs *vlabs.FeatureFlags, api *FeatureFlags) {
 	api.EnableCSERunInBackground = vlabs.EnableCSERunInBackground
 }
 

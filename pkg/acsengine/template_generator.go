@@ -419,8 +419,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"CSERunInBackground": func() bool {
-			if cs.Properties.Debug != nil {
-				return cs.Properties.Debug.EnableCSERunInBackground
+			if cs.Properties.FeatureFlags != nil {
+				return cs.Properties.FeatureFlags.EnableCSERunInBackground
 			}
 			return false
 		},
