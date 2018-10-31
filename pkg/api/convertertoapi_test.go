@@ -205,11 +205,36 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 				},
 			},
 		},
+		"setWindowsNodeBinariesURL": {
+			props: &vlabs.Properties{
+				OrchestratorProfile: &vlabs.OrchestratorProfile{
+					OrchestratorType: Kubernetes,
+					KubernetesConfig: &vlabs.KubernetesConfig{
+						WindowsNodeBinariesURL: "http://test/binaries.tar.gz",
+					},
+				},
+			},
+			expect: &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: common.GetDefaultKubernetesVersion(false),
+				KubernetesConfig: &KubernetesConfig{
+					WindowsNodeBinariesURL: "http://test/binaries.tar.gz",
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
 		t.Logf("running scenario %q", name)
 		actual := &OrchestratorProfile{}
+
+		if test.expect.OrchestratorType == Kubernetes {
+			// need to set all defaults not provided in tests cases above
+			// otherwise setting up test case becomes complex and error prone
+			vp := makeKubernetesPropertiesVlabs()
+			setVlabsKubernetesDefaults(vp, test.expect)
+		}
+
 		convertVLabsOrchestratorProfile(test.props, actual, false)
 		if !equality.Semantic.DeepEqual(test.expect, actual) {
 			t.Errorf(spew.Sprintf("Expected:\n%+v\nGot:\n%+v", test.expect, actual))
