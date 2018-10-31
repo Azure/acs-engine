@@ -29,16 +29,16 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should succeed when cluster VMs are missing expected tags during upgrade operation", func() {
-		cs := api.CreateMockContainerService("testcluster", "1.6.9", 1, 1, false)
-
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.7.16"
-
+		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 1, 6, false)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
 		}
 
-		mockClient := armhelpers.MockACSEngineClient{}
+		c := armhelpers.MockKubernetesClient{KubernetesVersion: mockK8sVersion}
+		mockClient := armhelpers.MockACSEngineClient{MockKubernetesClient: &c}
 		mockClient.FailListVirtualMachinesTags = true
 		uc.Client = &mockClient
 
@@ -53,15 +53,16 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
-		mockK8sVersion, upgradeK8sVersion := "1.10.8", "1.11.3"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 1, 1, false)
+		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 1, 6, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
 		}
 
-		mockClient := armhelpers.MockACSEngineClient{}
+		c := armhelpers.MockKubernetesClient{KubernetesVersion: mockK8sVersion}
+		mockClient := armhelpers.MockACSEngineClient{MockKubernetesClient: &c}
 		mockClient.FailListVirtualMachines = true
 		uc.Client = &mockClient
 
@@ -77,7 +78,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to delete VMs during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 1, 1, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 1, 1, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -98,7 +99,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to deploy template during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 1, 1, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 1, 1, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -119,7 +120,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to get a virtual machine during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 1, 6, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 1, 6, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -140,7 +141,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to get storage client during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 5, 1, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 5, 1, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -161,7 +162,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to delete network interface during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -181,15 +182,16 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		mockK8sVersion, upgradeK8sVersion := "1.6.9", "1.8.15"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 3, 3, false)
+		mockK8sVersion, upgradeK8sVersion := "1.6.9", "1.9.11"
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
 		}
 
-		mockClient := armhelpers.MockACSEngineClient{}
+		c := armhelpers.MockKubernetesClient{KubernetesVersion: mockK8sVersion}
+		mockClient := armhelpers.MockACSEngineClient{MockKubernetesClient: &c}
 		uc.Client = &mockClient
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
@@ -204,7 +206,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing to delete role assignment during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity = true
@@ -228,7 +230,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should not fail if no managed identity is returned by azure during upgrade operation", func() {
 		mockK8sVersion, upgradeK8sVersion := "1.8.15", "1.9.11"
-		cs := acsengine.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
+		cs := api.CreateMockContainerService("testcluster", mockK8sVersion, 3, 2, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = upgradeK8sVersion
 		cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity = true
