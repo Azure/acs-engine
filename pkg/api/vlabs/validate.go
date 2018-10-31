@@ -379,7 +379,7 @@ func (a *Properties) validateMasterProfile() error {
 			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && a.OrchestratorProfile.KubernetesConfig.UserAssignedID == "" {
+		if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && a.OrchestratorProfile.KubernetesConfig.UserAssignedID == "" {
 			return errors.New("virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"")
 		}
 	}
