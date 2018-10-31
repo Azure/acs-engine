@@ -1447,6 +1447,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 			name:                "use managed identity with master vmss",
 			orchestratorRelease: "1.11",
 			useManagedIdentity:  true,
+			userAssignedID:      "utacsenginetestid",
 			masterProfile: MasterProfile{
 				DNSPrefix:           "dummy",
 				Count:               3,
@@ -1495,6 +1496,25 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 				},
 			},
 			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+		{
+			name:                "user master vmss with empty user assigned ID",
+			orchestratorRelease: "1.12",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"",
 		},
 	}
 	for _, test := range tests {

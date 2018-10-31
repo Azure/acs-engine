@@ -63,6 +63,20 @@
         "apiVersion": "[variables('apiVersionManagedIdentity')]",
         "location": "[variables('location')]"
       },
+      {
+        "apiVersion": "[variables('apiVersionAuthorization')]",
+        "type": "Microsoft.Authorization/roleAssignments",
+        "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id))]",
+        "properties": {
+          "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
+          "principalType": "ServicePrincipal",
+          "scope": "[resourceGroup().id]"
+        },
+        "dependsOn": [
+          "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
+      },
     {{end}}
     {{if IsOpenShift}}
       {{template "openshift/infraresources.t" .}}

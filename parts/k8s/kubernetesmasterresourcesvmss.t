@@ -13,8 +13,8 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
-    {{ if UseManagedIdentity}}
-    "dependsOn": 
+    {{if UseManagedIdentity}}
+    "dependsOn":
     [
       "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
       {{if UserAssignedIDEnabled}}

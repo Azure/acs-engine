@@ -883,16 +883,14 @@
        },
        "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
-       {{if (not UserAssignedIDEnabled)}}
        "dependsOn": [
          "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+         {{if UserAssignedIDEnabled}}
+         "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id)))]"
+         {{else}}
          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
+         {{end}}
        ],
-       {{else}}
-       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
-       ],
-       {{end}}
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
          "type": "ManagedIdentityExtensionForLinux",
