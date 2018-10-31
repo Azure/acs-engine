@@ -378,6 +378,10 @@ func (a *Properties) validateMasterProfile() error {
 		if !a.IsClusterAllVirtualMachineScaleSets() {
 			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
 		}
+
+		if a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && a.OrchestratorProfile.KubernetesConfig.UserAssignedID == "" {
+			return errors.New("virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"")
+		}
 	}
 	if m.SinglePlacementGroup != nil && m.AvailabilityProfile == AvailabilitySet {
 		return errors.New("singlePlacementGroup is only supported with VirtualMachineScaleSets")

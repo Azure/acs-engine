@@ -194,8 +194,6 @@ const (
 	ARMVirtualNetworksResourceType = "virtualNetworks"
 	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
 	DefaultAcceleratedNetworkingWindowsEnabled = false
-	// DefaultUserAssignedID specifies the default name for the user assigned identity
-	DefaultUserAssignedID = "acsengineuserid"
 )
 
 const (

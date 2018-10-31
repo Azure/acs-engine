@@ -1447,6 +1447,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 			name:                "use managed identity with master vmss",
 			orchestratorRelease: "1.11",
 			useManagedIdentity:  true,
+			userAssignedID:      "utacsenginetestid",
 			masterProfile: MasterProfile{
 				DNSPrefix:           "dummy",
 				Count:               3,
@@ -1495,6 +1496,25 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 				},
 			},
 			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+		{
+			name:                "user master vmss with empty user assigned ID",
+			orchestratorRelease: "1.12",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"",
 		},
 	}
 	for _, test := range tests {
@@ -1589,8 +1609,8 @@ func TestMasterProfileValidate(t *testing.T) {
 				DNSPrefix:                "dummy",
 				VnetSubnetID:             "testvnetstring",
 				FirstConsecutiveStaticIP: "10.0.0.1",
-				Count:                    1,
-				StorageProfile:           ManagedDisks,
+				Count:          1,
+				StorageProfile: ManagedDisks,
 			},
 		},
 		{
@@ -2090,10 +2110,10 @@ func TestProperties_ValidateVNET(t *testing.T) {
 		{
 			name: "Invalid MasterProfile FirstConsecutiveStaticIP when master is VMAS",
 			masterProfile: &MasterProfile{
-				VnetSubnetID:             validVNetSubnetID,
-				Count:                    1,
-				DNSPrefix:                "foo",
-				VMSize:                   "Standard_DS2_v2",
+				VnetSubnetID: validVNetSubnetID,
+				Count:        1,
+				DNSPrefix:    "foo",
+				VMSize:       "Standard_DS2_v2",
 				FirstConsecutiveStaticIP: "10.0.0.invalid",
 			},
 			agentPoolProfiles: []*AgentPoolProfile{
@@ -2130,10 +2150,10 @@ func TestProperties_ValidateVNET(t *testing.T) {
 		{
 			name: "Invalid vnetcidr",
 			masterProfile: &MasterProfile{
-				VnetSubnetID:             validVNetSubnetID,
-				Count:                    1,
-				DNSPrefix:                "foo",
-				VMSize:                   "Standard_DS2_v2",
+				VnetSubnetID: validVNetSubnetID,
+				Count:        1,
+				DNSPrefix:    "foo",
+				VMSize:       "Standard_DS2_v2",
 				FirstConsecutiveStaticIP: "10.0.0.1",
 				VnetCidr:                 "10.1.0.0/invalid",
 			},
