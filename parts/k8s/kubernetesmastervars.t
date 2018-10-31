@@ -94,7 +94,7 @@
     "apiVersionKeyVault": "2018-02-14",
     "apiVersionNetwork": "2018-08-01",
     "apiVersionManagedIdentity": "2015-08-31-preview",
-    "apiVersionAuthorization": "2018-01-01-preview",
+    "apiVersionAuthorization": "2018-09-01-preview",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"

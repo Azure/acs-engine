@@ -163,7 +163,7 @@ New-InfraContainer
 # TODO: Deprecate this and replace with methods that get individual components instead of zip containing everything
 # This expects the ZIP file to be created by scripts/build-windows-k8s.sh
 function
-Get-KubeBinaries
+Get-KubePackage
 {
     Param(
         [Parameter(Mandatory=$true)][string]
@@ -183,6 +183,46 @@ Get-KubeBinaries
     Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
+function
+Get-KubeBinaries
+{
+    Param(
+        [Parameter(Mandatory=$true)][string]
+        $KubeBinariesURL
+    )
+
+    if ($computerInfo.WindowsVersion -eq "1709") 
+    {        
+        Write-Log "Server version 1709 does not support using kubernetes binaries in tar file."    
+        return
+    }
+    
+    $tempdir = New-TemporaryDirectory
+    $binaryPackage = "$tempdir\k.tar.gz"
+    for ($i=0; $i -le 10; $i++)
+    {
+        DownloadFileOverHttp -Url $KubeBinariesURL -DestinationPath $binaryPackage
+        if ($?) {
+            break
+        } else {
+            Write-Log $Error[0].Exception.Message
+        }
+    }
+
+    # using tar to minimize dependencies    
+    # tar should be avalible on 1803+
+    tar -xzf $binaryPackage -C $tempdir
+     
+    # copy binaries over to kube folder      
+    $windowsbinariespath = "c:\k\"
+    if(!(Test-path $windowsbinariespath)) {
+        mkdir $windowsbinariespath
+    }   
+    cp $tempdir\kubernetes\node\bin\* $windowsbinariespath -Recurse
+    
+    #remove temp folder created when unzipping            
+    del $tempdir -Recurse
+}
 
 # TODO: replace KubeletStartFile with a Kubelet config, remove NSSM, and use built-in service integration
 function

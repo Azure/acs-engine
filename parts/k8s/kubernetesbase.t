@@ -6,13 +6,13 @@
     {{if .HasWindows}}
       "kubeBinariesSASURL": {
         "metadata": {
-          "description": "The download url for kubernetes windows binaries."
+          "description": "The download url for kubernetes windows binaries package that is created by scripts/build-windows-k8s.sh"
         },
         "type": "string"
       },
-      "windowsPackageSASURLBase": {
+      "windowsKubeBinariesURL": {
         "metadata": {
-          "description": "The download url base for windows packages for kubernetes."
+          "description": "The download url for kubernetes windows binaries produce by Kubernetes. This contains only the node binaries (example: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1)"
         },
         "type": "string"
       },
@@ -58,6 +58,20 @@
         "name": "[variables('userAssignedID')]",
         "apiVersion": "[variables('apiVersionManagedIdentity')]",
         "location": "[variables('location')]"
+      },
+      {
+        "apiVersion": "[variables('apiVersionAuthorization')]",
+        "type": "Microsoft.Authorization/roleAssignments",
+        "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id))]",
+        "properties": {
+          "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
+          "principalType": "ServicePrincipal",
+          "scope": "[resourceGroup().id]"
+        },
+        "dependsOn": [
+          "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
       },
     {{end}}
     {{if IsOpenShift}}

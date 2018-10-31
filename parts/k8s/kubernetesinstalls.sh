@@ -15,17 +15,17 @@ function installEtcd() {
     if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
         echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
     else
-        retrycmd_get_tarball 60 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
+        retrycmd_get_tarball 360 10 /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz ${ETCD_DOWNLOAD_URL}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
         removeEtcd
         tar -xzvf /tmp/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1 || exit $ERR_ETCD_DOWNLOAD_TIMEOUT
     fi
 }
 
 function installDeps() {
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure_no_stats 120 5 25 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 300 apt-transport-https blobfuse ca-certificates ceph-common cgroup-lite cifs-utils conntrack ebtables ethtool fuse git glusterfs-client init-system-helpers iproute2 ipset iptables jq mount nfs-common pigz socat util-linux xz-utils zip || exit $ERR_APT_INSTALL_TIMEOUT
+    apt_get_install 30 1 600 apt-transport-https blobfuse ca-certificates ceph-common cgroup-lite cifs-utils conntrack ebtables ethtool fuse git glusterfs-client init-system-helpers iproute2 ipset iptables jq mount nfs-common pigz socat util-linux xz-utils zip || exit $ERR_APT_INSTALL_TIMEOUT
 }
 
 function installGPUDrivers() {
@@ -65,9 +65,9 @@ function installMoby() {
     if [ $? -eq 0 ]; then
         echo "dockerd is already installed, skipping download"
     else
-        retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
+        retrycmd_if_failure_no_stats 120 5 25 curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /tmp/microsoft-prod.list || exit $ERR_MOBY_APT_LIST_TIMEOUT
         retrycmd_if_failure 10 5 10 cp /tmp/microsoft-prod.list /etc/apt/sources.list.d/ || exit $ERR_MOBY_APT_LIST_TIMEOUT
-        retrycmd_if_failure_no_stats 20 1 5 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
+        retrycmd_if_failure_no_stats 120 5 25 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
         retrycmd_if_failure 10 5 10 cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/ || exit $ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
         apt_get_install 20 30 120 moby-engine moby-cli || exit $ERR_MOBY_INSTALL_TIMEOUT
@@ -79,13 +79,14 @@ function installKataContainersRuntime() {
     echo "Adding Kata Containers repository key..."
     KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
     KATA_URL=http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/Release.key
-    retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $KATA_URL > $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_KEY_DOWNLOAD_TIMEOUT
-    retrycmd_if_failure 10 5 30 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
+    retrycmd_if_failure_no_stats 120 5 25 curl -fsSL $KATA_URL > $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_KEY_DOWNLOAD_TIMEOUT
+    wait_for_apt_locks
+    retrycmd_if_failure 30 5 30 apt-key add $KATA_RELEASE_KEY_TMP || exit $ERR_KATA_APT_KEY_TIMEOUT
     echo "Adding Kata Containers repository..."
     echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/release/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/kata-containers.list
     echo "Installing Kata Containers runtime..."
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-    apt_get_install 20 30 120 kata-runtime || exit $ERR_KATA_INSTALL_TIMEOUT
+    apt_get_install 120 5 25 kata-runtime || exit $ERR_KATA_INSTALL_TIMEOUT
 }
 
 function installClearContainersRuntime() {
@@ -96,16 +97,17 @@ function installClearContainersRuntime() {
         echo "Adding Clear Containers repository key..."
         CC_RELEASE_KEY_TMP=/tmp/clear-containers-release.key
         CC_URL=https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key
-        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
-        retrycmd_if_failure 10 5 10 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+        retrycmd_if_failure_no_stats 120 5 25 curl -fsSL $CC_URL > $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
+        wait_for_apt_locks
+        retrycmd_if_failure 120 5 25 apt-key add $CC_RELEASE_KEY_TMP || exit $ERR_APT_INSTALL_TIMEOUT
         echo "Adding Clear Containers repository..."
         echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
         echo "Installing Clear Containers runtime..."
         apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
-        apt_get_install 20 30 120 cc-runtime
+        apt_get_install 120 5 25 cc-runtime
         local repo_uri="https://raw.githubusercontent.com/clearcontainers/proxy/3.0.23"
-        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
-        retrycmd_if_failure_no_stats 20 1 5 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
+        retrycmd_if_failure_no_stats 120 5 25 curl -fsSL "${repo_uri}/cc-proxy.service.in" > $CC_SERVICE_IN_TMP
+        retrycmd_if_failure_no_stats 120 5 25 curl -fsSL "${repo_uri}/cc-proxy.socket.in" > $CC_SOCKET_IN_TMP
     fi
 }
 
@@ -120,13 +122,13 @@ function installNetworkPlugin() {
 function downloadCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
     CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
-    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    retrycmd_get_tarball 120 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function downloadAzureCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
     CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
-    retrycmd_get_tarball 60 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    retrycmd_get_tarball 120 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
 function installCNI() {
@@ -160,7 +162,7 @@ function installContainerd() {
         CRI_CONTAINERD_VERSION="1.1.0"
         CONTAINERD_DOWNLOAD_URL="${CONTAINERD_DOWNLOAD_URL_BASE}cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz"
         CONTAINERD_TGZ_TMP=/tmp/containerd.tar.gz
-        retrycmd_get_tarball 60 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
+        retrycmd_get_tarball 120 5 "$CONTAINERD_TGZ_TMP" "$CONTAINERD_DOWNLOAD_URL" || exit $ERR_CONTAINERD_DOWNLOAD_TIMEOUT
         tar -xzf "$CONTAINERD_TGZ_TMP" -C /
         rm -f "$CONTAINERD_TGZ_TMP"
         sed -i '/\[Service\]/a ExecStartPost=\/sbin\/iptables -P FORWARD ACCEPT' /etc/systemd/system/containerd.service
@@ -170,11 +172,11 @@ function installContainerd() {
 
 function installImg() {
     img_filepath=/usr/local/bin/img
-    retrycmd_get_executable 20 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+    retrycmd_get_executable 120 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
 function pullHyperkube() {
-    retrycmd_if_failure 75 1 60 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 60 1 1200 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
     img unpack -o "/home/rootfs-${KUBERNETES_VERSION}" $HYPERKUBE_URL
     path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
 
@@ -202,5 +204,5 @@ function extractHyperkube() {
 function pullContainerImage() {
     CLI_TOOL=$1
     DOCKER_IMAGE_URL=$2
-    retrycmd_if_failure 75 1 60 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+    retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }

@@ -40,7 +40,6 @@ type KubernetesSpecConfig struct {
 	AzureCNIImageBase                string
 	EtcdDownloadURLBase              string
 	KubeBinariesSASURLBase           string
-	WindowsPackageSASURLBase         string
 	WindowsTelemetryGUID             string
 	CNIPluginsDownloadURL            string
 	VnetCNILinuxPluginsDownloadURL   string
@@ -71,7 +70,6 @@ var (
 		AzureCNIImageBase:                "containernetworking/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
-		WindowsPackageSASURLBase:         "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-" + CNIPluginVer + ".tgz",
 		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVerLinux + ".tgz",
@@ -142,7 +140,15 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-201810",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.10.18",
+		ImageVersion:   "2018.10.26",
+	}
+
+	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 16.04.
+	DefaultAKSDockerEngineOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "aks",
+		ImageSku:       "aks-ubuntu-1604-docker-engine",
+		ImagePublisher: "microsoft-aks",
+		ImageVersion:   "2018.10.26",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.
@@ -175,10 +181,11 @@ var (
 		},
 
 		OSImageConfig: map[Distro]AzureOSImageConfig{
-			Ubuntu: DefaultUbuntuImageConfig,
-			RHEL:   DefaultRHELOSImageConfig,
-			CoreOS: DefaultCoreOSImageConfig,
-			AKS:    DefaultAKSOSImageConfig,
+			Ubuntu:          DefaultUbuntuImageConfig,
+			RHEL:            DefaultRHELOSImageConfig,
+			CoreOS:          DefaultCoreOSImageConfig,
+			AKS:             DefaultAKSOSImageConfig,
+			AKSDockerEngine: DefaultAKSDockerEngineOSImageConfig,
 			// Image config supported for OpenShift
 			OpenShift39RHEL: DefaultOpenShift39RHELImageConfig,
 			OpenShiftCentOS: DefaultOpenShift39CentOSImageConfig,
@@ -224,8 +231,8 @@ var (
 		CloudName: azureChinaCloud,
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo:         "https://mirror.azure.cn/docker-engine/apt/repo/",
-			DockerComposeDownloadURL: "https://mirror.azure.cn/docker-toolbox/linux/compose",
+			DockerEngineRepo:         "https://mirror.azk8s.cn/docker-engine/apt/repo/",
+			DockerComposeDownloadURL: "https://mirror.azk8s.cn/docker-toolbox/linux/compose",
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
@@ -234,14 +241,13 @@ var (
 			ACIConnectorImageBase:            "dockerhub.azk8s.cn/microsoft/",
 			NVIDIAImageBase:                  "dockerhub.azk8s.cn/nvidia/",
 			AzureCNIImageBase:                "dockerhub.azk8s.cn/containernetworking/",
-			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
+			EtcdDownloadURLBase:              "https://mirror.azk8s.cn/kubernetes/etcd",
 			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
-			WindowsPackageSASURLBase:         DefaultKubernetesSpecConfig.WindowsPackageSASURLBase,
 			WindowsTelemetryGUID:             DefaultKubernetesSpecConfig.WindowsTelemetryGUID,
-			CNIPluginsDownloadURL:            DefaultKubernetesSpecConfig.CNIPluginsDownloadURL,
-			VnetCNILinuxPluginsDownloadURL:   DefaultKubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL,
-			VnetCNIWindowsPluginsDownloadURL: DefaultKubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL,
-			ContainerdDownloadURLBase:        "https://mirror.azure.cn/kubernetes/containerd/",
+			CNIPluginsDownloadURL:            "https://mirror.azk8s.cn/kubernetes/containernetworking-plugins/cni-plugins-amd64-" + CNIPluginVer + ".tgz",
+			VnetCNILinuxPluginsDownloadURL:   "https://mirror.azk8s.cn/kubernetes/azure-container-networking/azure-vnet-cni-linux-amd64-" + AzureCniPluginVerLinux + ".tgz",
+			VnetCNIWindowsPluginsDownloadURL: "https://mirror.azk8s.cn/kubernetes/azure-container-networking/azure-vnet-cni-windows-amd64-" + AzureCniPluginVerWindows + ".zip",
+			ContainerdDownloadURLBase:        "https://mirror.azk8s.cn/kubernetes/containerd/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),

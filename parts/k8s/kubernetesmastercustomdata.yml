@@ -14,19 +14,12 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-- path: "/etc/ssh/sshd_config"
-  permissions: "0644"
+- path: "/opt/azure/containers/provision.sh"
+  permissions: "0744"
   encoding: gzip
   owner: "root"
   content: !!binary |
-    {{WrapAsVariable "sshdConfig"}}
-
-- path: "/etc/systemd/system.conf"
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    {{WrapAsVariable "systemConf"}}
+    {{WrapAsVariable "provisionScript"}}
 
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
@@ -41,6 +34,20 @@ write_files:
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "provisionConfigs"}}
+
+- path: "/etc/ssh/sshd_config"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "sshdConfig"}}
+
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
 
 - path: "/usr/local/bin/health-monitor.sh"
   permissions: "0544"
@@ -442,13 +449,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "\|<azureCNINonMasqueradeIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
     sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{end}}
-
-- path: "/opt/azure/containers/provision.sh"
-  permissions: "0744"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    {{WrapAsVariable "provisionScript"}}
 
 - path: "/opt/azure/containers/mountetcd.sh"
   permissions: "0744"

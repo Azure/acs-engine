@@ -69,6 +69,7 @@ type Properties struct {
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 // ClusterMetadata represents the metadata of the ACS cluster.
@@ -95,6 +96,11 @@ type AzProfile struct {
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	ResourceGroup  string `json:"resourceGroup,omitempty"`
 	Location       string `json:"location,omitempty"`
+}
+
+// FeatureFlags defines feature-flag restricted functionality
+type FeatureFlags struct {
+	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -325,6 +331,7 @@ type KubernetesConfig struct {
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`      // Image for cloud-controller-manager
 	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
+	WindowsNodeBinariesURL           string            `json:"windowsNodeBinariesURL,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`

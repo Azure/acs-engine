@@ -217,6 +217,31 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 	}
 }
 
+func TestConvertVLabsKubernetesConfigProfile(t *testing.T) {
+	tests := map[string]struct {
+		props  *vlabs.KubernetesConfig
+		expect *KubernetesConfig
+	}{
+		"WindowsNodeBinariesURL": {
+			props: &vlabs.KubernetesConfig{
+				WindowsNodeBinariesURL: "http://test/test.tar.gz",
+			},
+			expect: &KubernetesConfig{
+				WindowsNodeBinariesURL: "http://test/test.tar.gz",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Logf("running scenario %q", name)
+		actual := &KubernetesConfig{}
+		convertVLabsKubernetesConfig(test.props, actual)
+		if !equality.Semantic.DeepEqual(test.expect, actual) {
+			t.Errorf(spew.Sprintf("Expected:\n%+v\nGot:\n%+v", test.expect, actual))
+		}
+	}
+}
+
 func makeKubernetesProperties() *Properties {
 	ap := &Properties{}
 	ap.OrchestratorProfile = &OrchestratorProfile{}

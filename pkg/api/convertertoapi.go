@@ -399,6 +399,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate b
 		api.AzProfile = &AzProfile{}
 		convertVLabsAZProfile(vlabs.AzProfile, api.AzProfile)
 	}
+
+	if vlabs.FeatureFlags != nil {
+		api.FeatureFlags = &FeatureFlags{}
+		convertVLabsFeatureFlags(vlabs.FeatureFlags, api.FeatureFlags)
+	}
 }
 
 func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
@@ -406,6 +411,10 @@ func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
 	api.ResourceGroup = vlabs.ResourceGroup
 	api.SubscriptionID = vlabs.SubscriptionID
 	api.TenantID = vlabs.TenantID
+}
+
+func convertVLabsFeatureFlags(vlabs *vlabs.FeatureFlags, api *FeatureFlags) {
+	api.EnableCSERunInBackground = vlabs.EnableCSERunInBackground
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
@@ -695,6 +704,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.CustomCcmImage = vlabs.CustomCcmImage
 	api.UseCloudControllerManager = vlabs.UseCloudControllerManager
 	api.CustomWindowsPackageURL = vlabs.CustomWindowsPackageURL
+	api.WindowsNodeBinariesURL = vlabs.WindowsNodeBinariesURL
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
 	api.LoadBalancerSku = vlabs.LoadBalancerSku
 	api.ExcludeMasterFromStandardLB = vlabs.ExcludeMasterFromStandardLB

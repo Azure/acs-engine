@@ -479,6 +479,11 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.AzProfile = &vlabs.AzProfile{}
 		convertAzProfileToVLabs(api.AzProfile, vlabsProps.AzProfile)
 	}
+
+	if api.FeatureFlags != nil {
+		vlabsProps.FeatureFlags = &vlabs.FeatureFlags{}
+		convertFeatureFlagsToVLabs(api.FeatureFlags, vlabsProps.FeatureFlags)
+	}
 }
 
 func convertLinuxProfileToV20160930(api *LinuxProfile, obj *v20160930.LinuxProfile) {
@@ -735,6 +740,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CustomCcmImage = api.CustomCcmImage
 	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
 	vlabs.CustomWindowsPackageURL = api.CustomWindowsPackageURL
+	vlabs.WindowsNodeBinariesURL = api.WindowsNodeBinariesURL
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.LoadBalancerSku = api.LoadBalancerSku
 	vlabs.ExcludeMasterFromStandardLB = api.ExcludeMasterFromStandardLB
@@ -1178,4 +1184,8 @@ func convertAzProfileToVLabs(api *AzProfile, vlabs *vlabs.AzProfile) {
 	vlabs.ResourceGroup = api.ResourceGroup
 	vlabs.SubscriptionID = api.SubscriptionID
 	vlabs.TenantID = api.TenantID
+}
+
+func convertFeatureFlagsToVLabs(api *FeatureFlags, vlabs *vlabs.FeatureFlags) {
+	vlabs.EnableCSERunInBackground = api.EnableCSERunInBackground
 }
