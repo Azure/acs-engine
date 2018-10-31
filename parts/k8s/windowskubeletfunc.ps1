@@ -197,7 +197,8 @@ Get-KubeBinaries
         return
     }
     
-    $binaryPackage = "c:\k.tar.gz"
+    $tempdir = New-TemporaryDirectory
+    $binaryPackage = "$tempdir\k.tar.gz"
     for ($i=0; $i -le 10; $i++)
     {
         DownloadFileOverHttp -Url $KubeBinariesURL -DestinationPath $binaryPackage
@@ -208,14 +209,19 @@ Get-KubeBinaries
         }
     }
 
-      # using tar to minimize dependencies    
-      # tar should be avalible on 1803+
-      tar -xzf $binaryPackage -C C:\    
-      cp c:\kubernetes\node\bin\ c:\k\ -Recurse       
-      
-      #remove the downloaded file and temp folder created when unzipping    
-      del $binaryPackage     
-      del C:\kubernetes -Recurse
+    # using tar to minimize dependencies    
+    # tar should be avalible on 1803+
+    tar -xzf $binaryPackage -C $tempdir
+     
+    # copy binaries over to kube folder      
+    $windowsbinariespath = "c:\k\"
+    if(!(Test-path $windowsbinariespath)) {
+        mkdir $windowsbinariespath
+    }   
+    cp $tempdir\kubernetes\node\bin\* $windowsbinariespath -Recurse
+    
+    #remove temp folder created when unzipping            
+    del $tempdir -Recurse
 }
 
 # TODO: replace KubeletStartFile with a Kubelet config, remove NSSM, and use built-in service integration

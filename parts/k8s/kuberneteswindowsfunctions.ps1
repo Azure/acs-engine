@@ -32,3 +32,10 @@ function DownloadFileOverHttp
     Invoke-WebRequest $Url -UseBasicParsing -OutFile $DestinationPath -Verbose
     Write-Log "Downloaded file to $DestinationPath"
 }
+
+# https://stackoverflow.com/a/34559554/697126
+function New-TemporaryDirectory {
+    $parent = [System.IO.Path]::GetTempPath()
+    [string] $name = [System.Guid]::NewGuid()
+    New-Item -ItemType Directory -Path (Join-Path $parent $name)
+}
