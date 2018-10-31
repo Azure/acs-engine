@@ -173,7 +173,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		cs := api.CreateMockContainerService("testcluster", "1.6.9", 3, 3, false)
+		cs := api.CreateMockContainerService("testcluster", "1.9.0", 3, 3, false)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.8.15"
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -188,7 +188,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		err := uc.UpgradeCluster(subID, nil, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"}, TestACSEngineVersion)
 		Expect(err).NotTo(BeNil())
 		fmt.Print("GOT :   ", err.Error())
-		Expect(err.Error()).To(ContainSubstring("Error while querying ARM for resources: Kubernetes:1.6.9 cannot be upgraded to 1.8.15"))
+		Expect(err.Error()).To(ContainSubstring("Error while querying ARM for resources: Kubernetes:1.9.0 cannot be upgraded to 1.8.15"))
 	})
 
 	It("Should return error message when failing to delete role assignment during upgrade operation", func() {
