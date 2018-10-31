@@ -260,13 +260,6 @@
     "masterEtcdClientPort": {{GetMasterEtcdClientPort}},
     {{if IsMasterVirtualMachineScaleSets}}
     "masterVMNamePrefix": "[concat(parameters('orchestratorName'), '-master-', parameters('nameSuffix'), '-')]",
-    "masterVMNames": [
-      "[concat(variables('masterVMNamePrefix'), 'vmss000000')]",
-      "[concat(variables('masterVMNamePrefix'), 'vmss000001')]",
-      "[concat(variables('masterVMNamePrefix'), 'vmss000002')]",
-      "[concat(variables('masterVMNamePrefix'), 'vmss000003')]",
-      "[concat(variables('masterVMNamePrefix'), 'vmss000004')]"
-    ],
     {{else}}
     "masterVMNamePrefix": "{{GetMasterVMPrefix}}",
     "masterVMNames": [
