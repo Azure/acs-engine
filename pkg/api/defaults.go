@@ -84,7 +84,11 @@ func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		case NetworkPolicyCalico:
-			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				// If not specified, then set the network plugin to be kubenet
+				// for backwards compatibility. Otherwise, use what is specified.
+				o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			}
 		case NetworkPolicyCilium:
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}

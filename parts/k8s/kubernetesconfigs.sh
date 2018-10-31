@@ -186,8 +186,10 @@ configureCNI() {
     retrycmd_if_failure 120 5 25 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
-        mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
-        chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+	# Casey TODO: When using Calico with Azure networking, we don't want this CNI
+	# config - Calico will install its own. How do we make this function aware of that?
+        # mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+        # chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
         /sbin/ebtables -t nat --list
     fi
 }
