@@ -147,6 +147,23 @@ apt_get_update() {
     echo Executed apt-get update $i times
     wait_for_apt_locks
 }
+apt_get_upgrade() {
+    retries=10
+    apt_update_output=/tmp/apt-get-update.out
+    for i in $(seq 1 $retries); do
+        apt_get_update
+        wait_for_apt_locks
+        dpkg --configure -a
+        apt-get upgrade -y
+        apt-get dist-upgrade -y
+        if [ $i -eq $retries ]; then
+            return 1
+        else sleep 30
+        fi
+    done
+    echo Executed apt-get upgrade $i times
+    wait_for_apt_locks
+}
 apt_get_install() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
     for i in $(seq 1 $retries); do
