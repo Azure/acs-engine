@@ -53,8 +53,8 @@ $global:CACertificate = "{{WrapAsParameter "caCertificate"}}"
 $global:AgentCertificate = "{{WrapAsParameter "clientCertificate"}}"
 
 ## Download sources provided by acs-engine
-$global:KubeBinariesSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
-$global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"}}"
+$global:KubeBinariesPackageSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
+$global:WindowsKubeBinariesURL = "{{WrapAsParameter "windowsKubeBinariesURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
 
 ## Docker Version
@@ -139,17 +139,27 @@ try
     if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
-        Write-Log "apply telemetry data setting"
+        Write-Log "Apply telemetry data setting"
         Set-TelemetrySetting -WindowsTelemetryGUID $global:WindowsTelemetryGUID
 
-        Write-Log "resize os drive if possible"
+        Write-Log "Resize os drive if possible"
         Resize-OSDrive
 
-        Write-Log "install docker"
+        Write-Log "Install docker"
         Install-Docker -DockerVersion $global:DockerVersion
 
-        Write-Log "download kubelet binaries and unzip"
-        Get-KubeBinaries -KubeBinariesSASURL $global:KubeBinariesSASURL
+        Write-Log "Download kubelet binaries and unzip"
+        Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
+
+        # this overwrite the binaries that are download from the custom packge with binaries 
+        # The custom package has a few files that are nessary for future steps (nssm.exe)
+        # this is a temporary work around to get the binaries until we depreciate 
+        # custom package and nssm.exe as defined in #3851.
+        if ($global:WindowsKubeBinariesURL){
+            Write-Log "Overwriting kube node binaries from $global:WindowsKubeBinariesURL"
+            Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
+        }
+
 
         Write-Log "Write Azure cloud provider config"
         Write-AzureConfig `
@@ -206,7 +216,7 @@ try
             Get-HnsPsm1 -HNSModule $global:HNSModule
         }
 
-        Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
+        Write-Log "Write kubelet startfile with pod CIDR of $podCIDR"
         Install-KubernetesServices `
             -KubeletConfigArgs $global:KubeletConfigArgs `
             -KubeBinariesVersion $global:KubeBinariesVersion `
