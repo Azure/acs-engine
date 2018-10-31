@@ -149,13 +149,17 @@ apt_get_update() {
 }
 apt_get_upgrade() {
     retries=10
-    apt_update_output=/tmp/apt-get-update.out
+    apt_upgrade_output=/tmp/apt-get-upgrade.out
     for i in $(seq 1 $retries); do
         apt_get_update
         wait_for_apt_locks
         dpkg --configure -a
-        apt-get upgrade -y
-        apt-get dist-upgrade -y
+        apt-get upgrade -y 2>&1 | tee $apt_upgrade_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $apt_upgrade_output && break || \
+        cat $apt_upgrade_output
+        apt-get dist-upgrade -y | tee $apt_upgrade_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $apt_upgrade_output && break || \
+        cat $apt_upgrade_output
         if [ $i -eq $retries ]; then
             return 1
         else sleep 30
