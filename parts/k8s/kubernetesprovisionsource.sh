@@ -149,23 +149,34 @@ apt_get_update() {
 }
 apt_get_upgrade() {
     retries=10
-    apt_upgrade_output=/tmp/apt-get-upgrade.out
+    output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
-        apt_get_update
         wait_for_apt_locks
-        dpkg --configure -a
-        apt-get upgrade -y 2>&1 | tee $apt_upgrade_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
-        [ $? -ne 0  ] && cat $apt_upgrade_output && break || \
-        cat $apt_upgrade_output
-        apt-get dist-upgrade -y | tee $apt_upgrade_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
-        [ $? -ne 0  ] && cat $apt_upgrade_output && break || \
-        cat $apt_upgrade_output
+        apt-get upgrade -y 2>&1 | tee $output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $output && break || \
+        cat $output
         if [ $i -eq $retries ]; then
             return 1
         else sleep 30
         fi
     done
     echo Executed apt-get upgrade $i times
+    wait_for_apt_locks
+}
+apt_get_dist_upgrade() {
+    retries=10
+    output=/tmp/apt-get-update.out
+    for i in $(seq 1 $retries); do
+        wait_for_apt_locks
+        apt-get dist-upgrade -y 2>&1 | tee $output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        [ $? -ne 0  ] && cat $output && break || \
+        cat $output
+        if [ $i -eq $retries ]; then
+            return 1
+        else sleep 30
+        fi
+    done
+    echo Executed apt-get dist-upgrade $i times
     wait_for_apt_locks
 }
 apt_get_install() {

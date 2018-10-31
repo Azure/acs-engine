@@ -36,12 +36,6 @@ if [[ $OS == $COREOS_OS_NAME ]]; then
     KUBECTL=/opt/kubectl
 fi
 
-if [ -f /var/run/reboot-required ]; then
-    REBOOTREQUIRED=true
-else
-    REBOOTREQUIRED=false
-fi
-
 if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
     FULL_INSTALL_REQUIRED=false
@@ -75,6 +69,12 @@ installContainerd
 extractHyperkube
 ensureRPC
 createKubeManifestDir
+
+if [ -f /var/run/reboot-required ]; then
+    REBOOTREQUIRED=true
+else
+    REBOOTREQUIRED=false
+fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     configureEtcd
