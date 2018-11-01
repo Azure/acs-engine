@@ -64,11 +64,11 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 
 	// The latest version is not upgradable
-	csOrch = &OrchestratorProfile{
+	csOrch := &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
 		OrchestratorVersion: common.GetMaxVersion(common.GetAllSupportedKubernetesVersions(false, false), true),
 	}
-	orch, e = GetOrchestratorVersionProfile(csOrch, false)
+	orch, e := GetOrchestratorVersionProfile(csOrch, false)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(0))
 }
