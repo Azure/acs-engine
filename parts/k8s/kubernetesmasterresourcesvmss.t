@@ -360,7 +360,7 @@
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[concat(variables('masterVMNamePrefix'), 'vmss')]",
-          {{GetKubernetesMasterCustomDataVMSS .}}
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
