@@ -20,7 +20,9 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 
 	if orchestratorProfile.IsKubernetes() ||
 		orchestratorProfile.IsOpenShift() {
-		k8sComponents := api.K8sComponentsByVersionMap[orchestratorProfile.OrchestratorVersion]
+
+		k8sVersion := orchestratorProfile.OrchestratorVersion
+		k8sComponents := api.K8sComponentsByVersionMap[k8sVersion]
 		kubernetesConfig := orchestratorProfile.KubernetesConfig
 
 		if kubernetesConfig != nil {
@@ -245,7 +247,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					}
 				}
 			}
-			if common.IsKubernetesVersionGe(properties.OrchestratorProfile.OrchestratorVersion, "1.12.0") {
+			if common.IsKubernetesVersionGe(k8sVersion, "1.12.0") {
 				addValue(parametersMap, "kubernetesCoreDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["coredns"])
 			} else {
 				addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["kube-dns"])
@@ -299,6 +301,21 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 
 			addValue(parametersMap, "enableAggregatedAPIs", kubernetesConfig.EnableAggregatedAPIs)
+
+			// Kubernetes packages as zip file as created by scripts/build-windows-k8s.sh
+			// will be removed in future release as if gets phased out (https://github.com/Azure/acs-engine/issues/3851)
+			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
+			if kubeBinariesSASURL == "" {
+				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + k8sComponents["windowszip"]
+			}
+			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
+
+			// Kubernetes node binaries as packaged by upstream kubernetes
+			// example at https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1
+			addValue(parametersMap, "windowsKubeBinariesURL", properties.OrchestratorProfile.KubernetesConfig.WindowsNodeBinariesURL)
+
+			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
+			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 		}
 
 		if kubernetesConfig == nil ||
