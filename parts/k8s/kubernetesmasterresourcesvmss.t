@@ -265,9 +265,9 @@
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"
     {{else}}
-      "[variables('vnetID')]",
-      "[variables('masterLbID')]"
+      "[variables('vnetID')]"
     {{end}}
+      ,"[variables('masterLbID')]"
     ],
     "tags":
     {
