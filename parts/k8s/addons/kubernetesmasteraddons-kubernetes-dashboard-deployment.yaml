@@ -99,7 +99,7 @@ spec:
         - --auto-generate-certificates
         - --heapster-host=http://heapster.kube-system:80
         image: <kubernetesDashboardSpec>
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: "/"

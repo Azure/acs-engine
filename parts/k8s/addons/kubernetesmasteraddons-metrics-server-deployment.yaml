@@ -123,7 +123,7 @@ spec:
       containers:
       - name: metrics-server
         image: <kubernetesMetricsServerSpec>
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         command:
         - /metrics-server
         - --source=kubernetes.summary_api:''

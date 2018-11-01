@@ -26,7 +26,7 @@ spec:
       containers:
       - name: smb-flexvol-installer
         image: andyzhangx/smb-flexvol-installer
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: <kubernetesSMBFlexVolumeInstallerCPURequests>

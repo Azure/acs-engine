@@ -105,7 +105,7 @@ spec:
       containers:
       - name: nmi
         image: "mcr.microsoft.com/k8s/aad-pod-identity/nmi:1.2"
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: "100m"
@@ -203,7 +203,7 @@ spec:
       containers:
       - name: mic
         image: "mcr.microsoft.com/k8s/aad-pod-identity/mic:1.2"
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: "100m"

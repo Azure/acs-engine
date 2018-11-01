@@ -110,7 +110,7 @@ spec:
           operator: Exists
       containers:
       - image: cilium/cilium:stable
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         name: cilium-agent
         command: [ "cilium-agent" ]
         args:

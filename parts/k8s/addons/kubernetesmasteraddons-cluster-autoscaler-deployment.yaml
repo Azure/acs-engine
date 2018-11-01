@@ -154,7 +154,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - image: <kubernetesClusterAutoscalerSpec>
-        imagePullPolicy: Always
+        ImagePullPolicy: IfNotPresent
         name: cluster-autoscaler
         resources:
           limits:
