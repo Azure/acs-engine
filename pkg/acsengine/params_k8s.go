@@ -26,6 +26,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 		kubernetesConfig := orchestratorProfile.KubernetesConfig
 
 		if kubernetesConfig != nil {
+
 			if helpers.IsTrueBoolPointer(kubernetesConfig.UseCloudControllerManager) {
 				kubernetesCcmSpec := kubernetesConfig.KubernetesImageBase + k8sComponents["ccm"]
 				if kubernetesConfig.CustomCcmImage != "" {
@@ -302,20 +303,22 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 
 			addValue(parametersMap, "enableAggregatedAPIs", kubernetesConfig.EnableAggregatedAPIs)
 
-			// Kubernetes packages as zip file as created by scripts/build-windows-k8s.sh
-			// will be removed in future release as if gets phased out (https://github.com/Azure/acs-engine/issues/3851)
-			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
-			if kubeBinariesSASURL == "" {
-				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + k8sComponents["windowszip"]
+			if properties.HasWindows() {
+				// Kubernetes packages as zip file as created by scripts/build-windows-k8s.sh
+				// will be removed in future release as if gets phased out (https://github.com/Azure/acs-engine/issues/3851)
+				kubeBinariesSASURL := kubernetesConfig.CustomWindowsPackageURL
+				if kubeBinariesSASURL == "" {
+					kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + k8sComponents["windowszip"]
+				}
+				addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
+
+				// Kubernetes node binaries as packaged by upstream kubernetes
+				// example at https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1
+				addValue(parametersMap, "windowsKubeBinariesURL", kubernetesConfig.WindowsNodeBinariesURL)
+
+				addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
+				addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 			}
-			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
-
-			// Kubernetes node binaries as packaged by upstream kubernetes
-			// example at https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1
-			addValue(parametersMap, "windowsKubeBinariesURL", properties.OrchestratorProfile.KubernetesConfig.WindowsNodeBinariesURL)
-
-			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
-			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 		}
 
 		if kubernetesConfig == nil ||
