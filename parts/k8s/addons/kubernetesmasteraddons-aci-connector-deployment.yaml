@@ -84,7 +84,7 @@ spec:
       containers:
       - name: aci-connector
         image: <kubernetesACIConnectorSpec>
-        ImagePullPolicy: IfNotPresent
+        imagePullPolicy: IfNotPresent
         env:
         - name: KUBELET_PORT
           value: "10250"

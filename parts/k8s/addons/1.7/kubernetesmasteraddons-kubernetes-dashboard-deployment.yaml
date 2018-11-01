@@ -64,7 +64,7 @@ spec:
       - args:
         - --heapster-host=http://heapster.kube-system:80
         image: <kubernetesDashboardSpec>
-        ImagePullPolicy: IfNotPresent
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: "/"

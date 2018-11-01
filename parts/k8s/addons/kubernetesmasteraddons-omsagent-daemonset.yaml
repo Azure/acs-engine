@@ -122,7 +122,7 @@ spec:
       containers:
         - name: omsagent
           image: "<kubernetesContainerMonitoringSpec>"
-          ImagePullPolicy: IfNotPresent
+          imagePullPolicy: IfNotPresent
           resources:
             limits:
               cpu: <kubernetesOMSAgentCPULimit>
