@@ -128,6 +128,20 @@
               "sourceAddressPrefix": "*",
               "sourcePortRange": "*"
             }
+          },
+          {
+            "name": "block_outbound",
+            "properties": {
+              "access": "Deny",
+              "description": "Block outbound internet from master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "*",
+              "direction": "Outbound",
+              "priority": 103,
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
           }
         ]
       },
