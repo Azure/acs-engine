@@ -265,9 +265,9 @@
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"
     {{else}}
-      "[variables('vnetID')]",
-      "[variables('masterLbID')]"
+      "[variables('vnetID')]"
     {{end}}
+      ,"[variables('masterLbID')]"
     ],
     "tags":
     {
@@ -360,7 +360,7 @@
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[concat(variables('masterVMNamePrefix'), 'vmss')]",
-          {{GetKubernetesMasterCustomDataVMSS .}}
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {

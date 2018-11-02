@@ -108,7 +108,6 @@ const (
 
 const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomDataVMSSYaml       = "k8s/kubernetesmastercustomdatavmss.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
 	kubernetesHealthMonitorScript            = "k8s/health-monitor.sh"
@@ -183,8 +182,7 @@ const (
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
 	kubernetesMasterResourcesVMAS = "k8s/kubernetesmasterresources.t"
 	kubernetesMasterResourcesVMSS = "k8s/kubernetesmasterresourcesvmss.t"
-	kubernetesMasterVarsVMAS      = "k8s/kubernetesmastervars.t"
-	kubernetesMasterVarsVMSS      = "k8s/kubernetesmastervarsvmss.t"
+	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
 	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
