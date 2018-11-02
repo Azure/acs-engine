@@ -4,30 +4,6 @@
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
     {{if .HasWindows}}
-      "kubeBinariesSASURL": {
-        "metadata": {
-          "description": "The download url for kubernetes windows binaries package that is created by scripts/build-windows-k8s.sh"
-        },
-        "type": "string"
-      },
-      "windowsKubeBinariesURL": {
-        "metadata": {
-          "description": "The download url for kubernetes windows binaries produce by Kubernetes. This contains only the node binaries (example: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1)"
-        },
-        "type": "string"
-      },
-      "kubeBinariesVersion": {
-        "metadata": {
-          "description": "Kubernetes windows binaries version"
-        },
-        "type": "string"
-      },
-      "windowsTelemetryGUID": {
-        "metadata": {
-          "description": "The GUID to set in windows agent to collect telemetry data."
-        },
-        "type": "string"
-      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
