@@ -382,7 +382,9 @@ const (
 )
 
 const (
-	AzurePublicCloud       = "AzurePublicCloud"
+	// AzurePublicCloud is a const string reference identifier for public cloud
+	AzurePublicCloud = "AzurePublicCloud"
+	// AzureChinaCloud is a const string reference identifier for china cloud
 	AzureChinaCloud        = "AzureChinaCloud"
 	azureGermanCloud       = "AzureGermanCloud"
 	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
