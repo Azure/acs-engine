@@ -95,61 +95,61 @@
     {{end}}
     {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
-      ,{
-        "apiVersion": "[variables('apiVersionNetwork')]",
-        "dependsOn": [
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-      {{if not IsAzureCNI}}
-          ,
-          "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
-      {{end}}
-        ],
-        "location": "[variables('location')]",
-        "name": "[variables('virtualNetworkName')]",
-        "properties": {
-          "addressSpace": {
-            "addressPrefixes": [
-              "[parameters('vnetCidr')]"
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+          {{if not IsAzureCNI}}
+            ,
+            "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+          {{end}}
+          ],
+          "location": "[variables('location')]",
+          "name": "[variables('virtualNetworkName')]",
+          "properties": {
+            "addressSpace": {
+              "addressPrefixes": [
+                "[parameters('vnetCidr')]"
+              ]
+            },
+            "subnets": [
+              {
+                "name": "[variables('subnetName')]",
+                "properties": {
+                  "addressPrefix": "[parameters('masterSubnet')]",
+                  "networkSecurityGroup": {
+                    "id": "[variables('nsgID')]"
+                  }
+                {{if not IsAzureCNI}}
+                  ,
+                  "routeTable": {
+                    "id": "[variables('routeTableID')]"
+                  }
+                {{end}}
+                }
+              }
             ]
           },
-          "subnets": [
-            {
-              "name": "[variables('subnetName')]",
-              "properties": {
-                "addressPrefix": "[parameters('masterSubnet')]",
-                "networkSecurityGroup": {
-                  "id": "[variables('nsgID')]"
-                }
-      {{if not IsAzureCNI}}
-                ,
-                "routeTable": {
-                  "id": "[variables('routeTableID')]"
-                }
+          "type": "Microsoft.Network/virtualNetworks"
+        }
       {{end}}
-              }
-            }
-          ]
+      {{if not IsAzureCNI}}
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "location": "[variables('location')]",
+          "name": "[variables('routeTableName')]",
+          "type": "Microsoft.Network/routeTables"
+        }
+      {{end}}
+      ,{
+        "apiVersion": "[variables('apiVersionNetwork')]",
+        "location": "[variables('location')]",
+        "name": "[variables('nsgName')]",
+        "properties": {
+          "securityRules": []
         },
-        "type": "Microsoft.Network/virtualNetworks"
+        "type": "Microsoft.Network/networkSecurityGroups"
       }
-    {{end}}
-    {{if not IsAzureCNI}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('routeTableName')]",
-      "type": "Microsoft.Network/routeTables"
-    }
-    {{end}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('nsgName')]",
-      "properties": {
-        "securityRules": []
-      },
-      "type": "Microsoft.Network/networkSecurityGroups"
-    }
     {{else}}
       {{if IsMasterVirtualMachineScaleSets}}
           ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
