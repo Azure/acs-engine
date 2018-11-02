@@ -176,22 +176,23 @@ function installImg() {
 }
 
 function pullHyperkube() {
-    retrycmd_if_failure 60 1 1200 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    img unpack -o "/home/rootfs-${KUBERNETES_VERSION}" $HYPERKUBE_URL
-    path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
+    path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
+    mkdir -p "$path"
+    pullContainerImage "docker" ${HYPERKUBE_URL}
+    docker run --rm -v $path:$path {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube $path"
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
-        cp "$path" "/opt/kubelet"
-        mv "$path" "/opt/kubectl"
+        cp "$path/hyperkube" "/opt/kubelet"
+        mv "$path/hyperkube" "/opt/kubectl"
         chmod a+x /opt/kubelet /opt/kubectl
     else
-        cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
-        mv "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
+        cp "$path/hyperkube" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
+        mv "$path/hyperkube" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
     fi
 }
 
 function extractHyperkube() {
-    if [[ ! -f "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" ]]; then
+    if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
         installImg
         pullHyperkube
     fi
