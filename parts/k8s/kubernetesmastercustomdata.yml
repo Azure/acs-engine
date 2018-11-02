@@ -356,6 +356,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/calico-daemonset.yaml
+    {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPlugin "azure"}}
+    sed -i "s|<calicoIPAMConfig>|{\"type\": \"azure-vnet-ipam\"}|g" /etc/kubernetes/addons/calico-daemonset.yaml
+    {{else}}
+    sed -i "s|<calicoIPAMConfig>|{\"type\": \"host-local\", \"subnet\": \"usePodCidr\"}|g" /etc/kubernetes/addons/calico-daemonset.yaml
+    {{end}}
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPlugin "flannel"}}
     sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/flannel-daemonset.yaml
