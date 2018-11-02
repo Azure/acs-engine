@@ -193,8 +193,10 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		customFilesReader,
 		"MASTER_CUSTOM_FILES_PLACEHOLDER")
 
+	str = getBase64CustomScriptFromStr(str)
+
 	// return the custom data
-	return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+	return fmt.Sprintf("\"customData\": \"[concat('%s')]\",", str)
 }
 
 // getTemplateFuncMap returns all functions used in template generation
@@ -574,7 +576,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
 				cs.Properties.OrchestratorProfile.OrchestratorVersion)
 
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+			str = getBase64CustomScriptFromStr(str)
+
+			return fmt.Sprintf("\"customData\": \"[concat('%s')]\",", str)
 		},
 		"GetKubernetesJumpboxCustomData": func(p *api.Properties) string {
 			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
@@ -583,7 +587,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				panic(err)
 			}
 
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+			str = getBase64CustomScriptFromStr(str)
+
+			return fmt.Sprintf("\"customData\": \"[concat('%s')]\",", str)
 		},
 		"WriteLinkedTemplatesForExtensions": func() string {
 			extensions := getLinkedTemplatesForExtensions(cs.Properties)
