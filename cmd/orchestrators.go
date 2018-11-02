@@ -36,7 +36,7 @@ func newOrchestratorsCmd() *cobra.Command {
 	f := command.Flags()
 	f.StringVar(&oc.orchestrator, "orchestrator", "", "orchestrator name (optional) ")
 	f.StringVar(&oc.version, "version", "", "orchestrator version (optional)")
-	f.BoolVar(&oc.windows, "windows", false, "orchestrator platform (optional)")
+	f.BoolVar(&oc.windows, "windows", false, "orchestrator platform (optional, applies to Kubernetes only)")
 
 	return command
 }
