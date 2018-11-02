@@ -95,108 +95,61 @@
     {{end}}
     {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
-      ,{
-        "apiVersion": "[variables('apiVersionNetwork')]",
-        "dependsOn": [
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-      {{if not IsAzureCNI}}
-          ,
-          "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
-      {{end}}
-        ],
-        "location": "[variables('location')]",
-        "name": "[variables('virtualNetworkName')]",
-        "properties": {
-          "addressSpace": {
-            "addressPrefixes": [
-              "[parameters('vnetCidr')]"
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+          {{if not IsAzureCNI}}
+            ,
+            "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+          {{end}}
+          ],
+          "location": "[variables('location')]",
+          "name": "[variables('virtualNetworkName')]",
+          "properties": {
+            "addressSpace": {
+              "addressPrefixes": [
+                "[parameters('vnetCidr')]"
+              ]
+            },
+            "subnets": [
+              {
+                "name": "[variables('subnetName')]",
+                "properties": {
+                  "addressPrefix": "[parameters('masterSubnet')]",
+                  "networkSecurityGroup": {
+                    "id": "[variables('nsgID')]"
+                  }
+                {{if not IsAzureCNI}}
+                  ,
+                  "routeTable": {
+                    "id": "[variables('routeTableID')]"
+                  }
+                {{end}}
+                }
+              }
             ]
           },
-          "subnets": [
-            {
-              "name": "[variables('subnetName')]",
-              "properties": {
-                "addressPrefix": "[parameters('masterSubnet')]",
-                "networkSecurityGroup": {
-                  "id": "[variables('nsgID')]"
-                }
-      {{if not IsAzureCNI}}
-                ,
-                "routeTable": {
-                  "id": "[variables('routeTableID')]"
-                }
+          "type": "Microsoft.Network/virtualNetworks"
+        }
       {{end}}
-              }
-            }
-          ]
+      {{if not IsAzureCNI}}
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "location": "[variables('location')]",
+          "name": "[variables('routeTableName')]",
+          "type": "Microsoft.Network/routeTables"
+        }
+      {{end}}
+      ,{
+        "apiVersion": "[variables('apiVersionNetwork')]",
+        "location": "[variables('location')]",
+        "name": "[variables('nsgName')]",
+        "properties": {
+          "securityRules": []
         },
-        "type": "Microsoft.Network/virtualNetworks"
+        "type": "Microsoft.Network/networkSecurityGroups"
       }
-    {{end}}
-    {{if not IsAzureCNI}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('routeTableName')]",
-      "type": "Microsoft.Network/routeTables"
-    }
-    {{end}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('nsgName')]",
-      "properties": {
-        "securityRules": [
-{{if .HasWindows}}
-          {
-            "name": "allow_rdp",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow RDP traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "3389-3389",
-              "direction": "Inbound",
-              "priority": 102,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-{{end}}
-{{if not IsHostedMaster}}
-          {
-            "name": "allow_ssh",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow SSH traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22-22",
-              "direction": "Inbound",
-              "priority": 101,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-          {
-            "name": "allow_kube_tls",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow kube-apiserver (tls) traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443-443",
-              "direction": "Inbound",
-              "priority": 100,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          }
-{{end}}
-        ]
-      },
-      "type": "Microsoft.Network/networkSecurityGroups"
-    }
     {{else}}
       {{if IsMasterVirtualMachineScaleSets}}
           ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
