@@ -10,6 +10,7 @@ PROXY_CLIENT_CRT="${PROXY_CLIENT_CRT:=/tmp/proxy-client.crt}"
 ETCD_REQUESTHEADER_CLIENT_CA="${ETCD_REQUESTHEADER_CLIENT_CA:=/proxycerts/requestheader-client-ca-file}"
 ETCD_PROXY_CERT="${ETCD_PROXY_CERT:=/proxycerts/proxy-client-cert-file}"
 ETCD_PROXY_KEY="${ETCD_PROXY_KEY:=/proxycerts/proxy-client-key-file}"
+ETCD_VERSION=$(etcd --version|head -1|cut -d\  -f 3)
 K8S_PROXY_CA_CRT_FILEPATH="${K8S_PROXY_CA_CRT_FILEPATH:=/etc/kubernetes/certs/proxy-ca.crt}"
 K8S_PROXY_KEY_FILEPATH="${K8S_PROXY_KEY_FILEPATH:=/etc/kubernetes/certs/proxy.key}"
 K8S_PROXY_CRT_FILEPATH="${K8S_PROXY_CRT_FILEPATH:=/etc/kubernetes/certs/proxy.crt}"
@@ -18,7 +19,7 @@ export ETCDCTL_ENDPOINTS="${ETCDCTL_ENDPOINTS:=https://127.0.0.1:2379}"
 export ETCDCTL_CA_FILE="${ETCDCTL_CA_FILE:=/etc/kubernetes/certs/ca.crt}"
 export ETCDCTL_KEY_FILE="${ETCDCTL_KEY_FILE:=/etc/kubernetes/certs/etcdclient.key}"
 export ETCDCTL_CERT_FILE="${ETCDCTL_CERT_FILE:=/etc/kubernetes/certs/etcdclient.crt}"
-export ETCDCTL_API="3"
+export ETCDCTL_API="${ETCD_VERSION:0:1}"
 export RANDFILE=$(mktemp)
 
 # generate root CA
@@ -46,7 +47,7 @@ write_certs_to_disk_with_retry() {
 }
 
 # block until all etcd is ready
-retrycmd_if_failure 100 5 10 etcdctl cluster-health
+retrycmd_if_failure 100 5 10 etcdctl member list
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
 if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
     etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"
