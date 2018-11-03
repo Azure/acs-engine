@@ -210,5 +210,5 @@ function pullContainerImage() {
 
 function cleanUpContainerImages() {
     // TODO remove all unused container images at runtime
-    docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'hyperkube') &
+    docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'hyperkube') &
 }
