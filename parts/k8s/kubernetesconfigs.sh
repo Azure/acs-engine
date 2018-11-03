@@ -66,6 +66,10 @@ function configureEtcd() {
     chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
     chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
 
+    ETCD_VERSION=$(etcd --version|head -1|cut -d\  -f 3)
+    echo "export ETCDCTL_API=${ETCD_VERSION:0:1}" >> /root/.bash_profile
+    echo "export ETCDCTL_API=${ETCD_VERSION:0:1}" >> ~admin/.bash_profile
+
     set +x
     echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
     echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
