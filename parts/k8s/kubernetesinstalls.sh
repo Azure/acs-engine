@@ -207,3 +207,8 @@ function pullContainerImage() {
     DOCKER_IMAGE_URL=$2
     retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
+
+function cleanUpContainerImages() {
+    // TODO remove all unused container images at runtime
+    docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'hyperkube') &
+}
