@@ -199,7 +199,7 @@ function extractHyperkube() {
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
-    rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-* /home/rootfs-* &
+    rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-* /home/hyperkube-downloads &
 }
 
 function pullContainerImage() {
