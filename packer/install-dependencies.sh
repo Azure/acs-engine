@@ -35,6 +35,8 @@ done
 CONTAINERD_DOWNLOAD_URL_BASE="https://storage.googleapis.com/cri-containerd-release/"
 installContainerd
 
+installImg
+
 DASHBOARD_VERSIONS="1.10.0 1.6.3"
 for DASHBOARD_VERSION in ${DASHBOARD_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/kubernetes-dashboard-amd64:v${DASHBOARD_VERSION}"
