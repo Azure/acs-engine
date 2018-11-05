@@ -195,10 +195,10 @@ function extractHyperkube() {
 function installKubeletAndKubectl() {
     if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
         if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+            extractHyperkube "docker"
+        else
             installImg
             extractHyperkube "img"
-        else
-            extractHyperkube "docker"
         fi
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
