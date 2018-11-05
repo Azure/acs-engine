@@ -35,11 +35,11 @@ spec:
             mountPath: /etc/config
         resources:
           requests:
-            cpu: <kubernetesIPMasqAgentCPURequests>
-            memory: <kubernetesIPMasqAgentMemoryRequests>
+            cpu: <cpuReq>
+            memory: <<memReq>
           limits:
-            cpu: <kubernetesIPMasqAgentCPULimit>
-            memory: <kubernetesIPMasqAgentMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
       volumes:
         - name: azure-ip-masq-agent-config-volume
           configMap:
@@ -57,7 +57,7 @@ metadata:
 data:
   ip-masq-agent: |-
     nonMasqueradeCIDRs:
-      - <kubernetesNonMasqueradeCidr>
-      - <azureCNINonMasqueradeIP>
-    masqLinkLocal: <masqLinkLocalValue>
+      - <nonmasqCIDR>
+      - <nonmasqCNIIP>
+    masqLinkLocal: <masqLink>
     resyncInterval: 60s

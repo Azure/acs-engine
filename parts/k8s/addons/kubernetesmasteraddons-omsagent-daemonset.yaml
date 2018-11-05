@@ -8,8 +8,8 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 type: Opaque
 data:
-  WSID: "<workspaceGuid>"
-  KEY: "<workspaceKey>"
+  WSID: "<wsid>"
+  KEY: "<wsKey>"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -112,8 +112,8 @@ spec:
   template:
     metadata:
       annotations:
-        agentVersion: "<omsAgentVersion>"
-        dockerProviderVersion: "<dockerProviderVersion>"
+        agentVersion: <ver>
+        dockerProviderVersion: <dockerVer>
       labels:
         component: oms-agent
         tier: node
@@ -121,15 +121,15 @@ spec:
       serviceAccountName: omsagent
       containers:
         - name: omsagent
-          image: "<kubernetesContainerMonitoringSpec>"
+          image: <img>
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: <kubernetesOMSAgentCPULimit>
-              memory: <kubernetesOMSAgentMemoryLimit>
+              cpu: <cpuLim>
+              memory: <memLim>
             requests:
-              cpu: <kubernetesOMSAgentCPURequests>
-              memory: <kubernetesOMSAgentMemoryRequests>
+              cpu: <cpuReq>
+              memory: <memReq>
           env:
             - name: NODE_IP
               valueFrom:
@@ -145,8 +145,8 @@ spec:
             exec:
               command:
                 - /bin/bash
-                - "-c"
-                - "ps -ef | grep omsagent | grep -v \"grep\""
+                - -c
+                - ps -ef | grep omsagent | grep -v \"grep\"
             initialDelaySeconds: 60
             periodSeconds: 60
           ports:
@@ -200,42 +200,42 @@ metadata:
   labels:
     component: oms-agent
     tier: node
-    kubernetes.io/cluster-service: "true"
+    kubernetes.io/cluster-service: true
     addonmanager.kubernetes.io/mode: Reconcile
 spec:
   replicas: 1
   selector:
     matchLabels:
-      rsName: "omsagent-rs"
+      rsName: omsagent-rs
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        rsName: "omsagent-rs"
+        rsName: omsagent-rs
       annotations:
-        agentVersion: "<omsAgentVersion>"
-        dockerProviderVersion: "<dockerProviderVersion>"
+        agentVersion: <ver>
+        dockerProviderVersion: <dockerVer>
     spec:
       serviceAccountName: omsagent
       containers:
         - name: omsagent 
-          image: "<kubernetesContainerMonitoringSpec>"
+          image: <img>
           imagePullPolicy: IfNotPresent
           resources:
             limits:
-              cpu: <kubernetesOMSAgentCPULimit>
-              memory: <kubernetesOMSAgentMemoryLimit>
+              cpu: <cpuLim>
+              memory: <memLim>
             requests:
-              cpu: <kubernetesOMSAgentCPURequests>
-              memory: <kubernetesOMSAgentMemoryRequests>
+              cpu: <cpuReq>
+              memory: <memReq>
           env:
             - name: NODE_IP
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
             - name: ACS_RESOURCE_NAME
-              value: "my_acs_cluster_name"
+              value: my_acs_cluster_name
             - name: DISABLE_KUBE_SYSTEM_LOG_COLLECTION
               value: "true"
             - name: ISTEST
@@ -264,7 +264,7 @@ spec:
               command:
                 - /bin/bash
                 - -c
-                - ps -ef | grep omsagent | grep -v "grep"
+                - ps -ef | grep omsagent | grep -v \"grep\"
             initialDelaySeconds: 60
             periodSeconds: 60
       nodeSelector:

@@ -4,7 +4,7 @@ metadata:
   name: azure-npm
   namespace: kube-system
   labels:
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -12,7 +12,7 @@ metadata:
   name: azure-npm
   namespace: kube-system
   labels:
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 rules:
   - apiGroups:
     - ""
@@ -25,7 +25,7 @@ rules:
       - list
       - watch
   - apiGroups:
-    - "networking.k8s.io"
+    - networking.k8s.io
     resources:
       - networkpolicies
     verbs:
@@ -39,7 +39,7 @@ metadata:
   name: azure-npm-binding
   namespace: kube-system
   labels:
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 subjects:
   - kind: ServiceAccount
     name: azure-npm
@@ -56,7 +56,7 @@ metadata:
   namespace: kube-system
   labels:
     app: azure-npm
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 spec:
   selector:
     matchLabels:

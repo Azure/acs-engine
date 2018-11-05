@@ -22,15 +22,15 @@ spec:
       nodeSelector:
         beta.kubernetes.io/os: linux
       containers:
-      - image: <kubernetesReschedulerSpec>
+      - image: <img>
         name: rescheduler
         resources:
           requests:
-            cpu: <kubernetesReschedulerCPURequests>
-            memory: <kubernetesReschedulerMemoryRequests>
+            cpu: <cpuReq>
+            memory: <memReq>
           limits:
-            cpu: <kubernetesReschedulerCPULimit>
-            memory: <kubernetesReschedulerMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
         command:
         - sh
         - -c

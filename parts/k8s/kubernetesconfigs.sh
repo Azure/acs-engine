@@ -181,7 +181,7 @@ EOF
     fi
 }
 
-function configureCNI() {
+configureCNI() {
     # needed for the iptables rules to work on bridges
     retrycmd_if_failure 120 5 25 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
@@ -192,20 +192,20 @@ function configureCNI() {
     fi
 }
 
-function setKubeletOpts () {
+setKubeletOpts () {
     KUBELET_DEFAULT_FILE=/etc/default/kubelet
     wait_for_file 1200 1 $KUBELET_DEFAULT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" $KUBELET_DEFAULT_FILE
 }
 
-function ensureCCProxy() {
+ensureCCProxy() {
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function setupContainerd() {
+setupContainerd() {
     echo "Configuring cri-containerd..."
     mkdir -p "/etc/containerd"
     CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
@@ -228,7 +228,7 @@ function setupContainerd() {
     setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
-function ensureContainerd() {
+ensureContainerd() {
     if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
         setupContainerd
         echo "Enabling and starting cri-containerd service..."
@@ -236,7 +236,7 @@ function ensureContainerd() {
     fi
 }
 
-function ensureDocker() {
+ensureDocker() {
     DOCKER_SERVICE_EXEC_START_FILE=/etc/systemd/system/docker.service.d/exec_start.conf
     wait_for_file 1200 1 $DOCKER_SERVICE_EXEC_START_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> $DOCKER_SERVICE_EXEC_START_FILE
@@ -355,22 +355,22 @@ function configClusterAutoscalerAddon() {
         CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
         CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
 
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<volMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<vols>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<hostNet>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<volMounts>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<vols>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<hostNet>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     fi
 
-    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<clientID>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<clientSec>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<subID>|$(echo $SUBSCRIPTION_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<tenantID>|$(echo $TENANT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<rg>|$(echo $RESOURCE_GROUP | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<vmType>|$(echo $VM_TYPE | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<vmssName>|$(echo $PRIMARY_SCALE_SET)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
 }
 
 configACIConnectorAddon() {
@@ -382,10 +382,10 @@ configACIConnectorAddon() {
 
     ACI_CONNECTOR_ADDON_FILE=/etc/kubernetes/addons/aci-connector-deployment.yaml
     wait_for_file 1200 1 $ACI_CONNECTOR_ADDON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorResourceGroup>|$(echo $RESOURCE_GROUP)|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorCert>|$(echo $ACI_CONNECTOR_CERT)|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorKey>|$(echo $ACI_CONNECTOR_KEY)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<creds>|$ACI_CONNECTOR_CREDENTIALS|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<rgName>|$(echo $RESOURCE_GROUP)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<cert>|$(echo $ACI_CONNECTOR_CERT)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<key>|$(echo $ACI_CONNECTOR_KEY)|g" $ACI_CONNECTOR_ADDON_FILE
 }
 
 configAddons() {

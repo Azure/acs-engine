@@ -5,7 +5,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
   name: cluster-autoscaler
   namespace: kube-system
 ---
@@ -17,7 +17,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 rules:
 - apiGroups: [""]
   resources: ["events","endpoints"]
@@ -78,7 +78,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -97,7 +97,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -109,19 +109,19 @@ subjects:
 ---
 apiVersion: v1
 data:
-  ClientID: <kubernetesClusterAutoscalerClientId>
-  ClientSecret: <kubernetesClusterAutoscalerClientSecret>
-  ResourceGroup: <kubernetesClusterAutoscalerResourceGroup>
-  SubscriptionID: <kubernetesClusterAutoscalerSubscriptionId>
-  TenantID: <kubernetesClusterAutoscalerTenantId>
-  VMType: <kubernetesClusterAutoscalerVmType>
+  ClientID: <clientID>
+  ClientSecret: <clientSec>
+  ResourceGroup: <rg>
+  SubscriptionID: <subID>
+  TenantID: <tenantID>
+  VMType: <vmType>
 kind: Secret
 metadata:
   name: cluster-autoscaler-azure
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -129,7 +129,7 @@ metadata:
   labels:
     app: cluster-autoscaler
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
   name: cluster-autoscaler
   namespace: kube-system
 spec:
@@ -142,7 +142,7 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
-      <kubernetesClusterAutoscalerHostNetwork>
+      <hostNet>
       serviceAccountName: cluster-autoscaler
       tolerations:
       - effect: NoSchedule
@@ -153,26 +153,26 @@ spec:
         kubernetes.io/role: master
         beta.kubernetes.io/os: linux
       containers:
-      - image: <kubernetesClusterAutoscalerSpec>
+      - image: <img>
         imagePullPolicy: Always
         name: cluster-autoscaler
         resources:
           limits:
-            cpu: <kubernetesClusterAutoscalerCPULimit>
-            memory: <kubernetesClusterAutoscalerMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
           requests:
-            cpu: <kubernetesClusterAutoscalerCPURequests>
-            memory: <kubernetesClusterAutoscalerMemoryRequests>
+            cpu: <cpuReq>
+            memory: <memReq>
         command:
         - ./cluster-autoscaler
         - --v=3
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=<kubernetesClusterAutoscalerMinNodes>:<kubernetesClusterAutoscalerMaxNodes>:<kubernetesClusterAutoscalerVMSSName>
+        - --nodes=<minNodes>:<maxNodes>:<vmssName>
         env:
         - name: ARM_CLOUD
-          value: "<kubernetesClusterAutoscalerAzureCloud>"
+          value: "<cloud>"
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
             secretKeyRef:
@@ -204,16 +204,16 @@ spec:
               key: VMType
               name: cluster-autoscaler-azure
         - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
-          value: "<kubernetesClusterAutoscalerUseManagedIdentity>"
+          value: <mie>
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
           readOnly: true
-        <kubernetesClusterAutoscalerVolumeMounts>
+        <volMounts>
       restartPolicy: Always
       volumes:
       - hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
           type: ""
         name: ssl-certs
-      <kubernetesClusterAutoscalerVolumes>
+      <vols>
