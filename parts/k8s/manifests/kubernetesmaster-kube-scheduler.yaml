@@ -12,7 +12,7 @@ spec:
     - name: kube-scheduler
       image: <img>
       command: ["/hyperkube", "scheduler"]
-      args: ["<img>"]
+      args: [<args>]
       volumeMounts:
         - name: etc-kubernetes
           mountPath: /etc/kubernetes
