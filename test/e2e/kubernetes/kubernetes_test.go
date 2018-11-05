@@ -134,6 +134,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						log.Printf("Error while getting docker version on node %s: %s\n", node.Metadata.Name, err)
 					}
 				}
+			} else {
+				Skip("Skip docker validations on non-docker-backed clusters")
 			}
 		})
 
@@ -268,6 +270,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				running, err := p.WaitOnReady(5*time.Second, 2*time.Minute)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+			} else {
+				Skip("We don't run DNS liveness checks on calico clusters ( //TODO )")
 			}
 		})
 
@@ -339,6 +343,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				successes, err := pod.RunCommandMultipleTimes(pod.RunLinuxPod, "busybox", consumerPodName, commandString, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
+			} else {
+				Skip("Pod-to-pod network tests only valid on Linux clusters")
 			}
 		})
 
@@ -714,6 +720,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 				}
+			} else {
+				Skip("This is not a GPU-enabled cluster")
 			}
 		})
 	})
@@ -1069,6 +1077,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(currentPod.Status.ContainerStatuses[0].Ready).To(BeTrue())
 					Expect(currentPod.Status.ContainerStatuses[0].RestartCount).To(BeNumerically("<", 3))
 				}
+			} else {
+				Skip("kube-system pod crashing test is a Windows-only validation at this time")
 			}
 		})
 
@@ -1168,6 +1178,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				} else {
 					log.Printf("%d DNS livenessProbe restarts since this cluster was created...\n", restarts)
 				}
+			} else {
+				Skip("We don't run DNS liveness checks on calico clusters ( //TODO )")
 			}
 		})
 
@@ -1185,6 +1197,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				err = phpApacheDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("Keep long-running php-apache workloads running for soak clusters")
 			}
 		})
 	})
