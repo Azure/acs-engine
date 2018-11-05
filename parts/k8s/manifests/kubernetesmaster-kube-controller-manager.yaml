@@ -12,7 +12,7 @@ spec:
     - name: kube-controller-manager
       image: <img>
       command: ["/hyperkube", "controller-manager"]
-      args: ["<img>"]
+      args: [<args>]
       volumeMounts:
         - name: etc-kubernetes
           mountPath: /etc/kubernetes
