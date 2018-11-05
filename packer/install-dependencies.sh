@@ -41,7 +41,7 @@ installContainerd
 
 installImg
 
-DASHBOARD_VERSIONS="1.8.3 1.6.3"
+DASHBOARD_VERSIONS="1.10.0 1.6.3"
 for DASHBOARD_VERSION in ${DASHBOARD_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/kubernetes-dashboard-amd64:v${DASHBOARD_VERSION}"
 done
@@ -56,7 +56,7 @@ for ADDON_RESIZER_VERSION in ${ADDON_RESIZER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/addon-resizer:${ADDON_RESIZER_VERSION}"
 done
 
-HEAPSTER_VERSIONS="1.5.3 1.5.1"
+HEAPSTER_VERSIONS="1.5.3 1.5.1 1.3.0"
 for HEAPSTER_VERSION in ${HEAPSTER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/heapster-amd64:v${HEAPSTER_VERSION}"
 done
@@ -66,12 +66,12 @@ for METRICS_SERVER_VERSION in ${METRICS_SERVER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/metrics-server-amd64:v${METRICS_SERVER_VERSION}"
 done
 
-KUBE_DNS_VERSIONS="1.14.10 1.14.8 1.14.5"
+KUBE_DNS_VERSIONS="1.14.13 1.14.5"
 for KUBE_DNS_VERSION in ${KUBE_DNS_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/k8s-dns-kube-dns-amd64:${KUBE_DNS_VERSION}"
 done
 
-KUBE_ADDON_MANAGER_VERSIONS="8.7 8.6"
+KUBE_ADDON_MANAGER_VERSIONS="8.8 8.7 8.6"
 for KUBE_ADDON_MANAGER_VERSION in ${KUBE_ADDON_MANAGER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/kube-addon-manager-amd64:v${KUBE_ADDON_MANAGER_VERSION}"
 done
@@ -91,6 +91,21 @@ for TILLER_VERSION in ${TILLER_VERSIONS}; do
     pullContainerImage "docker" "gcr.io/kubernetes-helm/tiller:v${TILLER_VERSION}"
 done
 
+CLUSTER_AUTOSCALER_VERSIONS="1.3.3 1.3.1 1.3.0 1.2.2 1.1.2"
+for CLUSTER_AUTOSCALER_VERSION in ${CLUSTER_AUTOSCALER_VERSIONS}; do
+    pullContainerImage "docker" "k8s.gcr.io/cluster-autoscaler:v${CLUSTER_AUTOSCALER_VERSION}"
+done
+
+K8S_DNS_SIDECAR_VERSIONS="1.14.10 1.14.8 1.14.7"
+for K8S_DNS_SIDECAR_VERSION in ${K8S_DNS_SIDECAR_VERSIONS}; do
+    pullContainerImage "docker" "k8s.gcr.io/k8s-dns-sidecar-amd64:${K8S_DNS_SIDECAR_VERSION}"
+done
+
+CORE_DNS_VERSIONS="1.2.2"
+for CORE_DNS_VERSION in ${CORE_DNS_VERSIONS}; do
+    pullContainerImage "docker" "k8s.gcr.io/coredns:${CORE_DNS_VERSION}"
+done
+
 RESCHEDULER_VERSIONS="0.4.0 0.3.1"
 for RESCHEDULER_VERSION in ${RESCHEDULER_VERSIONS}; do
     pullContainerImage "docker" "k8s.gcr.io/rescheduler:v${RESCHEDULER_VERSION}"
@@ -106,16 +121,6 @@ for AZURE_CNI_NETWORKMONITOR_VERSION in ${AZURE_CNI_NETWORKMONITOR_VERSIONS}; do
     pullContainerImage "docker" "containernetworking/networkmonitor:v${AZURE_CNI_NETWORKMONITOR_VERSION}"
 done
 
-CLUSTER_AUTOSCALER_VERSIONS="1.3.3 1.3.1 1.3.0 1.2.2 1.1.2"
-for CLUSTER_AUTOSCALER_VERSION in ${CLUSTER_AUTOSCALER_VERSIONS}; do
-    pullContainerImage "docker" "k8s.gcr.io/cluster-autoscaler:v${CLUSTER_AUTOSCALER_VERSION}"
-done
-
-K8S_DNS_SIDECAR_VERSIONS="1.14.10 1.14.8 1.14.7"
-for K8S_DNS_SIDECAR_VERSION in ${K8S_DNS_SIDECAR_VERSIONS}; do
-    pullContainerImage "docker" "k8s.gcr.io/k8s-dns-sidecar-amd64:${K8S_DNS_SIDECAR_VERSION}"
-done
-
 NVIDIA_DEVICE_PLUGIN_VERSIONS="1.11 1.10"
 for NVIDIA_DEVICE_PLUGIN_VERSION in ${NVIDIA_DEVICE_PLUGIN_VERSIONS}; do
     pullContainerImage "docker" "nvidia/k8s-device-plugin:${NVIDIA_DEVICE_PLUGIN_VERSION}"
@@ -128,7 +133,8 @@ K8S_VERSIONS="1.7.15 1.7.16 1.8.14 1.8.15 1.9.10 1.9.11 1.10.8 1.10.9 1.11.3 1.1
 
 for KUBERNETES_VERSION in ${K8S_VERSIONS}; do
     HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
-    pullHyperkube
+    extractHyperkube "docker"
+    pullContainerImage "docker" "k8s.gcr.io/cloud-controller-manager-amd64:v${KUBERNETES_VERSION}"
 done
 
 df -h
