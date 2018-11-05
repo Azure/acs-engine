@@ -175,34 +175,50 @@ function installImg() {
     retrycmd_get_executable 120 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function pullHyperkube() {
-    retrycmd_if_failure 60 1 1200 img pull $HYPERKUBE_URL || exit $ERR_K8S_DOWNLOAD_TIMEOUT
-    img unpack -o "/home/rootfs-${KUBERNETES_VERSION}" $HYPERKUBE_URL
-    path=$(find /home/rootfs-${KUBERNETES_VERSION} -name "hyperkube")
+function extractHyperkube() {
+    CLI_TOOL=$1
+    path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
+    mkdir -p "$path"
+    pullContainerImage $CLI_TOOL ${HYPERKUBE_URL}
+    if [[ "$CLI_TOOL" == "docker" ]]; then
+        docker run --rm -v $path:$path ${HYPERKUBE_URL} /bin/bash -c "cp /hyperkube $path"
+    else
+        img unpack -o "$path" ${HYPERKUBE_URL}
+    fi
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
-        cp "$path" "/opt/kubelet"
-        mv "$path" "/opt/kubectl"
+        cp "$path/hyperkube" "/opt/kubelet"
+        mv "$path/hyperkube" "/opt/kubectl"
         chmod a+x /opt/kubelet /opt/kubectl
     else
-        cp "$path" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
-        mv "$path" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
+        cp "$path/hyperkube" "/usr/local/bin/kubelet-${KUBERNETES_VERSION}"
+        mv "$path/hyperkube" "/usr/local/bin/kubectl-${KUBERNETES_VERSION}"
     fi
 }
 
-function extractHyperkube() {
-    if [[ ! -f "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" ]]; then
-        installImg
-        pullHyperkube
+function installKubeletAndKubectl() {
+    if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
+        if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+            extractHyperkube "docker"
+        else
+            installImg
+            extractHyperkube "img"
+        fi
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
     chmod a+x /usr/local/bin/kubelet /usr/local/bin/kubectl
-    rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-* /home/rootfs-* &
+    rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-* /home/hyperkube-downloads &
 }
 
 function pullContainerImage() {
     CLI_TOOL=$1
     DOCKER_IMAGE_URL=$2
     retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
+}
+
+function cleanUpContainerImages() {
+    // TODO remove all unused container images at runtime
+    docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'hyperkube') &
+    docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'cloud-controller-manager') &
 }
