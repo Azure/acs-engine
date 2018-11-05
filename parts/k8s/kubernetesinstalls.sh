@@ -180,7 +180,11 @@ function extractHyperkube() {
     path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
     mkdir -p "$path"
     pullContainerImage $CLI_TOOL ${HYPERKUBE_URL}
-    docker run --rm -v $path:$path {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube $path"
+    if [[ "$CLI_TOOL" == "docker" ]]; then
+        docker run --rm -v $path:$path ${HYPERKUBE_URL} /bin/bash -c "cp /hyperkube $path"
+    else
+        img unpack -o "$path" ${HYPERKUBE_URL}
+    fi
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
         cp "$path/hyperkube" "/opt/kubelet"
