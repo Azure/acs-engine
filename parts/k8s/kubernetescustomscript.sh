@@ -72,7 +72,7 @@ fi
 installContainerRuntime
 installNetworkPlugin
 installContainerd
-extractHyperkube
+installKubeletAndKubectl
 ensureRPC
 createKubeManifestDir
 

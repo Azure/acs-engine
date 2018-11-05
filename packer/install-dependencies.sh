@@ -129,7 +129,7 @@ K8S_VERSIONS="1.7.15 1.7.16 1.8.14 1.8.15 1.9.10 1.9.11 1.10.8 1.10.9 1.11.3 1.1
 
 for KUBERNETES_VERSION in ${K8S_VERSIONS}; do
     HYPERKUBE_URL="k8s.gcr.io/hyperkube-amd64:v${KUBERNETES_VERSION}"
-    pullHyperkube
+    extractHyperkube "docker"
     pullContainerImage "docker" "cloud-controller-manager-amd64:v${KUBERNETES_VERSION}"
 done
 

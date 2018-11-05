@@ -175,10 +175,11 @@ function installImg() {
     retrycmd_get_executable 120 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function pullHyperkube() {
+function extractHyperkube() {
+    CLI_TOOL=$1
     path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
     mkdir -p "$path"
-    pullContainerImage "docker" ${HYPERKUBE_URL}
+    pullContainerImage $CLI_TOOL ${HYPERKUBE_URL}
     docker run --rm -v $path:$path {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube $path"
 
     if [[ $OS == $COREOS_OS_NAME ]]; then
@@ -191,10 +192,14 @@ function pullHyperkube() {
     fi
 }
 
-function extractHyperkube() {
+function installKubeletAndKubectl() {
     if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
-        installImg
-        pullHyperkube
+        if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+            installImg
+            extractHyperkube "img"
+        else
+            extractHyperkube "docker"
+        fi
     fi
     mv "/usr/local/bin/kubelet-${KUBERNETES_VERSION}" "/usr/local/bin/kubelet"
     mv "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" "/usr/local/bin/kubectl"
