@@ -5,7 +5,7 @@ PRIVATE_IP=$(hostname -I | cut -d' ' -f1)
 ETCD_PEER_URL="https://${PRIVATE_IP}:2380"
 ETCD_CLIENT_URL="https://${PRIVATE_IP}:2379"
 
-function systemctlEnableAndStart() {
+systemctlEnableAndStart() {
     systemctl_restart 100 5 30 $1
     RESTART_STATUS=$?
     systemctl status $1 --no-pager -l > /var/log/azure/$1-status.log
@@ -20,7 +20,7 @@ function systemctlEnableAndStart() {
     fi
 }
 
-function configureEtcd() {
+configureEtcd() {
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd"
@@ -100,23 +100,23 @@ function configureEtcd() {
     retrycmd_if_failure 120 5 25 sudo etcdctl member update $MEMBER ${ETCD_PEER_URL} || exit $ERR_ETCD_CONFIG_FAIL
 }
 
-function ensureRPC() {
+ensureRPC() {
     systemctlEnableAndStart rpcbind || exit $ERR_SYSTEMCTL_START_FAIL
     systemctlEnableAndStart rpc-statd || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function runAptDaily() {
+runAptDaily() {
     wait_for_apt_locks
     /usr/lib/apt/apt.systemd.daily
 }
 
-function generateAggregatedAPICerts() {
+generateAggregatedAPICerts() {
     AGGREGATED_API_CERTS_SETUP_FILE=/etc/kubernetes/generate-proxy-certs.sh
     wait_for_file 1200 1 $AGGREGATED_API_CERTS_SETUP_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     $AGGREGATED_API_CERTS_SETUP_FILE
 }
 
-function configureK8s() {
+configureK8s() {
     KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
     touch "${KUBELET_PRIVATE_KEY_PATH}"
     chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
@@ -181,7 +181,7 @@ EOF
     fi
 }
 
-function configureCNI() {
+configureCNI() {
     # needed for the iptables rules to work on bridges
     retrycmd_if_failure 120 5 25 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
@@ -192,20 +192,20 @@ function configureCNI() {
     fi
 }
 
-function setKubeletOpts () {
+setKubeletOpts () {
     KUBELET_DEFAULT_FILE=/etc/default/kubelet
     wait_for_file 1200 1 $KUBELET_DEFAULT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" $KUBELET_DEFAULT_FILE
 }
 
-function ensureCCProxy() {
+ensureCCProxy() {
     cat $CC_SERVICE_IN_TMP | sed 's#@libexecdir@#/usr/libexec#' > /etc/systemd/system/cc-proxy.service
     cat $CC_SOCKET_IN_TMP sed 's#@localstatedir@#/var#' > /etc/systemd/system/cc-proxy.socket
 	echo "Enabling and starting Clear Containers proxy service..."
 	systemctlEnableAndStart cc-proxy || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function setupContainerd() {
+setupContainerd() {
     echo "Configuring cri-containerd..."
     mkdir -p "/etc/containerd"
     CRI_CONTAINERD_CONFIG="/etc/containerd/config.toml"
@@ -228,7 +228,7 @@ function setupContainerd() {
     setKubeletOpts " --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 }
 
-function ensureContainerd() {
+ensureContainerd() {
     if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]] || [[ "$CONTAINER_RUNTIME" == "kata-containers" ]] || [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
         setupContainerd
         echo "Enabling and starting cri-containerd service..."
@@ -236,7 +236,7 @@ function ensureContainerd() {
     fi
 }
 
-function ensureDocker() {
+ensureDocker() {
     DOCKER_SERVICE_EXEC_START_FILE=/etc/systemd/system/docker.service.d/exec_start.conf
     wait_for_file 1200 1 $DOCKER_SERVICE_EXEC_START_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> $DOCKER_SERVICE_EXEC_START_FILE
@@ -254,11 +254,11 @@ function ensureDocker() {
     systemctlEnableAndStart docker-monitor.timer || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function ensureKMS() {
+ensureKMS() {
     systemctlEnableAndStart kms || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function ensureKubelet() {
+ensureKubelet() {
     KUBELET_DEFAULT_FILE=/etc/default/kubelet
     wait_for_file 1200 1 $KUBELET_DEFAULT_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     KUBECONFIG_FILE=/var/lib/kubelet/kubeconfig
@@ -274,7 +274,7 @@ function ensureKubelet() {
     #systemctlEnableAndStart kubelet-monitor.timer || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function ensureJournal(){
+ensureJournal(){
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
@@ -282,14 +282,14 @@ function ensureJournal(){
     systemctlEnableAndStart systemd-journald || exit $ERR_SYSTEMCTL_START_FAIL
 }
 
-function ensurePodSecurityPolicy() {
+ensurePodSecurityPolicy() {
     POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
     if [ -f $POD_SECURITY_POLICY_FILE ]; then
         $KUBECTL create -f $POD_SECURITY_POLICY_FILE
     fi
 }
 
-function ensureK8sControlPlane() {
+ensureK8sControlPlane() {
     if $REBOOTREQUIRED; then
         return
     fi
@@ -304,16 +304,16 @@ function ensureK8sControlPlane() {
     ensurePodSecurityPolicy
 }
 
-function ensureEtcd() {
+ensureEtcd() {
     retrycmd_if_failure 120 5 25 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key ${ETCD_CLIENT_URL}/v2/machines || exit $ERR_ETCD_RUNNING_TIMEOUT
 }
 
-function createKubeManifestDir() {
+createKubeManifestDir() {
     KUBEMANIFESTDIR=/etc/kubernetes/manifests
     mkdir -p $KUBEMANIFESTDIR
 }
 
-function writeKubeConfig() {
+writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
     mkdir -p $KUBECONFIGDIR
@@ -347,7 +347,7 @@ users:
     set -x
 }
 
-function configClusterAutoscalerAddon() {
+configClusterAutoscalerAddon() {
     CLUSTER_AUTOSCALER_ADDON_FILE=/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml
     wait_for_file 1200 1 $CLUSTER_AUTOSCALER_ADDON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
     if [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == true ]]; then
