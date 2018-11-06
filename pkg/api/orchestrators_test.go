@@ -57,7 +57,7 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 			OrchestratorType:    Kubernetes,
 			OrchestratorVersion: deployedVersion,
 		}
-		v := common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(false, false), deployedVersion, false, true)
+		v := getKubernetesAvailableUpgradeVersions(deployedVersion, common.GetAllSupportedKubernetesVersions(false, false))
 		orch, e := GetOrchestratorVersionProfile(csOrch, false)
 		Expect(e).To(BeNil())
 		Expect(len(orch.Upgrades)).To(Equal(len(v)))
@@ -238,4 +238,45 @@ func TestDockerceInfoInfo(t *testing.T) {
 
 	_, e := dockerceInfo(csOrch, false)
 	Expect(e).To(BeNil())
+}
+
+func TestGetKubernetesAvailableUpgradeVersions(t *testing.T) {
+	RegisterTestingT(t)
+	cases := []struct {
+		version          string
+		versions         []string
+		expectedUpgrades []string
+	}{
+		{
+			version:          "1.7.15",
+			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.0-alpha.1"},
+			expectedUpgrades: []string{"1.9.10", "1.9.11"},
+		},
+		{
+			version:          "1.8.14",
+			versions:         []string{"1.7.15", "1.8.14", "1.8.15"},
+			expectedUpgrades: []string{"1.8.15"},
+		},
+		{
+			version:          "1.9.10",
+			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.0-alpha.1"},
+			expectedUpgrades: []string{"1.9.11", "1.10.3", "1.10.4"},
+		},
+		{
+			version:          "1.10.4",
+			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.0-alpha.1"},
+			expectedUpgrades: []string{"1.11.3", "1.11.4"},
+		},
+		{
+			version:          "1.12.2",
+			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.1", "1.12.2"},
+			expectedUpgrades: []string{},
+		},
+	}
+
+	for _, c := range cases {
+		upgrades, err := getKubernetesAvailableUpgradeVersions(c.version, c.versions)
+		Expect(err).To(BeNil())
+		Expect(upgrades).To(Equal(c.expectedUpgrades))
+	}
 }

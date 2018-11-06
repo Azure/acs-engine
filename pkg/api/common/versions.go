@@ -192,6 +192,42 @@ func GetVersionsBetween(versions []string, versionMin, versionMax string, inclus
 	return ret
 }
 
+// GetMinVersion gets the lowest semver version
+// preRelease=true means accept a pre-release version as a min value
+func GetMinVersion(versions []string, preRelease bool) string {
+	if len(versions) < 1 {
+		return ""
+	}
+	lowest, _ := semver.Make("99.99.99")
+	lowestPreRelease, _ := semver.Make("99.99.99-z.9")
+	var preReleaseVersions []semver.Version
+	for _, v := range versions {
+		sv, _ := semver.Make(v)
+		if len(sv.Pre) != 0 {
+			preReleaseVersions = append(preReleaseVersions, sv)
+		} else {
+			if sv.Compare(lowest) == -1 {
+				lowest = sv
+			}
+		}
+	}
+	if preRelease {
+		for _, sv := range preReleaseVersions {
+			if sv.Compare(lowestPreRelease) == -1 {
+				lowestPreRelease = sv
+			}
+		}
+		switch lowestPreRelease.Compare(lowest) {
+		case 1:
+			return lowestPreRelease.String()
+		default:
+			return lowest.String()
+		}
+
+	}
+	return lowest.String()
+}
+
 // GetMaxVersion gets the highest semver version
 // preRelease=true means accept a pre-release version as a max value
 func GetMaxVersion(versions []string, preRelease bool) string {
@@ -381,11 +417,6 @@ func GetLatestPatchVersion(majorMinor string, versionsList []string) (version st
 		}
 	}
 	return version
-}
-
-// GetNextAvailableMinorVersion returns the next supported minor version
-func GetNextAvailableMinorVersion(versions []string, version string) {
-	// TODO
 }
 
 // IsSupportedKubernetesVersion return true if the provided Kubernetes version is supported
