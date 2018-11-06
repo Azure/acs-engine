@@ -198,30 +198,8 @@ func GetMinVersion(versions []string, preRelease bool) string {
 	if len(versions) < 1 {
 		return ""
 	}
-	lowest, _ := semver.Make("99.99.99")
-	lowestPreRelease, _ := semver.Make("99.99.99-z.9")
-	var preReleaseVersions []semver.Version
-	for _, v := range versions {
-		sv, _ := semver.Make(v)
-		if len(sv.Pre) != 0 {
-			preReleaseVersions = append(preReleaseVersions, sv)
-		} else {
-			if sv.LT(lowest) {
-				lowest = sv
-			}
-		}
-	}
-	if preRelease {
-		for _, sv := range preReleaseVersions {
-			if sv.LT(lowestPreRelease) {
-				lowestPreRelease = sv
-			}
-		}
-		if lowestPreRelease.LT(lowest) {
-			return lowestPreRelease.String()
-		}
-	}
-	return lowest.String()
+	semverVersions := getSortedSemverVersions(versions, preRelease)
+	return semverVersions[0].String()
 }
 
 // GetMaxVersion gets the highest semver version
@@ -230,30 +208,20 @@ func GetMaxVersion(versions []string, preRelease bool) string {
 	if len(versions) < 1 {
 		return ""
 	}
-	highest, _ := semver.Make("0.0.0")
-	highestPreRelease, _ := semver.Make("0.0.0-alpha.0")
-	var preReleaseVersions []semver.Version
+	semverVersions := getSortedSemverVersions(versions, preRelease)
+	return semverVersions[len(semverVersions)-1].String()
+}
+
+func getSortedSemverVersions(versions []string, preRelease bool) []semver.Version {
+	var semverVersions []semver.Version
 	for _, v := range versions {
 		sv, _ := semver.Make(v)
-		if len(sv.Pre) != 0 {
-			preReleaseVersions = append(preReleaseVersions, sv)
-		} else {
-			if sv.GT(highest) {
-				highest = sv
-			}
+		if len(sv.Pre) == 0 || preRelease {
+			semverVersions = append(semverVersions, sv)
 		}
 	}
-	if preRelease {
-		for _, sv := range preReleaseVersions {
-			if sv.GT(highestPreRelease) {
-				highestPreRelease = sv
-			}
-		}
-		if highestPreRelease.GT(highest) {
-			return highestPreRelease.String()
-		}
-	}
-	return highest.String()
+	semver.Sort(semverVersions)
+	return semverVersions
 }
 
 // AllKubernetesWindowsSupportedVersions maintain a set of available k8s Windows versions in acs-engine
