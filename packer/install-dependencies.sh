@@ -131,9 +131,9 @@ for TUNNELFRONT_VERSION in ${TUNNELFRONT_VERSIONS}; do
     pullContainerImage "docker" "docker.io/deis/hcp-tunnel-front:${TUNNELFRONT_VERSION}"
 done
 
-KUBE_SVC_REDIRECT_VERSIONS="v1.0.2"
+KUBE_SVC_REDIRECT_VERSIONS="1.0.2"
 for KUBE_SVC_REDIRECT_VERSION in ${KUBE_SVC_REDIRECT_VERSIONS}; do
-    pullContainerImage "docker" "docker.io/deis/kube-svc-redirect:${KUBE_SVC_REDIRECT_VERSION}"
+    pullContainerImage "docker" "docker.io/deis/kube-svc-redirect:v${KUBE_SVC_REDIRECT_VERSION}"
 done
 
 NGINX_VERSIONS="1.13.12-alpine"
