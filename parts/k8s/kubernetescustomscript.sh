@@ -46,6 +46,7 @@ if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
     FULL_INSTALL_REQUIRED=false
     rm -rf /home/packer
+    cleanUpContainerImages
 else
     FULL_INSTALL_REQUIRED=true
 fi
