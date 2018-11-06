@@ -280,37 +280,34 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if IsAzureCNI}}
-    sed -i "s|<img>|{{WrapAsParameter "AzureCNINetworkMonitorImageURL"}}|g" "/etc/kubernetes/addons/azure-cni-networkmonitor.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "AzureCNINetworkMonitorImageURL"}}|g" /etc/kubernetes/addons/azure-cni-networkmonitor.yaml
 {{end}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g; s|<CIDR>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesAddonManagerSpec"}}|g" /etc/kubernetes/manifests/kube-addon-manager.yaml
+    for a in "/etc/kubernetes/manifests/kube-apiserver.yaml /etc/kubernetes/manifests/kube-controller-manager.yaml /etc/kubernetes/manifests/kube-scheduler.yaml"; do
+      sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g" $a    
+    done
+    a=/etc/kubernetes/manifests/kube-apiserver.yaml
+    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" $a
+    sed -i "s|<advertiseAddr>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" $a
+    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.ControllerManagerConfig}}|g" /etc/kubernetes/manifests/kube-controller-manager.yaml
+    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.SchedulerConfig}}|g" /etc/kubernetes/manifests/kube-scheduler.yaml
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesHyperkubeSpec"}}|g; s|<CIDR>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/kube-proxy-daemonset.yaml
+    KUBEDNS=/etc/kubernetes/addons/kube-dns-deployment.yaml
 {{if NeedsKubeDNSWithExecHealthz}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<imgMasq>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<img>|{{WrapAsParameter "kubernetesExecHealthzSpec"}}|g; s|<imgSidecar>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<imgMasq>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<img>|{{WrapAsParameter "kubernetesExecHealthzSpec"}}|g; s|<imgSidecar>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" $KUBEDNS
 {{else if IsKubernetesVersionGe "1.12.0"}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesCoreDNSSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/coredns.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesCoreDNSSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" /etc/kubernetes/addons/coredns.yaml
 {{else}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<imgMasq>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<imgSidecar>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesKubeDNSSpec"}}|g; s|<imgMasq>|{{WrapAsParameter "kubernetesDNSMasqSpec"}}|g; s|<imgSidecar>|{{WrapAsParameter "kubernetesDNSSidecarSpec"}}|g; s|<domain>|{{WrapAsParameter "kubernetesKubeletClusterDomain"}}|g; s|<clustIP>|{{WrapAsParameter "kubeDNSServiceIP"}}|g" $KUBEDNS
 {{end}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesHeapsterSpec"}}|g; s|<imgNanny>|{{WrapAsParameter "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesHeapsterSpec"}}|g; s|<imgNanny>|{{WrapAsParameter "kubernetesAddonResizerSpec"}}|g" /etc/kubernetes/addons/kube-heapster-deployment.yaml
 
 {{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesDashboardCPURequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesDashboardMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesDashboardCPULimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesDashboardMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesDashboardSpec"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesDashboardCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesDashboardMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesDashboardCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesDashboardMemoryLimit"}}|g" /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
-    sed -i "s|<maxHist>|{{WrapAsParameter "kubernetesTillerMaxHistory"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesTillerSpec"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesTillerCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesTillerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesTillerCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesTillerMemoryLimit"}}|g; s|<maxHist>|{{WrapAsParameter "kubernetesTillerMaxHistory"}}|g" /etc/kubernetes/addons/kube-tiller-deployment.yaml
 {{end}}
 
 {{if AdminGroupID }}
@@ -318,27 +315,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesACIConnectorSpec"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<nodeName>|{{WrapAsParameter "kubernetesACIConnectorNodeName"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<vkOS>|{{WrapAsParameter "kubernetesACIConnectorOS"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<vkTaint>|{{WrapAsParameter "kubernetesACIConnectorTaint"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<region>|{{WrapAsParameter "kubernetesACIConnectorRegion"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesACIConnectorCPURequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesACIConnectorMemoryRequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesACIConnectorCPULimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesACIConnectorMemoryLimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesACIConnectorSpec"}}|g; s|<nodeName>|{{WrapAsParameter "kubernetesACIConnectorNodeName"}}|g; s|<vkOS>|{{WrapAsParameter "kubernetesACIConnectorOS"}}|g; s|<vkTaint>|{{WrapAsParameter "kubernetesACIConnectorTaint"}}|g; s|<region>|{{WrapAsParameter "kubernetesACIConnectorRegion"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesACIConnectorCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesACIConnectorMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesACIConnectorCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesACIConnectorMemoryLimit"}}|g" /etc/kubernetes/addons/aci-connector-deployment.yaml
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
-    sed -i "s|<cloud>|{{WrapAsParameter "kubernetesClusterAutoscalerAzureCloud"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesClusterAutoscalerSpec"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesClusterAutoscalerCPULimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesClusterAutoscalerMemoryLimit"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesClusterAutoscalerCPURequests"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesClusterAutoscalerMemoryRequests"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<minNodes>|{{WrapAsParameter "kubernetesClusterAutoscalerMinNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<maxNodes>|{{WrapAsParameter "kubernetesClusterAutoscalerMaxNodes"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
-    sed -i "s|<mie>|{{WrapAsParameter "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" "/etc/kubernetes/addons/cluster-autoscaler-deployment.yaml"
+    sed -i "s|<cloud>|{{WrapAsParameter "kubernetesClusterAutoscalerAzureCloud"}}|g; s|<img>|{{WrapAsParameter "kubernetesClusterAutoscalerSpec"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesClusterAutoscalerCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesClusterAutoscalerMemoryLimit"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesClusterAutoscalerCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesClusterAutoscalerMemoryRequests"}}|g; s|<minNodes>|{{WrapAsParameter "kubernetesClusterAutoscalerMinNodes"}}|g; s|<maxNodes>|{{WrapAsParameter "kubernetesClusterAutoscalerMaxNodes"}}|g; s|<mie>|{{WrapAsParameter "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" /etc/kubernetes/addons/cluster-autoscaler-deployment.yaml
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.LoadBalancerSku "Standard"}}
@@ -346,32 +327,19 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsBlobfuseFlexVolumeEnabled}}
-    sed -i "s|<cpuReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerCPULimit"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml"
+    sed -i "s|<cpuReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerCPURequests"}}|g; s|<memReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerCPULimit"}}|g; s|<memLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit"}}|g" /etc/kubernetes/addons/blobfuse-flexvolume-installer.yaml
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsSMBFlexVolumeEnabled}}
-    sed -i "s|<cpuReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerCPULimit"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/smb-flexvolume-installer.yaml"
+    sed -i "s|<cpuReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerCPURequests"}}|g; s|<memReq>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerCPULimit"}}|g; s|<memLim>|{{WrapAsParameterObject "flexVolumeDriverConfig" "kubernetesSMBFlexVolumeInstallerMemoryLimit"}}|g" /etc/kubernetes/addons/smb-flexvolume-installer.yaml
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerCPULimit"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit"}}|g" "/etc/kubernetes/addons/keyvault-flexvolume-installer.yaml"
+    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit"}}|g" /etc/kubernetes/addons/keyvault-flexvolume-installer.yaml
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesReschedulerCPURequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesReschedulerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesReschedulerCPULimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesReschedulerSpec"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesReschedulerCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesReschedulerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesReschedulerCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesReschedulerMemoryLimit"}}|g" /etc/kubernetes/addons/kube-rescheduler-deployment.yaml
 {{end}}
 
 {{if .OrchestratorProfile.IsMetricsServerEnabled}}
@@ -379,75 +347,51 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if IsNVIDIADevicePluginEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesNVIDIADevicePluginSpec"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesNVIDIADevicePluginCPURequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesNVIDIADevicePluginMemoryRequests"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesNVIDIADevicePluginCPULimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesNVIDIADevicePluginMemoryLimit"}}|g" "/etc/kubernetes/addons/nvidia-device-plugin.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesNVIDIADevicePluginSpec"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesNVIDIADevicePluginCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesNVIDIADevicePluginMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesNVIDIADevicePluginCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesNVIDIADevicePluginMemoryLimit"}}|g" /etc/kubernetes/addons/nvidia-device-plugin.yaml
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}
-    sed -i "s|<etcdEncryptionSecret>|\"{{WrapAsParameter "etcdEncryptionKey"}}\"|g" "/etc/kubernetes/encryption-config.yaml"
+    sed -i "s|<etcdEncryptionSecret>|\"{{WrapAsParameter "etcdEncryptionKey"}}\"|g" /etc/kubernetes/encryption-config.yaml
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-    sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
+    sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/calico-daemonset.yaml
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPlugin "flannel"}}
-    sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/flannel-daemonset.yaml"
+    sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/flannel-daemonset.yaml
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
+  a=/etc/kubernetes/addons/cilium-daemonset.yaml
   {{if IsMasterVirtualMachineScaleSets}}
-    sed -i "s|<ETCD_URL>|"https://$PRIVATE_IP:$ETCD_CLIENT_PORT"|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_URL>|"https://$PRIVATE_IP:$ETCD_CLIENT_PORT"|g" $a
   {{else}}
-    sed -i "s|<ETCD_URL>|{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_URL>|{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}|g" $a
   {{end}}
-    sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
-    sed -i "s|<ETCD_CLIENT_CERT>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g; s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g; s|<ETCD_CLIENT_CERT>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)|g" $a
 {{end}}
 {{if UseCloudControllerManager }}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
-    sed -i "s|<config>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
-{{end}}
-    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.ControllerManagerConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
-    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|<args>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.SchedulerConfig}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
-    sed -i "s|<advertiseAddr>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<img>|{{WrapAsParameter "kubernetesCcmImageSpec"}}|g" /etc/kubernetes/manifests/cloud-controller-manager.yaml
+    sed -i "s|<config>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig}}|g" /etc/kubernetes/manifests/cloud-controller-manager.yaml
+{{end}}    
 {{if not EnablePodSecurityPolicy}}
-    sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+    sed -i "s|apparmor_parser|d|g" /etc/systemd/system/kubelet.service
 {{end}}
 {{if EnableEncryptionWithExternalKms}}
-    sed -i "s|# Required|Requires=kms.service|g" "/etc/systemd/system/kubelet.service"
+    sed -i "s|# Required|Requires=kms.service|g" /etc/systemd/system/kubelet.service
 {{end}}
 {{if HasCustomSearchDomain}}
-    sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
-    sed -i "s|<searchDomainRealmUser>|{{WrapAsParameter "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
-    sed -i "s|<searchDomainRealmPassword>|{{WrapAsParameter "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
+    sed -i "s|<searchDomainName>|{{WrapAsParameter "searchDomainName"}}|g; s|<searchDomainRealmUser>|{{WrapAsParameter "searchDomainRealmUser"}}|g; s|<searchDomainRealmPassword>|{{WrapAsParameter "searchDomainRealmPassword"}}|g" /opt/azure/containers/setup-custom-search-domains.sh
 {{end}}
 {{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
-    sed -i "s|<ver>|{{WrapAsParameter "omsAgentVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<dockerVer>|{{WrapAsParameter "omsAgentDockerProviderVersion"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<img>|{{WrapAsParameter "omsAgentImage"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<wsid>|{{WrapAsParameter "omsAgentWorkspaceGuid"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<wsKey>|{{WrapAsParameter "omsAgentWorkspaceKey"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesOMSAgentCPURequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<memReq>|{{WrapAsParameter "kubernetesOMSAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesOMSAgentCPULimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesOMSAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/omsagent-daemonset.yaml"
+    sed -i "s|<ver>|{{WrapAsParameter "omsAgentVersion"}}|g; s|<dockerVer>|{{WrapAsParameter "omsAgentDockerProviderVersion"}}|g; s|<img>|{{WrapAsParameter "omsAgentImage"}}|g; s|<wsid>|{{WrapAsParameter "omsAgentWorkspaceGuid"}}|g; s|<wsKey>|{{WrapAsParameter "omsAgentWorkspaceKey"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesOMSAgentCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesOMSAgentMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesOMSAgentCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesOMSAgentMemoryLimit"}}|g" /etc/kubernetes/addons/omsagent-daemonset.yaml
 {{end}}
-
-    sed -i "s|<nonmasqCIDR>|{{WrapAsParameter "kubernetesNonMasqueradeCidr"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<cpuReq>|{{WrapAsParameter "kubernetesIPMasqAgentCPURequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<<memReq>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryRequests"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<cpuLim>|{{WrapAsParameter "kubernetesIPMasqAgentCPULimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<memLim>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryLimit"}}|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    a=/etc/kubernetes/addons/ip-masq-agent.yaml
+    sed -i "s|<nonmasqCIDR>|{{WrapAsParameter "kubernetesNonMasqueradeCidr"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesIPMasqAgentCPURequests"}}|g; s|<<memReq>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesIPMasqAgentCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesIPMasqAgentMemoryLimit"}}|g" $a
 {{if IsAzureCNI}}
-    sed -i "s|<nonmasqCNIIP>|168.63.129.16/32|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<masqLink>|true|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "s|<nonmasqCNIIP>|168.63.129.16/32|g; s|<masqLink>|true|g" $a
 {{else}}
-    sed -i "\|<nonmasqCNIIP>|d" "/etc/kubernetes/addons/ip-masq-agent.yaml"
-    sed -i "s|<masqLink>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
+    sed -i "\|<nonmasqCNIIP>|d" $a
+    sed -i "s|<masqLink>|false|g" $a
 {{end}}
 
 {{if IsMooncake}}
