@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -204,9 +203,7 @@ func getKubernetesAvailableUpgradeVersions(orchestratorVersion string, supported
 	}
 	versionsGT := common.GetVersionsGt(supportedVersions, orchestratorVersion, false, true)
 	if len(versionsGT) != 0 {
-		minVersion := common.GetMinVersion(versionsGT, true)
-		fmt.Print(minVersion)
-		min, err := semver.Make(minVersion)
+		min, err := semver.Make(common.GetMinVersion(versionsGT, true))
 		if err != nil {
 			return nil, err
 		}
