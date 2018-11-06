@@ -177,7 +177,7 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		profile.OrchestratorProfile.OrchestratorVersion)
 
 	// add addons
-	str = substituteAddonConfigString(str,
+	str = substituteConfigString(str,
 		kubernetesAddonSettingsInit(profile),
 		"k8s/addons",
 		"/etc/kubernetes/addons",
@@ -371,7 +371,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"UseAksExtension": func() bool {
 			cloudSpecConfig := cs.GetCloudSpecConfig()
-			return cloudSpecConfig.CloudName == azurePublicCloud
+			return cloudSpecConfig.CloudName == api.AzurePublicCloud
+		},
+		"IsMooncake": func() bool {
+			cloudSpecConfig := cs.GetCloudSpecConfig()
+			return cloudSpecConfig.CloudName == api.AzureChinaCloud
 		},
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
@@ -416,6 +420,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"IsHostedBootstrap": func() bool {
+			return false
+		},
+		"CSERunInBackground": func() bool {
+			if cs.Properties.FeatureFlags != nil {
+				return cs.Properties.FeatureFlags.EnableCSERunInBackground
+			}
 			return false
 		},
 		"GetDCOSBootstrapCustomData": func() string {
@@ -551,10 +561,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataYaml, profile)
-			return str
-		},
-		"GetKubernetesMasterCustomDataVMSS": func(profile *api.Properties) string {
-			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataVMSSYaml, profile)
 			return str
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {

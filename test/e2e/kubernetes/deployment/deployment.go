@@ -81,6 +81,16 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 	return d, nil
 }
 
+// CreateLinuxDeployIfNotExist first checks if a deployment already exists, and return it if so
+// If not, we call CreateLinuxDeploy
+func CreateLinuxDeployIfNotExist(image, name, namespace, miscOpts string) (*Deployment, error) {
+	deployment, err := Get(name, namespace)
+	if err != nil {
+		return CreateLinuxDeploy(image, name, namespace, miscOpts)
+	}
+	return deployment, nil
+}
+
 // RunLinuxDeploy will create a deployment that runs a bash command in a pod
 // --overrides=' "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
@@ -195,8 +205,8 @@ func (d *Deployment) Pods() ([]pod.Pod, error) {
 	return pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
 }
 
-// WaitForReplicas waits for a minimum of n pod replicas
-func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]pod.Pod, error) {
+// WaitForReplicas waits for a pod replica count between min and max
+func (d *Deployment) WaitForReplicas(min, max int, sleep, duration time.Duration) ([]pod.Pod, error) {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -206,18 +216,27 @@ func (d *Deployment) WaitForReplicas(n int, sleep, duration time.Duration) ([]po
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for %d Pod replicas from Deployment %s", duration.String(), n, d.Metadata.Name)
+				errCh <- errors.Errorf("Timeout exceeded (%s) while waiting for minimum %d and maximum %d Pod replicas from Deployment %s", duration.String(), min, max, d.Metadata.Name)
 			default:
 				pods, err := pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
 				if err != nil {
 					errCh <- err
 					return
 				}
-				if len(pods) >= n {
-					readyCh <- true
+				if min == -1 {
+					if len(pods) <= max {
+						readyCh <- true
+					}
+				} else if max == -1 {
+					if len(pods) >= min {
+						readyCh <- true
+					}
 				} else {
-					time.Sleep(sleep)
+					if len(pods) >= min && len(pods) <= max {
+						readyCh <- true
+					}
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()

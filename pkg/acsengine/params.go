@@ -171,7 +171,7 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		addValue(parametersMap, "dcosClusterPackageListID", dcosClusterPackageListID)
 		addValue(parametersMap, "dcosProviderPackageID", dcosProviderPackageID)
 
-		if properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
+		if properties.OrchestratorProfile.DcosConfig != nil && properties.OrchestratorProfile.DcosConfig.BootstrapProfile != nil {
 			addValue(parametersMap, "bootstrapStaticIP", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.StaticIP)
 			addValue(parametersMap, "bootstrapVMSize", properties.OrchestratorProfile.DcosConfig.BootstrapProfile.VMSize)
 		}
@@ -226,18 +226,9 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		if properties.WindowsProfile.WindowsSku != "" {
 			addValue(parametersMap, "agentWindowsSku", properties.WindowsProfile.WindowsSku)
 		}
-		if properties.OrchestratorProfile.IsKubernetes() || properties.OrchestratorProfile.IsOpenShift() {
-			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
-			kubeBinariesSASURL := properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL
-			if kubeBinariesSASURL == "" {
-				kubeBinariesSASURL = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + api.K8sComponentsByVersionMap[k8sVersion]["windowszip"]
-			}
 
-			addValue(parametersMap, "kubeBinariesSASURL", kubeBinariesSASURL)
-			addValue(parametersMap, "windowsPackageSASURLBase", cloudSpecConfig.KubernetesSpecConfig.WindowsPackageSASURLBase)
-			addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
-			addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
-		}
+		addValue(parametersMap, "windowsDockerVersion", properties.WindowsProfile.GetWindowsDockerVersion())
+
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
 			for j, c := range s.VaultCertificates {

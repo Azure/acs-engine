@@ -399,6 +399,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate b
 		api.AzProfile = &AzProfile{}
 		convertVLabsAZProfile(vlabs.AzProfile, api.AzProfile)
 	}
+
+	if vlabs.FeatureFlags != nil {
+		api.FeatureFlags = &FeatureFlags{}
+		convertVLabsFeatureFlags(vlabs.FeatureFlags, api.FeatureFlags)
+	}
 }
 
 func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
@@ -406,6 +411,10 @@ func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
 	api.ResourceGroup = vlabs.ResourceGroup
 	api.SubscriptionID = vlabs.SubscriptionID
 	api.TenantID = vlabs.TenantID
+}
+
+func convertVLabsFeatureFlags(vlabs *vlabs.FeatureFlags, api *FeatureFlags) {
+	api.EnableCSERunInBackground = vlabs.EnableCSERunInBackground
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
@@ -520,6 +529,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 	api.WindowsPublisher = vlabs.WindowsPublisher
 	api.WindowsOffer = vlabs.WindowsOffer
 	api.WindowsSku = vlabs.WindowsSku
+	api.WindowsDockerVersion = vlabs.WindowsDockerVersion
 	api.Secrets = []KeyVaultSecrets{}
 	for _, s := range vlabs.Secrets {
 		secret := &KeyVaultSecrets{}
@@ -691,10 +701,10 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.UserAssignedID = vlabs.UserAssignedID
 	api.UserAssignedClientID = vlabs.UserAssignedClientID
 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
-	api.DockerEngineVersion = vlabs.DockerEngineVersion
 	api.CustomCcmImage = vlabs.CustomCcmImage
 	api.UseCloudControllerManager = vlabs.UseCloudControllerManager
 	api.CustomWindowsPackageURL = vlabs.CustomWindowsPackageURL
+	api.WindowsNodeBinariesURL = vlabs.WindowsNodeBinariesURL
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
 	api.LoadBalancerSku = vlabs.LoadBalancerSku
 	api.ExcludeMasterFromStandardLB = vlabs.ExcludeMasterFromStandardLB
@@ -710,6 +720,8 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	api.EtcdEncryptionKey = vlabs.EtcdEncryptionKey
 	api.AzureCNIVersion = vlabs.AzureCNIVersion
+	api.AzureCNIURLLinux = vlabs.AzureCNIURLLinux
+	api.AzureCNIURLWindows = vlabs.AzureCNIURLWindows
 	convertAddonsToAPI(vlabs, api)
 	convertKubeletConfigToAPI(vlabs, api)
 	convertControllerManagerConfigToAPI(vlabs, api)
@@ -717,6 +729,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	convertAPIServerConfigToAPI(vlabs, api)
 	convertSchedulerConfigToAPI(vlabs, api)
 	convertPrivateClusterToAPI(vlabs, api)
+	convertPodSecurityPolicyConfigToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -819,6 +832,13 @@ func convertSchedulerConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig)
 	a.SchedulerConfig = map[string]string{}
 	for key, val := range v.SchedulerConfig {
 		a.SchedulerConfig[key] = val
+	}
+}
+
+func convertPodSecurityPolicyConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.PodSecurityPolicyConfig = map[string]string{}
+	for key, val := range v.PodSecurityPolicyConfig {
+		a.PodSecurityPolicyConfig[key] = val
 	}
 }
 

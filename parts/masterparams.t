@@ -40,6 +40,13 @@
       "type": "string"
     },
     {{end}}
+    "masterSubnet": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the subnet of the master node(s)"
+      },
+      "type": "string"
+    },
   {{else}}
     "masterSubnet": {
       "defaultValue": "{{.MasterProfile.Subnet}}",

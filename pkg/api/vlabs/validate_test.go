@@ -1148,6 +1148,28 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	}
 }
 
+func TestAgentPoolProfileDistro(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Distro: AKS,
+			VMSize: "Standard_NC6",
+		},
+		{
+			Distro: AKSDockerEngine,
+			VMSize: "Standard_NC6",
+		},
+	}
+	if err := p.AgentPoolProfiles[0].validateKubernetesDistro(); err == nil {
+		t.Errorf("should error on %s Distro with N Series VM SKU", AKS)
+	}
+	if err := p.AgentPoolProfiles[1].validateKubernetesDistro(); err != nil {
+		t.Errorf("should not error on %s Distro with N Series VM SKU", AKSDockerEngine)
+	}
+}
+
 func Test_Properties_ValidateAddons(t *testing.T) {
 	p := &Properties{}
 	p.OrchestratorProfile = &OrchestratorProfile{}
@@ -1425,6 +1447,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 			name:                "use managed identity with master vmss",
 			orchestratorRelease: "1.11",
 			useManagedIdentity:  true,
+			userAssignedID:      "utacsenginetestid",
 			masterProfile: MasterProfile{
 				DNSPrefix:           "dummy",
 				Count:               3,
@@ -1473,6 +1496,25 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 				},
 			},
 			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+		{
+			name:                "user master vmss with empty user assigned ID",
+			orchestratorRelease: "1.12",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"",
 		},
 	}
 	for _, test := range tests {

@@ -1,14 +1,3 @@
-{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
-  {
-    "apiVersion": "[variables('apiVersionAuthorization')]",
-    "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
-    "type": "Microsoft.Authorization/roleAssignments",
-    "properties": {
-      "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-      "principalId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]"
-    }
-  },
-{{end}}
 {{if EnableEncryptionWithExternalKms}}
   {
     "type": "Microsoft.Storage/storageAccounts",
@@ -24,11 +13,13 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
-    {{ if UseManagedIdentity}}
-    "dependsOn": 
+    {{if UseManagedIdentity}}
+    "dependsOn":
     [
-      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]",
-      "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity')))]",
+      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
+      {{if UserAssignedIDEnabled}}
+      ,"[variables('userAssignedIDReference')]"
+      {{end}}
     ],
     {{end}}
     "properties": {
@@ -36,35 +27,22 @@
       "enabledForDiskEncryption": "false",
       "enabledForTemplateDeployment": "false",
       "tenantId": "[variables('tenantID')]",
-  {{if UseManagedIdentity}}
     "accessPolicies": 
       [
         {
-          "objectId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]",
-          "permissions": {
-            "keys": [
-              "create",
-              "encrypt",
-              "decrypt",
-              "get",
-              "list"
-            ]
-          },
-          "tenantId": "[variables('tenantID')]"
-        },
-      ],
-  {{else}}
-      "accessPolicies": 
-      [
-        {
           "tenantId": "[variables('tenantID')]",
+          {{if UseManagedIdentity}}
+          {{if UserAssignedIDEnabled}}
+          "objectId": "[reference(variables('userAssignedIDReference'), variables('apiVersionManagedIdentity')).principalId]",
+          {{end}}
+          {{else}}
           "objectId": "[parameters('servicePrincipalObjectId')]",
+          {{end}}
           "permissions": {
             "keys": ["create", "encrypt", "decrypt", "get", "list"]
           }
         }
       ],
-  {{end}}
       "sku": {
         "name": "[parameters('clusterKeyVaultSku')]",
         "family": "A"
@@ -193,7 +171,7 @@
     "dnsSettings": {
       "domainNameLabel": "[variables('masterFqdnPrefix')]"
     },
-    {{ if .MasterProfile.HasAvailabilityZones}}
+    {{ if eq LoadBalancerSku "Standard"}}
     "publicIPAllocationMethod": "Static"
     {{else}}
     "publicIPAllocationMethod": "Dynamic"
@@ -287,9 +265,9 @@
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"
     {{else}}
-      "[variables('vnetID')]",
-      "[variables('masterLbID')]"
+      "[variables('vnetID')]"
     {{end}}
+      ,"[variables('masterLbID')]"
     ],
     "tags":
     {
@@ -309,12 +287,8 @@
     "identity": {
       "type": "userAssigned",
       "userAssignedIdentities": {
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+        "[variables('userAssignedIDReference')]":{}
       }
-    },
-    {{else}}
-    "identity": {
-      "type": "systemAssigned"
     },
     {{end}}
     {{end}}
@@ -386,7 +360,7 @@
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[concat(variables('masterVMNamePrefix'), 'vmss')]",
-          {{GetKubernetesMasterCustomDataVMSS .}}
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
@@ -457,7 +431,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                     "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+                  "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $retries); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done }; ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 75 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 || retrycmd_if_failure 75 1 3 nc -vz 8.8.8.8 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL; for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
             }

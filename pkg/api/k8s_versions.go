@@ -7,6 +7,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
+// k8sComponentVersions defines "best known-working" component versions for each minor version of k8s
+// Don't delete these hash table keys as they are consumed independently by AKS!
 var k8sComponentVersions = map[string]map[string]string{
 	"1.13": {
 		"dockerEngine":                     "1.13.*",
@@ -75,6 +77,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.11": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.10.0",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -106,6 +109,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.10": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.10.0",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.1",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -137,6 +141,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.9": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.10.0",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.1",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -318,7 +323,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.13"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.13"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.13"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.13"]["addon-resizer"],
@@ -355,7 +359,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.12"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.12"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.12"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.12"]["addon-resizer"],
@@ -392,7 +395,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.11"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.11"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.11"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.11"]["addon-resizer"],
@@ -428,7 +430,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.10"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.10"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.10"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.10"]["addon-resizer"],
@@ -464,7 +465,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.9"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.9"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.9"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.9"]["addon-resizer"],
@@ -499,7 +499,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 			"hyperkube":                        "hyperkube-amd64:v" + version,
 			"ccm":                              "cloud-controller-manager-amd64:v" + version,
 			"windowszip":                       "v" + version + "-1int.zip",
-			"dockerEngineVersion":              k8sComponentVersions["1.8"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.8"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.8"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.8"]["addon-resizer"],
@@ -530,7 +529,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 	case "1.7":
 		ret = map[string]string{
 			"hyperkube":                        "hyperkube-amd64:v" + version,
-			"dockerEngineVersion":              k8sComponentVersions["1.7"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.7"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.7"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.7"]["addon-resizer"],
@@ -561,7 +559,6 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 	case "1.6":
 		ret = map[string]string{
 			"hyperkube":                        "hyperkube-amd64:v" + version,
-			"dockerEngineVersion":              k8sComponentVersions["1.6"]["dockerEngine"],
 			DefaultDashboardAddonName:          k8sComponentVersions["1.6"]["dashboard"],
 			"exechealthz":                      k8sComponentVersions["1.6"]["exechealthz"],
 			"addonresizer":                     k8sComponentVersions["1.6"]["addon-resizer"],

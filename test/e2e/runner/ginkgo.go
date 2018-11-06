@@ -34,12 +34,7 @@ func BuildGinkgoRunner(cfg *config.Config, pt *metrics.Point) (*Ginkgo, error) {
 func (g *Ginkgo) Run() error {
 	g.Point.SetTestStart()
 	testDir := fmt.Sprintf("test/e2e/%s", g.Config.Orchestrator)
-	var cmd *exec.Cmd
-	if g.Config.GinkgoFocus != "" {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", "--focus", g.Config.GinkgoFocus, testDir)
-	} else {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", testDir)
-	}
+	var cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", "--focus", g.Config.GinkgoFocus, "--skip", g.Config.GinkgoSkip, testDir)
 	util.PrintCommand(cmd)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -362,3 +362,29 @@ func TestAPIServerConfigDefaultAdmissionControls(t *testing.T) {
 		t.Fatalf("Admission control key '%s' not set in API server config for version %s", enableAdmissionPluginsKey, version)
 	}
 }
+
+func TestAPIServerConfigEnableProfiling(t *testing.T) {
+	// Test
+	// "apiServerConfig": {
+	// 	"--profiling": "true"
+	// },
+	cs := CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig = map[string]string{
+		"--profiling": "true",
+	}
+	cs.setAPIServerConfig()
+	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--profiling"] != "true" {
+		t.Fatalf("got unexpected '--profiling' API server config value for \"--profiling\": \"true\": %s",
+			a["--profiling"])
+	}
+
+	// Test default
+	cs = CreateMockContainerService("testcluster", defaultTestClusterVer, 3, 2, false)
+	cs.setAPIServerConfig()
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--profiling"] != DefaultKubernetesAPIServerEnableProfiling {
+		t.Fatalf("got unexpected default value for '--profiling' API server config: %s",
+			a["--profiling"])
+	}
+}

@@ -24,10 +24,11 @@ const (
 
 // the LinuxDistros supported by vlabs
 const (
-	Ubuntu Distro = "ubuntu"
-	RHEL   Distro = "rhel"
-	CoreOS Distro = "coreos"
-	AKS    Distro = "aks"
+	Ubuntu          Distro = "ubuntu"
+	RHEL            Distro = "rhel"
+	CoreOS          Distro = "coreos"
+	AKS             Distro = "aks"
+	AKSDockerEngine Distro = "aks-docker-engine"
 	// Supported distros by OpenShift
 	OpenShift39RHEL Distro = "openshift39_rhel"
 	OpenShiftCentOS Distro = "openshift39_centos"
@@ -42,6 +43,8 @@ const (
 	DockerCEVersion = "17.03.*"
 	// DockerCEDockerComposeVersion is the Docker Compose version
 	DockerCEDockerComposeVersion = "1.14.0"
+	// KubernetesWindowsDockerVersion is the default version for docker on Windows nodes in kubernetes
+	KubernetesWindowsDockerVersion = "17.06.2-ee-16"
 )
 
 // validation values
@@ -365,6 +368,12 @@ const (
 	DefaultKubernetesMaxPodsKubenet = "110"
 	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
 	DefaultKubernetesMaxPodsAzureCNI = "30"
+	// DefaultKubernetesAPIServerEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesAPIServerEnableProfiling = "false"
+	// DefaultKubernetesCtrMgrEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesCtrMgrEnableProfiling = "false"
+	// DefaultKubernetesSchedulerEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesSchedulerEnableProfiling = "false"
 )
 
 const (
@@ -373,8 +382,10 @@ const (
 )
 
 const (
-	azurePublicCloud       = "AzurePublicCloud"
-	azureChinaCloud        = "AzureChinaCloud"
+	// AzurePublicCloud is a const string reference identifier for public cloud
+	AzurePublicCloud = "AzurePublicCloud"
+	// AzureChinaCloud is a const string reference identifier for china cloud
+	AzureChinaCloud        = "AzureChinaCloud"
 	azureGermanCloud       = "AzureGermanCloud"
 	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )

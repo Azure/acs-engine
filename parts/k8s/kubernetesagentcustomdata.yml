@@ -8,19 +8,12 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-- path: "/etc/ssh/sshd_config"
-  permissions: "0644"
+- path: "/opt/azure/containers/provision.sh"
+  permissions: "0744"
   encoding: gzip
   owner: "root"
   content: !!binary |
-    {{WrapAsVariable "sshdConfig"}}
-
-- path: "/etc/systemd/system.conf"
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    {{WrapAsVariable "systemConf"}}
+    {{WrapAsVariable "provisionScript"}}
 
 - path: "/opt/azure/containers/provision_installs.sh"
   permissions: "0744"
@@ -35,6 +28,20 @@ write_files:
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "provisionConfigs"}}
+
+- path: "/etc/ssh/sshd_config"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "sshdConfig"}}
+
+- path: "/etc/systemd/system.conf"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "systemConf"}}
 
 - path: "/usr/local/bin/health-monitor.sh"
   permissions: "0544"
@@ -100,13 +107,14 @@ write_files:
     [Service]
     MountFlags=shared
     {{end}}
+
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -226,13 +234,6 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<searchDomainRealmUser>|{{WrapAsParameter "searchDomainRealmUser"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
     sed -i "s|<searchDomainRealmPassword>|{{WrapAsParameter "searchDomainRealmPassword"}}|g" "/opt/azure/containers/setup-custom-search-domains.sh"
 {{end}}
-
-- path: "/opt/azure/containers/provision.sh"
-  permissions: "0744"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    {{WrapAsVariable "provisionScript"}}
 
 {{if .IsCoreOS}}
 - path: "/opt/azure/containers/provision-setup.sh"
