@@ -169,7 +169,7 @@ func (cs *ContainerService) setAddonsConfig() {
 		Containers: []KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "microsoft/oms:containerinventory-cifeature-test-2",
+				Image:          "microsoft/oms:containerinventory-cifeature-test-3",
 				CPURequests:    "50m",
 				MemoryRequests: "200Mi",
 				CPULimits:      "150m",
