@@ -255,7 +255,7 @@ func TestGetKubernetesAvailableUpgradeVersions(t *testing.T) {
 		{
 			version:          "1.8.14",
 			versions:         []string{"1.7.15", "1.8.14", "1.8.15", "1.9.10", "1.9.11", "1.10.3", "1.10.4"},
-			expectedUpgrades: []string{"1.8.15"},
+			expectedUpgrades: []string{"1.8.15", "1.9.10", "1.9.11"},
 		},
 		{
 			version:          "1.8.14",
@@ -271,6 +271,11 @@ func TestGetKubernetesAvailableUpgradeVersions(t *testing.T) {
 			version:          "1.10.4",
 			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.0-alpha.1"},
 			expectedUpgrades: []string{"1.11.3", "1.11.4"},
+		},
+		{
+			version:          "1.12.1",
+			versions:         []string{"1.9.10", "1.9.11", "1.10.3", "1.10.4", "1.11.3", "1.11.4", "1.12.1", "1.12.2"},
+			expectedUpgrades: []string{"1.12.2"},
 		},
 		{
 			version:          "1.12.2",
