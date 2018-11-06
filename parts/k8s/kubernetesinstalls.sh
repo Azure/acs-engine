@@ -6,11 +6,11 @@ CNI_CONFIG_DIR="/etc/cni/net.d"
 CNI_BIN_DIR="/opt/cni/bin"
 CNI_DOWNLOADS_DIR="/opt/cni/downloads"
 
-function removeEtcd() {
+removeEtcd() {
     rm -rf /usr/bin/etcd &
 }
 
-function installEtcd() {
+installEtcd() {
     CURRENT_VERSION=$(etcd --version | grep "etcd Version" | cut -d ":" -f 2 | tr -d '[:space:]')
     if [[ "$CURRENT_VERSION" == "${ETCD_VERSION}" ]]; then
         echo "etcd version ${ETCD_VERSION} is already installed, skipping download"
@@ -21,14 +21,14 @@ function installEtcd() {
     fi
 }
 
-function installDeps() {
+installDeps() {
     retrycmd_if_failure_no_stats 120 5 25 curl -fsSL https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb > /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT
     retrycmd_if_failure 60 5 10 dpkg -i /tmp/packages-microsoft-prod.deb || exit $ERR_MS_PROD_DEB_PKG_ADD_FAIL
     apt_get_update || exit $ERR_APT_UPDATE_TIMEOUT
     apt_get_install 30 1 600 apt-transport-https blobfuse ca-certificates ceph-common cgroup-lite cifs-utils conntrack ebtables ethtool fuse git glusterfs-client init-system-helpers iproute2 ipset iptables jq mount nfs-common pigz socat util-linux xz-utils zip || exit $ERR_APT_INSTALL_TIMEOUT
 }
 
-function installGPUDrivers() {
+installGPUDrivers() {
     rmmod nouveau
     echo blacklist nouveau >> /etc/modprobe.d/blacklist.conf
     retrycmd_if_failure_no_stats 120 5 25 update-initramfs -u || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
@@ -49,7 +49,7 @@ function installGPUDrivers() {
     retrycmd_if_failure 120 5 25 mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=${GPU_DEST}/lib64,workdir=${GPU_DEST}/overlay-workdir none /usr/lib/x86_64-linux-gnu || exit $ERR_GPU_DRIVERS_INSTALL_TIMEOUT
 }
 
-function installContainerRuntime() {
+installContainerRuntime() {
     if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
         installMoby
     elif [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
@@ -60,7 +60,7 @@ function installContainerRuntime() {
     fi
 }
 
-function installMoby() {
+installMoby() {
     dockerd --version
     if [ $? -eq 0 ]; then
         echo "dockerd is already installed, skipping download"
@@ -74,7 +74,7 @@ function installMoby() {
     fi
 }
 
-function installKataContainersRuntime() {
+installKataContainersRuntime() {
     # TODO incorporate this into packer CI so that it is pre-baked into the VHD image
     echo "Adding Kata Containers repository key..."
     KATA_RELEASE_KEY_TMP=/tmp/kata-containers-release.key
@@ -89,7 +89,7 @@ function installKataContainersRuntime() {
     apt_get_install 120 5 25 kata-runtime || exit $ERR_KATA_INSTALL_TIMEOUT
 }
 
-function installClearContainersRuntime() {
+installClearContainersRuntime() {
     cc-runtime --version
     if [ $? -eq 0 ]; then
         echo "cc-runtime is already installed, skipping download"
@@ -111,7 +111,7 @@ function installClearContainersRuntime() {
     fi
 }
 
-function installNetworkPlugin() {
+installNetworkPlugin() {
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
         installAzureCNI
     fi
@@ -119,19 +119,19 @@ function installNetworkPlugin() {
     rm -rf $CNI_DOWNLOADS_DIR &
 }
 
-function downloadCNI() {
+downloadCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
     CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
     retrycmd_get_tarball 120 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
-function downloadAzureCNI() {
+downloadAzureCNI() {
     mkdir -p $CNI_DOWNLOADS_DIR
     CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
     retrycmd_get_tarball 120 5 "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
 }
 
-function installCNI() {
+installCNI() {
     CNI_TGZ_TMP=$(echo ${CNI_PLUGINS_URL} | cut -d "/" -f 5)
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadCNI
@@ -142,7 +142,7 @@ function installCNI() {
     chmod -R 755 $CNI_BIN_DIR
 }
 
-function installAzureCNI() {
+installAzureCNI() {
     CNI_TGZ_TMP=$(echo ${VNET_CNI_PLUGINS_URL} | cut -d "/" -f 5)
     if [[ ! -f "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" ]]; then
         downloadAzureCNI
@@ -154,7 +154,7 @@ function installAzureCNI() {
     tar -xzf "$CNI_DOWNLOADS_DIR/${CNI_TGZ_TMP}" -C $CNI_BIN_DIR
 }
 
-function installContainerd() {
+installContainerd() {
     containerd --version
     if [ $? -eq 0 ]; then
         echo "containerd is already installed, skipping download"
@@ -170,12 +170,12 @@ function installContainerd() {
     fi
 }
 
-function installImg() {
+installImg() {
     img_filepath=/usr/local/bin/img
     retrycmd_get_executable 120 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function extractHyperkube() {
+extractHyperkube() {
     CLI_TOOL=$1
     path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
     mkdir -p "$path"
@@ -196,7 +196,7 @@ function extractHyperkube() {
     fi
 }
 
-function installKubeletAndKubectl() {
+installKubeletAndKubectl() {
     if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
         if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
             extractHyperkube "docker"
@@ -211,13 +211,13 @@ function installKubeletAndKubectl() {
     rm -rf /usr/local/bin/kubelet-* /usr/local/bin/kubectl-* /home/hyperkube-downloads &
 }
 
-function pullContainerImage() {
+pullContainerImage() {
     CLI_TOOL=$1
     DOCKER_IMAGE_URL=$2
     retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function cleanUpContainerImages() {
+cleanUpContainerImages() {
     // TODO remove all unused container images at runtime
     docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'hyperkube') &
     docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'cloud-controller-manager') &

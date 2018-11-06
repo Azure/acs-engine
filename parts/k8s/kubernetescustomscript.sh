@@ -46,11 +46,12 @@ if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
     FULL_INSTALL_REQUIRED=false
     rm -rf /home/packer
+    cleanUpContainerImages
 else
     FULL_INSTALL_REQUIRED=true
 fi
 
-function holdWALinuxAgent() {
+holdWALinuxAgent() {
     if [[ $OS == $UBUNTU_OS_NAME ]]; then
         wait_for_apt_locks
         retrycmd_if_failure 120 5 25 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
@@ -113,7 +114,6 @@ fi
 
 ensureKubelet
 ensureJournal
-
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
