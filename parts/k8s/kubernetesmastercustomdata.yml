@@ -450,6 +450,12 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<masqLinkLocalValue>|false|g" "/etc/kubernetes/addons/ip-masq-agent.yaml"
 {{end}}
 
+{{if IsMooncake}}
+    #`k8s.gcr.io` would redirect to `gcr.io/google-containers`, so we replace with `gcr.azk8s.cn/google-containers` here and it must be in the first order.
+    sed -i "s/k8s.gcr.io/gcr.azk8s.cn\/google-containers/g" /etc/kubernetes/addons/*.yaml
+    sed -i "s/gcr.io/gcr.azk8s.cn/g" /etc/kubernetes/addons/*.yaml
+{{end}}
+
 - path: "/opt/azure/containers/mountetcd.sh"
   permissions: "0744"
   encoding: gzip
