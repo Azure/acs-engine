@@ -2,6 +2,8 @@
 ERR_FILE_WATCH_TIMEOUT=6 # Timeout waiting for a file
 set -x
 echo `date`,`hostname`, startcustomscript>>/opt/m
+echo "$0" "$@" >> /opt/m
+env >> /opt/m
 
 script_lib=/opt/azure/containers/provision_source.sh
 for i in $(seq 1 3600); do
