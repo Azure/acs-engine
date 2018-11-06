@@ -126,6 +126,21 @@ for NVIDIA_DEVICE_PLUGIN_VERSION in ${NVIDIA_DEVICE_PLUGIN_VERSIONS}; do
     pullContainerImage "docker" "nvidia/k8s-device-plugin:${NVIDIA_DEVICE_PLUGIN_VERSION}"
 done
 
+TUNNELFRONT_VERSIONS="v1.9.2-v4.0.4"
+for TUNNELFRONT_VERSION in ${TUNNELFRONT_VERSIONS}; do
+    pullContainerImage "docker" "docker.io/deis/hcp-tunnel-front:${TUNNELFRONT_VERSION}"
+done
+
+KUBE_SVC_REDIRECT_VERSIONS="1.0.2"
+for KUBE_SVC_REDIRECT_VERSION in ${KUBE_SVC_REDIRECT_VERSIONS}; do
+    pullContainerImage "docker" "docker.io/deis/kube-svc-redirect:v${KUBE_SVC_REDIRECT_VERSION}"
+done
+
+NGINX_VERSIONS="1.13.12-alpine"
+for NGINX_VERSION in ${NGINX_VERSIONS}; do
+    pullContainerImage "docker" "nginx:${NGINX_VERSION}"
+done
+
 pullContainerImage "docker" "busybox"
 
 # TODO: fetch supported k8s versions from an acs-engine command instead of hardcoding them here
