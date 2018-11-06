@@ -175,7 +175,7 @@ installImg() {
     retrycmd_get_executable 120 5 $img_filepath "https://acs-mirror.azureedge.net/img/img-linux-amd64-v0.4.6" ls || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function extractHyperkube() {
+extractHyperkube() {
     CLI_TOOL=$1
     path="/home/hyperkube-downloads/${KUBERNETES_VERSION}"
     mkdir -p "$path"
@@ -196,7 +196,7 @@ function extractHyperkube() {
     fi
 }
 
-function installKubeletAndKubectl() {
+installKubeletAndKubectl() {
     if [[ ! -f "/usr/local/bin/kubectl-${KUBERNETES_VERSION}" ]]; then
         if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
             extractHyperkube "docker"
@@ -217,7 +217,7 @@ pullContainerImage() {
     retrycmd_if_failure 60 1 1200 $CLI_TOOL pull $DOCKER_IMAGE_URL || exit $ERR_IMG_DOWNLOAD_TIMEOUT
 }
 
-function cleanUpContainerImages() {
+cleanUpContainerImages() {
     // TODO remove all unused container images at runtime
     docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'hyperkube') &
     docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v ${KUBERNETES_VERSION} | grep 'cloud-controller-manager') &
