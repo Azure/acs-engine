@@ -11,10 +11,10 @@ import (
 
 // setOpenShiftSetDefaultCerts sets default certificate and configuration properties in the
 // openshift orchestrator.
-func setOpenShiftSetDefaultCerts(a *Properties, orchestratorName, clusterID string) (bool, error) {
+func setOpenShiftSetDefaultCerts(a *Properties, orchestratorName, clusterID string) (bool, []net.IP, error) {
 	if len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"]) > 0 &&
 		len(a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"]) > 0 {
-		return true, nil
+		return true, nil, nil
 	}
 	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles == nil {
 		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
@@ -34,13 +34,13 @@ func setOpenShiftSetDefaultCerts(a *Properties, orchestratorName, clusterID stri
 	}
 
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
 	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
 	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
 
-	return true, nil
+	return true, nil, nil
 }
 
 func createR39Config(a *Properties, orchestratorName, clusterID string) *release39.Config {

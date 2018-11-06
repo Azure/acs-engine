@@ -489,10 +489,9 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   {{if IsMasterVirtualMachineScaleSets}}
     MASTER_VM_NAME=$(hostname)
     MASTER_VM_NAME_BASE=$(hostname | sed "s/.$//")
-    MASTER_FIRSTADDR_OCTET4={{WrapAsVariable "masterFirstAddrOctet4"}}
+    MASTER_FIRSTADDR={{WrapAsVariable "kubernetesAPIServerIP"}}
     MASTER_INDEX=$(hostname | tail -c 2)
     PRIVATE_IP=$(hostname -I | cut -d" " -f1)
-    PRIVATE_IP_BASE=$(hostname -I | cut -d" " -f1 | cut -d. -f1-3)
     MASTER_COUNT={{WrapAsVariable "masterCount"}}
     IPADDRESS_COUNT={{WrapAsVariable "masterIpAddressCount"}}
     echo $IPADDRESS_COUNT
@@ -500,12 +499,18 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     ETCD_CLIENT_PORT={{WrapAsVariable "masterEtcdClientPort"}}
     MASTER_URLS=""
     index=0
+    IFS=. read -r a b c d <<< "$MASTER_FIRSTADDR"
+    d=$((a * 256 ** 3 + b * 256 ** 2 + c * 256 + d))
+    echo $d
     while [ $index -lt $MASTER_COUNT ]
     do
         echo $index
-        offset=`expr $index \\* $IPADDRESS_COUNT + $MASTER_FIRSTADDR_OCTET4`
-        echo $offset
-        MASTER_URLS="$MASTER_URLS$MASTER_VM_NAME_BASE$index=https://$PRIVATE_IP_BASE.$offset:$ETCD_SERVER_PORT,"
+        x=`expr $d + $IPADDRESS_COUNT \\* $index`
+        echo $x
+        s=""
+        for i in 1 2 3 4; do s="."$((x%256))$s && ((x>>=8)); done;
+        s=$(echo $s | tail -c +2)
+        MASTER_URLS="$MASTER_URLS$MASTER_VM_NAME_BASE$index=https://$s:$ETCD_SERVER_PORT,"
         index=`expr $index + 1`
     done
     MASTER_URLS=$(echo $MASTER_URLS | sed "s/.$//")

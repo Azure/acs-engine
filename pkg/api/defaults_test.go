@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/base64"
+	"encoding/binary"
+	"net"
 	"reflect"
 	"testing"
 
@@ -963,6 +965,73 @@ func TestDefaultCloudProvider(t *testing.T) {
 			helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
 	}
 }
+func TestSetCertDefaults(t *testing.T) {
+	cs := &ContainerService{
+		Properties: &Properties{
+			AzProfile: &AzProfile{
+				TenantID:       "sampleTenantID",
+				SubscriptionID: "foobarsubscription",
+				ResourceGroup:  "sampleRG",
+				Location:       "westus2",
+			},
+			ServicePrincipalProfile: &ServicePrincipalProfile{
+				ClientID: "barClientID",
+				Secret:   "bazSecret",
+			},
+			MasterProfile: &MasterProfile{
+				Count:               3,
+				DNSPrefix:           "myprefix1",
+				VMSize:              "Standard_DS2_v2",
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			OrchestratorProfile: &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: "1.10.2",
+				KubernetesConfig: &KubernetesConfig{
+					NetworkPlugin: "azure",
+				},
+			},
+		},
+	}
+
+	cs.setOrchestratorDefaults(false)
+	cs.Properties.setMasterProfileDefaults(false)
+	result, ips, err := cs.Properties.setDefaultCerts()
+
+	if !result {
+		t.Error("expected setDefaultCerts to return true")
+	}
+
+	if err != nil {
+		t.Errorf("unexpected error thrown while executing setDefaultCerts %s", err.Error())
+	}
+
+	if ips == nil {
+		t.Error("expected setDefaultCerts to create a list of IPs")
+	} else {
+
+		if len(ips) != cs.Properties.MasterProfile.Count+2 {
+			t.Errorf("expected length of IPs from setDefaultCerts %d, actual length %d", cs.Properties.MasterProfile.Count+2, len(ips))
+		}
+
+		firstMasterIP := net.ParseIP(cs.Properties.MasterProfile.FirstConsecutiveStaticIP).To4()
+		var offsetMultiplier int
+		if cs.Properties.MasterProfile.IsVirtualMachineScaleSets() {
+			offsetMultiplier = cs.Properties.MasterProfile.IPAddressCount
+		} else {
+			offsetMultiplier = 1
+		}
+		addr := binary.BigEndian.Uint32(firstMasterIP)
+		expectedNewAddr := getNewAddr(addr, cs.Properties.MasterProfile.Count-1, offsetMultiplier)
+		actualLastIPAddr := binary.BigEndian.Uint32(ips[len(ips)-2])
+		if actualLastIPAddr != expectedNewAddr {
+			expectedLastIP := make(net.IP, 4)
+			binary.BigEndian.PutUint32(expectedLastIP, expectedNewAddr)
+			t.Errorf("expected last IP of master vm from setDefaultCerts %d, actual %d", expectedLastIP, ips[len(ips)-2])
+		}
+	}
+
+}
 
 func TestSetOpenShiftCertDefaults(t *testing.T) {
 	cs := &ContainerService{
@@ -992,7 +1061,7 @@ func TestSetOpenShiftCertDefaults(t *testing.T) {
 
 	cs.Properties.setMasterProfileDefaults(false)
 
-	result, err := cs.Properties.setDefaultCerts()
+	result, _, err := cs.Properties.setDefaultCerts()
 	if !result {
 		t.Error("expected setOpenShiftDefaultCerts to return true")
 	}
@@ -1028,7 +1097,7 @@ func TestSetOpenShiftCertDefaults(t *testing.T) {
 	}
 
 	cs.Properties.setMasterProfileDefaults(false)
-	result, err = cs.Properties.setDefaultCerts()
+	result, _, err = cs.Properties.setDefaultCerts()
 
 	if !result {
 		t.Error("expected setOpenShiftDefaultCerts to return true")
@@ -1037,7 +1106,6 @@ func TestSetOpenShiftCertDefaults(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error thrown while executing setOpenShiftDefaultCerts %s", err.Error())
 	}
-
 }
 
 func getMockBaseContainerService(orchestratorVersion string) ContainerService {
