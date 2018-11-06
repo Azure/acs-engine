@@ -50,7 +50,6 @@ func TestVersionCompare(t *testing.T) {
 
 func TestOrchestratorUpgradeInfo(t *testing.T) {
 	RegisterTestingT(t)
-	// Each kubernetes version is upgradable to all supported versions greater than itself
 	testVersions := []string{"1.6.9", "1.7.0", "1.7.15", "1.8.4", "1.9.6", "1.10.0-beta.2", "1.11.0", "1.12.0"}
 	for _, deployedVersion := range testVersions {
 		csOrch := &OrchestratorProfile{

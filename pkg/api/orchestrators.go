@@ -1,11 +1,13 @@
 package api
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/blang/semver"
 	"github.com/pkg/errors"
 )
 
@@ -179,14 +181,40 @@ func kubernetesInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*Orchestrat
 
 func kubernetesUpgrades(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
-	upgradeableVersions := common.GetVersionsGt(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, false, true)
-	for _, ver := range upgradeableVersions {
+
+	upgradeVersions, err := getKubernetesAvailableUpgradeVersions(csOrch.OrchestratorVersion, common.GetAllSupportedKubernetesVersions(false, hasWindows))
+	if err != nil {
+		return nil, err
+	}
+	for _, ver := range upgradeVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
 			OrchestratorVersion: ver,
 		})
 	}
 	return ret, nil
+}
+
+func getKubernetesAvailableUpgradeVersions(orchestratorVersion string, supportedVersions []string) ([]string, error) {
+	var skipUpgradeMinor string
+	currentVer, err := semver.Make(orchestratorVersion)
+	if err != nil {
+		return nil, err
+	}
+	versionsGT := common.GetVersionsGt(supportedVersions, orchestratorVersion, false, true)
+	min, err := semver.Make(common.GetMinVersion(versionsGT, true))
+	if err != nil {
+		return nil, err
+	}
+
+	if currentVer.Major >= min.Major && currentVer.Minor < min.Minor {
+		skipUpgradeMinor = strconv.FormatUint(min.Major, 10) + "." + strconv.FormatUint(min.Minor+1, 10) + ".0-alpha.0"
+	} else {
+		skipUpgradeMinor = strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
+	}
+
+	return common.GetVersionsBetween(supportedVersions, orchestratorVersion, skipUpgradeMinor, false, true), nil
+
 }
 
 func dcosInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
