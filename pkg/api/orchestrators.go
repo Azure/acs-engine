@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -202,18 +203,23 @@ func getKubernetesAvailableUpgradeVersions(orchestratorVersion string, supported
 		return nil, err
 	}
 	versionsGT := common.GetVersionsGt(supportedVersions, orchestratorVersion, false, true)
-	min, err := semver.Make(common.GetMinVersion(versionsGT, true))
-	if err != nil {
-		return nil, err
-	}
+	if len(versionsGT) != 0 {
+		minVersion := common.GetMinVersion(versionsGT, true)
+		fmt.Print(minVersion)
+		min, err := semver.Make(minVersion)
+		if err != nil {
+			return nil, err
+		}
 
-	if currentVer.Major >= min.Major && currentVer.Minor < min.Minor {
-		skipUpgradeMinor = strconv.FormatUint(min.Major, 10) + "." + strconv.FormatUint(min.Minor+1, 10) + ".0-alpha.0"
-	} else {
-		skipUpgradeMinor = strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
-	}
+		if currentVer.Major >= min.Major && currentVer.Minor+1 < min.Minor {
+			skipUpgradeMinor = strconv.FormatUint(min.Major, 10) + "." + strconv.FormatUint(min.Minor+1, 10) + ".0-alpha.0"
+		} else {
+			skipUpgradeMinor = strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
+		}
 
-	return common.GetVersionsBetween(supportedVersions, orchestratorVersion, skipUpgradeMinor, false, true), nil
+		return common.GetVersionsBetween(supportedVersions, orchestratorVersion, skipUpgradeMinor, false, true), nil
+	}
+	return []string{}, nil
 
 }
 

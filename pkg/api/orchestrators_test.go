@@ -56,7 +56,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 			OrchestratorType:    Kubernetes,
 			OrchestratorVersion: deployedVersion,
 		}
-		v := getKubernetesAvailableUpgradeVersions(deployedVersion, common.GetAllSupportedKubernetesVersions(false, false))
+		v, e := getKubernetesAvailableUpgradeVersions(deployedVersion, common.GetAllSupportedKubernetesVersions(false, false))
+		Expect(e).To(BeNil())
 		orch, e := GetOrchestratorVersionProfile(csOrch, false)
 		Expect(e).To(BeNil())
 		Expect(len(orch.Upgrades)).To(Equal(len(v)))

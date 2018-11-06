@@ -206,24 +206,20 @@ func GetMinVersion(versions []string, preRelease bool) string {
 		if len(sv.Pre) != 0 {
 			preReleaseVersions = append(preReleaseVersions, sv)
 		} else {
-			if sv.Compare(lowest) == -1 {
+			if sv.LT(lowest) {
 				lowest = sv
 			}
 		}
 	}
 	if preRelease {
 		for _, sv := range preReleaseVersions {
-			if sv.Compare(lowestPreRelease) == -1 {
+			if sv.LT(lowestPreRelease) {
 				lowestPreRelease = sv
 			}
 		}
-		switch lowestPreRelease.Compare(lowest) {
-		case 1:
+		if lowestPreRelease.LT(lowest) {
 			return lowestPreRelease.String()
-		default:
-			return lowest.String()
 		}
-
 	}
 	return lowest.String()
 }
@@ -242,24 +238,20 @@ func GetMaxVersion(versions []string, preRelease bool) string {
 		if len(sv.Pre) != 0 {
 			preReleaseVersions = append(preReleaseVersions, sv)
 		} else {
-			if sv.Compare(highest) == 1 {
+			if sv.GT(highest) {
 				highest = sv
 			}
 		}
 	}
 	if preRelease {
 		for _, sv := range preReleaseVersions {
-			if sv.Compare(highestPreRelease) == 1 {
+			if sv.GT(highestPreRelease) {
 				highestPreRelease = sv
 			}
 		}
-		switch highestPreRelease.Compare(highest) {
-		case 1:
+		if highestPreRelease.GT(highest) {
 			return highestPreRelease.String()
-		default:
-			return highest.String()
 		}
-
 	}
 	return highest.String()
 }
