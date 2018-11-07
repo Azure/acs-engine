@@ -389,54 +389,66 @@ func TestGetLatestPatchVersion(t *testing.T) {
 	}
 }
 
-func TestGetMaxVersion(t *testing.T) {
-	expected := "1.0.3"
-	versions := []string{"1.0.1", "1.0.2", expected}
-	max := GetMaxVersion(versions, false)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
+func TestGetMinMaxVersion(t *testing.T) {
+	cases := []struct {
+		expectedMin string
+		expectedMax string
+		versions    []string
+		preRelease  bool
+	}{
+		{
+			expectedMin: "1.0.0",
+			expectedMax: "1.0.3",
+			versions:    []string{"1.0.1", "1.0.2", "1.0.0", "1.0.3"},
+			preRelease:  false,
+		},
+		{
+			expectedMin: "0.0.20",
+			expectedMax: "1.3.1",
+			versions:    []string{"1.0.1", "1.1.2", "1.3.1", "0.0.20"},
+			preRelease:  false,
+		},
+		{
+			expectedMin: "1.0.1",
+			expectedMax: "1.1.2",
+			versions:    []string{"1.0.1", "1.1.2", "1.2.3-alpha.1"},
+			preRelease:  false,
+		},
+		{
+			expectedMin: "1.0.1",
+			expectedMax: "1.2.3-alpha.1",
+			versions:    []string{"1.0.1", "1.1.2", "1.2.3-alpha.1"},
+			preRelease:  true,
+		},
+		{
+			expectedMin: "0.1.3-beta.1",
+			expectedMax: "1.1.2",
+			versions:    []string{"1.0.1", "1.1.2", "0.1.3-beta.1", "1.0.0-alpha.1"},
+			preRelease:  true,
+		},
+		{
+			expectedMin: "",
+			expectedMax: "",
+			versions:    []string{},
+			preRelease:  false,
+		},
+		{
+			expectedMin: "",
+			expectedMax: "",
+			versions:    []string{},
+			preRelease:  true,
+		},
 	}
 
-	expected = "1.2.3"
-	versions = []string{"1.0.1", "1.1.2", expected}
-	max = GetMaxVersion(versions, false)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
-	}
-
-	expected = "1.1.2"
-	versions = []string{"1.0.1", expected, "1.2.3-alpha.1"}
-	max = GetMaxVersion(versions, false)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
-	}
-
-	expected = "1.2.3-alpha.1"
-	versions = []string{"1.0.1", "1.1.2", expected}
-	max = GetMaxVersion(versions, true)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
-	}
-
-	expected = "1.1.2"
-	versions = []string{"1.1.1", "1.0.0-alpha.1", expected}
-	max = GetMaxVersion(versions, true)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
-	}
-
-	expected = ""
-	versions = []string{}
-	max = GetMaxVersion(versions, false)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
-	}
-
-	expected = ""
-	versions = []string{}
-	max = GetMaxVersion(versions, true)
-	if max != expected {
-		t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", expected, max)
+	for _, c := range cases {
+		min := GetMinVersion(c.versions, c.preRelease)
+		if min != c.expectedMin {
+			t.Errorf("GetMinVersion returned the wrong min version, expected %s, got %s", c.expectedMin, min)
+		}
+		max := GetMaxVersion(c.versions, c.preRelease)
+		if max != c.expectedMax {
+			t.Errorf("GetMaxVersion returned the wrong max version, expected %s, got %s", c.expectedMax, max)
+		}
 	}
 }
 

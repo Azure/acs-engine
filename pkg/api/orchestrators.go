@@ -182,19 +182,42 @@ func kubernetesInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*Orchestrat
 func kubernetesUpgrades(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
 
-	currentVer, err := semver.Make(csOrch.OrchestratorVersion)
+	upgradeVersions, err := getKubernetesAvailableUpgradeVersions(csOrch.OrchestratorVersion, common.GetAllSupportedKubernetesVersions(false, hasWindows))
 	if err != nil {
 		return nil, err
 	}
-	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
-	for _, ver := range upgradeableVersions {
+	for _, ver := range upgradeVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
 			OrchestratorVersion: ver,
 		})
 	}
 	return ret, nil
+}
+
+func getKubernetesAvailableUpgradeVersions(orchestratorVersion string, supportedVersions []string) ([]string, error) {
+	var skipUpgradeMinor string
+	currentVer, err := semver.Make(orchestratorVersion)
+	if err != nil {
+		return nil, err
+	}
+	versionsGT := common.GetVersionsGt(supportedVersions, orchestratorVersion, false, true)
+	if len(versionsGT) != 0 {
+		min, err := semver.Make(common.GetMinVersion(versionsGT, true))
+		if err != nil {
+			return nil, err
+		}
+
+		if currentVer.Major >= min.Major && currentVer.Minor+1 < min.Minor {
+			skipUpgradeMinor = strconv.FormatUint(min.Major, 10) + "." + strconv.FormatUint(min.Minor+1, 10) + ".0-alpha.0"
+		} else {
+			skipUpgradeMinor = strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
+		}
+
+		return common.GetVersionsBetween(supportedVersions, orchestratorVersion, skipUpgradeMinor, false, true), nil
+	}
+	return []string{}, nil
+
 }
 
 func dcosInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {
