@@ -155,7 +155,7 @@ spec:
         env:
         - name: PROBE_DOMAINS
           value: bing.com kubernetes.default.svc.<domain>
-        image: <img>
+        image: <imgHealthz>
         livenessProbe:
           failureThreshold: 5
           httpGet:
