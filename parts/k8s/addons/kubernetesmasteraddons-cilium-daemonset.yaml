@@ -17,12 +17,12 @@ data:
     #
     # In case you want to use TLS in etcd, uncomment the following line
     # and add the certificate as explained in the comment labeled "ETCD-CERT"
-    ca-file: '/var/lib/etcd-secrets/etcd-ca'
+    ca-file: /var/lib/etcd-secrets/etcd-ca
     #
     # In case you want client to server authentication, uncomment the following
     # lines and add the certificate and key in cilium-etcd-secrets below
-    key-file: '/var/lib/etcd-secrets/etcd-client-key'
-    cert-file: '/var/lib/etcd-secrets/etcd-client-crt'
+    key-file: /var/lib/etcd-secrets/etcd-client-key
+    cert-file: /var/lib/etcd-secrets/etcd-client-crt
 
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
@@ -42,9 +42,9 @@ data:
   # ETCD-CERT: Each value should contain the whole certificate in base64, on a
   # single line. You can generate the base64 with: $ base64 -w 0 ./ca.pem
   # (the "-w 0" generates the output on a single line)
-  etcd-ca: "<ETCD_CA>"
-  etcd-client-key: "<ETCD_CLIENT_KEY>"
-  etcd-client-crt: "<ETCD_CLIENT_CERT>"
+  etcd-ca: <ETCD_CA>
+  etcd-client-key: <ETCD_CLIENT_KEY>
+  etcd-client-crt: <ETCD_CLIENT_CERT>
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -114,14 +114,14 @@ spec:
         name: cilium-agent
         command: [ "cilium-agent" ]
         args:
-          - "--debug=$(CILIUM_DEBUG)"
-          - "-t"
-          - "vxlan"
-          - "--kvstore"
-          - "etcd"
-          - "--kvstore-opt"
-          - "etcd.config=/var/lib/etcd-config/etcd.config"
-          - "--disable-ipv4=$(DISABLE_IPV4)"
+          - --debug=$(CILIUM_DEBUG)
+          - -t
+          - vxlan
+          - --kvstore
+          - etcd
+          - --kvstore-opt
+          - etcd.config=/var/lib/etcd-config/etcd.config
+          - --disable-ipv4=$(DISABLE_IPV4)
         ports:
           - name: prometheus
             containerPort: 9090
@@ -129,29 +129,29 @@ spec:
           postStart:
             exec:
               command:
-                - "/cni-install.sh"
+                - /cni-install.sh
           preStop:
             exec:
               command:
-                - "/cni-uninstall.sh"
+                - /cni-uninstall.sh
         env:
-          - name: "K8S_NODE_NAME"
+          - name: K8S_NODE_NAME
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          - name: "CILIUM_DEBUG"
+          - name: CILIUM_DEBUG
             valueFrom:
               configMapKeyRef:
                 name: cilium-config
                 key: debug
-          - name: "DISABLE_IPV4"
+          - name: DISABLE_IPV4
             valueFrom:
               configMapKeyRef:
                 name: cilium-config
                 key: disable-ipv4
           # Note: this variable is a no-op if not defined, and is used in the
           # prometheus examples.
-          - name: "CILIUM_PROMETHEUS_SERVE_ADDR"
+          - name: CILIUM_PROMETHEUS_SERVE_ADDR
             valueFrom:
               configMapKeyRef:
                 name: cilium-metrics-config
@@ -196,7 +196,7 @@ spec:
         securityContext:
           capabilities:
             add:
-              - "NET_ADMIN"
+              - NET_ADMIN
           privileged: true
       hostNetwork: true
       volumes:
