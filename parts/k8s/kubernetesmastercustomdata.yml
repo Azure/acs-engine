@@ -361,7 +361,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubeClusterCidr>|{{WrapAsParameter "kubeClusterCidr"}}|g" /etc/kubernetes/addons/flannel-daemonset.yaml
 {{end}}
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
-  a=/etc/kubernetes/addons/cilium-daemonset.yaml
+    a=/etc/kubernetes/addons/cilium-daemonset.yaml
   {{if IsMasterVirtualMachineScaleSets}}
     sed -i "s|<ETCD_URL>|"https://$PRIVATE_IP:$ETCD_CLIENT_PORT"|g" $a
   {{else}}
