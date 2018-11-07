@@ -674,10 +674,6 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 	for _, config := range []k8sNetworkConfig{
 		{
 			networkPlugin: "azure",
-			networkPolicy: "calico",
-		},
-		{
-			networkPlugin: "azure",
 			networkPolicy: "cilium",
 		},
 		{

@@ -64,6 +64,10 @@ var (
 			networkPolicy: "calico",
 		},
 		{
+			networkPlugin: "azure",
+			networkPolicy: "calico",
+		},
+		{
 			networkPlugin: "",
 			networkPolicy: "calico",
 		},
