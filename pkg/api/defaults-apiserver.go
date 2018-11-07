@@ -11,7 +11,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticAPIServerConfig := map[string]string{
 		"--bind-address":                "0.0.0.0",
-		"--advertise-address":           "<kubernetesAPIServerIP>",
+		"--advertise-address":           "<advertiseAddr>",
 		"--allow-privileged":            "true",
 		"--anonymous-auth":              "false",
 		"--audit-log-path":              "/var/log/kubeaudit/audit.log",

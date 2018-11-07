@@ -29,11 +29,11 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: <kubernetesBlobfuseFlexVolumeInstallerCPURequests>
-            memory: <kubernetesBlobfuseFlexVolumeInstallerMemoryRequests>
+            cpu: <cpuReq>
+            memory: <memReq>
           limits:
-            cpu: <kubernetesBlobfuseFlexVolumeInstallerCPULimit>
-            memory: <kubernetesBlobfuseFlexVolumeInstallerMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
         volumeMounts:
         - name: volplugins
           mountPath: /etc/kubernetes/volumeplugins/

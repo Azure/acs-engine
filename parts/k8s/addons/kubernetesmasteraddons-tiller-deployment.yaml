@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -13,7 +13,7 @@ metadata:
   name: tiller
   labels:
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -30,7 +30,7 @@ metadata:
     app: helm
     name: tiller
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
   name: tiller-deploy
   namespace: kube-system
 spec:
@@ -50,7 +50,7 @@ metadata:
     app: helm
     name: tiller
     kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "EnsureExists"
+    addonmanager.kubernetes.io/mode: EnsureExists
   name: tiller-deploy
   namespace: kube-system
 spec:
@@ -66,8 +66,8 @@ spec:
         - name: TILLER_NAMESPACE
           value: kube-system
         - name: TILLER_HISTORY_MAX
-          value: "<kubernetesTillerMaxHistory>"
-        image: <kubernetesTillerSpec>
+          value: "<maxHist>"
+        image: <img>
         livenessProbe:
           httpGet:
             path: /liveness
@@ -86,10 +86,10 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            cpu: <kubernetesTillerCPURequests>
-            memory: <kubernetesTillerMemoryRequests>
+            cpu: <cpuReq>
+            memory: <memReq>
           limits:
-            cpu: <kubernetesTillerCPULimit>
-            memory: <kubernetesTillerMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
       nodeSelector:
         beta.kubernetes.io/os: linux

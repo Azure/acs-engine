@@ -122,7 +122,7 @@ spec:
       serviceAccountName: metrics-server
       containers:
       - name: metrics-server
-        image: <kubernetesMetricsServerSpec>
+        image: <img>
         imagePullPolicy: Always
         command:
         - /metrics-server
