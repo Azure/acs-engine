@@ -830,9 +830,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
-	Describe("with calico or azure network policy enabled", func() {
+	Describe("with NetworkPolicy enabled", func() {
 		It("should apply various network policies and enforce access to nginx pod", func() {
-			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") {
+			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") || eng.HasNetworkPolicy("cilium") {
 				nsClientOne, nsClientTwo, nsServer := "client-one", "client-two", "server"
 				By("Creating namespaces")
 				_, err := namespace.Create(nsClientOne)
