@@ -9,6 +9,9 @@ import (
 
 func (cs *ContainerService) setAddonsConfig() {
 	o := cs.Properties.OrchestratorProfile
+	cloudSpecConfig := cs.GetCloudSpecConfig()
+	k8sComponents := K8sComponentsByVersionMap[o.OrchestratorVersion]
+	specConfig := cloudSpecConfig.KubernetesSpecConfig
 	defaultTillerAddonsConfig := KubernetesAddon{
 		Name:    DefaultTillerAddonName,
 		Enabled: helpers.PointerToBool(DefaultTillerAddonEnabled),
@@ -19,6 +22,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "150Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "150Mi",
+				Image:          specConfig.TillerImageBase + k8sComponents[DefaultTillerAddonName],
 			},
 		},
 		Config: map[string]string{
@@ -42,6 +46,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "150Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "150Mi",
+				Image:          specConfig.ACIConnectorImageBase + k8sComponents[DefaultACIConnectorAddonName],
 			},
 		},
 	}
@@ -60,6 +65,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "300Mi",
 				CPULimits:      "100m",
 				MemoryLimits:   "300Mi",
+				Image:          specConfig.KubernetesImageBase + k8sComponents[DefaultClusterAutoscalerAddonName],
 			},
 		},
 	}
@@ -116,6 +122,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "150Mi",
 				CPULimits:      "300m",
 				MemoryLimits:   "150Mi",
+				Image:          specConfig.KubernetesImageBase + k8sComponents[DefaultDashboardAddonName],
 			},
 		},
 	}
@@ -130,6 +137,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "100Mi",
 				CPULimits:      "10m",
 				MemoryLimits:   "100Mi",
+				Image:          specConfig.KubernetesImageBase + k8sComponents[DefaultReschedulerAddonName],
 			},
 		},
 	}
@@ -139,7 +147,8 @@ func (cs *ContainerService) setAddonsConfig() {
 		Enabled: k8sVersionMetricsServerAddonEnabled(o),
 		Containers: []KubernetesContainerSpec{
 			{
-				Name: DefaultMetricsServerAddonName,
+				Name:  DefaultMetricsServerAddonName,
+				Image: specConfig.KubernetesImageBase + k8sComponents[DefaultMetricsServerAddonName],
 			},
 		},
 	}
@@ -155,6 +164,7 @@ func (cs *ContainerService) setAddonsConfig() {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          specConfig.NVIDIAImageBase + k8sComponents[NVIDIADevicePluginAddonName],
 			},
 		},
 	}
@@ -169,11 +179,11 @@ func (cs *ContainerService) setAddonsConfig() {
 		Containers: []KubernetesContainerSpec{
 			{
 				Name:           "omsagent",
-				Image:          "microsoft/oms:ciprod10162018-2",
 				CPURequests:    "50m",
 				MemoryRequests: "200Mi",
 				CPULimits:      "150m",
 				MemoryLimits:   "750Mi",
+				Image:          "microsoft/oms:ciprod10162018-2",
 			},
 		},
 	}
@@ -197,7 +207,8 @@ func (cs *ContainerService) setAddonsConfig() {
 		Enabled: azureCNINetworkMonitorAddonEnabled(o),
 		Containers: []KubernetesContainerSpec{
 			{
-				Name: AzureCNINetworkMonitoringAddonName,
+				Name:  AzureCNINetworkMonitoringAddonName,
+				Image: specConfig.AzureCNIImageBase + k8sComponents[AzureCNINetworkMonitoringAddonName],
 			},
 		},
 	}

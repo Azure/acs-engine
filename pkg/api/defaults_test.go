@@ -181,6 +181,60 @@ func TestAddonsIndexByName(t *testing.T) {
 	}
 }
 
+func TestAssignDefaultAddonImages(t *testing.T) {
+	addonNameMap := map[string]string{
+		DefaultTillerAddonName:             "gcr.io/kubernetes-helm/tiller:v2.8.1",
+		DefaultACIConnectorAddonName:       "microsoft/virtual-kubelet:latest",
+		DefaultClusterAutoscalerAddonName:  "k8s.gcr.io/cluster-autoscaler:v1.2.2",
+		DefaultBlobfuseFlexVolumeAddonName: "",
+		DefaultSMBFlexVolumeAddonName:      "",
+		DefaultKeyVaultFlexVolumeAddonName: "",
+		DefaultDashboardAddonName:          "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.0",
+		DefaultReschedulerAddonName:        "k8s.gcr.io/rescheduler:v0.3.1",
+		DefaultMetricsServerAddonName:      "k8s.gcr.io/metrics-server-amd64:v0.2.1",
+		NVIDIADevicePluginAddonName:        "nvidia/k8s-device-plugin:1.10",
+		ContainerMonitoringAddonName:       "microsoft/oms:ciprod10162018-2",
+		IPMASQAgentAddonName:               "",
+		AzureCNINetworkMonitoringAddonName: "containernetworking/networkmonitor:v0.0.4",
+	}
+
+	var addons []KubernetesAddon
+	for addonName := range addonNameMap {
+		containerName := addonName
+		if addonName == ContainerMonitoringAddonName {
+			containerName = "omsagent"
+		}
+		customAddon := KubernetesAddon{
+			Name:    addonName,
+			Enabled: helpers.PointerToBool(true),
+			Containers: []KubernetesContainerSpec{
+				{
+					Name:           containerName,
+					CPURequests:    "50m",
+					MemoryRequests: "150Mi",
+					CPULimits:      "50m",
+					MemoryLimits:   "150Mi",
+				},
+			},
+		}
+		addons = append(addons, customAddon)
+	}
+
+	mockCS := getMockBaseContainerService("1.10.8")
+	mockCS.Properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	mockCS.Properties.OrchestratorProfile.KubernetesConfig.Addons = addons
+	mockCS.SetPropertiesDefaults(false, false)
+	modifiedAddons := mockCS.Properties.OrchestratorProfile.KubernetesConfig.Addons
+
+	for _, addon := range modifiedAddons {
+		expected := addonNameMap[addon.Name]
+		actual := addon.Containers[0].Image
+		if actual != expected {
+			t.Errorf("expected setDefaults to set Image %s in addon %s, but got %s", expected, addon.Name, actual)
+		}
+	}
+}
+
 func TestAssignDefaultAddonVals(t *testing.T) {
 	addonName := "testaddon"
 	customCPURequests := "60m"
