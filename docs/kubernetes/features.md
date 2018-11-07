@@ -21,7 +21,7 @@ Instead of using a static servic principal written to `/etc/kubernetes/azure.jso
 
 Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 
-```json
+```
 "kubernetesConfig": {
   "useManagedIdentity": true
 }
@@ -223,11 +223,38 @@ In larger subnets (e.g., `/16`) it's not as practically useful to push static IP
 
 Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
 
-```json
+```
 "masterProfile": {
   ...
   "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
   "firstConsecutiveStaticIP": "10.239.255.239",
+  "vnetCidr": "10.239.0.0/16",
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "agentpri",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
+    ...
+  },
+```
+
+### VirtualMachineScaleSets Masters Custom VNET
+
+When using custom VNET with `VirtualMachineScaleSets` MasterProfile, make sure to create two subnets within the vnet: `master` and `agent`.
+Modify `masterProfile` in the api model, `vnetSubnetId`, `agentVnetSubnetId` should be set to the values of the `master` subnet and the `agent` subnet in the existing vnet respectively.
+Modify `agentPoolProfiles`, `vnetSubnetId` should be set to the value of the `agent` subnet in the existing vnet.
+
+*NOTE: The `firstConsecutiveStaticIP` configuration should be empty and will be derived from an offset and the first IP in the vnetCidr.*
+For example, if `vnetCidr` is `10.239.0.0/16`, `master` subnet is `10.239.0.0/17`, `agent` subnet is `10.239.128.0/17`, then `firstConsecutiveStaticIP` will be `10.239.0.4`.
+
+```
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
+  "agentVnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
   "vnetCidr": "10.239.0.0/16",
   ...
 },
@@ -251,14 +278,14 @@ Existing subnets will need to use the Kubernetes-based Route Table so that machi
 
 Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
 
-```json
+```
 "routeTable": {
         "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
       }
 ```
 
 E.g.:
-```json
+```
 "subnets": [
     {
       "name": "subnetname",
@@ -383,7 +410,7 @@ Enabling Azure Key Vault Encryption configures acs-engine to create an Azure Key
 
 To enable this feature, add `encryptionWithExternalKms` in `kubernetesConfig` and `objectId` in `servicePrincipalProfile`:
 
-```json
+```
 "kubernetesConfig": {
   "enableEncryptionWithExternalKms": true
 }
