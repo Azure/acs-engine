@@ -17,6 +17,12 @@
       },
       "type": "string"
     },
+    "kubeServiceCidr": {
+      "metadata": {
+        "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
     "windowsTelemetryGUID": {
       "metadata": {
         "description": "The GUID to set in windows agent to collect telemetry data."

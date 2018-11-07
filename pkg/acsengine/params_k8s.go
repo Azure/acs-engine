@@ -42,7 +42,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			}
 
 			addValue(parametersMap, "kubeDNSServiceIP", kubernetesConfig.DNSServiceIP)
-			addValue(parametersMap, "kubeServiceCidr", kubernetesConfig.ServiceCIDR)
 			addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 			addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonmanager"])
 			addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents["addonresizer"])
@@ -315,7 +314,7 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 				// Kubernetes node binaries as packaged by upstream kubernetes
 				// example at https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1
 				addValue(parametersMap, "windowsKubeBinariesURL", kubernetesConfig.WindowsNodeBinariesURL)
-
+				addValue(parametersMap, "kubeServiceCidr", kubernetesConfig.ServiceCIDR)
 				addValue(parametersMap, "kubeBinariesVersion", k8sVersion)
 				addValue(parametersMap, "windowsTelemetryGUID", cloudSpecConfig.KubernetesSpecConfig.WindowsTelemetryGUID)
 			}

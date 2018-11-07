@@ -195,12 +195,6 @@
       },
       "type": "string"
     },
-    "kubeServiceCidr": {
-      "metadata": {
-        "description": "Kubernetes service address space"
-      },
-      "type": "string"
-    },
 {{if not IsHostedMaster}}
     "kubernetesNonMasqueradeCidr": {
       "metadata": {
