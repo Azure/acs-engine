@@ -363,6 +363,12 @@ func (a *Properties) validateMasterProfile() error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if m.IsVirtualMachineScaleSets() && m.VnetSubnetID != "" && m.FirstConsecutiveStaticIP != "" {
+			return errors.New("when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr")
+		}
+	}
+
 	if m.ImageRef != nil {
 		if err := m.ImageRef.validateImageNameAndGroup(); err != nil {
 			return err

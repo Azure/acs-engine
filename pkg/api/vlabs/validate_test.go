@@ -2148,6 +2148,27 @@ func TestProperties_ValidateVNET(t *testing.T) {
 			expectedMsg: "when master profile is using VirtualMachineScaleSets and is custom vnet, set \"vnetsubnetid\" and \"agentVnetSubnetID\" for master profile",
 		},
 		{
+			name: "User-provided MasterProfile FirstConsecutiveStaticIP when master is VMSS",
+			masterProfile: &MasterProfile{
+				VnetSubnetID:             validVNetSubnetID,
+				Count:                    1,
+				DNSPrefix:                "foo",
+				VMSize:                   "Standard_DS2_v2",
+				AvailabilityProfile:      VirtualMachineScaleSets,
+				FirstConsecutiveStaticIP: "10.0.0.4",
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_D2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					VnetSubnetID:        validVNetSubnetID,
+				},
+			},
+			expectedMsg: "when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr",
+		},
+		{
 			name: "Invalid vnetcidr",
 			masterProfile: &MasterProfile{
 				VnetSubnetID:             validVNetSubnetID,
