@@ -29,6 +29,7 @@ spec:
       containers:
         - name: azure-cnms
           image: <img>
+          imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
           env:

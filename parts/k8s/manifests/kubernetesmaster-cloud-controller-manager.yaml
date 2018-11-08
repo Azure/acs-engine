@@ -11,6 +11,7 @@ spec:
   containers:
     - name: cloud-controller-manager
       image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["cloud-controller-manager"]
       args: [<config>]
       volumeMounts:

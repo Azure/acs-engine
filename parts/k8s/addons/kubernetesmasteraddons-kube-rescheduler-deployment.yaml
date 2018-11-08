@@ -23,6 +23,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - image: <img>
+        imagePullPolicy: IfNotPresent
         name: rescheduler
         resources:
           requests:

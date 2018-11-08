@@ -107,6 +107,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - image: <img>
+          imagePullPolicy: IfNotPresent
           name: heapster
           resources:
             limits:
@@ -126,6 +127,7 @@ spec:
             - /heapster
             - --source=kubernetes.summary_api:''
         - image: <imgNanny>
+          imagePullPolicy: IfNotPresent
           name: heapster-nanny
           resources:
             limits:
