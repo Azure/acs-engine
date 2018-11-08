@@ -9,6 +9,7 @@ spec:
   containers:
   - name: kube-addon-manager
     image: <img>
+    imagePullPolicy: IfNotPresent
     resources:
       requests:
         cpu: 5m

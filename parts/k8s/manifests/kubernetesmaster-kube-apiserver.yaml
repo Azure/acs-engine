@@ -11,6 +11,7 @@ spec:
   containers:
     - name: kube-apiserver
       image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["/hyperkube", "apiserver"]
       args: [<args>]
       volumeMounts:

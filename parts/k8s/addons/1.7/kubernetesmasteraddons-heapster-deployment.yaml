@@ -96,6 +96,7 @@ spec:
       serviceAccountName: heapster
       containers:
       - image: <img>
+        imagePullPolicy: IfNotPresent
         command:
         - "/heapster"
         - "--source=kubernetes.summary_api:\"\""
@@ -108,6 +109,7 @@ spec:
             cpu: 80m
             memory: 140Mi
       - image: <imgNanny>
+        imagePullPolicy: IfNotPresent
         command:
         - "/pod_nanny"
         - "--cpu=80m"

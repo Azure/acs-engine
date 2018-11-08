@@ -27,6 +27,7 @@ spec:
         - --cluster-cidr=<CIDR>
         - --feature-gates=ExperimentalCriticalPodAnnotation=true
         image: <img>
+        imagePullPolicy: IfNotPresent
         name: kube-proxy
         resources:
           requests:

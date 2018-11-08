@@ -136,6 +136,16 @@ for KUBE_SVC_REDIRECT_VERSION in ${KUBE_SVC_REDIRECT_VERSIONS}; do
     pullContainerImage "docker" "docker.io/deis/kube-svc-redirect:v${KUBE_SVC_REDIRECT_VERSION}"
 done
 
+KV_FLEXVOLUME_VERSIONS="0.0.5"
+for KV_FLEXVOLUME_VERSION in ${KV_FLEXVOLUME_VERSIONS}; do
+    pullContainerImage "docker" "mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v${KV_FLEXVOLUME_VERSION}"
+done
+
+IP_MASQ_AGENT_VERSIONS="2.0.0"
+for IP_MASQ_AGENT_VERSION in ${IP_MASQ_AGENT_VERSIONS}; do
+    pullContainerImage "docker" "gcr.io/google-containers/ip-masq-agent-amd64:v${IP_MASQ_AGENT_VERSION}"
+done
+
 NGINX_VERSIONS="1.13.12-alpine"
 for NGINX_VERSION in ${NGINX_VERSIONS}; do
     pullContainerImage "docker" "nginx:${NGINX_VERSION}"

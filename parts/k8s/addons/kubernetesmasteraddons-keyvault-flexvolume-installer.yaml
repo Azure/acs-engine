@@ -27,7 +27,7 @@ spec:
       containers:
       - name: keyvault-flexvolume
         image: mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v0.0.5
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: <cpuReq>

@@ -11,6 +11,7 @@ spec:
   containers:
     - name: kube-scheduler
       image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["/hyperkube", "scheduler"]
       args: [<args>]
       volumeMounts:

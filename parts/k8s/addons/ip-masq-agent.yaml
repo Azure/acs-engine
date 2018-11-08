@@ -28,6 +28,7 @@ spec:
       containers:
       - name: azure-ip-masq-agent
         image: gcr.io/google-containers/ip-masq-agent-amd64:v2.0.0
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         volumeMounts:
