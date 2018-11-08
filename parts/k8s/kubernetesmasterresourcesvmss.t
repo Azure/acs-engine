@@ -99,7 +99,35 @@
           "sourceAddressPrefix": "*",
           "sourcePortRange": "*"
         }
-      }
+      },
+      {
+            "name": "allow_vnet",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow outbound internet to vnet",
+              "destinationAddressPrefix": "[parameters('masterSubnet')]",
+              "destinationPortRange": "*",
+              "direction": "Outbound",
+              "priority": 110,
+              "protocol": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "sourcePortRange": "*"
+            }
+          },
+          {
+            "name": "block_outbound",
+            "properties": {
+              "access": "Deny",
+              "description": "Block outbound internet from master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "*",
+              "direction": "Outbound",
+              "priority": 120,
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          }
     ]
   },
   "type": "Microsoft.Network/networkSecurityGroups"
