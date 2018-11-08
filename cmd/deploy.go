@@ -383,6 +383,9 @@ func (dc *deployCmd) validateApimodel() (*api.ContainerService, string, error) {
 				return nil, "", errors.New("when using the kubernetes orchestrator, must either set useManagedIdentity in the kubernetes config or set --client-id and --client-secret or KeyvaultSecretRef of secret (also available in the API model)")
 			}
 		}
+		if p.MasterProfile != nil && p.MasterProfile.IsVirtualMachineScaleSets() && p.MasterProfile.VnetSubnetID != "" && p.MasterProfile.FirstConsecutiveStaticIP != "" {
+			return nil, "", errors.Errorf("when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr %s", p.MasterProfile.FirstConsecutiveStaticIP)
+		}
 	}
 
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code

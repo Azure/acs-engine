@@ -169,6 +169,9 @@ func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVM
 
 	if config.CreateVNET {
 		if isVMSS {
+			if cs.Properties.MasterProfile.FirstConsecutiveStaticIP != "" {
+				return nil, errors.Errorf("when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr %s", cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
+			}
 			cs.ContainerService.Properties.MasterProfile.VnetSubnetID = masterSubnetID
 			cs.ContainerService.Properties.MasterProfile.AgentVnetSubnetID = agentSubnetID
 			for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
