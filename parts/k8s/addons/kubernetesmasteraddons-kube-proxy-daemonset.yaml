@@ -43,6 +43,8 @@ spec:
         - mountPath: /var/lib/kubelet/kubeconfig
           name: kubeconfig
           readOnly: true
+        - mountPath: /run/xtables.lock
+          name: iptableslock
       hostNetwork: true
       volumes:
       - hostPath:
@@ -54,5 +56,8 @@ spec:
       - hostPath:
           path: /etc/kubernetes
         name: etc-kubernetes
+      - hostPath:
+          path: /run/xtables.lock
+        name: iptableslock
       nodeSelector:
         beta.kubernetes.io/os: linux
