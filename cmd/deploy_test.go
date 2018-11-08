@@ -54,6 +54,82 @@ const ExampleAPIModelWithoutServicePrincipalProfile = `{
 	}
   }
   `
+const ExampleAPIModelWithCustomVnetVMSSAndFirstConsecutiveStaticIP = `{
+	"apiVersion": "vlabs",
+	"properties": {
+		  "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
+	  "masterProfile": { "count": 1, "dnsPrefix": "mytestcluster", "vmSize": "Standard_D2_v2", 
+      "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/master",
+      "agentVnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+      "vnetCidr": "10.240.192.0/21",
+      "firstConsecutiveStaticIP": "10.240.192.4",
+      "availabilityProfile": "VirtualMachineScaleSets" },
+	  "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", 
+	  "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+	  "availabilityProfile": "VirtualMachineScaleSets" } ],
+	  "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	  "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	  },
+	  "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
+	}
+  }
+  `
+const ExampleAPIModelWithCustomVnetVMSSAndNoFirstConsecutiveStaticIP = `{
+	"apiVersion": "vlabs",
+	"properties": {
+		  "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
+	  "masterProfile": { "count": 1, "dnsPrefix": "mytestcluster", "vmSize": "Standard_D2_v2", 
+      "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/master",
+      "agentVnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+      "vnetCidr": "10.240.192.0/21",
+      "availabilityProfile": "VirtualMachineScaleSets" },
+	  "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", 
+	  "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+	  "availabilityProfile": "VirtualMachineScaleSets" } ],
+	  "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	  "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	  },
+	  "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
+	}
+  }
+  `
+const ExampleAPIModelWithCustomVnetVMASAndFirstConsecutiveStaticIP = `{
+	"apiVersion": "vlabs",
+	"properties": {
+		  "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
+	  "masterProfile": { "count": 1, "dnsPrefix": "mytestcluster", "vmSize": "Standard_D2_v2", 
+      "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/master",
+      "agentVnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+      "vnetCidr": "10.240.192.0/21",
+      "firstConsecutiveStaticIP": "10.240.192.4" },
+	  "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", 
+	  "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+	  "availabilityProfile": "VirtualMachineScaleSets" } ],
+	  "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	  "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	  },
+	  "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
+	}
+  }
+  `
+const ExampleAPIModelWithCustomVnetVMASAndNoFirstConsecutiveStaticIP = `{
+	"apiVersion": "vlabs",
+	"properties": {
+		  "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
+	  "masterProfile": { "count": 1, "dnsPrefix": "mytestcluster", "vmSize": "Standard_D2_v2", 
+      "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/master",
+      "agentVnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+      "vnetCidr": "10.240.192.0/21" },
+	  "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", 
+	  "vnetSubnetId": "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VN/subnets/agent",
+	  "availabilityProfile": "VirtualMachineScaleSets" } ],
+	  "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	  "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	  },
+	  "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
+	}
+  }
+  `
 
 //mockAuthProvider implements AuthProvider and allows in particular to stub out getClient()
 type mockAuthProvider struct {
@@ -499,6 +575,112 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 			cs.Properties.ServicePrincipalProfile.ClientID == "" || cs.Properties.ServicePrincipalProfile.Secret == "" {
 			t.Fatalf("Credentials were missing even though MSI was not active.")
 		}
+	}
+}
+
+func TestAPIModelWithFirstConsecutiveStaticIP(t *testing.T) {
+	apiloader := &api.Apiloader{
+		Translator: nil,
+	}
+
+	apimodel := getAPIModel(ExampleAPIModelWithCustomVnetVMSSAndFirstConsecutiveStaticIP, false, "", "")
+	cs, ver, err := apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
+	}
+
+	// deserialization happens in validate(), but we are testing just the default
+	// setting that occurs in autofillApimodel (which is called from validate)
+	// Thus, it assumes that containerService/apiVersion are already populated
+	deployCmd := &deployCmd{
+		apimodelPath:    "./this/is/unused.json",
+		outputDirectory: "_test_output",
+		forceOverwrite:  true,
+		location:        "westus",
+
+		containerService: cs,
+		apiVersion:       ver,
+
+		client: &armhelpers.MockACSEngineClient{},
+		authProvider: &mockAuthProvider{
+			authArgs: &authArgs{},
+		},
+	}
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
+
+	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
+	defer os.RemoveAll(deployCmd.outputDirectory)
+
+	_, _, err = deployCmd.validateApimodel()
+	if err == nil {
+		t.Fatalf("expected error validating apimodel with custom vnet, vmss masters, and firstConsecutiveStaticIP: %s", err)
+	}
+
+	apimodel = getAPIModel(ExampleAPIModelWithCustomVnetVMSSAndNoFirstConsecutiveStaticIP, false, "", "")
+	cs, _, err = apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
+	}
+
+	deployCmd.containerService = cs
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
+
+	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
+	defer os.RemoveAll(deployCmd.outputDirectory)
+
+	_, _, err = deployCmd.validateApimodel()
+	if err != nil {
+		t.Fatalf("unexpected error validating apimodel with custom vnet, vmss masters, and no firstConsecutiveStaticIP: %s", err)
+	}
+
+	apimodel = getAPIModel(ExampleAPIModelWithCustomVnetVMASAndNoFirstConsecutiveStaticIP, false, "", "")
+	cs, _, err = apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
+	}
+
+	deployCmd.containerService = cs
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
+
+	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
+	defer os.RemoveAll(deployCmd.outputDirectory)
+
+	_, _, err = deployCmd.validateApimodel()
+	if err == nil {
+		t.Fatalf("expected error validating apimodel with custom vnet, vmas masters, and no firstConsecutiveStaticIP: %s", err)
+	}
+
+	apimodel = getAPIModel(ExampleAPIModelWithCustomVnetVMASAndFirstConsecutiveStaticIP, false, "", "")
+	cs, _, err = apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
+	}
+
+	deployCmd.containerService = cs
+
+	err = autofillApimodel(deployCmd)
+	if err != nil {
+		t.Fatalf("unexpected error autofilling the example apimodel: %s", err)
+	}
+
+	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
+	defer os.RemoveAll(deployCmd.outputDirectory)
+
+	_, _, err = deployCmd.validateApimodel()
+	if err != nil {
+		t.Fatalf("unexpected error validating apimodel with custom vnet, vmas masters, and firstConsecutiveStaticIP: %s", err)
 	}
 }
 
