@@ -180,7 +180,7 @@ Above you see custom configuration for both tiller and kubernetes-dashboard. Bot
 
 See https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/ for more on Kubernetes resource limits.
 
-Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it.
+Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it. Important note! customizing the image is not sticky across upgrade/scale, to ensure that acs-engine always delivers a version-curated, known-working addon when moving a cluster to a new version. Considering all that, providing a custom image reference for an addon configuration should be considered for testing/development, but not for a production cluster.
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
