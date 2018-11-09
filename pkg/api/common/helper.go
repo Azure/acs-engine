@@ -107,11 +107,11 @@ func IsNvidiaEnabledSKU(vmSize string) bool {
 
 // GetNSeriesVMCasesForTesting returns a struct w/ VM SKUs and whether or not we expect them to be nvidia-enabled
 func GetNSeriesVMCasesForTesting() []struct {
-	VmSKU    string
+	VMSKU    string
 	Expected bool
 } {
 	cases := []struct {
-		VmSKU    string
+		VMSKU    string
 		Expected bool
 	}{
 		{

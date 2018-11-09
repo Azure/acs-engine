@@ -225,7 +225,7 @@ func (e *Engine) HasWindowsAgents() bool {
 // HasGPUNodes will return true if the VM SKU is GPU-enabled
 func (e *Engine) HasGPUNodes() bool {
 	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
-		if strings.Contains(ap.VMSize, "Standard_N") {
+		if ap.IsNSeriesSKU() {
 			return true
 		}
 	}
