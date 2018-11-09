@@ -156,17 +156,6 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					addValue(parametersMap, "kubernetesReschedulerSpec", reschedulerAddon.Containers[reschedulerIndex].Image)
 				}
 			}
-			if properties.OrchestratorProfile.IsMetricsServerEnabled() {
-				metricsServerAddon := kubernetesConfig.GetAddonByName(DefaultMetricsServerAddonName)
-				metricsServerIndex := metricsServerAddon.GetAddonContainersIndexByName(DefaultMetricsServerAddonName)
-				if metricsServerIndex > -1 {
-					if metricsServerAddon.Containers[metricsServerIndex].Image != "" {
-						addValue(parametersMap, "kubernetesMetricsServerSpec", metricsServerAddon.Containers[metricsServerIndex].Image)
-					} else {
-						addValue(parametersMap, "kubernetesMetricsServerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+k8sComponents[DefaultMetricsServerAddonName])
-					}
-				}
-			}
 			if properties.IsNVIDIADevicePluginEnabled() {
 				nvidiaDevicePluginAddon := kubernetesConfig.GetAddonByName(NVIDIADevicePluginAddonName)
 				nvidiaPluginIndex := nvidiaDevicePluginAddon.GetAddonContainersIndexByName(NVIDIADevicePluginAddonName)

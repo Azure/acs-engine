@@ -200,3 +200,8 @@ const (
 	swarmWinAgentResourcesVMSS    = "swarm/swarmwinagentresourcesvmss.t"
 	windowsParams                 = "windowsparams.t"
 )
+
+const (
+	metricsServerAddonFile       = "k8s/monkeybrains/kubernetesmasteraddons-metrics-server-deployment.yaml"
+	metricsServerDestinationFile = "kube-metrics-server-deployment.yaml"
+)
