@@ -690,7 +690,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
-			if eng.HasGPUNodes() {
+			if eng.ExpandedDefinition.Properties.HasNSeriesSKU() {
 				version := common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,

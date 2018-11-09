@@ -232,7 +232,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
-			if isNSeriesSKU(profile) {
+			if common.IsNvidiaEnabledSKU(profile.VMSize) {
 				accelerator := "nvidia"
 				buf.WriteString(fmt.Sprintf(",accelerator=%s", accelerator))
 			}
@@ -786,7 +786,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.IsNVIDIADevicePluginEnabled()
 		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
-			return isNSeriesSKU(profile)
+			return common.IsNvidiaEnabledSKU(profile.VMSize)
 		},
 		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
 			return *profile.SinglePlacementGroup

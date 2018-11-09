@@ -65,3 +65,152 @@ func ValidateDNSPrefix(dnsName string) error {
 	}
 	return nil
 }
+
+// IsNvidiaEnabledSKU determines if an VM SKU has nvidia driver support
+func IsNvidiaEnabledSKU(vmSize string) bool {
+	/* If a new GPU sku becomes available, add a key to this map, but only if you have a confirmation
+	   that we have an agreement with NVIDIA for this specific gpu.
+	*/
+	dm := map[string]bool{
+		// K80
+		"Standard_NC6":   true,
+		"Standard_NC12":  true,
+		"Standard_NC24":  true,
+		"Standard_NC24r": true,
+		// M60
+		"Standard_NV6":   true,
+		"Standard_NV12":  true,
+		"Standard_NV24":  true,
+		"Standard_NV24r": true,
+		// P40
+		"Standard_ND6s":   true,
+		"Standard_ND12s":  true,
+		"Standard_ND24s":  true,
+		"Standard_ND24rs": true,
+		// P100
+		"Standard_NC6s_v2":   true,
+		"Standard_NC12s_v2":  true,
+		"Standard_NC24s_v2":  true,
+		"Standard_NC24rs_v2": true,
+		// V100
+		"Standard_NC6s_v3":   true,
+		"Standard_NC12s_v3":  true,
+		"Standard_NC24s_v3":  true,
+		"Standard_NC24rs_v3": true,
+	}
+	if _, ok := dm[vmSize]; ok {
+		return dm[vmSize]
+	}
+
+	return false
+}
+
+// GetNSeriesVMCasesForTesting returns a struct w/ VM SKUs and whether or not we expect them to be nvidia-enabled
+func GetNSeriesVMCasesForTesting() []struct {
+	VMSKU    string
+	Expected bool
+} {
+	cases := []struct {
+		VMSKU    string
+		Expected bool
+	}{
+		{
+			"Standard_NC6",
+			true,
+		},
+		{
+			"Standard_NC12",
+			true,
+		},
+		{
+			"Standard_NC24",
+			true,
+		},
+		{
+			"Standard_NC24r",
+			true,
+		},
+		{
+			"Standard_NV6",
+			true,
+		},
+		{
+			"Standard_NV12",
+			true,
+		},
+		{
+			"Standard_NV24",
+			true,
+		},
+		{
+			"Standard_NV24r",
+			true,
+		},
+		{
+			"Standard_ND6s",
+			true,
+		},
+		{
+			"Standard_ND12s",
+			true,
+		},
+		{
+			"Standard_ND24s",
+			true,
+		},
+		{
+			"Standard_ND24rs",
+			true,
+		},
+		{
+			"Standard_NC6s_v2",
+			true,
+		},
+		{
+			"Standard_NC12s_v2",
+			true,
+		},
+		{
+			"Standard_NC24s_v2",
+			true,
+		},
+		{
+			"Standard_NC24rs_v2",
+			true,
+		},
+		{
+			"Standard_NC24rs_v2",
+			true,
+		},
+		{
+			"Standard_NC6s_v3",
+			true,
+		},
+		{
+			"Standard_NC12s_v3",
+			true,
+		},
+		{
+			"Standard_NC24s_v3",
+			true,
+		},
+		{
+			"Standard_NC24rs_v3",
+			true,
+		},
+		{
+			"Standard_D2_v2",
+			false,
+		},
+		{
+			"gobledygook",
+			false,
+		},
+		{
+			"",
+			false,
+		},
+	}
+
+	return cases
+}
