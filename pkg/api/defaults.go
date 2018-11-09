@@ -458,7 +458,9 @@ func (p *Properties) setAgentProfileDefaults(isUpgrade, isScale bool) {
 					profile.Distro = Ubuntu
 				}
 			} else if p.OrchestratorProfile.IsKubernetes() && (isUpgrade || isScale) && profile.IsNSeriesSKU() {
-				profile.Distro = AKSDockerEngine
+				if profile.Distro != Ubuntu {
+					profile.Distro = AKSDockerEngine
+				}
 			}
 		}
 

@@ -922,6 +922,10 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
 	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[2].Distro = Ubuntu
+	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
@@ -929,6 +933,12 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	}
 	if properties.AgentPoolProfiles[1].Distro != AKS {
 		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[2].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
 	}
 
 	// N Series agent pools with small disk size should always get the "ubuntu" distro for default create flows
@@ -950,7 +960,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 		t.Fatalf("Expected %s distro for D-series pool with small disk, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
 	}
 
-	// N Series agent pools should always get the "aks-docker-engine" distro for upgrade flows
+	// N Series agent pools should always get the "aks-docker-engine" distro for upgrade flows unless Ubuntu
 	// D Series agent pools should always get the distro they requested for upgrade flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
@@ -962,7 +972,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.AgentPoolProfiles[1].Distro = AKS
 	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
 	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
-	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].VMSize = "Standard_NC6"
 	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(true, false)
 
@@ -973,13 +983,13 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
 	}
 	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[2].Distro)
 	}
 	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
-		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
 	}
 
-	// N Series agent pools should always get the "aks-docker-engine" distro for scale flows
+	// N Series agent pools should always get the "aks-docker-engine" distro for scale flows unless Ubuntu
 	// D Series agent pools should always get the distro they requested for scale flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
@@ -991,7 +1001,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.AgentPoolProfiles[1].Distro = AKS
 	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
 	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
-	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].VMSize = "Standard_NC6"
 	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(false, true)
 
@@ -1002,10 +1012,10 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
 	}
 	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[2].Distro)
 	}
 	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
-		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
 	}
 
 	// N Series Windows agent pools should always get no distro value
@@ -1032,7 +1042,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
-		t.Fatalf("Expected %s distro for N-series Windows VM, got %s instead", Ubuntu, properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected no distro value for non k8s context, got %s instead", properties.AgentPoolProfiles[0].Distro)
 	}
 }
 
