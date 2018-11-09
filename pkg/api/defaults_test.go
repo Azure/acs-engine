@@ -914,64 +914,125 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 }
 
 func TestAKSDockerEngineDistro(t *testing.T) {
+	// N Series agent pools should always get the "aks-docker-engine" distro for default create flows
+	// D Series agent pools should always get the "aks" distro for default create flows
 	mockCS := getMockBaseContainerService("1.10.9")
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
 	}
 
-	mockCS = getMockBaseContainerService("1.10.9")
-	properties = mockCS.Properties
-	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
-	properties.MasterProfile.Count = 1
-	properties.AgentPoolProfiles[0].VMSize = "Standard_D2_V2"
-	properties.setAgentProfileDefaults(false, false)
-
-	if properties.AgentPoolProfiles[0].Distro != AKS {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKS, properties.AgentPoolProfiles[0].Distro)
-	}
-
-	// N Series agent pools should always get the "aks-docker-engine" distro for default create flows
+	// N Series agent pools with small disk size should always get the "ubuntu" distro for default create flows
+	// D Series agent pools with small disk size should always get the "ubuntu" distro for default create flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].OSDiskSizeGB = VHDDiskSizeAKS - 1
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].OSDiskSizeGB = VHDDiskSizeAKS - 1
 	properties.setAgentProfileDefaults(false, false)
 
-	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for N-series pool with small disk, got %s instead", Ubuntu, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool with small disk, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
 	}
 
 	// N Series agent pools should always get the "aks-docker-engine" distro for upgrade flows
+	// D Series agent pools should always get the distro they requested for upgrade flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
 	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].Distro = AKS
+	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
+	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(true, false)
 
 	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
 	}
 
 	// N Series agent pools should always get the "aks-docker-engine" distro for scale flows
+	// D Series agent pools should always get the distro they requested for scale flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
 	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].Distro = AKS
+	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
+	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(false, true)
 
 	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
+	}
+
+	// N Series Windows agent pools should always get no distro value
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].OSType = Windows
+	properties.AgentPoolProfiles[1].VMSize = "Standard_NC6"
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != "" {
+		t.Fatalf("Expected %s distro for N-series Windows VM, got %s instead", "", properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+	}
+
+	// Non-k8s context
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.MasterProfile.Count = 1
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for N-series Windows VM, got %s instead", Ubuntu, properties.AgentPoolProfiles[0].Distro)
 	}
 }
 
@@ -1216,6 +1277,9 @@ func getMockAPIProperties(orchestratorVersion string) Properties {
 		},
 		MasterProfile: &MasterProfile{},
 		AgentPoolProfiles: []*AgentPoolProfile{
+			{},
+			{},
+			{},
 			{},
 		}}
 }
