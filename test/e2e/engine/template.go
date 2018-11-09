@@ -222,16 +222,6 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
-// HasGPUNodes will return true if the VM SKU is GPU-enabled
-func (e *Engine) HasGPUNodes() bool {
-	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
-		if ap.IsNSeriesSKU() {
-			return true
-		}
-	}
-	return false
-}
-
 // HasAddon will return true if an addon is enabled
 func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {

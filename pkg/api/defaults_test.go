@@ -1029,7 +1029,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != "" {
-		t.Fatalf("Expected %s distro for N-series Windows VM, got %s instead", "", properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected no distro value for N-series Windows VM, got %s instead", properties.AgentPoolProfiles[0].Distro)
 	}
 	if properties.AgentPoolProfiles[1].Distro != AKSDockerEngine {
 		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
@@ -1042,7 +1042,7 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
-		t.Fatalf("Expected no distro value for non k8s context, got %s instead", properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
 	}
 }
 

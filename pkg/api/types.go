@@ -1274,16 +1274,6 @@ func (a *AgentPoolProfile) IsNSeriesSKU() bool {
 }
 
 // HasNSeriesSKU returns whether or not there is an N series SKU agent pool
-func HasNSeriesSKU(p *Properties) bool {
-	for _, profile := range p.AgentPoolProfiles {
-		if strings.Contains(profile.VMSize, "Standard_N") {
-			return true
-		}
-	}
-	return false
-}
-
-// HasNSeriesSKU returns whether or not there is an N series SKU agent pool
 func (p *Properties) HasNSeriesSKU() bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
