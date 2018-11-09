@@ -1251,7 +1251,7 @@ func TestAgentPoolIsNSeriesSKU(t *testing.T) {
 			AgentPoolProfiles: []*AgentPoolProfile{
 				{
 					Name:   "agentpool",
-					VMSize: c.VmSKU,
+					VMSize: c.VMSKU,
 					Count:  1,
 				},
 			},
@@ -1262,7 +1262,7 @@ func TestAgentPoolIsNSeriesSKU(t *testing.T) {
 		}
 		ret := p.AgentPoolProfiles[0].IsNSeriesSKU()
 		if ret != c.Expected {
-			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VmSKU, c.Expected, ret)
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VMSKU, c.Expected, ret)
 		}
 	}
 }

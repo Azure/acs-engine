@@ -61,9 +61,9 @@ func TestIsNvidiaEnabledSKU(t *testing.T) {
 	cases := GetNSeriesVMCasesForTesting()
 
 	for _, c := range cases {
-		ret := IsNvidiaEnabledSKU(c.VmSKU)
+		ret := IsNvidiaEnabledSKU(c.VMSKU)
 		if ret != c.Expected {
-			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VmSKU, c.Expected, ret)
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VMSKU, c.Expected, ret)
 		}
 	}
 }
