@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
-func (cs *ContainerService) setAddonsConfig() {
+func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := cs.GetCloudSpecConfig()
 	k8sComponents := K8sComponentsByVersionMap[o.OrchestratorVersion]
@@ -252,7 +252,7 @@ func (cs *ContainerService) setAddonsConfig() {
 	}
 
 	for _, addon := range defaultAddons {
-		synthesizeAddonsConfig(o.KubernetesConfig.Addons, addon, false)
+		synthesizeAddonsConfig(o.KubernetesConfig.Addons, addon, false, isUpdate)
 	}
 }
 
@@ -266,7 +266,7 @@ func getAddonsIndexByName(addons []KubernetesAddon, name string) int {
 }
 
 // assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
-func assignDefaultAddonVals(addon, defaults KubernetesAddon) KubernetesAddon {
+func assignDefaultAddonVals(addon, defaults KubernetesAddon, isUpdate bool) KubernetesAddon {
 	if addon.Enabled == nil {
 		addon.Enabled = defaults.Enabled
 	}
@@ -275,7 +275,7 @@ func assignDefaultAddonVals(addon, defaults KubernetesAddon) KubernetesAddon {
 		if c < 0 {
 			addon.Containers = append(addon.Containers, defaults.Containers[i])
 		} else {
-			if addon.Containers[c].Image == "" {
+			if addon.Containers[c].Image == "" || isUpdate {
 				addon.Containers[c].Image = defaults.Containers[i].Image
 			}
 			if addon.Containers[c].CPURequests == "" {
@@ -303,11 +303,11 @@ func assignDefaultAddonVals(addon, defaults KubernetesAddon) KubernetesAddon {
 	return addon
 }
 
-func synthesizeAddonsConfig(addons []KubernetesAddon, addon KubernetesAddon, enableIfNil bool) {
+func synthesizeAddonsConfig(addons []KubernetesAddon, addon KubernetesAddon, enableIfNil bool, isUpdate bool) {
 	i := getAddonsIndexByName(addons, addon.Name)
 	if i >= 0 {
 		if addons[i].IsEnabled(enableIfNil) {
-			addons[i] = assignDefaultAddonVals(addons[i], addon)
+			addons[i] = assignDefaultAddonVals(addons[i], addon, isUpdate)
 		}
 	}
 }

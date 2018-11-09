@@ -237,6 +237,7 @@ func TestAssignDefaultAddonImages(t *testing.T) {
 
 func TestAssignDefaultAddonVals(t *testing.T) {
 	addonName := "testaddon"
+	customImage := "myimage"
 	customCPURequests := "60m"
 	customMemoryRequests := "160Mi"
 	customCPULimits := "40m"
@@ -248,6 +249,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		Containers: []KubernetesContainerSpec{
 			{
 				Name:           addonName,
+				Image:          customImage,
 				CPURequests:    customCPURequests,
 				MemoryRequests: customMemoryRequests,
 				CPULimits:      customCPULimits,
@@ -256,9 +258,13 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		},
 	}
 	addonWithDefaults := getMockAddon(addonName)
-	modifiedAddon := assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate := false
+	modifiedAddon := assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
 	if modifiedAddon.Containers[0].Name != customAddon.Containers[0].Name {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Name' value %s to %s,", customAddon.Containers[0].Name, modifiedAddon.Containers[0].Name)
+	}
+	if modifiedAddon.Containers[0].Image != customAddon.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Image' value %s to %s,", customAddon.Containers[0].Image, modifiedAddon.Containers[0].Image)
 	}
 	if modifiedAddon.Containers[0].CPURequests != customAddon.Containers[0].CPURequests {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'CPURequests' value %s to %s,", customAddon.Containers[0].CPURequests, modifiedAddon.Containers[0].CPURequests)
@@ -283,7 +289,11 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 			},
 		},
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
 	if modifiedAddon.Containers[0].CPURequests != addonWithDefaults.Containers[0].CPURequests {
 		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'CPURequests' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].CPURequests, modifiedAddon.Containers[0].CPURequests)
 	}
@@ -309,7 +319,11 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 			},
 		},
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
 	if modifiedAddon.Containers[0].Name != customAddon.Containers[0].Name {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Name' value %s to %s,", customAddon.Containers[0].Name, modifiedAddon.Containers[0].Name)
 	}
@@ -323,11 +337,29 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'MemoryLimits' value %s to %s,", customAddon.Containers[0].MemoryLimits, modifiedAddon.Containers[0].MemoryLimits)
 	}
 
+	// Verify that an addon with a custom image value will be overriden during upgrade/scale
+	customAddon = KubernetesAddon{
+		Name:    addonName,
+		Enabled: helpers.PointerToBool(true),
+		Containers: []KubernetesContainerSpec{
+			{
+				Name:  addonName,
+				Image: customImage,
+			},
+		},
+	}
+	isUpdate = true
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
+
 	addonWithDefaults.Config = map[string]string{
 		"os":    "Linux",
 		"taint": "node.kubernetes.io/memory-pressure",
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
 
 	if modifiedAddon.Config["os"] != "Linux" {
 		t.Error("assignDefaultAddonVals() should have added the default config property")
