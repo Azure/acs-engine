@@ -241,6 +241,8 @@ MASTER_ADDONS_CONFIG_PLACEHOLDER
 
 MASTER_CUSTOM_FILES_PLACEHOLDER
 
+MASTER_ADDONS_NEW_PLACEHOLDER
+
 - path: /etc/default/kubelet
   permissions: "0644"
   owner: root
@@ -340,10 +342,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     sed -i "s|<img>|{{WrapAsParameter "kubernetesReschedulerSpec"}}|g; s|<cpuReq>|{{WrapAsParameter "kubernetesReschedulerCPURequests"}}|g; s|<memReq>|{{WrapAsParameter "kubernetesReschedulerMemoryRequests"}}|g; s|<cpuLim>|{{WrapAsParameter "kubernetesReschedulerCPULimit"}}|g; s|<memLim>|{{WrapAsParameter "kubernetesReschedulerMemoryLimit"}}|g" /etc/kubernetes/addons/kube-rescheduler-deployment.yaml
-{{end}}
-
-{{if .OrchestratorProfile.IsMetricsServerEnabled}}
-    sed -i "s|<img>|{{WrapAsParameter "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
 {{if IsNVIDIADevicePluginEnabled}}

@@ -38,6 +38,14 @@ var openshiftTemplateFiles = append(
 	openshift39MasterScript,
 )
 
+var artifactFileMap = map[string]string{
+	DefaultMetricsServerAddonName: metricsServerAddonFile,
+}
+
+var artifactFileOutputMap = map[string]string{
+	DefaultMetricsServerAddonName: metricsServerDestinationFile,
+}
+
 var keyvaultSecretPathRe *regexp.Regexp
 
 func init() {
@@ -690,6 +698,46 @@ func getDCOSProvisionScript(script string) string {
 	}
 
 	return strings.Replace(strings.Replace(provisionScript, "\r\n", "\n", -1), "\n", "\n\n    ", -1)
+}
+
+func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
+	return template.FuncMap{
+		"ContainerImage": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].Image
+		},
+
+		"ContainerConfig": func(name string) string {
+			return addon.Config[name]
+		},
+	}
+}
+
+func getK8sAddonString(orchProfile *api.OrchestratorProfile) string {
+	var result string
+	addons := orchProfile.KubernetesConfig.Addons
+	for _, addon := range addons {
+		// this is temporary for the sake of prototyping
+		if addon.Name != DefaultMetricsServerAddonName {
+			continue
+		}
+		if helpers.IsTrueBoolPointer(addon.Enabled) {
+			templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
+			addonFile := artifactFileMap[addon.Name]
+			addonFileBytes, err := Asset(addonFile)
+			if err != nil {
+				return ""
+			}
+			_, err = templ.Parse(string(addonFileBytes))
+			if err != nil {
+				return ""
+			}
+			var buffer bytes.Buffer
+			templ.Execute(&buffer, addon)
+			result += getAddonString(buffer.String(), "/etc/kubernetes/addons", artifactFileOutputMap[addon.Name])
+		}
+	}
+	return result
 }
 
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile, bootstrapIP string) string {

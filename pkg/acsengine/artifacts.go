@@ -143,12 +143,6 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultAzureCloudProviderDeploymentAddonName),
 		},
 		{
-			"kubernetesmasteraddons-metrics-server-deployment.yaml",
-			"kube-metrics-server-deployment.yaml",
-			profile.OrchestratorProfile.IsMetricsServerEnabled(),
-			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultMetricsServerAddonName),
-		},
-		{
 			"kubernetesmasteraddons-omsagent-daemonset.yaml",
 			"omsagent-daemonset.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled(),
@@ -266,6 +260,19 @@ func kubernetesArtifactSettingsInitAgent(profile *api.Properties) []kubernetesFe
 			"",
 		},
 	}
+}
+
+func getAddonString(input, destinationPath, destinationFile string) string {
+	addonString := getBase64CustomScriptFromStr(input)
+	contents := []string{
+		fmt.Sprintf("- path: %s/%s", destinationPath, destinationFile),
+		"  permissions: \\\"0644\\\"",
+		"  encoding: gzip",
+		"  owner: \\\"root\\\"",
+		"  content: !!binary |",
+		fmt.Sprintf("    %s\\n\\n", addonString),
+	}
+	return strings.Join(contents, "\\n")
 }
 
 func substituteConfigString(input string, kubernetesFeatureSettings []kubernetesFeatureSetting, sourcePath string, destinationPath string, placeholder string, orchestratorVersion string) string {

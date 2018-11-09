@@ -294,14 +294,6 @@
       },
       "type": "string"
     },
-{{if .OrchestratorProfile.IsMetricsServerEnabled}}
-    "kubernetesMetricsServerSpec": {
-      "metadata": {
-        "description": "The container spec for Metrics Server."
-      },
-      "type": "string"
-    },
-{{end}}
 {{if .IsNVIDIADevicePluginEnabled}}
     "kubernetesNVIDIADevicePluginSpec": {
       "metadata": {
