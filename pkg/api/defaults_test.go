@@ -935,6 +935,44 @@ func TestAKSDockerEngineDistro(t *testing.T) {
 	if properties.AgentPoolProfiles[0].Distro != AKS {
 		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKS, properties.AgentPoolProfiles[0].Distro)
 	}
+
+	// N Series agent pools should always get the "aks-docker-engine" distro for default create flows
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+
+	// N Series agent pools should always get the "aks-docker-engine" distro for upgrade flows
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.setAgentProfileDefaults(true, false)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+
+	// N Series agent pools should always get the "aks-docker-engine" distro for scale flows
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.setAgentProfileDefaults(false, true)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
 }
 
 func TestAzureCNIVersionString(t *testing.T) {

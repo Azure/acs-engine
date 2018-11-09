@@ -438,16 +438,20 @@ func (p *Properties) setAgentProfileDefaults(isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(DefaultAcceleratedNetworkingWindowsEnabled)
 		}
 
+		// Ensure distro is set properly for N Series SKUs no matter what, because
+		// (1) At present, "aks-docker-engine" is the only working distro base for running GPU workloads on N Series SKUs
+		// (2) Previous versions of acs-engine had working implementations using a different distro value,
+		//     so we need to hard override it in order to produce a working cluster in upgrade/scale contexts
+		if IsNSeriesSKU(p) {
+			profile.Distro = AKSDockerEngine
+		}
+
 		if profile.Distro == "" && profile.OSType != Windows {
 			if p.OrchestratorProfile.IsKubernetes() {
 				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < VHDDiskSizeAKS {
 					profile.Distro = Ubuntu
 				} else {
-					if IsNSeriesSKU(p) {
-						profile.Distro = AKSDockerEngine
-					} else {
-						profile.Distro = AKS
-					}
+					profile.Distro = AKS
 				}
 			} else if !p.OrchestratorProfile.IsOpenShift() {
 				profile.Distro = Ubuntu
