@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -1239,6 +1240,30 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 	}
 	if p.IsNVIDIADevicePluginEnabled() {
 		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false when explicitly disabled")
+	}
+}
+
+func TestAgentPoolIsNSeriesSKU(t *testing.T) {
+	cases := common.GetNSeriesVMCasesForTesting()
+
+	for _, c := range cases {
+		p := Properties{
+			AgentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:   "agentpool",
+					VMSize: c.VmSKU,
+					Count:  1,
+				},
+			},
+			OrchestratorProfile: &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: "1.12.2",
+			},
+		}
+		ret := p.AgentPoolProfiles[0].IsNSeriesSKU()
+		if ret != c.Expected {
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VmSKU, c.Expected, ret)
+		}
 	}
 }
 

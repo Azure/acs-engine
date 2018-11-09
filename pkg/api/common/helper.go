@@ -104,3 +104,113 @@ func IsNvidiaEnabledSKU(vmSize string) bool {
 
 	return false
 }
+
+// GetNSeriesVMCasesForTesting returns a struct w/ VM SKUs and whether or not we expect them to be nvidia-enabled
+func GetNSeriesVMCasesForTesting() []struct {
+	VmSKU    string
+	Expected bool
+} {
+	cases := []struct {
+		VmSKU    string
+		Expected bool
+	}{
+		{
+			"Standard_NC6",
+			true,
+		},
+		{
+			"Standard_NC12",
+			true,
+		},
+		{
+			"Standard_NC24",
+			true,
+		},
+		{
+			"Standard_NC24r",
+			true,
+		},
+		{
+			"Standard_NV6",
+			true,
+		},
+		{
+			"Standard_NV12",
+			true,
+		},
+		{
+			"Standard_NV24",
+			true,
+		},
+		{
+			"Standard_NV24r",
+			true,
+		},
+		{
+			"Standard_ND6s",
+			true,
+		},
+		{
+			"Standard_ND12s",
+			true,
+		},
+		{
+			"Standard_ND24s",
+			true,
+		},
+		{
+			"Standard_ND24rs",
+			true,
+		},
+		{
+			"Standard_NC6s_v2",
+			true,
+		},
+		{
+			"Standard_NC12s_v2",
+			true,
+		},
+		{
+			"Standard_NC24s_v2",
+			true,
+		},
+		{
+			"Standard_NC24rs_v2",
+			true,
+		},
+		{
+			"Standard_NC24rs_v2",
+			true,
+		},
+		{
+			"Standard_NC6s_v3",
+			true,
+		},
+		{
+			"Standard_NC12s_v3",
+			true,
+		},
+		{
+			"Standard_NC24s_v3",
+			true,
+		},
+		{
+			"Standard_NC24rs_v3",
+			true,
+		},
+		{
+			"Standard_D2_v2",
+			false,
+		},
+		{
+			"gobledygook",
+			false,
+		},
+		{
+			"",
+			false,
+		},
+	}
+
+	return cases
+}

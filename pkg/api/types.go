@@ -1270,7 +1270,7 @@ func (k *KubernetesConfig) IsIPMasqAgentEnabled() bool {
 
 // IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
 func (a *AgentPoolProfile) IsNSeriesSKU() bool {
-	return strings.Contains(a.VMSize, "Standard_N")
+	return common.IsNvidiaEnabledSKU(a.VMSize)
 }
 
 // HasNSeriesSKU returns whether or not there is an N series SKU agent pool

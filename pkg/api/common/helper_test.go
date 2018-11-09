@@ -56,3 +56,14 @@ func TestValidateDNSPrefix(t *testing.T) {
 		}
 	}
 }
+
+func TestIsNvidiaEnabledSKU(t *testing.T) {
+	cases := GetNSeriesVMCasesForTesting()
+
+	for _, c := range cases {
+		ret := IsNvidiaEnabledSKU(c.VmSKU)
+		if ret != c.Expected {
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VmSKU, c.Expected, ret)
+		}
+	}
+}
