@@ -337,7 +337,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'MemoryLimits' value %s to %s,", customAddon.Containers[0].MemoryLimits, modifiedAddon.Containers[0].MemoryLimits)
 	}
 
-	// Verify that an addon with a custom image value will be overriden during upgrade/scale
+	// Verify that an addon with a custom image value will be overridden during upgrade/scale
 	customAddon = KubernetesAddon{
 		Name:    addonName,
 		Enabled: helpers.PointerToBool(true),
