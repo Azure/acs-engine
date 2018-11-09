@@ -155,7 +155,7 @@ func (cs *ContainerService) setAddonsConfig() {
 
 	defaultNVIDIADevicePluginAddonsConfig := KubernetesAddon{
 		Name:    NVIDIADevicePluginAddonName,
-		Enabled: helpers.PointerToBool(IsNSeriesSKU(cs.Properties) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0")),
+		Enabled: helpers.PointerToBool(cs.Properties.HasNSeriesSKU() && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0")),
 		Containers: []KubernetesContainerSpec{
 			{
 				Name: NVIDIADevicePluginAddonName,
