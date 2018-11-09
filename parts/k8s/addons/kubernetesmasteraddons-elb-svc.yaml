@@ -11,5 +11,5 @@ spec:
   - port: 8765
     targetPort: 9376
   selector:
-    app: <svcName>
+    app: "<svcName>"
   type: LoadBalancer
