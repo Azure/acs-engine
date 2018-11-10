@@ -180,7 +180,7 @@ Above you see custom configuration for both tiller and kubernetes-dashboard. Bot
 
 See https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/ for more on Kubernetes resource limits.
 
-Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it. Important note! customizing the image is not sticky across upgrade/scale, to ensure that acs-engine always delivers a version-curated, known-working addon when moving a cluster to a new version. Considering all that, providing a custom image reference for an addon configuration should be considered for testing/development, but not for a production cluster. If you'd like to entirely customize one of the addons available, including across scale/upgrade operations, you may include in an addon's spec a gzip+base64-encoded (in that order) string of a Kubernetes yaml manifest. E.g.,
+Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it. **Important note!** customizing the image is not sticky across upgrade/scale, to ensure that acs-engine always delivers a version-curated, known-working addon when moving a cluster to a new version. Considering all that, providing a custom image reference for an addon configuration should be considered for testing/development, but not for a production cluster. If you'd like to entirely customize one of the addons available, including across scale/upgrade operations, you may include in an addon's spec a gzip+base64-encoded (in that order) string of a Kubernetes yaml manifest. E.g.,
 
 ```
 "kubernetesConfig": {
