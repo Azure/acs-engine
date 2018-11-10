@@ -226,7 +226,7 @@ func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 		}
 
 		// Configure addons
-		cs.setAddonsConfig()
+		cs.setAddonsConfig(isUpdate)
 		// Configure kubelet
 		cs.setKubeletConfig()
 		// Configure controller-manager
