@@ -47,6 +47,19 @@
                 "memoryLimits": "200Mi"
               }
             ]
+          },
+          {
+            "name": "container-monitoring",
+            "enabled": true,
+            "containers": [
+              {
+                "name": "omsagent",
+                "cpuRequests": "20m",
+                "memoryRequests": "200Mi",
+                "cpuLimits": "20m",
+                "memoryLimits": "200Mi"
+              }
+            ]
           }
         ]
       }
