@@ -78,7 +78,7 @@
       "type": "string"
     },
     "windowsDockerVersion": {
-      "defaultValue": "17.06.2-ee-16",
+      "defaultValue": "18.09.0",
       "metadata": {
         "description": "The version of Docker to be installed on Windows Nodes"
       },
