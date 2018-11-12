@@ -38,15 +38,15 @@ spec:
         operator: Equal
         value: "true"
       containers:
-      - image: <img>
+      - image: {{ContainerImage "nvidia-device-plugin"}}
         name: nvidia-device-plugin-ctr
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: image: {{ContainerCPUReqs "nvidia-device-plugin"}}
+            memory: image: {{ContainerMemReqs "nvidia-device-plugin"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: image: {{ContainerCPULimits "nvidia-device-plugin"}}
+            memory: image: {{ContainerMemLimits "nvidia-device-plugin"}}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

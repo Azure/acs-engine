@@ -193,7 +193,7 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		customFilesReader,
 		"MASTER_CUSTOM_FILES_PLACEHOLDER")
 
-	addonStr := getK8sAddonString(cs.Properties.OrchestratorProfile)
+	addonStr := getK8sAddonString(cs.Properties, "k8s/containeraddons")
 
 	str = strings.Replace(str, "MASTER_ADDONS_NEW_PLACEHOLDER", addonStr, -1)
 

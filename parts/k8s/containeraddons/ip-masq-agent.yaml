@@ -36,11 +36,11 @@ spec:
             mountPath: /etc/config
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <<memReq>
+            cpu: {{ContainerCPUReqs "ip-masq-agent"}}
+            memory: {{ContainerMemReqs "ip-masq-agent"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "ip-masq-agent"}}
+            memory: {{ContainerMemReqs "ip-masq-agent"}}
       volumes:
         - name: azure-ip-masq-agent-config-volume
           configMap:
