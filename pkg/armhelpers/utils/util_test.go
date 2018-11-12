@@ -91,7 +91,7 @@ func Test_WindowsVMNameParts(t *testing.T) {
 	}
 
 	for _, d := range data {
-		poolPrefix, orch, poolIndex, agentIndex, err := WindowsVMNameParts("38988k8s90312")
+		poolPrefix, orch, poolIndex, agentIndex, err := WindowsVMNameParts(d.VMName)
 		if poolPrefix != d.expectedPoolPrefix {
 			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
 		}
