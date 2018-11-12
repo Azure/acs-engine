@@ -226,13 +226,9 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		}
 
 		var agentCount, agentPoolIndex int
-		var agentOsType api.OSType
-		var agentPoolName string
 		for indx, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
 			if app.Name == *agentPool.Name {
 				agentCount = app.Count
-				agentOsType = app.OSType
-				agentPoolName = app.Name
 				agentPoolIndex = indx
 				break
 			}
