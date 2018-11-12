@@ -574,6 +574,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to autoscale", func() {
 			if eng.HasLinuxAgents() && eng.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
+				// "Pre"-delete the hpa in case a prior delete attempt failed, for long-running cluster scenarios
+				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
+				if err == nil {
+					h.Delete(deleteResourceRetries)
+					// Wait a minute before proceeding to create a new hpa w/ the same name
+					time.Sleep(1 * time.Minute)
+				}
 				By("Getting the long-running php-apache deployment")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
