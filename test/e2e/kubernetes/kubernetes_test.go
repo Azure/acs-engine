@@ -184,6 +184,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					addonPods = []string{"omsagent"}
 				case "keyvault-flexvolume":
 					addonNamespace = "kv"
+				case "azure-npm-daemonset":
+					addonPods = []string{"azure-npm"}
 				}
 				if hasAddon, addon := eng.HasAddon(addonName); hasAddon {
 					for _, addonPod := range addonPods {
