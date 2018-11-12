@@ -262,6 +262,12 @@
       },
       "type": "string"
     },
+    "kubernetesACIConnectorEnabled": {
+      "metadata": {
+        "description": "ACI Connector Status"
+      },
+      "type": "bool"
+    },
     "kubernetesClusterAutoscalerEnabled": {
       "metadata": {
         "description": "Cluster autoscaler status"
