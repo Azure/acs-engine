@@ -435,7 +435,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have functional container networking DNS", func() {
 			By("Ensuring that we have functional DNS resolution from a container")
-			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+			// "Pre"-delete the job in case a prior delete attempt failed, for long-running cluster scenarios
+			j, err := job.Get("validate-dns", "default")
+			if err == nil {
+				j.Delete(deleteResourceRetries)
+				// Wait a minute before proceeding to create a new job w/ the same name
+				time.Sleep(1 * time.Minute)
+			}
+			j, err = job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
 			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
 			delErr := j.Delete(deleteResourceRetries)
