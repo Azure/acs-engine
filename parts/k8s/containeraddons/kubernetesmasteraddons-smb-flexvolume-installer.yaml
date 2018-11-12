@@ -8,32 +8,32 @@ metadata:
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: blobfuse-flexvol-installer
+  name: smb-flexvol-installer
   namespace: flex
   labels:
-    k8s-app: blobfuse
+    k8s-app: smb
     kubernetes.io/cluster-service: "true"
 spec:
   selector:
     matchLabels:
-      name: blobfuse
+      name: smb
   template:
     metadata:
       labels:
-        name: blobfuse
+        name: smb
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-      - name: blobfuse-flexvol-installer
-        image: andyzhangx/blobfuse-flexvol-installer
+      - name: smb-flexvol-installer
+        image: andyzhangx/smb-flexvol-installer
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "smb-flexvolume"}}
+            memory: {{ContainerMemReqs "smb-flexvolume"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "smb-flexvolume"}}
+            memory: {{ContainerMemLimits "smb-flexvolume"}}
         volumeMounts:
         - name: volplugins
           mountPath: /etc/kubernetes/volumeplugins/
@@ -46,5 +46,6 @@ spec:
       - name: volplugins
         hostPath:
           path: /etc/kubernetes/volumeplugins/
+          type: DirectoryOrCreate
       nodeSelector:
         beta.kubernetes.io/os: linux

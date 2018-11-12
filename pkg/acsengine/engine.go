@@ -707,34 +707,56 @@ func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
 			return addon.Containers[i].Image
 		},
 
+		"ContainerCPUReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPURequests
+		},
+
+		"ContainerCPULimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPULimits
+		},
+
+		"ContainerMemReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryRequests
+		},
+
+		"ContainerMemLimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryLimits
+		},
 		"ContainerConfig": func(name string) string {
 			return addon.Config[name]
 		},
 	}
 }
 
-func getK8sAddonString(orchProfile *api.OrchestratorProfile) string {
+func getK8sAddonString(properties *api.Properties, sourcePath string) string {
 	var result string
-	addons := orchProfile.KubernetesConfig.Addons
-	for _, addon := range addons {
-		// this is temporary for the sake of prototyping
-		if addon.Name != DefaultMetricsServerAddonName {
-			continue
-		}
-		if helpers.IsTrueBoolPointer(addon.Enabled) {
-			templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
-			addonFile := artifactFileMap[addon.Name]
-			addonFileBytes, err := Asset(addonFile)
-			if err != nil {
-				return ""
+	settingsMap := kubernetesContainerAddonSettingsInit(properties)
+	for addonName, setting := range settingsMap {
+		if setting.isEnabled {
+			var input string
+			if setting.rawScript != "" {
+				input = setting.rawScript
+			} else {
+				addon := properties.OrchestratorProfile.KubernetesConfig.GetAddonByName(addonName)
+				templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
+				addonFile := sourcePath + setting.sourceFile
+				addonFileBytes, err := Asset(addonFile)
+				if err != nil {
+					return ""
+				}
+				_, err = templ.Parse(string(addonFileBytes))
+				if err != nil {
+					return ""
+				}
+				var buffer bytes.Buffer
+				templ.Execute(&buffer, addon)
+				input = buffer.String()
 			}
-			_, err = templ.Parse(string(addonFileBytes))
-			if err != nil {
-				return ""
-			}
-			var buffer bytes.Buffer
-			templ.Execute(&buffer, addon)
-			result += getAddonString(buffer.String(), "/etc/kubernetes/addons", artifactFileOutputMap[addon.Name])
+			result += getAddonString(input, "/etc/kubernetes/addons", setting.destinationFile)
 		}
 	}
 	return result
