@@ -12,6 +12,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -497,14 +498,14 @@ func TestIsNSeriesSKU(t *testing.T) {
 	}
 
 	for _, sku := range validSkus {
-		if !isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
-			t.Fatalf("Expected isNSeriesSKU(%s) to be true", sku)
+		if !common.IsNvidiaEnabledSKU(sku) {
+			t.Fatalf("Expected common.IsNvidiaEnabledSKU(%s) to be true", sku)
 		}
 	}
 
 	for _, sku := range invalidSkus {
-		if isNSeriesSKU(&api.AgentPoolProfile{VMSize: sku}) {
-			t.Fatalf("Expected isNSeriesSKU(%s) to be false", sku)
+		if common.IsNvidiaEnabledSKU(sku) {
+			t.Fatalf("Expected common.IsNvidiaEnabledSKU(%s) to be false", sku)
 		}
 	}
 }

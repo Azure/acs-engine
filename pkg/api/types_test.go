@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -1214,8 +1215,8 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 		},
 	}
 
-	if !IsNSeriesSKU(&p) {
-		t.Fatalf("IsNSeriesSKU should return true when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
+	if !p.HasNSeriesSKU() {
+		t.Fatalf("HasNSeriesSKU should return true when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
 	}
 	if p.IsNVIDIADevicePluginEnabled() {
 		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false with N-series VMs with < k8s 1.10, instead returned %t", p.IsNVIDIADevicePluginEnabled())
@@ -1234,11 +1235,35 @@ func TestIsNVIDIADevicePluginEnabled(t *testing.T) {
 		},
 	}
 
-	if IsNSeriesSKU(&p) {
-		t.Fatalf("IsNSeriesSKU should return false when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
+	if p.HasNSeriesSKU() {
+		t.Fatalf("HasNSeriesSKU should return false when explicitly using VM Size %s", p.AgentPoolProfiles[0].VMSize)
 	}
 	if p.IsNVIDIADevicePluginEnabled() {
 		t.Fatalf("KubernetesConfig.IsNVIDIADevicePluginEnabled() should return false when explicitly disabled")
+	}
+}
+
+func TestAgentPoolIsNSeriesSKU(t *testing.T) {
+	cases := common.GetNSeriesVMCasesForTesting()
+
+	for _, c := range cases {
+		p := Properties{
+			AgentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:   "agentpool",
+					VMSize: c.VMSKU,
+					Count:  1,
+				},
+			},
+			OrchestratorProfile: &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: "1.12.2",
+			},
+		}
+		ret := p.AgentPoolProfiles[0].IsNSeriesSKU()
+		if ret != c.Expected {
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VMSKU, c.Expected, ret)
+		}
 	}
 }
 

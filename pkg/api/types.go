@@ -1268,8 +1268,13 @@ func (k *KubernetesConfig) IsIPMasqAgentEnabled() bool {
 	return k.isAddonEnabled(IPMASQAgentAddonName, IPMasqAgentAddonEnabled)
 }
 
-// IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
-func IsNSeriesSKU(p *Properties) bool {
+// IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
+func (a *AgentPoolProfile) IsNSeriesSKU() bool {
+	return common.IsNvidiaEnabledSKU(a.VMSize)
+}
+
+// HasNSeriesSKU returns whether or not there is an N series SKU agent pool
+func (p *Properties) HasNSeriesSKU() bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
 			return true
@@ -1288,7 +1293,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 func getDefaultNVIDIADevicePluginEnabled(p *Properties) bool {
 	o := p.OrchestratorProfile
 	var addonEnabled bool
-	if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	if p.HasNSeriesSKU() && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false

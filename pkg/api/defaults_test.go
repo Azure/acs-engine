@@ -237,6 +237,7 @@ func TestAssignDefaultAddonImages(t *testing.T) {
 
 func TestAssignDefaultAddonVals(t *testing.T) {
 	addonName := "testaddon"
+	customImage := "myimage"
 	customCPURequests := "60m"
 	customMemoryRequests := "160Mi"
 	customCPULimits := "40m"
@@ -248,6 +249,7 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		Containers: []KubernetesContainerSpec{
 			{
 				Name:           addonName,
+				Image:          customImage,
 				CPURequests:    customCPURequests,
 				MemoryRequests: customMemoryRequests,
 				CPULimits:      customCPULimits,
@@ -256,9 +258,13 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		},
 	}
 	addonWithDefaults := getMockAddon(addonName)
-	modifiedAddon := assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate := false
+	modifiedAddon := assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
 	if modifiedAddon.Containers[0].Name != customAddon.Containers[0].Name {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Name' value %s to %s,", customAddon.Containers[0].Name, modifiedAddon.Containers[0].Name)
+	}
+	if modifiedAddon.Containers[0].Image != customAddon.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Image' value %s to %s,", customAddon.Containers[0].Image, modifiedAddon.Containers[0].Image)
 	}
 	if modifiedAddon.Containers[0].CPURequests != customAddon.Containers[0].CPURequests {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'CPURequests' value %s to %s,", customAddon.Containers[0].CPURequests, modifiedAddon.Containers[0].CPURequests)
@@ -283,7 +289,11 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 			},
 		},
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
 	if modifiedAddon.Containers[0].CPURequests != addonWithDefaults.Containers[0].CPURequests {
 		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'CPURequests' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].CPURequests, modifiedAddon.Containers[0].CPURequests)
 	}
@@ -309,7 +319,11 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 			},
 		},
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
 	if modifiedAddon.Containers[0].Name != customAddon.Containers[0].Name {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'Name' value %s to %s,", customAddon.Containers[0].Name, modifiedAddon.Containers[0].Name)
 	}
@@ -323,11 +337,29 @@ func TestAssignDefaultAddonVals(t *testing.T) {
 		t.Fatalf("assignDefaultAddonVals() should not have modified Containers 'MemoryLimits' value %s to %s,", customAddon.Containers[0].MemoryLimits, modifiedAddon.Containers[0].MemoryLimits)
 	}
 
+	// Verify that an addon with a custom image value will be overridden during upgrade/scale
+	customAddon = KubernetesAddon{
+		Name:    addonName,
+		Enabled: helpers.PointerToBool(true),
+		Containers: []KubernetesContainerSpec{
+			{
+				Name:  addonName,
+				Image: customImage,
+			},
+		},
+	}
+	isUpdate = true
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
+	if modifiedAddon.Containers[0].Image != addonWithDefaults.Containers[0].Image {
+		t.Fatalf("assignDefaultAddonVals() should have assigned a default 'Image' value of %s, instead assigned %s,", addonWithDefaults.Containers[0].Image, modifiedAddon.Containers[0].Image)
+	}
+
 	addonWithDefaults.Config = map[string]string{
 		"os":    "Linux",
 		"taint": "node.kubernetes.io/memory-pressure",
 	}
-	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults)
+	isUpdate = false
+	modifiedAddon = assignDefaultAddonVals(customAddon, addonWithDefaults, isUpdate)
 
 	if modifiedAddon.Config["os"] != "Linux" {
 		t.Error("assignDefaultAddonVals() should have added the default config property")
@@ -914,26 +946,135 @@ func TestSetVMSSDefaultsAndZones(t *testing.T) {
 }
 
 func TestAKSDockerEngineDistro(t *testing.T) {
+	// N Series agent pools should always get the "aks-docker-engine" distro for default create flows
+	// D Series agent pools should always get the "aks" distro for default create flows
 	mockCS := getMockBaseContainerService("1.10.9")
 	properties := mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
 	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[2].Distro = Ubuntu
+	properties.AgentPoolProfiles[3].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
 	properties.setAgentProfileDefaults(false, false)
 
 	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[2].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
 	}
 
+	// N Series agent pools with small disk size should always get the "ubuntu" distro for default create flows
+	// D Series agent pools with small disk size should always get the "ubuntu" distro for default create flows
 	mockCS = getMockBaseContainerService("1.10.9")
 	properties = mockCS.Properties
 	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
 	properties.MasterProfile.Count = 1
-	properties.AgentPoolProfiles[0].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].OSDiskSizeGB = VHDDiskSizeAKS - 1
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].OSDiskSizeGB = VHDDiskSizeAKS - 1
 	properties.setAgentProfileDefaults(false, false)
 
-	if properties.AgentPoolProfiles[0].Distro != AKS {
-		t.Fatalf("Expected %s distro for N-series VM got %s instead", AKS, properties.AgentPoolProfiles[0].Distro)
+	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for N-series pool with small disk, got %s instead", Ubuntu, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool with small disk, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
+	}
+
+	// N Series agent pools should always get the "aks-docker-engine" distro for upgrade flows unless Ubuntu
+	// D Series agent pools should always get the distro they requested for upgrade flows
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].Distro = AKS
+	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
+	properties.AgentPoolProfiles[3].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
+	properties.setAgentProfileDefaults(true, false)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[2].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
+	}
+
+	// N Series agent pools should always get the "aks-docker-engine" distro for scale flows unless Ubuntu
+	// D Series agent pools should always get the distro they requested for scale flows
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].Distro = AKS
+	properties.AgentPoolProfiles[1].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[1].Distro = AKS
+	properties.AgentPoolProfiles[2].VMSize = "Standard_D2_V2"
+	properties.AgentPoolProfiles[2].Distro = AKSDockerEngine
+	properties.AgentPoolProfiles[3].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[3].Distro = Ubuntu
+	properties.setAgentProfileDefaults(false, true)
+
+	if properties.AgentPoolProfiles[0].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKS {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKS, properties.AgentPoolProfiles[1].Distro)
+	}
+	if properties.AgentPoolProfiles[2].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[2].Distro)
+	}
+	if properties.AgentPoolProfiles[3].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for D-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[3].Distro)
+	}
+
+	// N Series Windows agent pools should always get no distro value
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	properties.MasterProfile.Count = 1
+	properties.AgentPoolProfiles[0].VMSize = "Standard_NC6"
+	properties.AgentPoolProfiles[0].OSType = Windows
+	properties.AgentPoolProfiles[1].VMSize = "Standard_NC6"
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != "" {
+		t.Fatalf("Expected no distro value for N-series Windows VM, got %s instead", properties.AgentPoolProfiles[0].Distro)
+	}
+	if properties.AgentPoolProfiles[1].Distro != AKSDockerEngine {
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", AKSDockerEngine, properties.AgentPoolProfiles[1].Distro)
+	}
+
+	// Non-k8s context
+	mockCS = getMockBaseContainerService("1.10.9")
+	properties = mockCS.Properties
+	properties.MasterProfile.Count = 1
+	properties.setAgentProfileDefaults(false, false)
+
+	if properties.AgentPoolProfiles[0].Distro != Ubuntu {
+		t.Fatalf("Expected %s distro for N-series pool, got %s instead", Ubuntu, properties.AgentPoolProfiles[1].Distro)
 	}
 }
 
@@ -1178,6 +1319,9 @@ func getMockAPIProperties(orchestratorVersion string) Properties {
 		},
 		MasterProfile: &MasterProfile{},
 		AgentPoolProfiles: []*AgentPoolProfile{
+			{},
+			{},
+			{},
 			{},
 		}}
 }

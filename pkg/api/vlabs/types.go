@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/pkg/errors"
 )
 
@@ -644,7 +645,7 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 
 // IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
 func (a *AgentPoolProfile) IsNSeriesSKU() bool {
-	return strings.Contains(a.VMSize, "Standard_N")
+	return common.IsNvidiaEnabledSKU(a.VMSize)
 }
 
 // IsManagedDisks returns true if the customer specified managed disks

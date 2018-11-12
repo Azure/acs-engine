@@ -371,44 +371,6 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 	return ""
 }
 
-func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
-	/* If a new GPU sku becomes available, add a key to this map, but only if you have a confirmation
-	   that we have an agreement with NVIDIA for this specific gpu.
-	*/
-	dm := map[string]bool{
-		// K80
-		"Standard_NC6":   true,
-		"Standard_NC12":  true,
-		"Standard_NC24":  true,
-		"Standard_NC24r": true,
-		// M60
-		"Standard_NV6":   true,
-		"Standard_NV12":  true,
-		"Standard_NV24":  true,
-		"Standard_NV24r": true,
-		// P40
-		"Standard_ND6s":   true,
-		"Standard_ND12s":  true,
-		"Standard_ND24s":  true,
-		"Standard_ND24rs": true,
-		// P100
-		"Standard_NC6s_v2":   true,
-		"Standard_NC12s_v2":  true,
-		"Standard_NC24s_v2":  true,
-		"Standard_NC24rs_v2": true,
-		// V100
-		"Standard_NC6s_v3":   true,
-		"Standard_NC12s_v3":  true,
-		"Standard_NC24s_v3":  true,
-		"Standard_NC24rs_v3": true,
-	}
-	if _, ok := dm[profile.VMSize]; ok {
-		return dm[profile.VMSize]
-	}
-
-	return false
-}
-
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer

@@ -3,6 +3,8 @@ package vlabs
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 func TestKubernetesAddon(t *testing.T) {
@@ -282,5 +284,29 @@ func TestContainerServiceProperties(t *testing.T) {
 
 	if !prop.MastersAndAgentsUseAvailabilityZones() {
 		t.Fatalf("unexpectedly detected ContainerServiceProperties MastersAndAgentsUseAvailabilityZones returns false  after unmarshal")
+	}
+}
+
+func TestAgentPoolIsNSeriesSKU(t *testing.T) {
+	cases := common.GetNSeriesVMCasesForTesting()
+
+	for _, c := range cases {
+		p := Properties{
+			AgentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:   "agentpool",
+					VMSize: c.VMSKU,
+					Count:  1,
+				},
+			},
+			OrchestratorProfile: &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorRelease: "1.12",
+			},
+		}
+		ret := p.AgentPoolProfiles[0].IsNSeriesSKU()
+		if ret != c.Expected {
+			t.Fatalf("expected IsNvidiaEnabledSKU(%s) to return %t, but instead got %t", c.VMSKU, c.Expected, ret)
+		}
 	}
 }
