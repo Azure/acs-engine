@@ -2356,7 +2356,7 @@ func TestGetAgentVMPrefix(t *testing.T) {
 					},
 				},
 			},
-			expectedVMPrefix: "24789k8s900",
+			expectedVMPrefix: "2478k8s00",
 		},
 		{
 			name: "agent profile doesn't exist",
