@@ -169,7 +169,7 @@ spec:
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes={{ContainerConfig "min-nodes"}}:{{ContainerImage "max-nodes"}}:<vmssName>
+        - --nodes={{ContainerConfig "min-nodes"}}:{{ContainerConfig "max-nodes"}}:<vmssName>
         env:
         - name: ARM_CLOUD
           value: "<cloud>"
