@@ -80,6 +80,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          "andyzhangx/blobfuse-flexvol-installer",
 			},
 		},
 	}
@@ -94,6 +95,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          "andyzhangx/smb-flexvol-installer",
 			},
 		},
 	}

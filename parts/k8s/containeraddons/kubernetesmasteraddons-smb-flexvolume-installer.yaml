@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: smb-flexvol-installer
-        image: andyzhangx/smb-flexvol-installer
+        image: {{ContainerImage "smb-flexvolume"}}
         imagePullPolicy: Always
         resources:
           requests:
