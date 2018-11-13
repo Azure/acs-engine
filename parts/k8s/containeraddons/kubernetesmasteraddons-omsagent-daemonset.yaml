@@ -8,8 +8,8 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 type: Opaque
 data:
-  WSID: {{ContainerConfig "workspaceGuid"}}
-  KEY: {{ContainerConfig "workspaceKey"}}
+  WSID: "{{ContainerConfig "workspaceGuid"}}"
+  KEY: "{{ContainerConfig "workspaceKey"}}"
 ---
 apiVersion: v1
 kind: ServiceAccount
