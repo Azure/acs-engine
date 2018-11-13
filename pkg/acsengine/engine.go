@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -735,7 +736,17 @@ func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
 func getK8sAddonString(properties *api.Properties, sourcePath string) string {
 	var result string
 	settingsMap := kubernetesContainerAddonSettingsInit(properties)
-	for addonName, setting := range settingsMap {
+
+	var addonNames []string
+
+	for addonName := range settingsMap {
+		addonNames = append(addonNames, addonName)
+	}
+
+	sort.Strings(addonNames)
+
+	for _, addonName := range addonNames {
+		setting := settingsMap[addonName]
 		if setting.isEnabled {
 			var input string
 			if setting.rawScript != "" {
