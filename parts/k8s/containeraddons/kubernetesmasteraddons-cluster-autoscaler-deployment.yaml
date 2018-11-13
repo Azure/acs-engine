@@ -204,7 +204,7 @@ spec:
               key: VMType
               name: cluster-autoscaler-azure
         - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
-          value: <mie>
+          value: <useManagedIdentity>
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs

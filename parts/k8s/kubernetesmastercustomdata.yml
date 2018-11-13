@@ -306,7 +306,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
-    sed -i "s|<cloud>|{{WrapAsParameter "kubernetesClusterAutoscalerAzureCloud"}}|g; s|<mie>|{{WrapAsParameter "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" /etc/kubernetes/addons/cluster-autoscaler-deployment.yaml
+    sed -i "s|<cloud>|{{WrapAsParameter "kubernetesClusterAutoscalerAzureCloud"}}|g; s|<useManagedIdentity>|{{WrapAsParameter "kubernetesClusterAutoscalerUseManagedIdentity"}}|g" /etc/kubernetes/addons/cluster-autoscaler-deployment.yaml
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.LoadBalancerSku "Standard"}}
