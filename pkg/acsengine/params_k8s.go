@@ -57,6 +57,11 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 					addValue(parametersMap, "kubernetesAADPodIdentityEnabled", helpers.IsTrueBoolPointer(aadPodIdentityAddon.Enabled))
 				}
 			}
+			if kubernetesConfig.IsACIConnectorEnabled() {
+				addValue(parametersMap, "kubernetesACIConnectorEnabled", true)
+			} else {
+				addValue(parametersMap, "kubernetesACIConnectorEnabled", false)
+			}
 			if kubernetesConfig.IsClusterAutoscalerEnabled() {
 				clusterAutoscalerAddon := kubernetesConfig.GetAddonByName(DefaultClusterAutoscalerAddonName)
 				clusterAutoScalerIndex := clusterAutoscalerAddon.GetAddonContainersIndexByName(DefaultClusterAutoscalerAddonName)
