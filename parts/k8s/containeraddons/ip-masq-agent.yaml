@@ -40,7 +40,7 @@ spec:
             memory: {{ContainerMemReqs "ip-masq-agent"}}
           limits:
             cpu: {{ContainerCPULimits "ip-masq-agent"}}
-            memory: {{ContainerMemReqs "ip-masq-agent"}}
+            memory: {{ContainerMemLimits "ip-masq-agent"}}
       volumes:
         - name: azure-ip-masq-agent-config-volume
           configMap:

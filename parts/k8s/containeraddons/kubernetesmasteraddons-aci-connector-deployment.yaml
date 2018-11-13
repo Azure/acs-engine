@@ -83,7 +83,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: aci-connector
-        image: {{ContaineImage "aci-connector"}}
+        image: {{ContainerImage "aci-connector"}}
         imagePullPolicy: Always
         env:
         - name: KUBELET_PORT
@@ -114,7 +114,7 @@ spec:
           mountPath: "/etc/virtual-kubelet"
           readOnly: true
         command: ["virtual-kubelet"]
-        args: ["--provider", "azure", "--nodename", "{{ContainerConfig nodeName}}" , "--os", "{{ContainerConfig os}}", "--taint", "{{ContainerConfig taint}}"]
+        args: ["--provider", "azure", "--nodename", "{{ContainerConfig "nodeName"}}" , "--os", "{{ContainerConfig "os"}}", "--taint", "{{ContainerConfig "taint"}}"]
       volumes:
       - name: credentials
         secret:
