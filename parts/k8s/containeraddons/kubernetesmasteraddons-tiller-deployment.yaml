@@ -66,7 +66,7 @@ spec:
         - name: TILLER_NAMESPACE
           value: kube-system
         - name: TILLER_HISTORY_MAX
-          value: {{ContainerConfig "max-history"}}
+          value: "{{ContainerConfig "max-history"}}"
         image: {{ContainerImage "tiller"}}
         imagePullPolicy: IfNotPresent
         livenessProbe:
