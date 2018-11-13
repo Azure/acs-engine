@@ -725,7 +725,7 @@ func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
 	}
 }
 
-func getK8sAddonString(properties *api.Properties, sourcePath string) string {
+func getContainerAddonsString(properties *api.Properties, sourcePath string) string {
 	var result string
 	settingsMap := kubernetesContainerAddonSettingsInit(properties)
 
