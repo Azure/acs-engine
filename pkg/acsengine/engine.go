@@ -743,7 +743,7 @@ func getK8sAddonString(properties *api.Properties, sourcePath string) string {
 			} else {
 				addon := properties.OrchestratorProfile.KubernetesConfig.GetAddonByName(addonName)
 				templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
-				addonFile := sourcePath + setting.sourceFile
+				addonFile := sourcePath + "/" + setting.sourceFile
 				addonFileBytes, err := Asset(addonFile)
 				if err != nil {
 					return ""
