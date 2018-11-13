@@ -292,7 +292,7 @@ ensurePodSecurityPolicy() {
 }
 
 ensureK8sControlPlane() {
-    if $REBOOTREQUIRED; then
+    if $REBOOTREQUIRED || [ "$NO_OUTBOUND" = "true" ]; then
         return
     fi
     wait_for_file 3600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
@@ -303,7 +303,6 @@ ensureK8sControlPlane() {
     else
         retrycmd_if_failure 120 5 25 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     fi
-    ensurePodSecurityPolicy
 }
 
 ensureEtcd() {
