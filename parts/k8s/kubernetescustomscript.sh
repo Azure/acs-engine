@@ -119,6 +119,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureEtcd
     ensureK8sControlPlane
+    ensurePodSecurityPolicy
 fi
 
 if [[ "${GPU_NODE}" = true ]]; then
