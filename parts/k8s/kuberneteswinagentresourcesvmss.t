@@ -83,7 +83,7 @@
           ]
         },
         "osProfile": {
-          "computerNamePrefix": "[concat(substring(parameters('nameSuffix'), 0, 5), 'acs')]",
+          "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
           {{GetKubernetesWindowsAgentCustomData .}}
           "adminUsername": "[parameters('windowsAdminUsername')]",
           "adminPassword": "[parameters('windowsAdminPassword')]"

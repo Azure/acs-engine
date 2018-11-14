@@ -338,20 +338,20 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	if vm.StorageProfile.OsDisk.OsType == compute.Windows {
-		poolPrefix, _, _, _, err := utils.WindowsVMNameParts(*vm.Name)
-		if err != nil {
-			uc.Logger.Errorf(err.Error())
-			return err
-		}
-
-		//The k8s Windows VM Naming Format is "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{4,6})$" (i.e.: 50621k8s9000)
-		//The pool identifier is made of the first 11 characters
-		poolIdentifier = (*vm.Name)[:11]
-
+		poolPrefix, _, _, _, err = utils.WindowsVMNameParts(*vm.Name)
 		if !strings.Contains(uc.NameSuffix, poolPrefix) {
 			uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
 				*vm.Name, uc.NameSuffix)
 			return nil
+		}
+
+		// The k8s Windows VM Naming Format was previously "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{4,6})$" (i.e.: 50621k8s9000)
+		// The k8s Windows VM Naming Format is now "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})([0-9]{3,8})$" (i.e.: 1708k8s020)
+		// The pool identifier is made of the first 11 or 9 characters
+		if string((*vm.Name)[8]) == "9" {
+			poolIdentifier = (*vm.Name)[:11]
+		} else {
+			poolIdentifier = (*vm.Name)[:9]
 		}
 	} else { // vm.StorageProfile.OsDisk.OsType == compute.Linux
 		poolIdentifier, poolPrefix, _, err = utils.K8sLinuxVMNameParts(*vm.Name)
