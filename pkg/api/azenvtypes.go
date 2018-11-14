@@ -106,17 +106,9 @@ var (
 	//SovereignCloudsUbuntuImageConfig is the Linux distribution for Azure Sovereign Clouds.
 	SovereignCloudsUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-LTS",
-		ImagePublisher: "Canonical",
-		ImageVersion:   "latest",
-	}
-
-	//GermanCloudUbuntuImageConfig is the Linux distribution for Azure Sovereign Clouds.
-	GermanCloudUbuntuImageConfig = AzureOSImageConfig{
-		ImageOffer:     "UbuntuServer",
 		ImageSku:       "18.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201801050",
+		ImageVersion:   "latest",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -135,7 +127,7 @@ var (
 		ImageVersion:   "latest",
 	}
 
-	// DefaultAKSOSImageConfig is the AKS image based on Ubuntu 18.04.
+	// DefaultAKSOSImageConfig is the AKS image based on Ubuntu 16.04.
 	DefaultAKSOSImageConfig = AzureOSImageConfig{
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-201811",
@@ -143,7 +135,7 @@ var (
 		ImageVersion:   "2018.11.08",
 	}
 
-	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 18.04.
+	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 16.04.
 	DefaultAKSDockerEngineOSImageConfig = AzureOSImageConfig{
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-docker-engine",
@@ -202,10 +194,10 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.microsoftazure.de",
 		},
 		OSImageConfig: map[Distro]AzureOSImageConfig{
-			Ubuntu: GermanCloudUbuntuImageConfig,
+			Ubuntu: SovereignCloudsUbuntuImageConfig,
 			RHEL:   DefaultRHELOSImageConfig,
 			CoreOS: DefaultCoreOSImageConfig,
-			AKS:    GermanCloudUbuntuImageConfig,
+			AKS:    SovereignCloudsUbuntuImageConfig,
 		},
 	}
 
