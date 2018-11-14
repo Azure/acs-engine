@@ -428,7 +428,7 @@ NAME                    STATUS    ROLES     AGE       VERSION   EXTERNAL-IP   OS
                         docker://17.6.2
 40336k8s9001            Ready     <none>    20m       v1.9.10   <none>    Windows Server Datacenter   10.0.17134.112
                         docker://17.6.2
-k8s-master-40336153-0   Ready     master    22m       v1.9.10   <none>    Ubuntu 16.04.5 LTS   4.15.0-1018-azure   docker://1.13.1
+k8s-master-40336153-0   Ready     master    22m       v1.9.10   <none>    Ubuntu 18.04.5 LTS   4.15.0-1018-azure   docker://1.13.1
 ```
 
 ##### SSH to the Linux master (optional)
