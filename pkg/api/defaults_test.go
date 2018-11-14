@@ -196,6 +196,7 @@ func TestAssignDefaultAddonImages(t *testing.T) {
 		ContainerMonitoringAddonName:       "microsoft/oms:ciprod10162018-2",
 		IPMASQAgentAddonName:               "",
 		AzureCNINetworkMonitoringAddonName: "containernetworking/networkmonitor:v0.0.4",
+		DefaultDNSAutoscalerAddonName:      "k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.1",
 	}
 
 	var addons []KubernetesAddon
