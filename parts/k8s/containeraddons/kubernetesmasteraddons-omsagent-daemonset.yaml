@@ -129,7 +129,7 @@ spec:
               memory: {{ContainerMemLimits "omsagent"}}
             requests:
               cpu: {{ContainerCPUReqs "omsagent"}}
-              memory: {{ContainerMemLimits "omsagent"}}
+              memory: {{ContainerMemReqs "omsagent"}}
           env:
             - name: NODE_IP
               valueFrom:
@@ -228,7 +228,7 @@ spec:
               memory: {{ContainerMemLimits "omsagent"}}
             requests:
               cpu: {{ContainerCPUReqs "omsagent"}}
-              memory:{{ContainerMemReqs "omsagent"}}
+              memory: {{ContainerMemReqs "omsagent"}}
           env:
             - name: NODE_IP
               valueFrom:
