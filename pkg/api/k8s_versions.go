@@ -13,6 +13,7 @@ var k8sComponentVersions = map[string]map[string]string{
 	"1.13": {
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.10.0",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"addon-resizer":                    "addon-resizer:1.8.1",
 		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
@@ -46,6 +47,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"dockerEngine":                     "1.13.*",
 		"dashboard":                        "kubernetes-dashboard-amd64:v1.10.0",
 		"addon-resizer":                    "addon-resizer:1.8.1",
+		"exechealthz":                      "exechealthz-amd64:1.2",
 		"heapster":                         "heapster-amd64:v1.5.3",
 		"metrics-server":                   "metrics-server-amd64:v0.2.1",
 		"coredns":                          "coredns:1.2.2",
