@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -20,10 +19,6 @@ const (
 	k8sLinuxVMAgentClusterIDIndex  = 2
 	k8sLinuxVMAgentIndexArrayIndex = 3
 
-	k8sWindowsVMNamingFormat               = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{4,6})$"
-	k8sWindowsVMAgentPoolPrefixIndex       = 1
-	k8sWindowsVMAgentOrchestratorNameIndex = 2
-	k8sWindowsVMAgentPoolInfoIndex         = 3
 	// here there are 2 capture groups
 	//  the first is the agent pool name, which can contain -s
 	//  the second group is the Cluster ID for the cluster
@@ -31,22 +26,21 @@ const (
 	vmssAgentPoolNameIndex = 1
 	vmssClusterIDIndex     = 2
 
-	windowsVmssNamingFormat                   = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{3})$"
-	windowsVmssAgentPoolNameIndex             = 1
-	windowsVmssAgentPoolOrchestratorNameIndex = 2
-	windowsVmssAgentPoolIndex                 = 3
+	k8sWindowsOldVMNamingFormat = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([9])([a-zA-Z0-9]{3,5})$"
+	k8sWindowsVMNamingFormat    = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})([0-9]{3,8})$"
 )
 
 var vmnameLinuxRegexp *regexp.Regexp
 var vmssnameRegexp *regexp.Regexp
 var vmnameWindowsRegexp *regexp.Regexp
-var vmssnameWindowsRegexp *regexp.Regexp
+var oldvmnameWindowsRegexp *regexp.Regexp
 
 func init() {
 	vmnameLinuxRegexp = regexp.MustCompile(k8sLinuxVMNamingFormat)
 	vmnameWindowsRegexp = regexp.MustCompile(k8sWindowsVMNamingFormat)
+	oldvmnameWindowsRegexp = regexp.MustCompile(k8sWindowsOldVMNamingFormat)
+
 	vmssnameRegexp = regexp.MustCompile(vmssNamingFormat)
-	vmssnameWindowsRegexp = regexp.MustCompile(windowsVmssNamingFormat)
 }
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
@@ -102,46 +96,33 @@ func VmssNameParts(vmssName string) (poolIdentifier, nameSuffix string, err erro
 	return vmssNameParts[vmssAgentPoolNameIndex], vmssNameParts[vmssClusterIDIndex], nil
 }
 
-// WindowsVMNameParts returns parts of Windows VM name e.g: 50621k8s9000
-func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIndex int, agentIndex int, err error) {
-	vmNameParts := vmnameWindowsRegexp.FindStringSubmatch(vmName)
-	if len(vmNameParts) != 4 {
-		return "", "", -1, -1, errors.New("resource name was missing from identifier")
+// WindowsVMNameParts returns parts of Windows VM name
+func WindowsVMNameParts(vmName string) (poolPrefix string, orch string, poolIndex int, agentIndex int, err error) {
+	var poolInfo string
+	vmNameParts := oldvmnameWindowsRegexp.FindStringSubmatch(vmName)
+	if len(vmNameParts) != 5 {
+		vmNameParts = vmnameWindowsRegexp.FindStringSubmatch(vmName)
+		if len(vmNameParts) != 4 {
+			return "", "", -1, -1, errors.New("resource name was missing from identifier")
+		}
+		poolInfo = vmNameParts[3]
+	} else {
+		poolInfo = vmNameParts[4]
 	}
 
-	poolPrefix = vmNameParts[k8sWindowsVMAgentPoolPrefixIndex]
-	acsStr = vmNameParts[k8sWindowsVMAgentOrchestratorNameIndex]
-	poolInfo := vmNameParts[k8sWindowsVMAgentPoolInfoIndex]
+	poolPrefix = vmNameParts[1]
+	orch = vmNameParts[2]
 
-	poolIndex, err = strconv.Atoi(poolInfo[:3])
+	poolIndex, err = strconv.Atoi(poolInfo[:2])
 	if err != nil {
 		return "", "", -1, -1, errors.Wrap(err, "Error parsing VM Name")
 	}
-	poolIndex -= 900
-	agentIndex, _ = strconv.Atoi(poolInfo[3:])
-	fmt.Printf("%d\n", agentIndex)
-
-	return poolPrefix, acsStr, poolIndex, agentIndex, nil
-}
-
-// WindowsVMSSNameParts returns parts of Windows VM name e.g: 50621k8s900
-func WindowsVMSSNameParts(vmssName string) (poolPrefix string, acsStr string, poolIndex int, err error) {
-	vmssNameParts := vmssnameWindowsRegexp.FindStringSubmatch(vmssName)
-	if len(vmssNameParts) != 4 {
-		return "", "", -1, errors.Errorf("resource name was missing from identifier")
-	}
-
-	poolPrefix = vmssNameParts[windowsVmssAgentPoolNameIndex]
-	acsStr = vmssNameParts[windowsVmssAgentPoolOrchestratorNameIndex]
-	poolInfo := vmssNameParts[windowsVmssAgentPoolIndex]
-
-	poolIndex, err = strconv.Atoi(poolInfo)
+	agentIndex, err = strconv.Atoi(poolInfo[2:])
 	if err != nil {
-		return "", "", -1, errors.Wrap(err, "Error parsing VM Name")
+		return "", "", -1, -1, errors.Wrap(err, "Error parsing VM Name")
 	}
-	poolIndex -= 900
 
-	return poolPrefix, acsStr, poolIndex, nil
+	return poolPrefix, orch, poolIndex, agentIndex, nil
 }
 
 // GetVMNameIndex return VM index of a node in the Kubernetes cluster
@@ -165,17 +146,13 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	return agentIndex, nil
 }
 
-// GetK8sVMName reconstructs VM name
-func GetK8sVMName(osType api.OSType, isAKS bool, nameSuffix, agentPoolName string, agentPoolIndex, agentIndex int) (string, error) {
-	prefix := "k8s"
-	if isAKS {
-		prefix = "aks"
-	}
-	if osType == api.Linux {
-		return fmt.Sprintf("%s-%s-%s-%d", prefix, agentPoolName, nameSuffix, agentIndex), nil
-	}
-	if osType == api.Windows {
-		return fmt.Sprintf("%s%s%d%d", nameSuffix[:5], prefix, 900+agentPoolIndex, agentIndex), nil
+// GetK8sVMName reconstructs the VM name
+func GetK8sVMName(p *api.Properties, agentPoolIndex, agentIndex int) (string, error) {
+	if len(p.AgentPoolProfiles) > agentPoolIndex {
+		vmPrefix := p.GetAgentVMPrefix(p.AgentPoolProfiles[agentPoolIndex])
+		if vmPrefix != "" {
+			return vmPrefix + strconv.Itoa(agentIndex), nil
+		}
 	}
 	return "", errors.Errorf("Failed to reconstruct VM Name")
 }

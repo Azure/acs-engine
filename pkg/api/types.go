@@ -791,7 +791,7 @@ func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
 	vmPrefix := ""
 	if index != -1 {
 		if a.IsWindows() {
-			vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
+			vmPrefix = nameSuffix[:4] + p.K8sOrchestratorName() + fmt.Sprintf("%02d", index)
 		} else {
 			vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
 			if a.IsVirtualMachineScaleSets() {
