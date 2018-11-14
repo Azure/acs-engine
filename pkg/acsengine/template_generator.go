@@ -193,6 +193,10 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		customFilesReader,
 		"MASTER_CUSTOM_FILES_PLACEHOLDER")
 
+	addonStr := getContainerAddonsString(cs.Properties, "k8s/containeraddons")
+
+	str = strings.Replace(str, "MASTER_CONTAINER_ADDONS_PLACEHOLDER", addonStr, -1)
+
 	// return the custom data
 	return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 }

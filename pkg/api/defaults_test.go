@@ -186,16 +186,17 @@ func TestAssignDefaultAddonImages(t *testing.T) {
 		DefaultTillerAddonName:             "gcr.io/kubernetes-helm/tiller:v2.8.1",
 		DefaultACIConnectorAddonName:       "microsoft/virtual-kubelet:latest",
 		DefaultClusterAutoscalerAddonName:  "k8s.gcr.io/cluster-autoscaler:v1.2.2",
-		DefaultBlobfuseFlexVolumeAddonName: "",
-		DefaultSMBFlexVolumeAddonName:      "",
-		DefaultKeyVaultFlexVolumeAddonName: "",
+		DefaultBlobfuseFlexVolumeAddonName: "andyzhangx/blobfuse-flexvol-installer",
+		DefaultSMBFlexVolumeAddonName:      "andyzhangx/smb-flexvol-installer",
+		DefaultKeyVaultFlexVolumeAddonName: "mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v0.0.5",
 		DefaultDashboardAddonName:          "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.0",
 		DefaultReschedulerAddonName:        "k8s.gcr.io/rescheduler:v0.3.1",
 		DefaultMetricsServerAddonName:      "k8s.gcr.io/metrics-server-amd64:v0.2.1",
 		NVIDIADevicePluginAddonName:        "nvidia/k8s-device-plugin:1.10",
 		ContainerMonitoringAddonName:       "microsoft/oms:ciprod10162018-2",
-		IPMASQAgentAddonName:               "",
+		IPMASQAgentAddonName:               "k8s.gcr.io/ip-masq-agent-amd64:v2.0.0",
 		AzureCNINetworkMonitoringAddonName: "containernetworking/networkmonitor:v0.0.4",
+		DefaultDNSAutoscalerAddonName:      "k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.1",
 	}
 
 	var addons []KubernetesAddon

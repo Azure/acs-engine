@@ -26,15 +26,15 @@ spec:
       tolerations:
       containers:
       - name: keyvault-flexvolume
-        image: mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v0.0.5
+        image: {{ContainerImage "keyvault-flexvolume"}}
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "keyvault-flexvolume"}}
+            memory: {{ContainerMemReqs "keyvault-flexvolume"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "keyvault-flexvolume"}}
+            memory: {{ContainerMemLimits "keyvault-flexvolume"}}
         env:
         - name: TARGET_DIR
           value: /etc/kubernetes/volumeplugins

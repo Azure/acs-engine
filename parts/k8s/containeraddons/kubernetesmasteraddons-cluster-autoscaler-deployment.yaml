@@ -153,23 +153,23 @@ spec:
         kubernetes.io/role: master
         beta.kubernetes.io/os: linux
       containers:
-      - image: <img>
+      - image: {{ContainerImage "cluster-autoscaler"}}
         imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
         resources:
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "cluster-autoscaler"}}
+            memory: {{ContainerMemLimits "cluster-autoscaler"}}
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "cluster-autoscaler"}}
+            memory: {{ContainerMemReqs "cluster-autoscaler"}}
         command:
         - ./cluster-autoscaler
         - --v=3
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=<minNodes>:<maxNodes>:<vmssName>
+        - --nodes={{ContainerConfig "min-nodes"}}:{{ContainerConfig "max-nodes"}}:<vmssName>
         env:
         - name: ARM_CLOUD
           value: "<cloud>"
@@ -204,7 +204,7 @@ spec:
               key: VMType
               name: cluster-autoscaler-azure
         - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
-          value: <mie>
+          value: <useManagedIdentity>
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs

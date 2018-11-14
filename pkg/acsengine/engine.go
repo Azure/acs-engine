@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -690,6 +691,78 @@ func getDCOSProvisionScript(script string) string {
 	}
 
 	return strings.Replace(strings.Replace(provisionScript, "\r\n", "\n", -1), "\n", "\n\n    ", -1)
+}
+
+func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
+	return template.FuncMap{
+		"ContainerImage": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].Image
+		},
+
+		"ContainerCPUReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPURequests
+		},
+
+		"ContainerCPULimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPULimits
+		},
+
+		"ContainerMemReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryRequests
+		},
+
+		"ContainerMemLimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryLimits
+		},
+		"ContainerConfig": func(name string) string {
+			return addon.Config[name]
+		},
+	}
+}
+
+func getContainerAddonsString(properties *api.Properties, sourcePath string) string {
+	var result string
+	settingsMap := kubernetesContainerAddonSettingsInit(properties)
+
+	var addonNames []string
+
+	for addonName := range settingsMap {
+		addonNames = append(addonNames, addonName)
+	}
+
+	sort.Strings(addonNames)
+
+	for _, addonName := range addonNames {
+		setting := settingsMap[addonName]
+		if setting.isEnabled {
+			var input string
+			if setting.rawScript != "" {
+				input = setting.rawScript
+			} else {
+				addon := properties.OrchestratorProfile.KubernetesConfig.GetAddonByName(addonName)
+				templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
+				addonFile := sourcePath + "/" + setting.sourceFile
+				addonFileBytes, err := Asset(addonFile)
+				if err != nil {
+					return ""
+				}
+				_, err = templ.Parse(string(addonFileBytes))
+				if err != nil {
+					return ""
+				}
+				var buffer bytes.Buffer
+				templ.Execute(&buffer, addon)
+				input = buffer.String()
+			}
+			result += getAddonString(input, "/etc/kubernetes/addons", setting.destinationFile)
+		}
+	}
+	return result
 }
 
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile, bootstrapIP string) string {

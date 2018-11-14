@@ -83,7 +83,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: aci-connector
-        image: <img>
+        image: {{ContainerImage "aci-connector"}}
         imagePullPolicy: Always
         env:
         - name: KUBELET_PORT
@@ -104,17 +104,17 @@ spec:
               fieldPath: status.podIP
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "aci-connector"}}
+            memory: {{ContainerMemReqs "aci-connector"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "aci-connector"}}
+            memory: {{ContainerMemLimits "aci-connector"}}
         volumeMounts:
         - name: credentials
           mountPath: "/etc/virtual-kubelet"
           readOnly: true
         command: ["virtual-kubelet"]
-        args: ["--provider", "azure", "--nodename", "<nodeName>" , "--os", "<vkOS>", "--taint", "<vkTaint>"]
+        args: ["--provider", "azure", "--nodename", "{{ContainerConfig "nodeName"}}" , "--os", "{{ContainerConfig "os"}}", "--taint", "{{ContainerConfig "taint"}}"]
       volumes:
       - name: credentials
         secret:
