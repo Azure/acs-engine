@@ -122,7 +122,7 @@ spec:
       serviceAccountName: metrics-server
       containers:
       - name: metrics-server
-        image: <img>
+        image: {{ContainerImage "metrics-server"}}
         imagePullPolicy: IfNotPresent
         command:
         - /metrics-server

@@ -140,7 +140,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-201811",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.11.06",
+		ImageVersion:   "2018.11.08",
 	}
 
 	// DefaultAKSDockerEngineOSImageConfig is the AKS image based on Ubuntu 16.04.
@@ -148,7 +148,7 @@ var (
 		ImageOffer:     "aks",
 		ImageSku:       "aks-ubuntu-1604-docker-engine",
 		ImagePublisher: "microsoft-aks",
-		ImageVersion:   "2018.11.06",
+		ImageVersion:   "2018.11.08",
 	}
 
 	//DefaultOpenShift39RHELImageConfig is the OpenShift on RHEL distribution.

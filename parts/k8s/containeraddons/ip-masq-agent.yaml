@@ -27,7 +27,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: azure-ip-masq-agent
-        image: gcr.io/google-containers/ip-masq-agent-amd64:v2.0.0
+        image: {{ContainerImage "ip-masq-agent"}}
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
@@ -36,11 +36,11 @@ spec:
             mountPath: /etc/config
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <<memReq>
+            cpu: {{ContainerCPUReqs "ip-masq-agent"}}
+            memory: {{ContainerMemReqs "ip-masq-agent"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "ip-masq-agent"}}
+            memory: {{ContainerMemLimits "ip-masq-agent"}}
       volumes:
         - name: azure-ip-masq-agent-config-volume
           configMap:

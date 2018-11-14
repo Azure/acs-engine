@@ -415,6 +415,7 @@ func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
 
 func convertVLabsFeatureFlags(vlabs *vlabs.FeatureFlags, api *FeatureFlags) {
 	api.EnableCSERunInBackground = vlabs.EnableCSERunInBackground
+	api.BlockOutboundInternet = vlabs.BlockOutboundInternet
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {

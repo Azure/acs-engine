@@ -28,7 +28,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
         - name: azure-cnms
-          image: <img>
+          image: {{ContainerImage "azure-cni-networkmonitor"}}
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true

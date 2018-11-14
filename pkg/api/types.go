@@ -101,6 +101,7 @@ type AzProfile struct {
 // FeatureFlags defines feature-flag restricted functionality
 type FeatureFlags struct {
 	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
+	BlockOutboundInternet    bool `json:"blockOutboundInternet,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -1235,7 +1236,7 @@ func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
 
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
-	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultAADPodIdentityAddonEnabled)
+	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultACIConnectorAddonEnabled)
 }
 
 // IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled

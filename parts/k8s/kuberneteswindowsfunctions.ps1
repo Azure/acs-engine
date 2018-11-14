@@ -39,3 +39,16 @@ function New-TemporaryDirectory {
     [string] $name = [System.Guid]::NewGuid()
     New-Item -ItemType Directory -Path (Join-Path $parent $name)
 }
+
+function Initialize-DataDirectories {
+    # Some of the Kubernetes tests that were designed for Linux try to mount /tmp into a pod
+    # On Windows, Go translates to c:\tmp. If that path doesn't exist, then some node tests fail
+
+    $requiredPaths = 'c:\tmp'
+
+    $requiredPaths | ForEach-Object {
+        if (-Not (Test-Path $_)) {
+            New-Item -ItemType Directory -Path $_
+        }
+    }
+}

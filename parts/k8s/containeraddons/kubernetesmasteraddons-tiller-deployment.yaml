@@ -66,8 +66,8 @@ spec:
         - name: TILLER_NAMESPACE
           value: kube-system
         - name: TILLER_HISTORY_MAX
-          value: "<maxHist>"
-        image: <img>
+          value: "{{ContainerConfig "max-history"}}"
+        image: {{ContainerImage "tiller"}}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -87,10 +87,10 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "tiller"}}
+            memory: {{ContainerMemReqs "tiller"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "tiller"}}
+            memory: {{ContainerMemLimits "tiller"}}
       nodeSelector:
         beta.kubernetes.io/os: linux

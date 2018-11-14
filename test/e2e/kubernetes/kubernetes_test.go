@@ -184,6 +184,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					addonPods = []string{"omsagent"}
 				case "keyvault-flexvolume":
 					addonNamespace = "kv"
+				case "azure-npm-daemonset":
+					addonPods = []string{"azure-npm"}
 				}
 				if hasAddon, addon := eng.HasAddon(addonName); hasAddon {
 					for _, addonPod := range addonPods {
@@ -574,6 +576,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to autoscale", func() {
 			if eng.HasLinuxAgents() && eng.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
+				// "Pre"-delete the hpa in case a prior delete attempt failed, for long-running cluster scenarios
+				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
+				if err == nil {
+					h.Delete(deleteResourceRetries)
+					// Wait a minute before proceeding to create a new hpa w/ the same name
+					time.Sleep(1 * time.Minute)
+				}
 				By("Getting the long-running php-apache deployment")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -627,7 +636,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we only have 1 apache-php pod after stopping load")
 				_, err = phpApacheDeploy.WaitForReplicas(-1, 1, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
-				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
+				h, err = hpa.Get(longRunningApacheDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Deleting HPA configuration")

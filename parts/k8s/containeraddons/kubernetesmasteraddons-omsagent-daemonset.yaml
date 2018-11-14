@@ -8,8 +8,8 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 type: Opaque
 data:
-  WSID: "<wsid>"
-  KEY: "<wsKey>"
+  WSID: "{{ContainerConfig "workspaceGuid"}}"
+  KEY: "{{ContainerConfig "workspaceKey"}}"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -112,8 +112,8 @@ spec:
   template:
     metadata:
       annotations:
-        agentVersion: <ver>
-        dockerProviderVersion: <dockerVer>
+        agentVersion: {{ContainerConfig "omsAgentVersion"}}
+        dockerProviderVersion: {{ContainerConfig "dockerProviderVersion"}}
       labels:
         component: oms-agent
         tier: node
@@ -121,15 +121,15 @@ spec:
       serviceAccountName: omsagent
       containers:
         - name: omsagent
-          image: <img>
+          image: {{ContainerImage "omsagent"}}
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: <cpuLim>
-              memory: <memLim>
+              cpu: {{ContainerCPULimits "omsagent"}}
+              memory: {{ContainerMemLimits "omsagent"}}
             requests:
-              cpu: <cpuReq>
-              memory: <memReq>
+              cpu: {{ContainerCPUReqs "omsagent"}}
+              memory: {{ContainerMemReqs "omsagent"}}
           env:
             - name: NODE_IP
               valueFrom:
@@ -200,7 +200,7 @@ metadata:
   labels:
     component: oms-agent
     tier: node
-    kubernetes.io/cluster-service: true
+    kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
 spec:
   replicas: 1
@@ -214,21 +214,21 @@ spec:
       labels:
         rsName: omsagent-rs
       annotations:
-        agentVersion: <ver>
-        dockerProviderVersion: <dockerVer>
+        agentVersion: {{ContainerConfig "omsAgentVersion"}}
+        dockerProviderVersion: {{ContainerConfig "dockerProviderVersion"}}
     spec:
       serviceAccountName: omsagent
       containers:
         - name: omsagent 
-          image: <img>
+          image: {{ContainerImage "omsagent"}}
           imagePullPolicy: IfNotPresent
           resources:
             limits:
-              cpu: <cpuLim>
-              memory: <memLim>
+              cpu: {{ContainerCPULimits "omsagent"}}
+              memory: {{ContainerMemLimits "omsagent"}}
             requests:
-              cpu: <cpuReq>
-              memory: <memReq>
+              cpu: {{ContainerCPUReqs "omsagent"}}
+              memory: {{ContainerMemReqs "omsagent"}}
           env:
             - name: NODE_IP
               valueFrom:

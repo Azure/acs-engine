@@ -68,8 +68,8 @@ func isVersionSupported(csOrch *OrchestratorProfile) bool {
 }
 
 // GetOrchestratorVersionProfileListVLabs returns vlabs OrchestratorVersionProfileList object per (optionally) specified orchestrator and version
-func GetOrchestratorVersionProfileListVLabs(orchestrator, version string) (*vlabs.OrchestratorVersionProfileList, error) {
-	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version)
+func GetOrchestratorVersionProfileListVLabs(orchestrator, version string, windows bool) (*vlabs.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version, windows)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func GetOrchestratorVersionProfileListVLabs(orchestrator, version string) (*vlab
 
 // GetOrchestratorVersionProfileListV20170930 returns v20170930 OrchestratorVersionProfileList object per (optionally) specified orchestrator and version
 func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*v20170930.OrchestratorVersionProfileList, error) {
-	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version)
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version, false)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*
 	return orchList, nil
 }
 
-func getOrchestratorVersionProfileList(orchestrator, version string) ([]*OrchestratorVersionProfile, error) {
+func getOrchestratorVersionProfileList(orchestrator, version string, windows bool) ([]*OrchestratorVersionProfile, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, version); err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 			orchs = append(orchs, arr...)
 		}
 	} else {
-		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}, false); err != nil {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}, windows); err != nil {
 			return nil, err
 		}
 	}
