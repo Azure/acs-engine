@@ -45,3 +45,8 @@ func TestAssignKubernetesParameters(t *testing.T) {
 		}
 	}
 }
+
+func isKeyPresent(key string, paramMap map[string]interface{}) bool {
+	_, ok := paramMap[key]
+	return ok
+}

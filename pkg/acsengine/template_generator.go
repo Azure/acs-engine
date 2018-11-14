@@ -432,6 +432,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"BlockOutboundInternet": func() bool {
+			if cs.Properties.FeatureFlags != nil {
+				return cs.Properties.FeatureFlags.BlockOutboundInternet
+			}
+			return false
+		},
 		"GetDCOSBootstrapCustomData": func() string {
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
 			for i, v := range masterIPList {

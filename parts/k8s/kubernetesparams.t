@@ -262,6 +262,15 @@
       },
       "type": "string"
     },
+{{if .OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled}}
+    "kubernetesAADPodIdentityEnabled": {
+      "defaultValue": false,
+      "metadata": {
+        "description": "AAD Pod Identity status"
+      },
+      "type": "bool"
+    },
+{{end}}
     "kubernetesACIConnectorEnabled": {
       "metadata": {
         "description": "ACI Connector Status"
@@ -275,12 +284,6 @@
       "type": "bool"
     },
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
-    "kubernetesClusterAutoscalerSpec": {
-      "metadata": {
-        "description": "The container spec for the cluster autoscaler."
-      },
-      "type": "string"
-    },
     "kubernetesClusterAutoscalerAzureCloud": {
       "metadata": {
         "description": "Name of the Azure cloud for the cluster autoscaler."
