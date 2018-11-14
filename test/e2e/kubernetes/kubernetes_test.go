@@ -73,6 +73,9 @@ var _ = BeforeSuite(func() {
 		masterSSHPort = "22"
 	}
 	masterSSHPrivateKeyFilepath = cfg.GetSSHKeyPath()
+	if cfg.StabilityIterations == 0 && !eng.HasWindowsAgents() {
+		cfg.StabilityIterations = 10
+	}
 	longRunningApacheDeploymentName = "php-apache-long-running"
 })
 
