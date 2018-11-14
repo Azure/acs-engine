@@ -103,6 +103,14 @@ func kubernetesContainerAddonSettingsInit(profile *api.Properties) map[string]ku
 			profile.OrchestratorProfile.IsAzureCNI(),
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultAzureCNINetworkMonitorAddonName),
 		},
+		DefaultDNSAutoscalerAddonName: {
+			"dns-autoscaler.yaml",
+			"dns-autoscaler.yaml",
+			// TODO enable this when it has been smoke tested
+			//common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
+			false,
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultDNSAutoscalerAddonName),
+		},
 	}
 }
 
@@ -126,14 +134,6 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"coredns.yaml",
 			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultCoreDNSAddonName),
-		},
-		{
-			"dns-autoscaler.yaml",
-			"dns-autoscaler.yaml",
-			// TODO enable this when it has been smoke tested
-			//common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.12.0"),
-			false,
-			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultDNSAutoscalerAddonName),
 		},
 		{
 			"kubernetesmasteraddons-kube-proxy-daemonset.yaml",
