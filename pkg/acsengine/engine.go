@@ -39,14 +39,6 @@ var openshiftTemplateFiles = append(
 	openshift39MasterScript,
 )
 
-var artifactFileMap = map[string]string{
-	DefaultMetricsServerAddonName: metricsServerAddonFile,
-}
-
-var artifactFileOutputMap = map[string]string{
-	DefaultMetricsServerAddonName: metricsServerDestinationFile,
-}
-
 var keyvaultSecretPathRe *regexp.Regexp
 
 func init() {
