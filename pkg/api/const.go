@@ -145,8 +145,8 @@ const (
 	DefaultNVIDIADevicePluginAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
 	DefaultContainerMonitoringAddonEnabled = false
-	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
-	DefaultAzureCNINetworkMonitoringAddonEnabled = false
+	// DefaultDNSAutoscalerAddonEnabled determines the acs-engine provided default for dns-autoscaler addon
+	DefaultDNSAutoscalerAddonEnabled = false
 	// IPMasqAgentAddonEnabled enables the ip-masq-agent addon
 	IPMasqAgentAddonEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
@@ -194,6 +194,8 @@ const (
 	ARMVirtualNetworksResourceType = "virtualNetworks"
 	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
 	DefaultAcceleratedNetworkingWindowsEnabled = false
+	// DefaultDNSAutoscalerAddonName is the name of the dns-autoscaler addon
+	DefaultDNSAutoscalerAddonName = "dns-autoscaler"
 )
 
 const (

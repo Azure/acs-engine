@@ -18,11 +18,11 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.1
+        image: {{ContainerImage "dns-autoscaler"}}
         resources:
             requests:
-                cpu: "20m"
-                memory: "10Mi"
+                cpu: {{ContainerCPUReqs "dns-autoscaler"}}
+                memory: {{ContainerMemReqs "dns-autoscaler"}}
         command:
           - /cluster-proportional-autoscaler
           - --namespace=kube-system

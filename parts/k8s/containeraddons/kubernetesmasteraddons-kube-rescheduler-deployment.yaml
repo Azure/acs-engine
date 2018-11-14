@@ -22,16 +22,16 @@ spec:
       nodeSelector:
         beta.kubernetes.io/os: linux
       containers:
-      - image: <img>
+      - image: {{ContainerImage "rescheduler"}}
         imagePullPolicy: IfNotPresent
         name: rescheduler
         resources:
           requests:
-            cpu: <cpuReq>
-            memory: <memReq>
+            cpu: {{ContainerCPUReqs "rescheduler"}}
+            memory: {{ContainerMemReqs "rescheduler"}}
           limits:
-            cpu: <cpuLim>
-            memory: <memLim>
+            cpu: {{ContainerCPULimits "rescheduler"}}
+            memory: {{ContainerMemLimits "rescheduler"}}
         command:
         - sh
         - -c

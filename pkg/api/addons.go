@@ -80,6 +80,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          "andyzhangx/blobfuse-flexvol-installer",
 			},
 		},
 	}
@@ -94,6 +95,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          "andyzhangx/smb-flexvol-installer",
 			},
 		},
 	}
@@ -108,6 +110,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
+				Image:          "mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v0.0.5",
 			},
 		},
 	}
@@ -198,6 +201,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "50Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "250Mi",
+				Image:          specConfig.KubernetesImageBase + "ip-masq-agent-amd64:v2.0.0",
 			},
 		},
 	}
@@ -223,6 +227,19 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 		},
 	}
 
+	defaultDNSAutoScalerAddonsConfig := KubernetesAddon{
+		Name:    DefaultDNSAutoscalerAddonName,
+		Enabled: helpers.PointerToBool(DefaultDNSAutoscalerAddonEnabled),
+		Containers: []KubernetesContainerSpec{
+			{
+				Name:           DefaultDNSAutoscalerAddonName,
+				Image:          specConfig.KubernetesImageBase + "cluster-proportional-autoscaler-amd64:1.1.1",
+				CPURequests:    "20m",
+				MemoryRequests: "10Mi",
+			},
+		},
+	}
+
 	defaultAddons := []KubernetesAddon{
 		defaultTillerAddonsConfig,
 		defaultACIConnectorAddonsConfig,
@@ -238,6 +255,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 		defaultAzureCNINetworkMonitorAddonsConfig,
 		defaultAzureNetworkPolicyAddonsConfig,
 		defaultIPMasqAgentAddonsConfig,
+		defaultDNSAutoScalerAddonsConfig,
 	}
 	// Add default addons specification, if no user-provided spec exists
 	if o.KubernetesConfig.Addons == nil {
