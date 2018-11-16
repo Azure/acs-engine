@@ -1,4 +1,11 @@
+<<<<<<< HEAD:pkg/acsengine/params_test.go
 package acsengine
+=======
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
+package engine
+>>>>>>> 1271bf53e... Add Copyright header (#23):pkg/engine/params_test.go
 
 import (
 	"path"
