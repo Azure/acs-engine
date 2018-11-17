@@ -1009,6 +1009,84 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		FIt("should be able to scale an iis webserver", func() {
+			if eng.HasWindowsAgents() {
+				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+
+				By("Creating a deployment with 1 pod running IIS")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
+				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Waiting on pod to be Ready")
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Exposing a LoadBalancer for the pod")
+				err = iisDeploy.Expose("LoadBalancer", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				s, err := service.Get(deploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err := iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Scaling deployment to 5 pods")
+				err = iisDeploy.ScaleDeployment(5)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = iisDeploy.WaitForReplicas(5, -1, 2*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Checking that no pods restart")
+				for _, iisPod := range iisPods {
+					log.Printf("Checking %s", iisPod.Metadata.Name)
+					Expect(iisPod.Status.ContainerStatuses[0].Ready).To(BeTrue())
+					Expect(iisPod.Status.ContainerStatuses[0].RestartCount).To(Equal(0))
+				}
+
+				By("Scaling deployment to 2 pods")
+				err = iisDeploy.ScaleDeployment(2)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = iisDeploy.WaitForReplicas(-1, 2, 2*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Verifying pods & services can be deleted")
+				err = iisDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+				err = s.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("No windows agent was provisioned for this Cluster Definition")
+			}
+		})
+
 		It("should be able to resolve DNS across windows and linux deployments", func() {
 			if eng.HasWindowsAgents() {
 				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
