@@ -1047,7 +1047,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Scaling deployment to 5 pods")
 				err = iisDeploy.ScaleDeployment(5)
 				Expect(err).NotTo(HaveOccurred())
-				_, err = iisDeploy.WaitForReplicas(5, -1, 2*time.Second, cfg.Timeout)
+				_, err = iisDeploy.WaitForReplicas(5, 5, 2*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Checking that no pods restart")
@@ -1060,7 +1060,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Scaling deployment to 2 pods")
 				err = iisDeploy.ScaleDeployment(2)
 				Expect(err).NotTo(HaveOccurred())
-				_, err = iisDeploy.WaitForReplicas(-1, 2, 2*time.Second, cfg.Timeout)
+				_, err = iisDeploy.WaitForReplicas(2, 2, 2*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
