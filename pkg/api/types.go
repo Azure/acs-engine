@@ -1364,6 +1364,23 @@ func (k *KubernetesConfig) GetAzureCNIURLWindows(cloudSpecConfig AzureEnvironmen
 	return cloudSpecConfig.KubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL
 }
 
+// IsFeatureEnabled returns true if a feature flag is on for the provided feature
+func (f *FeatureFlags) IsFeatureEnabled(feature string) bool {
+	if f != nil {
+		switch feature {
+		case "CSERunInBackground":
+			return f.EnableCSERunInBackground
+		case "BlockOutboundInternet":
+			return f.BlockOutboundInternet
+		case "DockerEngine":
+			return f.DockerEngine
+		default:
+			return false
+		}
+	}
+	return false
+}
+
 //GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.
 //for example: if the target is the public azure, then the default container image url should be k8s.gcr.io/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...

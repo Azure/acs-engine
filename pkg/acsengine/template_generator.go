@@ -427,20 +427,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"IsFeatureEnabled": func(feature string) bool {
-			flags := cs.Properties.FeatureFlags
-			if flags != nil {
-				switch feature {
-				case "CSERunInBackground":
-					return flags.EnableCSERunInBackground
-				case "BlockOutboundInternet":
-					return flags.BlockOutboundInternet
-				case "DockerEngine":
-					return flags.DockerEngine
-				default:
-					return false
-				}
-			}
-			return false
+			return cs.Properties.FeatureFlags.IsFeatureEnabled(feature)
 		},
 		"GetDCOSBootstrapCustomData": func() string {
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
