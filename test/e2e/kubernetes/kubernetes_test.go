@@ -1072,7 +1072,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				iisPods, err = iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(len(iisPods)).To(Equal(5))
+				Expect(len(iisPods)).To(Equal(2))
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
 				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
