@@ -426,15 +426,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
-		"CSERunInBackground": func() bool {
-			if cs.Properties.FeatureFlags != nil {
-				return cs.Properties.FeatureFlags.EnableCSERunInBackground
-			}
-			return false
-		},
-		"BlockOutboundInternet": func() bool {
-			if cs.Properties.FeatureFlags != nil {
-				return cs.Properties.FeatureFlags.BlockOutboundInternet
+		"IsFeatureEnabled": func(feature string) bool {
+			flags := cs.Properties.FeatureFlags
+			if flags != nil {
+				switch feature {
+				case "CSERunInBackground":
+					return flags.EnableCSERunInBackground
+				case "BlockOutboundInternet":
+					return flags.BlockOutboundInternet
+				case "DockerEngine":
+					return flags.DockerEngine
+				default:
+					return false
+				}
 			}
 			return false
 		},
