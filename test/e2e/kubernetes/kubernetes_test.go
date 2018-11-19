@@ -1058,6 +1058,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).To(Equal(5))
 
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
 				By("Checking that no pods restart")
 				for _, iisPod := range iisPods {
 					log.Printf("Checking %s", iisPod.Metadata.Name)
