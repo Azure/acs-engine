@@ -1027,11 +1027,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Exposing a LoadBalancer for the pod")
 				err = iisDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
-				s, err := service.Get(deploymentName, "default")
+				iisService, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
-				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				valid := iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Checking that each pod can reach http://www.bing.com")
@@ -1059,7 +1059,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(len(iisPods)).To(Equal(5))
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
-				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				valid = iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Checking that each pod can reach http://www.bing.com")
@@ -1089,7 +1089,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(len(iisPods)).To(Equal(2))
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
-				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				valid = iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Checking that each pod can reach http://www.bing.com")
@@ -1105,7 +1105,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Verifying pods & services can be deleted")
 				err = iisDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete(deleteResourceRetries)
+				err = iisService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
