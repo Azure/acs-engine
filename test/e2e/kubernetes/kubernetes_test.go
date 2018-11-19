@@ -1009,7 +1009,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		FIt("should be able to scale an iis webserver", func() {
+		It("should be able to scale an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
 
