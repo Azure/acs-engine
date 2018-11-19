@@ -1054,6 +1054,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				running, err = pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).To(Equal(5))
 
 				By("Checking that no pods restart")
 				for _, iisPod := range iisPods {
@@ -1067,6 +1070,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				_, err = iisDeploy.WaitForReplicas(2, 2, 2*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).To(Equal(5))
 
 				By("Verifying that the service is reachable and returns the default IIS start page")
 				valid = s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
