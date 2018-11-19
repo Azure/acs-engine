@@ -1050,6 +1050,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				_, err = iisDeploy.WaitForReplicas(5, 5, 2*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Waiting on 5 pods to be Ready")
+				running, err = pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
 				By("Checking that no pods restart")
 				for _, iisPod := range iisPods {
 					log.Printf("Checking %s", iisPod.Metadata.Name)
