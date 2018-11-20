@@ -426,17 +426,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsHostedBootstrap": func() bool {
 			return false
 		},
-		"CSERunInBackground": func() bool {
-			if cs.Properties.FeatureFlags != nil {
-				return cs.Properties.FeatureFlags.EnableCSERunInBackground
-			}
-			return false
-		},
-		"BlockOutboundInternet": func() bool {
-			if cs.Properties.FeatureFlags != nil {
-				return cs.Properties.FeatureFlags.BlockOutboundInternet
-			}
-			return false
+		"IsFeatureEnabled": func(feature string) bool {
+			return cs.Properties.FeatureFlags.IsFeatureEnabled(feature)
 		},
 		"GetDCOSBootstrapCustomData": func() string {
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
