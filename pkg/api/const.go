@@ -122,7 +122,7 @@ const (
 	// DefaultBlobfuseFlexVolumeAddonEnabled determines the acs-engine provided default for enabling blobfuse flexvolume addon
 	DefaultBlobfuseFlexVolumeAddonEnabled = true
 	// DefaultSMBFlexVolumeAddonEnabled determines the acs-engine provided default for enabling smb flexvolume addon
-	DefaultSMBFlexVolumeAddonEnabled = true
+	DefaultSMBFlexVolumeAddonEnabled = false
 	// DefaultKeyVaultFlexVolumeAddonEnabled determines the acs-engine provided default for enabling key vault flexvolume addon
 	DefaultKeyVaultFlexVolumeAddonEnabled = true
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon

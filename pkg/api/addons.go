@@ -80,7 +80,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
-				Image:          "andyzhangx/blobfuse-flexvol-installer",
+				Image:          "mcr.microsoft.com/k8s/flexvolume/blobfuse-flexvolume",
 			},
 		},
 	}
@@ -95,7 +95,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryRequests: "10Mi",
 				CPULimits:      "50m",
 				MemoryLimits:   "10Mi",
-				Image:          "andyzhangx/smb-flexvol-installer",
+				Image:          "mcr.microsoft.com/k8s/flexvolume/smb-flexvolume",
 			},
 		},
 	}
