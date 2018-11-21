@@ -237,6 +237,15 @@ func assignKubernetesParameters(properties *api.Properties, parametersMap params
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 
+		if !orchestratorProfile.IsOpenShift() {
+			// GPU nodes need docker-engine as the container runtime
+			if properties.HasNSeriesSKU() {
+				addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
+			} else {
+				addValue(parametersMap, "dockerEngineDownloadRepo", "")
+			}
+		}
+
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
 			if properties.AADProfile.AdminGroupID != "" {

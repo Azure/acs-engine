@@ -1372,8 +1372,6 @@ func (f *FeatureFlags) IsFeatureEnabled(feature string) bool {
 			return f.EnableCSERunInBackground
 		case "BlockOutboundInternet":
 			return f.BlockOutboundInternet
-		case "DockerEngine":
-			return f.DockerEngine
 		default:
 			return false
 		}
