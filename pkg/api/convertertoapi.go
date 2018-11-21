@@ -894,6 +894,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.AgentVnetSubnetID = vlabs.AgentVnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
+	api.InternalLbStaticIPOffset = vlabs.InternalLbStaticIPOffset
 	api.VnetCidr = vlabs.VnetCidr
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
