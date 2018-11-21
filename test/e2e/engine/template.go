@@ -183,8 +183,8 @@ func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVM
 	}
 
 	if config.EnableKMSEncryption && config.ClientObjectID != "" {
-		if prop.OrchestratorProfile.KubernetesConfig == nil {
-			prop.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
+		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig == nil {
+			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
 		}
 		cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = &config.EnableKMSEncryption
 		cs.ContainerService.Properties.ServicePrincipalProfile.ObjectID = config.ClientObjectID
