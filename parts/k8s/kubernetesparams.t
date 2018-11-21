@@ -337,6 +337,15 @@
       "type": "string"
     },
 {{end}}
+{{if not IsOpenShift}}
+    "dockerEngineDownloadRepo": {
+      "defaultValue": "https://aptdocker.azureedge.net/repo",
+      "metadata": {
+        "description": "The Docker Engine download URL for Kubernetes."
+      },
+      "type": "string"
+    },
+{{end}}
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
