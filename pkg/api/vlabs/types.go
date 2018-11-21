@@ -380,6 +380,7 @@ type MasterProfile struct {
 	VnetCidr                 string            `json:"vnetCidr,omitempty"`
 	AgentVnetSubnetID        string            `json:"agentVnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
+	InternalLbStaticIPOffset int               `json:"internalLbStaticIPOffset,omitempty"`
 	IPAddressCount           int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 	StorageProfile           string            `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`

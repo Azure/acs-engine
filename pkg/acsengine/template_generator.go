@@ -557,7 +557,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
-		"GetDefaultInternalLbStaticIPOffset": func() int {
+		"GetInternalLbStaticIPOffset": func() int {
+			if (cs.Properties.MasterProfile.InternalLbStaticIPOffset > 0) {
+				return cs.Properties.MasterProfile.InternalLbStaticIPOffset;
+			}
 			return DefaultInternalLbStaticIPOffset
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {

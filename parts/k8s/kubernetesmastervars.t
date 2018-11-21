@@ -246,7 +246,7 @@
         "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
         "masterInternalLbIPConfigName": "[concat(parameters('orchestratorName'), '-master-internal-lbFrontEnd-', parameters('nameSuffix'))]",
         "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
-        "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
+        "masterInternalLbIPOffset": {{GetInternalLbStaticIPOffset}},
         {{if IsMasterVirtualMachineScaleSets}}
         "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
         {{else}}

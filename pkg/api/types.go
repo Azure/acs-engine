@@ -439,6 +439,7 @@ type MasterProfile struct {
 	VnetCidr                 string            `json:"vnetCidr,omitempty"`
 	AgentVnetSubnetID        string            `json:"agentVnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
+	InternalLbStaticIPOffset int               `json:"internalLbStaticIPOffset,omitempty"`
 	Subnet                   string            `json:"subnet"`
 	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
 	StorageProfile           string            `json:"storageProfile,omitempty"`

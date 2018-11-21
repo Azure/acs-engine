@@ -70,7 +70,11 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 			if firstMasterIP == nil {
 				return "", errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", properties.MasterProfile.FirstConsecutiveStaticIP)
 			}
-			lbIP := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)}
+			staticOffset := DefaultInternalLbStaticIPOffset
+			if (properties.MasterProfile.InternalLbStaticIPOffset > 0) {
+				staticOffset = properties.MasterProfile.InternalLbStaticIPOffset;
+			}
+			lbIP := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(staticOffset)}
 			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", lbIP.String(), -1)
 		} else {
 			// Master count is 1, use the master IP
