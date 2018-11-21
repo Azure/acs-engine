@@ -341,7 +341,7 @@
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",
       "metadata": {
-        "description": "The docker engine download url for kubernetes."
+        "description": "The Docker Engine download URL for Kubernetes."
       },
       "type": "string"
     },
