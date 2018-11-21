@@ -558,8 +558,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetInternalLbStaticIPOffset": func() int {
-			if (cs.Properties.MasterProfile.InternalLbStaticIPOffset > 0) {
-				return cs.Properties.MasterProfile.InternalLbStaticIPOffset;
+			if cs.Properties.MasterProfile.InternalLbStaticIPOffset > 0 {
+				return cs.Properties.MasterProfile.InternalLbStaticIPOffset
 			}
 			return DefaultInternalLbStaticIPOffset
 		},
