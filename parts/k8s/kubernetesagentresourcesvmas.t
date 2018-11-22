@@ -28,7 +28,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
+        "enableAcceleratedNetworking" : {{.AcceleratedNetworkingEnabled}},
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
@@ -211,7 +211,7 @@
           {{GetKubernetesAgentCustomData .}}
           {{end}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {

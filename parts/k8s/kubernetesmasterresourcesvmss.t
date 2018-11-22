@@ -240,7 +240,7 @@
           {
               "name": "tcpHTTPSProbe",
               "properties": {
-                  "protocol": "tcp",
+                  "protocol": "Tcp",
                   "port": 443,
                   "intervalInSeconds": 5,
                   "numberOfProbes": 2
@@ -254,7 +254,7 @@
                   "frontendIPConfiguration": {
                       "id": "[variables('masterLbIPConfigID')]"
                   },
-                  "protocol": "tcp",
+                  "protocol": "Tcp",
                   "backendPort": "22",
                   "frontendPortRangeStart": "50001",
                   "frontendPortRangeEnd": "50119",
@@ -272,7 +272,7 @@
                 "backendAddressPool": {
                     "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 },
-                "protocol": "tcp",
+                "protocol": "Tcp",
                 "frontendPort": 443,
                 "backendPort": 443,
                 "enableFloatingIP": false,
@@ -392,7 +392,7 @@
           "computerNamePrefix": "[concat(variables('masterVMNamePrefix'), 'vmss')]",
           {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {

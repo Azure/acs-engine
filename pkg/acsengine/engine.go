@@ -510,7 +510,7 @@ func getLBRule(name string, port int) string {
               "probe": {
                 "id": "[concat(variables('%sLbID'),'/probes/tcp%dProbe')]"
               },
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }`, port, name, name, port, name, port, name, port)
 }
@@ -530,10 +530,10 @@ func getProbe(port int) string {
 	return fmt.Sprintf(`          {
             "name": "tcp%dProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": %d,
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }`, port, port)
 }
