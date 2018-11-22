@@ -155,7 +155,7 @@ New-InfraContainer
     }
 
     "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
-    "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
+    "CMD cmd /c ping -t localhost > nul" | Out-File -encoding ascii -FilePath Dockerfile -Append
     docker build -t kubletwin/pause .
 }
 
