@@ -77,7 +77,8 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
 {{if .IsManagedDisks}}
-   {
+    {{if not (HasAvailabilityZones .)}}
+    {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
       "apiVersion": "[variables('apiVersionCompute')]",
@@ -91,6 +92,7 @@
       },
       "type": "Microsoft.Compute/availabilitySets"
     },
+    {{end}}
 {{else if .IsStorageAccount}}
     {
       "apiVersion": "[variables('apiVersionStorage')]",
@@ -134,6 +136,7 @@
       "type": "Microsoft.Storage/storageAccounts"
     },
     {{end}}
+    {{if not (HasAvailabilityZones .)}}
     {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
@@ -141,6 +144,7 @@
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
+    {{end}}
 {{end}}
   {
       "apiVersion": "[variables('apiVersionCompute')]",
@@ -156,8 +160,10 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
   {{end}}
 {{end}}
-        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
+        {{if not (HasAvailabilityZones .)}}
+        "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]",
+        {{end}}
+        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]"
       ],
       "tags":
       {
@@ -191,9 +197,13 @@
       },
       {{end}}
       "properties": {
+        {{if not (HasAvailabilityZones .)}}
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
         },
+        {{ else}}
+        "zones": "split(string([parameters('availabilityZones')[mod(copyIndex(variables('{{.Name}}Offset')), length(parameters('availabilityZones')))]]), ',')"
+        {{end}}
         "hardwareProfile": {
           "vmSize": "[variables('{{.Name}}VMSize')]"
         },
