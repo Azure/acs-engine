@@ -32,7 +32,7 @@ type Config struct {
 	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
-	EnableKMSEncryption   bool   `envconfig:"ENABLE_KMS_ENCRYPTION" default:"true"`
+	EnableKMSEncryption   bool   `envconfig:"ENABLE_KMS_ENCRYPTION" default:"false"`
 	Distro                string `envconfig:"DISTRO"`
 	SubscriptionID        string `envconfig:"SUBSCRIPTION_ID"`
 	TenantID              string `envconfig:"TENANT_ID"`
