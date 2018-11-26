@@ -69,7 +69,6 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 			addValue(parametersMap, "agentSubnet", properties.MasterProfile.AgentSubnet)
 		}
 		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
-		addValue(parametersMap, "internalLbStaticIPOffset", properties.MasterProfile.InternalLbStaticIPOffset)
 		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
 		if properties.MasterProfile.HasAvailabilityZones() {
 			addValue(parametersMap, "availabilityZones", properties.MasterProfile.AvailabilityZones)
