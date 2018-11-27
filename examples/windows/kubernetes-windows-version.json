@@ -21,7 +21,10 @@
     "windowsProfile": {
       "adminUsername": "azureuser",
       "adminPassword": "replacepassword1234$",
-      "imageVersion": "2016.127.20170510"
+      "windowsPublisher": "MicrosoftWindowsServer",
+      "windowsOffer": "WindowsServerSemiAnnual",
+      "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk",
+      "imageVersion": "1803.0.20181017"
     },
     "linuxProfile": {
       "adminUsername": "azureuser",
