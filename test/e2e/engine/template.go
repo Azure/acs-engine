@@ -190,12 +190,14 @@ func (e *Engine) HasWindowsAgents() bool {
 }
 
 // GetWindowsImageIIS will return the right IIS image for the Windows version used
-func (e *Engine) GetWindowsImageIIS() string, error {
+func (e *Engine) GetWindowsImageIIS() (string, error) {
+	// TODO finish this
 	return "microsoft/iis:windowsservercore-1803", nil
 }
 
 // GetWindowsImageServerCore will return the right Server Core image for the Windows version used
-func (e *Engine) GetWindowsImageServerCore() string, error {
+func (e *Engine) GetWindowsImageServerCore() (string, error) {
+	// TODO finish this
 	return "microsoft/windowsservercore:1803", nil
 }
 
