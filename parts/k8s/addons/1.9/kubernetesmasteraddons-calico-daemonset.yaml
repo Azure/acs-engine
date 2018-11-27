@@ -113,10 +113,7 @@ metadata:
   labels:
     addonmanager.kubernetes.io/mode: "EnsureExists"
 data:
-  # To enable Typha, set this to "calico-typha" *and* set a non-zero value for Typha replicas
-  # below.  We recommend using Typha if you have more than 50 nodes. Above 100 nodes it is
-  # essential.
-  typha_service_name: "none"
+  typha_service_name: "calico-typha"
 
   # The CNI network configuration to install on each node.
   cni_network_config: |-
