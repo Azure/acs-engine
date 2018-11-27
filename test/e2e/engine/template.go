@@ -189,16 +189,31 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
-// GetWindowsImageIIS will return the right IIS image for the Windows version used
-func (e *Engine) GetWindowsImageIIS() (string, error) {
-	// TODO finish this
-	return "microsoft/iis:windowsservercore-1803", nil
+
+type WindowsTestImages struct {
+	IIS string
+	ServerCore string 
 }
 
-// GetWindowsImageServerCore will return the right Server Core image for the Windows version used
-func (e *Engine) GetWindowsImageServerCore() (string, error) {
-	// TODO finish this
-	return "microsoft/windowsservercore:1803", nil
+// GetWindowsTestImages will return the right list of container images for the Windows version used
+func (e *Engine) GetWindowsTestImages() (WindowsTestImages, error) {
+	if e.HasWindowsAgents == false {
+		return nil, errors.New("Can't guess a Windows version without Windows nodes in the cluster")
+	}
+
+	if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1809") || 
+	   (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("2019")
+	{
+		return WindowsTestImages { IIS = "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019", 
+		                           ServerCore = "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019"}, nil
+	} else if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1803") {
+		return WindowsTestImages { IIS = "microsoft/iis:windowsservercore-1803", 
+		                           ServerCore = "microsoft/iis:windowsservercore-1803"}, nil
+	} else if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1709") {
+		return nil, errors.New("Windows Server version 1709 hasn't been tested in a long time and is deprecated")
+	}
+	
+	return nil, errors.New("Unknown Windows version")
 }
 
 // HasAddon will return true if an addon is enabled
