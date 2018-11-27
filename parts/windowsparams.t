@@ -71,7 +71,7 @@
       "type": "string"
     },
     "agentWindowsSku": {
-      "defaultValue": "Datacenter-Core-1803-with-Containers-smalldisk",
+      "defaultValue": "Datacenter-Core-1809-with-Containers-smalldisk",
       "metadata": {
         "description": "The SKU of windows image for the agent virtual machines."
       },
