@@ -197,7 +197,7 @@ type WindowsTestImages struct {
 
 // GetWindowsTestImages will return the right list of container images for the Windows version used
 func (e *Engine) GetWindowsTestImages() (*WindowsTestImages, error) {
-	if e.HasWindowsAgents() == false {
+	if !e.HasWindowsAgents() {
 		return nil, errors.New("Can't guess a Windows version without Windows nodes in the cluster")
 	}
 
