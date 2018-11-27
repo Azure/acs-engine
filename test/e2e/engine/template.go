@@ -201,9 +201,7 @@ func (e *Engine) GetWindowsTestImages() (WindowsTestImages, error) {
 		return nil, errors.New("Can't guess a Windows version without Windows nodes in the cluster")
 	}
 
-	if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1809") || 
-	   (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("2019")
-	{
+	if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1809") || (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("2019")	{
 		return WindowsTestImages { IIS = "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019", 
 		                           ServerCore = "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019"}, nil
 	} else if (e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku).Contains("1803") {
