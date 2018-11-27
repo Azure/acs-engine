@@ -607,7 +607,7 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 | adminPassword                    | yes      | Password for the Windows adminstrator account created on each Windows node |
 | windowsPublisher                 | no       | Publisher used to find Windows VM to deploy from marketplace. Default: `MicrosoftWindowsServer` |
 | windowsOffer                     | no       | Offer used to find Windows VM to deploy from marketplace. Default: `WindowsServerSemiAnnual` |
-| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1803-with-Containers-smalldisk` |
+| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1809-with-Containers-smalldisk` |
 | imageVersion                     | no       | Specific image version to deploy from marketplace.  Default: `latest` |
 | windowsImageSourceURL            | no       | Path to an existing Azure storage blob with a sysprepped VHD. This is used to test pre-release or customized VHD files that you have uploaded to Azure. If provided, the above 4 parameters are ignored. |
 
