@@ -189,6 +189,16 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
+// GetWindowsImageIIS will return the right IIS image for the Windows version used
+func (e *Engine) GetWindowsImageIIS() string, error {
+	return "microsoft/iis:windowsservercore-1803", nil
+}
+
+// GetWindowsImageServerCore will return the right Server Core image for the Windows version used
+func (e *Engine) GetWindowsImageServerCore() string, error {
+	return "microsoft/windowsservercore:1803", nil
+}
+
 // HasAddon will return true if an addon is enabled
 func (e *Engine) HasAddon(name string) (bool, api.KubernetesAddon) {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
