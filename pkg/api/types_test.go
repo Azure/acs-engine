@@ -834,9 +834,9 @@ func TestWindowsProfile(t *testing.T) {
 		t.Fatalf("Expected GetWindowsDockerVersion() to equal 18.03.1-ee-3, got %s", dv)
 	}
 
-	windowsVersion = w.GetWindowsSku()
-	if windowsVersion != "Datacenter-Core-1809-with-Containers-smalldisk" {
-		t.Fatalf("Expected GetWindowsSku() to equal Datacenter-Core-1809-with-Containers-smalldisk, got %s", windowsVersion)
+	windowsSku = w.GetWindowsSku()
+	if windowsSku != "Datacenter-Core-1809-with-Containers-smalldisk" {
+		t.Fatalf("Expected GetWindowsSku() to equal Datacenter-Core-1809-with-Containers-smalldisk, got %s", windowsSku)
 	}
 }
 
