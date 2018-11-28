@@ -1943,11 +1943,13 @@ func TestProperties_ValidateZones(t *testing.T) {
 				ExcludeMasterFromStandardLB: helpers.PointerToBool(test.excludeMasterFromStandardLB),
 			}
 
-			err := p.Validate(false)
-
-			expectedMsg := test.expectedErr
-			if err.Error() != expectedMsg {
-				t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+			if err := p.Validate(false); err != nil {
+				expectedMsg := test.expectedErr
+				if err.Error() != expectedMsg {
+					t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+				}
+			} else {
+				t.Errorf("error should have occurred")
 			}
 		})
 	}
