@@ -64,6 +64,10 @@ var (
 			networkPolicy: "calico",
 		},
 		{
+			networkPlugin: "azure",
+			networkPolicy: "calico",
+		},
+		{
 			networkPlugin: "",
 			networkPolicy: "calico",
 		},
@@ -360,6 +364,12 @@ func (a *Properties) validateMasterProfile() error {
 		}
 		if m.StorageProfile != ManagedDisks {
 			return errors.New("OpenShift orchestrator supports only ManagedDisks")
+		}
+	}
+
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if m.IsVirtualMachineScaleSets() && m.VnetSubnetID != "" && m.FirstConsecutiveStaticIP != "" {
+			return errors.New("when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr")
 		}
 	}
 

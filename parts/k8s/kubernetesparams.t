@@ -195,12 +195,6 @@
       },
       "type": "string"
     },
-    "kubeServiceCidr": {
-      "metadata": {
-        "description": "Kubernetes service address space"
-      },
-      "type": "string"
-    },
 {{if not IsHostedMaster}}
     "kubernetesNonMasqueradeCidr": {
       "metadata": {
@@ -241,38 +235,6 @@
       },
       "type": "string"
     },
-{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
-    "kubernetesDashboardSpec": {
-      "metadata": {
-        "description": "The container spec for kubernetes-dashboard-amd64."
-      },
-      "type": "string"
-    },
-    "kubernetesDashboardCPURequests": {
-      "metadata": {
-        "description": "Dashboard CPU Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesDashboardMemoryRequests": {
-      "metadata": {
-        "description": "Dashboard Memory Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesDashboardCPULimit": {
-      "metadata": {
-        "description": "Dashboard CPU Limit."
-      },
-      "type": "string"
-    },
-    "kubernetesDashboardMemoryLimit": {
-      "metadata": {
-        "description": "Dashboard Memory Limit."
-      },
-      "type": "string"
-    },
-{{end}}
     "enableAggregatedAPIs": {
       "metadata": {
         "description": "Enable aggregated API on master nodes"
@@ -300,84 +262,6 @@
       },
       "type": "string"
     },
-{{if .OrchestratorProfile.IsMetricsServerEnabled}}
-    "kubernetesMetricsServerSpec": {
-      "metadata": {
-        "description": "The container spec for Metrics Server."
-      },
-      "type": "string"
-    },
-{{end}}
-{{if .IsNVIDIADevicePluginEnabled}}
-    "kubernetesNVIDIADevicePluginSpec": {
-      "metadata": {
-        "description": "The container spec for NVIDIA Device Plugin."
-      },
-      "type": "string"
-    },
-    "kubernetesNVIDIADevicePluginCPURequests": {
-      "metadata": {
-        "description": "NVIDIA Device Plugin CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesNVIDIADevicePluginMemoryRequests": {
-      "metadata": {
-        "description": "NVIDIA Device Plugin Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesNVIDIADevicePluginCPULimit": {
-      "metadata": {
-        "description": "NVIDIA Device Plugin CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesNVIDIADevicePluginMemoryLimit": {
-      "metadata": {
-        "description": "NVIDIA Device Plugin Memory Limit"
-      },
-      "type": "string"
-    },
-{{end}}
-{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
-    "kubernetesTillerSpec": {
-      "metadata": {
-        "description": "The container spec for Helm Tiller."
-      },
-      "type": "string"
-    },
-    "kubernetesTillerCPURequests": {
-      "metadata": {
-        "description": "Helm Tiller CPU Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesTillerMemoryRequests": {
-      "metadata": {
-        "description": "Helm Tiller Memory Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesTillerCPULimit": {
-      "metadata": {
-        "description": "Helm Tiller CPU Limit."
-      },
-      "type": "string"
-    },
-    "kubernetesTillerMemoryLimit": {
-      "metadata": {
-        "description": "Helm Tiller Memory Limit."
-      },
-      "type": "string"
-    },
-    "kubernetesTillerMaxHistory": {
-      "metadata": {
-        "description": "Helm Tiller Max History to Store. '0' for no limit."
-      },
-      "type": "string"
-    },
-{{end}}
 {{if .OrchestratorProfile.KubernetesConfig.IsAADPodIdentityEnabled}}
     "kubernetesAADPodIdentityEnabled": {
       "defaultValue": false,
@@ -393,62 +277,6 @@
       },
       "type": "bool"
     },
-{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
-    "kubernetesACIConnectorSpec": {
-      "metadata": {
-        "description": "The container spec for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorNodeName": {
-      "metadata": {
-        "description": "Node name for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorOS": {
-      "metadata": {
-        "description": "OS for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorTaint": {
-      "metadata": {
-        "description": "Taint for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorRegion": {
-      "metadata": {
-        "description": "Region for ACI Connector."
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorCPURequests": {
-      "metadata": {
-        "description": "ACI Connector CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorMemoryRequests": {
-      "metadata": {
-        "description": "ACI Connector Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorCPULimit": {
-      "metadata": {
-        "description": "ACI Connector CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesACIConnectorMemoryLimit": {
-      "metadata": {
-        "description": "ACI Connector Memory Limit"
-      },
-      "type": "string"
-    },
-{{end}}
     "kubernetesClusterAutoscalerEnabled": {
       "metadata": {
         "description": "Cluster autoscaler status"
@@ -456,154 +284,15 @@
       "type": "bool"
     },
 {{if .OrchestratorProfile.KubernetesConfig.IsClusterAutoscalerEnabled}}
-    "kubernetesClusterAutoscalerSpec": {
-      "metadata": {
-        "description": "The container spec for the cluster autoscaler."
-      },
-      "type": "string"
-    },
     "kubernetesClusterAutoscalerAzureCloud": {
       "metadata": {
         "description": "Name of the Azure cloud for the cluster autoscaler."
       },
       "type": "string"
     },
-    "kubernetesClusterAutoscalerCPULimit": {
-      "metadata": {
-        "description": "Cluster autoscaler cpu limit"
-      },
-      "type": "string"
-    },
-    "kubernetesClusterAutoscalerMemoryLimit": {
-      "metadata": {
-        "description": "Cluster autoscaler memory limit"
-      },
-      "type": "string"
-    },
-    "kubernetesClusterAutoscalerCPURequests": {
-      "metadata": {
-        "description": "Cluster autoscaler cpu requests"
-      },
-      "type": "string"
-    },
-    "kubernetesClusterAutoscalerMemoryRequests": {
-      "metadata": {
-        "description": "Cluster autoscaler memory requests"
-      },
-      "type": "string"
-    },
-    "kubernetesClusterAutoscalerMinNodes": {
-      "metadata": {
-        "description": "Cluster autoscaler min nodes"
-      },
-      "type": "string"
-    },
-    "kubernetesClusterAutoscalerMaxNodes": {
-      "metadata": {
-        "description": "Cluster autoscaler max nodes"
-      },
-      "type": "string"
-    },
     "kubernetesClusterAutoscalerUseManagedIdentity": {
       "metadata": {
         "description": "Managed identity for the cluster autoscaler addon"
-      },
-      "type": "string"
-    },
-{{end}}
-     "flexVolumeDriverConfig": {
-      "type": "object",
-      "defaultValue": {
-        "kubernetesBlobfuseFlexVolumeInstallerCPURequests": "50m",
-        "kubernetesBlobfuseFlexVolumeInstallerMemoryRequests": "10Mi",
-        "kubernetesBlobfuseFlexVolumeInstallerCPULimit": "50m",
-        "kubernetesBlobfuseFlexVolumeInstallerMemoryLimit": "10Mi",
-        "kubernetesSMBFlexVolumeInstallerCPURequests": "50m",
-        "kubernetesSMBFlexVolumeInstallerMemoryRequests": "10Mi",
-        "kubernetesSMBFlexVolumeInstallerCPULimit": "50m",
-        "kubernetesSMBFlexVolumeInstallerMemoryLimit": "10Mi"
-      }
-    },
-{{if .OrchestratorProfile.KubernetesConfig.IsKeyVaultFlexVolumeEnabled}}
-    "kubernetesKeyVaultFlexVolumeInstallerCPURequests": {
-      "metadata": {
-        "description": "Key Vault FlexVolume Installer CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesKeyVaultFlexVolumeInstallerMemoryRequests": {
-      "metadata": {
-        "description": "Key Vault FlexVolume Installer Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesKeyVaultFlexVolumeInstallerCPULimit": {
-      "metadata": {
-        "description": "Key Vault FlexVolume Installer CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesKeyVaultFlexVolumeInstallerMemoryLimit": {
-      "metadata": {
-        "description": "Key Vault FlexVolume Installer Memory Limit"
-      },
-      "type": "string"
-    },
-{{end}}
-{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
-    "kubernetesReschedulerSpec": {
-      "metadata": {
-        "description": "The container spec for rescheduler."
-      },
-      "type": "string"
-    },
-    "kubernetesReschedulerCPURequests": {
-      "metadata": {
-        "description": "Rescheduler CPU Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesReschedulerMemoryRequests": {
-      "metadata": {
-        "description": "Rescheduler Memory Requests."
-      },
-      "type": "string"
-    },
-    "kubernetesReschedulerCPULimit": {
-      "metadata": {
-        "description": "Rescheduler CPU Limit."
-      },
-      "type": "string"
-    },
-    "kubernetesReschedulerMemoryLimit": {
-      "metadata": {
-        "description": "Rescheduler Memory Limit."
-      },
-      "type": "string"
-    },
-{{end}}
-{{if .OrchestratorProfile.KubernetesConfig.IsIPMasqAgentEnabled}}
-    "kubernetesIPMasqAgentCPURequests": {
-      "metadata": {
-        "description": "IP Masq Agent CPU Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesIPMasqAgentMemoryRequests": {
-      "metadata": {
-        "description": "IP Masq Agent Memory Requests"
-      },
-      "type": "string"
-    },
-    "kubernetesIPMasqAgentCPULimit": {
-      "metadata": {
-        "description": "IP Masq Agent CPU Limit"
-      },
-      "type": "string"
-    },
-    "kubernetesIPMasqAgentMemoryLimit": {
-      "metadata": {
-        "description": "IP Masq Agent Memory Limit"
       },
       "type": "string"
     },
@@ -644,6 +333,15 @@
     "kubernetesDNSMasqSpec": {
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."
+      },
+      "type": "string"
+    },
+{{end}}
+{{if not IsOpenShift}}
+    "dockerEngineDownloadRepo": {
+      "defaultValue": "https://aptdocker.azureedge.net/repo",
+      "metadata": {
+        "description": "The Docker Engine download URL for Kubernetes."
       },
       "type": "string"
     },
@@ -739,71 +437,6 @@
       },
       "type": "string"
     },
-{{if .OrchestratorProfile.KubernetesConfig.IsContainerMonitoringEnabled}}
-    "omsAgentVersion": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS agent version for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "omsAgentDockerProviderVersion": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "Docker provider version for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "omsAgentImage": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS agent image for Container Monitoring."
-      },
-      "type": "string"
-    },
-    "omsAgentWorkspaceGuid": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS workspace guid"
-      },
-      "type": "string"
-    },
-    "omsAgentWorkspaceKey": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS workspace key"
-      },
-      "type": "string"
-    },
-    "kubernetesOMSAgentCPURequests": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS Agent CPU requests resource limit"
-      },
-      "type": "string"
-    },
-    "kubernetesOMSAgentMemoryRequests": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS Agent memory requests resource limit"
-      },
-      "type": "string"
-    },
-    "kubernetesOMSAgentCPULimit": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS Agent CPU limit resource limit"
-      },
-      "type": "string"
-    },
-    "kubernetesOMSAgentMemoryLimit": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "OMS Agent memory limit resource limit"
-      },
-      "type": "string"
-    },
-{{end}}
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {

@@ -1,43 +1,44 @@
-apiVersion: "v1"
-kind: "Pod"
+apiVersion: v1
+kind: Pod
 metadata:
-  name: "kube-apiserver"
-  namespace: "kube-system"
+  name: kube-apiserver
+  namespace: kube-system
   labels:
     tier: control-plane
     component: kube-apiserver
 spec:
   hostNetwork: true
   containers:
-    - name: "kube-apiserver"
-      image: "<kubernetesHyperkubeSpec>"
+    - name: kube-apiserver
+      image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["/hyperkube", "apiserver"]
-      args: [<kubernetesAPIServerConfig>]
+      args: [<args>]
       volumeMounts:
-        - name: "etc-kubernetes"
-          mountPath: "/etc/kubernetes"
-        - name: "var-lib-kubelet"
-          mountPath: "/var/lib/kubelet"
-        - name: "msi"
-          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+        - name: var-lib-kubelet
+          mountPath: /var/lib/kubelet
+        - name: msi
+          mountPath: /var/lib/waagent/ManagedIdentity-Settings
           readOnly: true
-        - name: "sock"
-          mountPath: "/opt"
-        - name: "auditlog"
-          mountPath: "/var/log/kubeaudit"
+        - name: sock
+          mountPath: /opt
+        - name: auditlog
+          mountPath: /var/log/kubeaudit
   volumes:
-    - name: "etc-kubernetes"
+    - name: etc-kubernetes
       hostPath:
-        path: "/etc/kubernetes"
-    - name: "var-lib-kubelet"
+        path: /etc/kubernetes
+    - name: var-lib-kubelet
       hostPath:
-        path: "/var/lib/kubelet"
+        path: /var/lib/kubelet
     - name: msi
       hostPath:
-        path: "/var/lib/waagent/ManagedIdentity-Settings"
-    - name: "sock"
+        path: /var/lib/waagent/ManagedIdentity-Settings
+    - name: sock
       hostPath:
-        path: "/opt"
-    - name: "auditlog"
+        path: /opt
+    - name: auditlog
       hostPath:
-        path: "/var/log/kubeaudit"
+        path: /var/log/kubeaudit

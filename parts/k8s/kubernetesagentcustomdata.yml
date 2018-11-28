@@ -1,58 +1,58 @@
 #cloud-config
 
 write_files:
-- path: "/opt/azure/containers/provision_source.sh"
+- path: /opt/azure/containers/provision_source.sh
   permissions: "0744"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "provisionSource"}}
 
-- path: "/opt/azure/containers/provision.sh"
+- path: /opt/azure/containers/provision.sh
   permissions: "0744"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
-- path: "/opt/azure/containers/provision_installs.sh"
+- path: /opt/azure/containers/provision_installs.sh
   permissions: "0744"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "provisionInstalls"}}
 
-- path: "/opt/azure/containers/provision_configs.sh"
+- path: /opt/azure/containers/provision_configs.sh
   permissions: "0744"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "provisionConfigs"}}
 
-- path: "/etc/ssh/sshd_config"
+- path: /etc/ssh/sshd_config
   permissions: "0644"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "sshdConfig"}}
 
-- path: "/etc/systemd/system.conf"
+- path: /etc/systemd/system.conf
   permissions: "0644"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "systemConf"}}
 
-- path: "/usr/local/bin/health-monitor.sh"
+- path: /usr/local/bin/health-monitor.sh
   permissions: "0544"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "healthMonitorScript"}}
 
-- path: "/etc/systemd/system/kubelet-monitor.timer"
+- path: /etc/systemd/system/kubelet-monitor.timer
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Unit]
     Description=a timer that delays kubelet-monitor from starting too soon after boot
@@ -61,9 +61,9 @@ write_files:
     [Install]
     WantedBy=multi-user.target
 
-- path: "/etc/systemd/system/kubelet-monitor.service"
+- path: /etc/systemd/system/kubelet-monitor.service
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Unit]
     Description=a script that checks kubelet health and restarts if needed
@@ -74,9 +74,9 @@ write_files:
     RemainAfterExit=yes
     ExecStart=/usr/local/bin/health-monitor.sh kubelet
 
-- path: "/etc/systemd/system/docker-monitor.timer"
+- path: /etc/systemd/system/docker-monitor.timer
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Unit]
     Description=a timer that delays docker-monitor from starting too soon after boot
@@ -85,9 +85,9 @@ write_files:
     [Install]
     WantedBy=multi-user.target
 
-- path: "/etc/systemd/system/docker-monitor.service"
+- path: /etc/systemd/system/docker-monitor.service
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Unit]
     Description=a script that checks docker health and restarts if needed
@@ -100,7 +100,7 @@ write_files:
 
 {{if .KubernetesConfig.RequiresDocker}}
     {{if not .IsCoreOS}}
-- path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
+- path: /etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf
   permissions: "0644"
   owner: "root"
   content: |
@@ -108,17 +108,17 @@ write_files:
     MountFlags=shared
     {{end}}
 
-- path: "/etc/systemd/system/docker.service.d/exec_start.conf"
+- path: /etc/systemd/system/docker.service.d/exec_start.conf
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Service]
     ExecStart=
     ExecStart=/usr/bin/dockerd -H fd:// --storage-driver=overlay2 --bip={{WrapAsParameter "dockerBridgeCidr"}}
 
-- path: "/etc/docker/daemon.json"
+- path: /etc/docker/daemon.json
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     {
       "live-restore": true,
@@ -138,9 +138,9 @@ write_files:
 {{end}}
 
 {{if IsNSeriesSKU .}}
-- path: "/etc/systemd/system/nvidia-modprobe.service"
+- path: /etc/systemd/system/nvidia-modprobe.service
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     [Unit]
     Description=Installs and loads Nvidia GPU kernel module
@@ -154,32 +154,32 @@ write_files:
     WantedBy=multi-user.target
 {{end}}
 
-- path: "/etc/kubernetes/certs/ca.crt"
+- path: /etc/kubernetes/certs/ca.crt
   permissions: "0644"
-  encoding: "base64"
-  owner: "root"
+  encoding: base64
+  owner: root
   content: |
     {{WrapAsParameter "caCertificate"}}
 
-- path: "/etc/kubernetes/certs/client.crt"
+- path: /etc/kubernetes/certs/client.crt
   permissions: "0644"
-  encoding: "base64"
-  owner: "root"
+  encoding: base64
+  owner: root
   content: |
     {{WrapAsParameter "clientCertificate"}}
 
 {{if HasCustomSearchDomain}}
-- path: "/opt/azure/containers/setup-custom-search-domains.sh"
+- path: /opt/azure/containers/setup-custom-search-domains.sh
   permissions: "0744"
   encoding: gzip
-  owner: "root"
+  owner: root
   content: !!binary |
     {{WrapAsVariable "customSearchDomainsScript"}}
 {{end}}
 
-- path: "/var/lib/kubelet/kubeconfig"
+- path: /var/lib/kubelet/kubeconfig
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
     apiVersion: v1
     kind: Config
@@ -200,9 +200,9 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-- path: "/etc/default/kubelet"
+- path: /etc/default/kubelet
   permissions: "0644"
-  owner: "root"
+  owner: root
   content: |
 {{if IsKubernetesVersionLt "1.8.0"}}
     KUBELET_OPTS=--require-kubeconfig
@@ -216,9 +216,9 @@ write_files:
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 
-- path: "/opt/azure/containers/kubelet.sh"
+- path: /opt/azure/containers/kubelet.sh
   permissions: "0755"
-  owner: "root"
+  owner: root
   content: |
     #!/bin/bash
 {{if not EnablePodSecurityPolicy}}
@@ -236,9 +236,9 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{if .IsCoreOS}}
-- path: "/opt/azure/containers/provision-setup.sh"
+- path: /opt/azure/containers/provision-setup.sh
   permissions: "0755"
-  owner: "root"
+  owner: root
   content: |
     #!/bin/bash
     /usr/bin/mkdir -p /etc/kubernetes/manifests

@@ -17,7 +17,7 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  clusterIP: <kubeDNSServiceIP>
+  clusterIP: <clustIP>
   ports:
   - name: dns
     port: 53
@@ -76,14 +76,15 @@ spec:
           optional: true
       containers:
       - args:
-        - "--domain=<kubernetesKubeletClusterDomain>."
+        - "--domain=<domain>."
         - "--dns-port=10053"
         - "--v=2"
         - "--config-dir=/kube-dns-config"
         env:
         - name: PROMETHEUS_PORT
           value: "10055"
-        image: <kubernetesKubeDNSSpec>
+        image: <img>
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
           httpGet:
@@ -133,7 +134,8 @@ spec:
         - "--server=/in-addr.arpa/127.0.0.1#10053"
         - "--server=/ip6.arpa/127.0.0.1#10053"
         - "--log-facility=-"
-        image: <kubernetesDNSMasqSpec>
+        image: <imgMasq>
+        imagePullPolicy: IfNotPresent
         name: dnsmasq
         ports:
         - containerPort: 53
@@ -154,8 +156,9 @@ spec:
         - "--quiet"
         env:
         - name: PROBE_DOMAINS
-          value: bing.com kubernetes.default.svc.<kubernetesKubeletClusterDomain>
-        image: <kubernetesExecHealthzSpec>
+          value: bing.com kubernetes.default.svc.<domain>
+        image: <imgHealthz>
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
           httpGet:

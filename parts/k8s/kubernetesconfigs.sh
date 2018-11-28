@@ -186,8 +186,10 @@ configureCNI() {
     retrycmd_if_failure 120 5 25 modprobe br_netfilter || exit $ERR_MODPROBE_FAIL
     echo -n "br_netfilter" > /etc/modules-load.d/br_netfilter.conf
     if [[ "${NETWORK_PLUGIN}" = "azure" ]]; then
-        mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
-        chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+        if [[ "${NETWORK_POLICY}" != "calico" ]]; then
+            mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+            chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+        fi
         /sbin/ebtables -t nat --list
     fi
 }
@@ -290,7 +292,7 @@ ensurePodSecurityPolicy() {
 }
 
 ensureK8sControlPlane() {
-    if $REBOOTREQUIRED; then
+    if $REBOOTREQUIRED || [ "$NO_OUTBOUND" = "true" ]; then
         return
     fi
     wait_for_file 3600 1 $KUBECTL || exit $ERR_FILE_WATCH_TIMEOUT
@@ -301,7 +303,6 @@ ensureK8sControlPlane() {
     else
         retrycmd_if_failure 120 5 25 $KUBECTL 2>/dev/null cluster-info || exit $ERR_K8S_RUNNING_TIMEOUT
     fi
-    ensurePodSecurityPolicy
 }
 
 ensureEtcd() {
@@ -355,22 +356,22 @@ configClusterAutoscalerAddon() {
         CLUSTER_AUTOSCALER_MSI_VOLUME="- hostPath:\n\          path: /var/lib/waagent/\n\        name: waagent"
         CLUSTER_AUTOSCALER_MSI_HOST_NETWORK="hostNetwork: true"
 
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<volMounts>|${CLUSTER_AUTOSCALER_MSI_VOLUME_MOUNT}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<vols>|${CLUSTER_AUTOSCALER_MSI_VOLUME}|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<hostNet>|$(echo "${CLUSTER_AUTOSCALER_MSI_HOST_NETWORK}")|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     elif [[ "${USE_MANAGED_IDENTITY_EXTENSION}" == false ]]; then
-        sed -i "s|<kubernetesClusterAutoscalerVolumeMounts>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerVolumes>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-        sed -i "s|<kubernetesClusterAutoscalerHostNetwork>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<volMounts>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<vols>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+        sed -i "s|<hostNet>|""|g" $CLUSTER_AUTOSCALER_ADDON_FILE
     fi
 
-    sed -i "s|<kubernetesClusterAutoscalerClientId>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerClientSecret>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerSubscriptionId>|$(echo $SUBSCRIPTION_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerTenantId>|$(echo $TENANT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerResourceGroup>|$(echo $RESOURCE_GROUP | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerVmType>|$(echo $VM_TYPE | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
-    sed -i "s|<kubernetesClusterAutoscalerVMSSName>|$(echo $PRIMARY_SCALE_SET)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<clientID>|$(echo $SERVICE_PRINCIPAL_CLIENT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<clientSec>|$(echo $SERVICE_PRINCIPAL_CLIENT_SECRET | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<subID>|$(echo $SUBSCRIPTION_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<tenantID>|$(echo $TENANT_ID | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<rg>|$(echo $RESOURCE_GROUP | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<vmType>|$(echo $VM_TYPE | base64)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
+    sed -i "s|<vmssName>|$(echo $PRIMARY_SCALE_SET)|g" $CLUSTER_AUTOSCALER_ADDON_FILE
 }
 
 configACIConnectorAddon() {
@@ -382,10 +383,10 @@ configACIConnectorAddon() {
 
     ACI_CONNECTOR_ADDON_FILE=/etc/kubernetes/addons/aci-connector-deployment.yaml
     wait_for_file 1200 1 $ACI_CONNECTOR_ADDON_FILE || exit $ERR_FILE_WATCH_TIMEOUT
-    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorResourceGroup>|$(echo $RESOURCE_GROUP)|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorCert>|$(echo $ACI_CONNECTOR_CERT)|g" $ACI_CONNECTOR_ADDON_FILE
-    sed -i "s|<kubernetesACIConnectorKey>|$(echo $ACI_CONNECTOR_KEY)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<creds>|$ACI_CONNECTOR_CREDENTIALS|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<rgName>|$(echo $RESOURCE_GROUP)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<cert>|$(echo $ACI_CONNECTOR_CERT)|g" $ACI_CONNECTOR_ADDON_FILE
+    sed -i "s|<key>|$(echo $ACI_CONNECTOR_KEY)|g" $ACI_CONNECTOR_ADDON_FILE
 }
 
 configAddons() {

@@ -139,10 +139,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should have have the appropriate node count", func() {
-			nodeList, err := node.Get()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
+		It("should report all nodes in a Ready state", func() {
+			ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, cfg.Timeout)
+			cmd := exec.Command("kubectl", "get", "nodes", "-o", "wide")
+			out, _ := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
+			if !ready {
+				log.Printf("Error: Not all nodes in a healthy state\n")
+			}
+			Expect(ready).To(Equal(true))
 		})
 
 		It("should have DNS pod running", func() {
@@ -184,6 +189,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					addonPods = []string{"omsagent"}
 				case "keyvault-flexvolume":
 					addonNamespace = "kv"
+				case "azure-npm-daemonset":
+					addonPods = []string{"azure-npm"}
 				}
 				if hasAddon, addon := eng.HasAddon(addonName); hasAddon {
 					for _, addonPod := range addonPods {
@@ -439,7 +446,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should have functional container networking DNS", func() {
 			By("Ensuring that we have functional DNS resolution from a container")
-			j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
+			// "Pre"-delete the job in case a prior delete attempt failed, for long-running cluster scenarios
+			j, err := job.Get("validate-dns", "default")
+			if err == nil {
+				j.Delete(deleteResourceRetries)
+				// Wait a minute before proceeding to create a new job w/ the same name
+				time.Sleep(1 * time.Minute)
+			}
+			j, err = job.CreateJobFromFile(filepath.Join(WorkloadDir, "validate-dns.yaml"), "validate-dns", "default")
 			Expect(err).NotTo(HaveOccurred())
 			ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
 			delErr := j.Delete(deleteResourceRetries)
@@ -571,6 +585,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to autoscale", func() {
 			if eng.HasLinuxAgents() && eng.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs {
+				// "Pre"-delete the hpa in case a prior delete attempt failed, for long-running cluster scenarios
+				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
+				if err == nil {
+					h.Delete(deleteResourceRetries)
+					// Wait a minute before proceeding to create a new hpa w/ the same name
+					time.Sleep(1 * time.Minute)
+				}
 				By("Getting the long-running php-apache deployment")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -624,7 +645,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we only have 1 apache-php pod after stopping load")
 				_, err = phpApacheDeploy.WaitForReplicas(-1, 1, 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
-				h, err := hpa.Get(longRunningApacheDeploymentName, "default")
+				h, err = hpa.Get(longRunningApacheDeploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Deleting HPA configuration")
@@ -694,7 +715,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with a GPU-enabled agent pool", func() {
 		It("should be able to run a nvidia-gpu job", func() {
-			if eng.HasGPUNodes() {
+			if eng.ExpandedDefinition.Properties.HasNSeriesSKU() {
 				version := common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
@@ -834,9 +855,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
-	Describe("with calico or azure network policy enabled", func() {
+	Describe("with NetworkPolicy enabled", func() {
 		It("should apply various network policies and enforce access to nginx pod", func() {
-			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") {
+			if eng.HasNetworkPolicy("calico") || eng.HasNetworkPolicy("azure") || eng.HasNetworkPolicy("cilium") {
 				nsClientOne, nsClientTwo, nsServer := "client-one", "client-two", "server"
 				By("Creating namespaces")
 				_, err := namespace.Create(nsClientOne)
@@ -991,6 +1012,109 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				err = iisDeploy.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("No windows agent was provisioned for this Cluster Definition")
+			}
+		})
+
+		It("should be able to scale an iis webserver", func() {
+			if eng.HasWindowsAgents() {
+				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+
+				By("Creating a deployment with 1 pod running IIS")
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
+				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Waiting on pod to be Ready")
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				By("Exposing a LoadBalancer for the pod")
+				err = iisDeploy.Expose("LoadBalancer", 80, 80)
+				Expect(err).NotTo(HaveOccurred())
+				iisService, err := service.Get(deploymentName, "default")
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid := iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err := iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Scaling deployment to 5 pods")
+				err = iisDeploy.ScaleDeployment(5)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = iisDeploy.WaitForReplicas(5, 5, 2*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Waiting on 5 pods to be Ready")
+				running, err = pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).To(Equal(5))
+
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid = iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Checking that no pods restart")
+				for _, iisPod := range iisPods {
+					log.Printf("Checking %s", iisPod.Metadata.Name)
+					Expect(iisPod.Status.ContainerStatuses[0].Ready).To(BeTrue())
+					Expect(iisPod.Status.ContainerStatuses[0].RestartCount).To(Equal(0))
+				}
+
+				By("Scaling deployment to 2 pods")
+				err = iisDeploy.ScaleDeployment(2)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = iisDeploy.WaitForReplicas(2, 2, 2*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).To(Equal(2))
+
+				By("Verifying that the service is reachable and returns the default IIS start page")
+				valid = iisService.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
+				Expect(valid).To(BeTrue())
+
+				By("Checking that each pod can reach http://www.bing.com")
+				iisPods, err = iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection("www.bing.com", 10*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
+
+				By("Verifying pods & services can be deleted")
+				err = iisDeploy.Delete(deleteResourceRetries)
+				Expect(err).NotTo(HaveOccurred())
+				err = iisService.Delete(deleteResourceRetries)
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")

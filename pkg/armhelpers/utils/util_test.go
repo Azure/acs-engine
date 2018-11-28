@@ -80,46 +80,33 @@ func Test_VmssNameParts(t *testing.T) {
 }
 
 func Test_WindowsVMNameParts(t *testing.T) {
-	expectedPoolPrefix := "38988"
-	expectedAcs := "k8s"
-	expectedPoolIndex := 3
-	expectedAgentIndex := 12
+	data := []struct {
+		VMName, expectedPoolPrefix, expectedOrch string
+		expectedPoolIndex, expectedAgentIndex    int
+	}{
+		{"38988k8s90312", "38988", "k8s", 3, 12},
+		{"4506k8s010", "4506", "k8s", 1, 0},
+		{"2314k8s03000001", "2314", "k8s", 3, 1},
+		{"2314k8s0310", "2314", "k8s", 3, 10},
+	}
 
-	poolPrefix, acs, poolIndex, agentIndex, err := WindowsVMNameParts("38988k8s90312")
-	if poolPrefix != expectedPoolPrefix {
-		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
-	}
-	if acs != expectedAcs {
-		t.Fatalf("incorrect acs string. expected=%s actual=%s", expectedAcs, acs)
-	}
-	if poolIndex != expectedPoolIndex {
-		t.Fatalf("incorrect poolIndex. expected=%d actual=%d", expectedPoolIndex, poolIndex)
-	}
-	if agentIndex != expectedAgentIndex {
-		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
-	}
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-}
-
-func Test_WindowsVMSSNameParts(t *testing.T) {
-	expectedPoolPrefix := "38988"
-	expectedAcs := "k8s"
-	expectedPoolIndex := 3
-
-	poolPrefix, acs, poolIndex, err := WindowsVMSSNameParts("38988k8s903")
-	if poolPrefix != expectedPoolPrefix {
-		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
-	}
-	if acs != expectedAcs {
-		t.Fatalf("incorrect acs string. expected=%s actual=%s", expectedAcs, acs)
-	}
-	if poolIndex != expectedPoolIndex {
-		t.Fatalf("incorrect poolIndex. expected=%d actual=%d", expectedPoolIndex, poolIndex)
-	}
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	for _, d := range data {
+		poolPrefix, orch, poolIndex, agentIndex, err := WindowsVMNameParts(d.VMName)
+		if poolPrefix != d.expectedPoolPrefix {
+			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
+		}
+		if orch != d.expectedOrch {
+			t.Fatalf("incorrect acs string. expected=%s actual=%s", d.expectedOrch, orch)
+		}
+		if poolIndex != d.expectedPoolIndex {
+			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)
+		}
+		if agentIndex != d.expectedAgentIndex {
+			t.Fatalf("incorrect agentIndex. expected=%d actual=%d", d.expectedAgentIndex, agentIndex)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 
@@ -150,20 +137,46 @@ func Test_GetVMNameIndexWindows(t *testing.T) {
 }
 
 func Test_GetK8sVMName(t *testing.T) {
+	p := &api.Properties{
+		OrchestratorProfile: &api.OrchestratorProfile{
+			OrchestratorType: api.Kubernetes,
+		},
+		HostedMasterProfile: &api.HostedMasterProfile{
+			DNSPrefix: "foo",
+		},
+		AgentPoolProfiles: []*api.AgentPoolProfile{
+			{
+				Name:   "linux1",
+				VMSize: "Standard_D2_v2",
+				Count:  3,
+				OSType: "Linux",
+			},
+			{
+				Name:   "windows2",
+				VMSize: "Standard_D2_v2",
+				Count:  2,
+				OSType: "Windows",
+			},
+			{
+				Name:   "someotherpool",
+				VMSize: "Standard_D2_v2",
+				Count:  5,
+				OSType: "Linux",
+			},
+		},
+	}
 
 	for _, s := range []struct {
-		osType                     api.OSType
-		isAKS                      bool
-		nameSuffix, agentPoolName  string
+		properties                 *api.Properties
 		agentPoolIndex, agentIndex int
 		expected                   string
 		expectedErr                bool
 	}{
-		{api.Linux, true, "35953384", "agentpool1", 0, 2, "aks-agentpool1-35953384-2", false},
-		{api.Windows, false, "35953384", "agentpool1", 0, 2, "35953k8s9002", false},
-		{"macOS", false, "35953384", "agentpool1", 0, 2, "", true},
+		{properties: p, agentPoolIndex: 0, agentIndex: 2, expected: "aks-linux1-28513887-2", expectedErr: false},
+		{properties: p, agentPoolIndex: 1, agentIndex: 1, expected: "2851aks011", expectedErr: false},
+		{properties: p, agentPoolIndex: 3, agentIndex: 0, expected: "", expectedErr: true},
 	} {
-		vmName, err := GetK8sVMName(s.osType, s.isAKS, s.nameSuffix, s.agentPoolName, s.agentPoolIndex, s.agentIndex)
+		vmName, err := GetK8sVMName(s.properties, s.agentPoolIndex, s.agentIndex)
 
 		if !s.expectedErr {
 			if err != nil {
@@ -171,7 +184,7 @@ func Test_GetK8sVMName(t *testing.T) {
 			}
 		}
 		if vmName != s.expected {
-			t.Fatalf("vmName %s, expected %s", vmName, s.expected)
+			t.Fatalf("Got vmName %s, expected %s", vmName, s.expected)
 		}
 	}
 }

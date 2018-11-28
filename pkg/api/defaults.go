@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"sort"
@@ -45,7 +46,7 @@ func (cs *ContainerService) SetPropertiesDefaults(isUpgrade, isScale bool) (bool
 		properties.setHostedMasterProfileDefaults()
 	}
 
-	certsGenerated, e := properties.setDefaultCerts()
+	certsGenerated, _, e := properties.setDefaultCerts()
 	if e != nil {
 		return false, e
 	}
@@ -83,7 +84,11 @@ func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		case NetworkPolicyCalico:
-			o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			if o.KubernetesConfig.NetworkPlugin == "" {
+				// If not specified, then set the network plugin to be kubenet
+				// for backwards compatibility. Otherwise, use what is specified.
+				o.KubernetesConfig.NetworkPlugin = NetworkPluginKubenet
+			}
 		case NetworkPolicyCilium:
 			o.KubernetesConfig.NetworkPlugin = NetworkPolicyCilium
 		}
@@ -221,7 +226,7 @@ func (cs *ContainerService) setOrchestratorDefaults(isUpdate bool) {
 		}
 
 		// Configure addons
-		cs.setAddonsConfig()
+		cs.setAddonsConfig(isUpdate)
 		// Configure kubelet
 		cs.setKubeletConfig()
 		// Configure controller-manager
@@ -433,19 +438,29 @@ func (p *Properties) setAgentProfileDefaults(isUpgrade, isScale bool) {
 			profile.AcceleratedNetworkingEnabledWindows = helpers.PointerToBool(DefaultAcceleratedNetworkingWindowsEnabled)
 		}
 
-		if profile.Distro == "" && profile.OSType != Windows {
-			if p.OrchestratorProfile.IsKubernetes() {
-				if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < VHDDiskSizeAKS {
-					profile.Distro = Ubuntu
-				} else {
-					if IsNSeriesSKU(p) {
-						profile.Distro = AKSDockerEngine
+		if profile.OSType != Windows {
+			if profile.Distro == "" {
+				if p.OrchestratorProfile.IsKubernetes() {
+					if profile.OSDiskSizeGB != 0 && profile.OSDiskSizeGB < VHDDiskSizeAKS {
+						profile.Distro = Ubuntu
 					} else {
-						profile.Distro = AKS
+						if profile.IsNSeriesSKU() {
+							profile.Distro = AKSDockerEngine
+						} else {
+							profile.Distro = AKS
+						}
 					}
+				} else if !p.OrchestratorProfile.IsOpenShift() {
+					profile.Distro = Ubuntu
 				}
-			} else if !p.OrchestratorProfile.IsOpenShift() {
-				profile.Distro = Ubuntu
+				// Ensure distro is set properly for N Series SKUs, because
+				// (1) At present, "aks-docker-engine" and "ubuntu" are the only working distro base for running GPU workloads on N Series SKUs
+				// (2) Previous versions of acs-engine had working implementations using the "aks" distro value,
+				//     so we need to hard override it in order to produce a working cluster in upgrade/scale contexts
+			} else if p.OrchestratorProfile.IsKubernetes() && (isUpgrade || isScale) && profile.IsNSeriesSKU() {
+				if profile.Distro == AKS {
+					profile.Distro = AKSDockerEngine
+				}
 			}
 		}
 
@@ -497,19 +512,19 @@ func (p *Properties) setHostedMasterProfileDefaults() {
 	p.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
-func (p *Properties) setDefaultCerts() (bool, error) {
+func (p *Properties) setDefaultCerts() (bool, []net.IP, error) {
 	if p.MasterProfile != nil && p.OrchestratorProfile.OrchestratorType == OpenShift {
 		return setOpenShiftSetDefaultCerts(p, DefaultOpenshiftOrchestratorName, p.GetClusterID())
 	}
 
 	if p.MasterProfile == nil || p.OrchestratorProfile.OrchestratorType != Kubernetes {
-		return false, nil
+		return false, nil, nil
 	}
 
 	provided := certsAlreadyPresent(p.CertificateProfile, p.MasterProfile.Count)
 
 	if areAllTrue(provided) {
-		return false, nil
+		return false, nil, nil
 	}
 
 	var azureProdFQDNs []string
@@ -521,7 +536,7 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 	firstMasterIP := net.ParseIP(p.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
-		return false, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", p.MasterProfile.FirstConsecutiveStaticIP)
+		return false, nil, errors.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", p.MasterProfile.FirstConsecutiveStaticIP)
 	}
 
 	ips := []net.IP{firstMasterIP}
@@ -535,9 +550,11 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 	} else {
 		offsetMultiplier = 1
 	}
+	addr := binary.BigEndian.Uint32(firstMasterIP)
 	for i := 1; i < p.MasterProfile.Count; i++ {
-		offset := i * offsetMultiplier
-		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(offset)}
+		newAddr := getNewAddr(addr, i, offsetMultiplier)
+		ip := make(net.IP, 4)
+		binary.BigEndian.PutUint32(ip, newAddr)
 		ips = append(ips, ip)
 	}
 	if p.CertificateProfile == nil {
@@ -552,7 +569,7 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 		var err error
 		caPair, err = helpers.CreatePkiKeyCertPair("ca")
 		if err != nil {
-			return false, err
+			return false, ips, err
 		}
 		p.CertificateProfile.CaCertificate = caPair.CertificatePem
 		p.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
@@ -560,13 +577,13 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 
 	cidrFirstIP, err := common.CidrStringFirstIP(p.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 	if err != nil {
-		return false, err
+		return false, ips, err
 	}
 	ips = append(ips, cidrFirstIP)
 
 	apiServerPair, clientPair, kubeConfigPair, etcdServerPair, etcdClientPair, etcdPeerPairs, err := helpers.CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair, p.MasterProfile.Count)
 	if err != nil {
-		return false, err
+		return false, ips, err
 	}
 
 	// If no Certificate Authority pair or no cert/key pair was provided, use generated cert/key pairs signed by provided Certificate Authority pair
@@ -595,7 +612,7 @@ func (p *Properties) setDefaultCerts() (bool, error) {
 		}
 	}
 
-	return true, nil
+	return true, ips, nil
 }
 
 func areAllTrue(m map[string]bool) bool {
@@ -605,6 +622,13 @@ func areAllTrue(m map[string]bool) bool {
 		}
 	}
 	return true
+}
+
+// getNewIP returns a new IP derived from an address plus a multiple of an offset
+func getNewAddr(addr uint32, count int, offsetMultiplier int) uint32 {
+	offset := count * offsetMultiplier
+	newAddr := addr + uint32(offset)
+	return newAddr
 }
 
 // certsAlreadyPresent already present returns a map where each key is a type of cert and each value is true if that cert/key pair is user-provided

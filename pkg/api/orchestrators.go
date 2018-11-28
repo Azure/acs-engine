@@ -68,8 +68,8 @@ func isVersionSupported(csOrch *OrchestratorProfile) bool {
 }
 
 // GetOrchestratorVersionProfileListVLabs returns vlabs OrchestratorVersionProfileList object per (optionally) specified orchestrator and version
-func GetOrchestratorVersionProfileListVLabs(orchestrator, version string) (*vlabs.OrchestratorVersionProfileList, error) {
-	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version)
+func GetOrchestratorVersionProfileListVLabs(orchestrator, version string, windows bool) (*vlabs.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version, windows)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func GetOrchestratorVersionProfileListVLabs(orchestrator, version string) (*vlab
 
 // GetOrchestratorVersionProfileListV20170930 returns v20170930 OrchestratorVersionProfileList object per (optionally) specified orchestrator and version
 func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*v20170930.OrchestratorVersionProfileList, error) {
-	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version)
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, version, false)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*
 	return orchList, nil
 }
 
-func getOrchestratorVersionProfileList(orchestrator, version string) ([]*OrchestratorVersionProfile, error) {
+func getOrchestratorVersionProfileList(orchestrator, version string, windows bool) ([]*OrchestratorVersionProfile, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, version); err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func getOrchestratorVersionProfileList(orchestrator, version string) ([]*Orchest
 			orchs = append(orchs, arr...)
 		}
 	} else {
-		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}, false); err != nil {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorType: orchestrator, OrchestratorVersion: version}, windows); err != nil {
 			return nil, err
 		}
 	}
@@ -182,19 +182,42 @@ func kubernetesInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*Orchestrat
 func kubernetesUpgrades(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
 
-	currentVer, err := semver.Make(csOrch.OrchestratorVersion)
+	upgradeVersions, err := getKubernetesAvailableUpgradeVersions(csOrch.OrchestratorVersion, common.GetAllSupportedKubernetesVersions(false, hasWindows))
 	if err != nil {
 		return nil, err
 	}
-	nextNextMinorString := strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
-	upgradeableVersions := common.GetVersionsBetween(common.GetAllSupportedKubernetesVersions(false, hasWindows), csOrch.OrchestratorVersion, nextNextMinorString, false, true)
-	for _, ver := range upgradeableVersions {
+	for _, ver := range upgradeVersions {
 		ret = append(ret, &OrchestratorProfile{
 			OrchestratorType:    Kubernetes,
 			OrchestratorVersion: ver,
 		})
 	}
 	return ret, nil
+}
+
+func getKubernetesAvailableUpgradeVersions(orchestratorVersion string, supportedVersions []string) ([]string, error) {
+	var skipUpgradeMinor string
+	currentVer, err := semver.Make(orchestratorVersion)
+	if err != nil {
+		return nil, err
+	}
+	versionsGT := common.GetVersionsGt(supportedVersions, orchestratorVersion, false, true)
+	if len(versionsGT) != 0 {
+		min, err := semver.Make(common.GetMinVersion(versionsGT, true))
+		if err != nil {
+			return nil, err
+		}
+
+		if currentVer.Major >= min.Major && currentVer.Minor+1 < min.Minor {
+			skipUpgradeMinor = strconv.FormatUint(min.Major, 10) + "." + strconv.FormatUint(min.Minor+1, 10) + ".0-alpha.0"
+		} else {
+			skipUpgradeMinor = strconv.FormatUint(currentVer.Major, 10) + "." + strconv.FormatUint(currentVer.Minor+2, 10) + ".0-alpha.0"
+		}
+
+		return common.GetVersionsBetween(supportedVersions, orchestratorVersion, skipUpgradeMinor, false, true), nil
+	}
+	return []string{}, nil
+
 }
 
 func dcosInfo(csOrch *OrchestratorProfile, hasWindows bool) ([]*OrchestratorVersionProfile, error) {

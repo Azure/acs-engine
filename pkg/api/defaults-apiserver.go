@@ -11,7 +11,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticAPIServerConfig := map[string]string{
 		"--bind-address":                "0.0.0.0",
-		"--advertise-address":           "<kubernetesAPIServerIP>",
+		"--advertise-address":           "<advertiseAddr>",
 		"--allow-privileged":            "true",
 		"--anonymous-auth":              "false",
 		"--audit-log-path":              "/var/log/kubeaudit/audit.log",
@@ -143,9 +143,9 @@ func getDefaultAdmissionControls(cs *ContainerService) (string, string) {
 	// Add new version case when applying admission controllers only available in that version or later
 	switch {
 	case common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"):
-		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,AlwaysPullImages,ExtendedResourceToleration"
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,ExtendedResourceToleration"
 	default:
-		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 	}
 
 	// Pod Security Policy configuration

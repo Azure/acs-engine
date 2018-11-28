@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/pkg/errors"
 )
 
@@ -56,6 +57,7 @@ type AzProfile struct {
 // FeatureFlags defines feature-flag restricted functionality
 type FeatureFlags struct {
 	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
+	BlockOutboundInternet    bool `json:"blockOutboundInternet,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -644,7 +646,7 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 
 // IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
 func (a *AgentPoolProfile) IsNSeriesSKU() bool {
-	return strings.Contains(a.VMSize, "Standard_N")
+	return common.IsNvidiaEnabledSKU(a.VMSize)
 }
 
 // IsManagedDisks returns true if the customer specified managed disks

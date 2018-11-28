@@ -17,6 +17,12 @@
       },
       "type": "string"
     },
+    "kubeServiceCidr": {
+      "metadata": {
+        "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
     "windowsTelemetryGUID": {
       "metadata": {
         "description": "The GUID to set in windows agent to collect telemetry data."
@@ -72,7 +78,7 @@
       "type": "string"
     },
     "windowsDockerVersion": {
-      "defaultValue": "17.06.2-ee-16",
+      "defaultValue": "18.09.0",
       "metadata": {
         "description": "The version of Docker to be installed on Windows Nodes"
       },

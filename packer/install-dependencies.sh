@@ -2,7 +2,6 @@
 
 source /home/packer/provision_installs.sh
 source /home/packer/provision_source.sh
-source /home/packer/feature-flagged.sh
 
 echo "Starting build on " `date` > /var/log/azure/golden-image-install.complete
 echo "Using kernel:" >> /var/log/azure/golden-image-install.complete
@@ -23,7 +22,7 @@ fi
 
 installClearContainersRuntime
 
-VNET_CNI_VERSIONS="1.0.10 1.0.11 1.0.12"
+VNET_CNI_VERSIONS="1.0.10 1.0.11 1.0.12 1.0.13"
 CNI_PLUGIN_VERSIONS="0.7.1"
 
 for VNET_CNI_VERSION in $VNET_CNI_VERSIONS; do
@@ -124,6 +123,31 @@ done
 NVIDIA_DEVICE_PLUGIN_VERSIONS="1.11 1.10"
 for NVIDIA_DEVICE_PLUGIN_VERSION in ${NVIDIA_DEVICE_PLUGIN_VERSIONS}; do
     pullContainerImage "docker" "nvidia/k8s-device-plugin:${NVIDIA_DEVICE_PLUGIN_VERSION}"
+done
+
+TUNNELFRONT_VERSIONS="v1.9.2-v4.0.4"
+for TUNNELFRONT_VERSION in ${TUNNELFRONT_VERSIONS}; do
+    pullContainerImage "docker" "docker.io/deis/hcp-tunnel-front:${TUNNELFRONT_VERSION}"
+done
+
+KUBE_SVC_REDIRECT_VERSIONS="1.0.2"
+for KUBE_SVC_REDIRECT_VERSION in ${KUBE_SVC_REDIRECT_VERSIONS}; do
+    pullContainerImage "docker" "docker.io/deis/kube-svc-redirect:v${KUBE_SVC_REDIRECT_VERSION}"
+done
+
+KV_FLEXVOLUME_VERSIONS="0.0.5"
+for KV_FLEXVOLUME_VERSION in ${KV_FLEXVOLUME_VERSIONS}; do
+    pullContainerImage "docker" "mcr.microsoft.com/k8s/flexvolume/keyvault-flexvolume:v${KV_FLEXVOLUME_VERSION}"
+done
+
+IP_MASQ_AGENT_VERSIONS="2.0.0"
+for IP_MASQ_AGENT_VERSION in ${IP_MASQ_AGENT_VERSIONS}; do
+    pullContainerImage "docker" "gcr.io/google-containers/ip-masq-agent-amd64:v${IP_MASQ_AGENT_VERSION}"
+done
+
+NGINX_VERSIONS="1.13.12-alpine"
+for NGINX_VERSION in ${NGINX_VERSIONS}; do
+    pullContainerImage "docker" "nginx:${NGINX_VERSION}"
 done
 
 pullContainerImage "docker" "busybox"
