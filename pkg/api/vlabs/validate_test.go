@@ -1740,26 +1740,6 @@ func TestProperties_ValidateZones(t *testing.T) {
 			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater",
 		},
 		{
-			name:                "Master profile with zones vmas",
-			orchestratorRelease: "1.12",
-			masterProfile: &MasterProfile{
-				Count:             3,
-				DNSPrefix:         "foo",
-				VMSize:            "Standard_DS2_v2",
-				AvailabilityZones: []string{"1", "2"},
-			},
-			agentProfiles: []*AgentPoolProfile{
-				{
-					Name:                "agentpool",
-					VMSize:              "Standard_DS2_v2",
-					Count:               4,
-					AvailabilityProfile: VirtualMachineScaleSets,
-					AvailabilityZones:   []string{"1", "2"},
-				},
-			},
-			expectedErr: "Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets",
-		},
-		{
 			name:                "Master profile with zones node count",
 			orchestratorRelease: "1.12",
 			masterProfile: &MasterProfile{

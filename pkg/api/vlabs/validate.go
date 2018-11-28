@@ -491,9 +491,6 @@ func (a *Properties) validateZones() error {
 		if a.HasAvailabilityZones() {
 			if a.MastersAndAgentsUseAvailabilityZones() {
 				// master profile
-				if a.MasterProfile.AvailabilityProfile != VirtualMachineScaleSets {
-					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets")
-				}
 				if a.MasterProfile.Count < len(a.MasterProfile.AvailabilityZones)*2 {
 					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 				}
