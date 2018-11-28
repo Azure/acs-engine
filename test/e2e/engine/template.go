@@ -211,7 +211,7 @@ func (e *Engine) GetWindowsTestImages() (*WindowsTestImages, error) {
 		return nil, errors.New("Windows Server version 1709 hasn't been tested in a long time and is deprecated")
 	}
 
-	return nil, errors.New("Unknown Windows version")
+	return nil, errors.New("Unknown Windows version. WindowsSku = " + e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku)
 }
 
 // HasAddon will return true if an addon is enabled
