@@ -29,7 +29,10 @@ function DownloadFileOverHttp
     }
     [System.Net.ServicePointManager]::SecurityProtocol = $secureProtocols
 
+    $oldProgressPreference = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
     Invoke-WebRequest $Url -UseBasicParsing -OutFile $DestinationPath -Verbose
+    $ProgressPreference = $oldProgressPreference
     Write-Log "Downloaded file to $DestinationPath"
 }
 
