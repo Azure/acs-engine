@@ -223,10 +223,8 @@ func getParameters(cs *api.ContainerService, generatorCode string, acsengineVers
 		if properties.WindowsProfile.WindowsOffer != "" {
 			addValue(parametersMap, "agentWindowsOffer", properties.WindowsProfile.WindowsOffer)
 		}
-		if properties.WindowsProfile.WindowsSku != "" {
-			addValue(parametersMap, "agentWindowsSku", properties.WindowsProfile.WindowsSku)
-		}
 
+		addValue(parametersMap, "agentWindowsSku", properties.WindowsProfile.GetWindowsSku())
 		addValue(parametersMap, "windowsDockerVersion", properties.WindowsProfile.GetWindowsDockerVersion())
 
 		for i, s := range properties.WindowsProfile.Secrets {

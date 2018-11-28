@@ -201,17 +201,17 @@ func (e *Engine) GetWindowsTestImages() (*WindowsTestImages, error) {
 		return nil, errors.New("Can't guess a Windows version without Windows nodes in the cluster")
 	}
 
-	if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku, "1809") || strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku, "2019") {
+	if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1809") || strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "2019") {
 		return &WindowsTestImages{IIS: "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019",
 			ServerCore: "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019"}, nil
-	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku, "1803") {
+	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1803") {
 		return &WindowsTestImages{IIS: "microsoft/iis:windowsservercore-1803",
 			ServerCore: "microsoft/iis:windowsservercore-1803"}, nil
-	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku, "1709") {
+	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1709") {
 		return nil, errors.New("Windows Server version 1709 hasn't been tested in a long time and is deprecated")
 	}
 
-	return nil, errors.New("Unknown Windows version. WindowsSku = " + e.ExpandedDefinition.Properties.WindowsProfile.WindowsSku)
+	return nil, errors.New("Unknown Windows version. GetWindowsSku() = " + e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku())
 }
 
 // HasAddon will return true if an addon is enabled
