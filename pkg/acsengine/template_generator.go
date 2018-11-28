@@ -540,9 +540,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return DefaultVNETCIDR
 		},
 		"GetAgentAllowedSizes": func() string {
-			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
-				return helpers.GetKubernetesAgentAllowedSizes()
-			}
 			return helpers.GetKubernetesAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
