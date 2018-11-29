@@ -28,7 +28,6 @@ const (
 	createOptionFieldName          = "createOption"
 	tagsFieldName                  = "tags"
 	managedDiskFieldName           = "managedDisk"
-	outputsFieldName               = "outputs"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"

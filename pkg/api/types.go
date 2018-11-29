@@ -726,9 +726,8 @@ func (p *Properties) K8sOrchestratorName() string {
 	if p.OrchestratorProfile.IsKubernetes() {
 		if p.HostedMasterProfile != nil {
 			return DefaultHostedProfileMasterName
-		} else {
-			return DefaultOrchestratorName
 		}
+		return DefaultOrchestratorName
 	}
 	return ""
 }

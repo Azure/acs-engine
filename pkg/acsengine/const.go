@@ -181,7 +181,6 @@ const (
 	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
-	openshiftInfraResources       = "openshift/infraresources.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
 	swarmParams                   = "swarm/swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarm/swarmagentresourcesvmas.t"

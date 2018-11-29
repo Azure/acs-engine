@@ -33,14 +33,6 @@ const (
 	deployName             = "deploy"
 	deployShortDescription = "Deploy an Azure Resource Manager template"
 	deployLongDescription  = "Deploy an Azure Resource Manager template, parameters file and other assets for a cluster"
-
-	// aadServicePrincipal is a hard-coded service principal which represents
-	// Azure Active Dirctory (see az ad sp list)
-	aadServicePrincipal = "00000002-0000-0000-c000-000000000000"
-
-	// aadPermissionUserRead is the User.Read hard-coded permission on
-	// aadServicePrincipal (see az ad sp list)
-	aadPermissionUserRead = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
 )
 
 type deployCmd struct {
