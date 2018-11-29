@@ -229,12 +229,6 @@
       },
       "type": "string"
     },
-    "kubernetesAddonResizerSpec": {
-      "metadata": {
-        "description": "The container spec for addon-resizer."
-      },
-      "type": "string"
-    },
     "enableAggregatedAPIs": {
       "metadata": {
         "description": "Enable aggregated API on master nodes"
@@ -253,12 +247,6 @@
     "kubernetesDNSSidecarSpec": {
       "metadata": {
         "description": "The container spec for k8s-dns-sidecar-amd64."
-      },
-      "type": "string"
-    },
-    "kubernetesHeapsterSpec": {
-      "metadata": {
-        "description": "The container spec for heapster."
       },
       "type": "string"
     },

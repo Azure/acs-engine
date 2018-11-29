@@ -12,6 +12,21 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 	cloudSpecConfig := cs.GetCloudSpecConfig()
 	k8sComponents := K8sComponentsByVersionMap[o.OrchestratorVersion]
 	specConfig := cloudSpecConfig.KubernetesSpecConfig
+	defaultsHeapsterAddonsConfig := KubernetesAddon{
+		Name:    DefaultHeapsterAddonName,
+		Enabled: helpers.PointerToBool(DefaultHeapsterAddonEnabled),
+		Containers: []KubernetesContainerSpec{
+			{
+				Name:  DefaultHeapsterAddonName,
+				Image: specConfig.KubernetesImageBase + k8sComponents["heapster"],
+			},
+			{
+				Name:  "heapster-nanny",
+				Image: specConfig.KubernetesImageBase + k8sComponents["addonresizer"],
+			},
+		},
+	}
+
 	defaultTillerAddonsConfig := KubernetesAddon{
 		Name:    DefaultTillerAddonName,
 		Enabled: helpers.PointerToBool(DefaultTillerAddonEnabled),
@@ -241,6 +256,7 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 	}
 
 	defaultAddons := []KubernetesAddon{
+		defaultsHeapsterAddonsConfig,
 		defaultTillerAddonsConfig,
 		defaultACIConnectorAddonsConfig,
 		defaultClusterAutoscalerAddonsConfig,
