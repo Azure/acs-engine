@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -142,7 +143,8 @@ func ReplaceContainerImageFromFile(filename, containerImage string) (string, err
 	if err != nil {
 		return "", err
 	}
-	tmpFile, err := ioutil.TempFile(os.TempDir(), filename)
+	_, filenameOnly := path.Split(filename)
+	tmpFile, err := ioutil.TempFile(os.TempDir(), filenameOnly)
 	if err != nil {
 		return "", err
 	}
