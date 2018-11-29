@@ -355,6 +355,35 @@ func IsKubernetesVersionGe(actualVersion, version string) bool {
 	return v1.GE(v2)
 }
 
+// NeedsSystemDiscoveryClusterRoleBindingConfig determines if the passed in version of Kubernetes needs an opinionated system:discovery ClusterRoleBinding
+func NeedsSystemDiscoveryClusterRoleBindingConfig(version string) bool {
+	v, _ := semver.Make(version)
+	switch v.Minor {
+	case 9:
+		return true
+	case 10:
+		hasPatch, _ := semver.Make("1.10.11")
+		if v.GE(hasPatch) {
+			return false
+		}
+		return true
+	case 11:
+		hasPatch, _ := semver.Make("1.11.5")
+		if v.GE(hasPatch) {
+			return false
+		}
+		return true
+	case 12:
+		hasPatch, _ := semver.Make("1.12.3")
+		if v.GE(hasPatch) {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
 // GetLatestPatchVersion gets the most recent patch version from a list of semver versions given a major.minor string
 func GetLatestPatchVersion(majorMinor string, versionsList []string) (version string) {
 	// Try to get latest version matching the release

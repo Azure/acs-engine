@@ -202,6 +202,12 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == "Standard",
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultELBSVCAddonName),
 		},
+		{
+			"system-discovery.yaml",
+			"system-discovery.yaml",
+			common.NeedsSystemDiscoveryClusterRoleBindingConfig(profile.OrchestratorProfile.OrchestratorVersion),
+			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(SystemDiscoveryRoleBindingAddon),
+		},
 	}
 }
 

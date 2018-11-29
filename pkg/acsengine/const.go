@@ -82,6 +82,8 @@ const (
 	AzureNetworkPolicyAddonName = "azure-npm-daemonset"
 	// IPMASQAgentAddonName is the name of the ip masq agent addon
 	IPMASQAgentAddonName = "ip-masq-agent"
+	// SystemDiscoveryRoleBindingAddon is the addon for system:discovery ClusterRoleBinding
+	SystemDiscoveryRoleBindingAddon = "system-discovery-cluster-role-binding"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
