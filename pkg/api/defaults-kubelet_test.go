@@ -15,6 +15,7 @@ func TestKubeletConfigDefaults(t *testing.T) {
 	for key, val := range map[string]string{
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
 		"--image-pull-progress-deadline":    "30m",
+		"--read-only-port":                  "10255",
 	} {
 		if k[key] != val {
 			t.Fatalf("got unexpected kubelet config value for %s: %s, expected %s",

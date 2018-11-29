@@ -61,6 +61,7 @@ func (cs *ContainerService) setKubeletConfig() {
 		"--cadvisor-port":                   DefaultKubeletCadvisorPort,
 		"--pod-max-pids":                    strconv.Itoa(DefaultKubeletPodMaxPIDs),
 		"--image-pull-progress-deadline":    "30m",
+		"--read-only-port":                  "10255",
 	}
 
 	// AKS overrides
