@@ -55,6 +55,7 @@ const (
 	scaleName             = "scale"
 	scaleShortDescription = "Scale an existing Kubernetes or OpenShift cluster"
 	scaleLongDescription  = "Scale an existing Kubernetes or OpenShift cluster by specifying increasing or decreasing the node count of an agentpool"
+	apiModelFilename      = "apimodel.json"
 )
 
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
@@ -137,7 +138,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 	}
 
 	// load apimodel from the deployment directory
-	sc.apiModelPath = path.Join(sc.deploymentDirectory, "apimodel.json")
+	sc.apiModelPath = path.Join(sc.deploymentDirectory, apiModelFilename)
 
 	if _, err = os.Stat(sc.apiModelPath); os.IsNotExist(err) {
 		return errors.Errorf("specified api model does not exist (%s)", sc.apiModelPath)
@@ -308,7 +309,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				return err
 			}
 
-			return nil
+			return sc.saveAPIModel()
 		}
 	} else {
 		for vmssListPage, err := sc.client.ListVirtualMachineScaleSets(ctx, sc.resourceGroupName); vmssListPage.NotDone(); vmssListPage.Next() {
@@ -423,6 +424,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	return sc.saveAPIModel()
+}
+
+func (sc *scaleCmd) saveAPIModel() error {
+	var err error
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{
 			Locale: sc.locale,
@@ -447,7 +453,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	return f.SaveFile(sc.deploymentDirectory, "apimodel.json", b)
+	return f.SaveFile(sc.deploymentDirectory, apiModelFilename, b)
 }
 
 func (sc *scaleCmd) vmInAgentPool(vmName string, tags map[string]*string) bool {

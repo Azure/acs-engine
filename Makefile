@@ -3,7 +3,7 @@ DIST_DIRS         = find * -type d -exec
 
 .NOTPARALLEL:
 
-.PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
+.PHONY: bootstrap build test test_fmt fmt lint ci devenv
 
 ifdef DEBUG
 GOFLAGS   := -gcflags="-N -l"
@@ -25,7 +25,7 @@ GITTAG := $(VERSION_SHORT)
 endif
 
 REPO_PATH := github.com/Azure/acs-engine
-DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.17.2
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.17.3
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -43,10 +43,6 @@ all: build
 .PHONY: dev
 dev:
 	$(DEV_ENV_CMD_IT) bash
-
-.PHONY: validate-generated
-validate-generated: bootstrap
-	./scripts/validate-generated.sh
 
 .PHONY: validate-dependencies
 validate-dependencies: bootstrap
