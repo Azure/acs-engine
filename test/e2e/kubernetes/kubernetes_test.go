@@ -261,7 +261,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		FIt("should be able to launch a long-running container networking DNS liveness pod", func() {
+		It("should be able to launch a long-running container networking DNS liveness pod", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				var err error
 				var p *pod.Pod
@@ -1302,7 +1302,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("after the cluster has been up for awhile", func() {
-		FIt("dns-liveness pod should not have any restarts", func() {
+		It("dns-liveness pod should not have any restarts", func() {
 			if !eng.HasNetworkPolicy("calico") {
 				By("by checking restarts on pod")
 				pod, err := pod.Get("dns-liveness", "default")
