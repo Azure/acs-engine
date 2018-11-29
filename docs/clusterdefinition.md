@@ -609,7 +609,7 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 | adminPassword                    | yes      | Password for the Windows adminstrator account created on each Windows node |
 | windowsPublisher                 | no       | Publisher used to find Windows VM to deploy from marketplace. Default: `MicrosoftWindowsServer` |
 | windowsOffer                     | no       | Offer used to find Windows VM to deploy from marketplace. Default: `WindowsServerSemiAnnual` |
-| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1803-with-Containers-smalldisk` |
+| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1809-with-Containers-smalldisk` |
 | imageVersion                     | no       | Specific image version to deploy from marketplace.  Default: `latest` |
 | windowsImageSourceURL            | no       | Path to an existing Azure storage blob with a sysprepped VHD. This is used to test pre-release or customized VHD files that you have uploaded to Azure. If provided, the above 4 parameters are ignored. |
 
@@ -626,8 +626,10 @@ $ az vm image list --publisher MicrosoftWindowsServer --all -o table
 Offer                    Publisher                      Sku                                             Urn                                                                                                            Version
 -----------------------  -----------------------------  ----------------------------------------------  -------------------------------------------------------------------------------------------------------------  -----------------
 ...
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20181017  1709.0.20181017
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20181017  1803.0.20181017
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1809-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1809-with-Containers-smalldisk:1809.0.20181107  1809.0.20181107
+WindowsServer            MicrosoftWindowsServer         2019-Datacenter-Core-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServer:2019-Datacenter-Core-with-Containers-smalldisk:2019.0.20181107            2019.0.20181107
 ```
 
 If you wanted to use the last one in the list above, then set:
@@ -637,9 +639,9 @@ If you wanted to use the last one in the list above, then set:
             "adminUsername": "...",
             "adminPassword": "...",
             "windowsPublisher": "MicrosoftWindowsServer",
-            "windowsOffer": "WindowsServerSemiAnnual",
-            "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk",
-            "imageVersion": "1803.0.20180504"
+            "windowsOffer": "WindowsServer",
+            "windowsSku": "2019-Datacenter-Core-with-Containers-smalldisk",
+            "imageVersion": "2019.0.20181107"
      },
 ```
 

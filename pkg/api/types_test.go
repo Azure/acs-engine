@@ -800,6 +800,11 @@ func TestWindowsProfile(t *testing.T) {
 		t.Fatalf("Expected GetWindowsDockerVersion() to equal default KubernetesWindowsDockerVersion, got %s", dv)
 	}
 
+	windowsSku := w.GetWindowsSku()
+	if windowsSku != KubernetesDefaultWindowsSku {
+		t.Fatalf("Expected GetWindowsSku() to equal default KubernetesDefaultWindowsSku, got %s", windowsSku)
+	}
+
 	w = WindowsProfile{
 		Secrets: []KeyVaultSecrets{
 			{
@@ -821,11 +826,17 @@ func TestWindowsProfile(t *testing.T) {
 
 	w = WindowsProfile{
 		WindowsDockerVersion: "18.03.1-ee-3",
+		WindowsSku:           "Datacenter-Core-1809-with-Containers-smalldisk",
 	}
 
 	dv = w.GetWindowsDockerVersion()
 	if dv != "18.03.1-ee-3" {
 		t.Fatalf("Expected GetWindowsDockerVersion() to equal 18.03.1-ee-3, got %s", dv)
+	}
+
+	windowsSku = w.GetWindowsSku()
+	if windowsSku != "Datacenter-Core-1809-with-Containers-smalldisk" {
+		t.Fatalf("Expected GetWindowsSku() to equal Datacenter-Core-1809-with-Containers-smalldisk, got %s", windowsSku)
 	}
 }
 

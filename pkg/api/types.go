@@ -1126,6 +1126,14 @@ func (w *WindowsProfile) GetWindowsDockerVersion() string {
 	return KubernetesWindowsDockerVersion
 }
 
+// GetWindowsSku gets the marketplace sku specified (such as Datacenter-Core-1809-with-Containers-smalldisk) or returns default value
+func (w *WindowsProfile) GetWindowsSku() string {
+	if w.WindowsSku != "" {
+		return w.WindowsSku
+	}
+	return KubernetesDefaultWindowsSku
+}
+
 // HasSecrets returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSecrets() bool {
 	return len(l.Secrets) > 0

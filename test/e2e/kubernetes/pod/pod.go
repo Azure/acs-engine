@@ -1,12 +1,16 @@
 package pod
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -117,6 +121,35 @@ type Status struct {
 	PodIP             string            `json:"podIP"`
 	StartTime         time.Time         `json:"startTime"`
 	ContainerStatuses []ContainerStatus `json:"containerStatuses"`
+}
+
+// ReplaceContainerImageFromFile loads in a YAML, finds the image: line, and replaces it with the value of containerImage
+func ReplaceContainerImageFromFile(filename, containerImage string) (string, error) {
+	var outString string
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Printf("Error opening source YAML file %s\n", filename)
+		return "", err
+	}
+	defer file.Close()
+	re := regexp.MustCompile("(image:) .*$")
+	replacementString := "$1 " + containerImage
+	reader := bufio.NewReader(file)
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		outString += re.ReplaceAllString(scanner.Text(), replacementString) + "\n"
+	}
+	err = scanner.Err()
+	if err != nil {
+		return "", err
+	}
+	_, filenameOnly := path.Split(filename)
+	tmpFile, err := ioutil.TempFile(os.TempDir(), filenameOnly)
+	if err != nil {
+		return "", err
+	}
+	_, err = tmpFile.Write([]byte(outString))
+	return tmpFile.Name(), err
 }
 
 // CreatePodFromFile will create a Pod from file with a name

@@ -148,8 +148,7 @@ New-InfraContainer
     } elseif ($computerInfo.WindowsVersion -eq "1803") {
         "microsoft/nanoserver:1803"
     } elseif ($computerInfo.WindowsVersion -eq "1809") {
-        # TODO: unsure if 2019 will report 1809 or not
-        "microsoft/nanoserver:1809"
+        "mcr.microsoft.com/windows/nanoserver:1809"
     } else {
         "mcr.microsoft.com/nanoserver-insider"
     }
