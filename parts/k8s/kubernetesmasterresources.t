@@ -224,7 +224,7 @@
               "backendAddressPool": {
                 "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "backendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "enableFloatingIP": false,
@@ -240,9 +240,9 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": {{if IsOpenShift}}8443{{else}}443{{end}},
-              "intervalInSeconds": "5",
+              "intervalInSeconds": 5,
               "numberOfProbes": "2"
             }
           }
@@ -271,7 +271,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[variables('sshNatPorts')[copyIndex(variables('masterOffset'))]]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -640,7 +640,7 @@
               },
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "probe": {
                 "id": "[concat(variables('masterInternalLbID'),'/probes/tcpHTTPSProbe')]"
               }
@@ -651,10 +651,10 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": {{if IsOpenShift}}8443{{else}}4443{{end}},
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ]

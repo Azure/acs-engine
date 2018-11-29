@@ -66,7 +66,7 @@
               "name": "[variables('{{.Name}}VMNamePrefix')]",
               "properties": {
                 "primary": true,
-                "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
+                "enableAcceleratedNetworking" : {{.AcceleratedNetworkingEnabled}},
                 {{if .IsCustomVNET}}
                 "networkSecurityGroup": {
                   "id": "[variables('nsgID')]"
@@ -107,7 +107,7 @@
           "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
           {{GetKubernetesAgentCustomData .}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {

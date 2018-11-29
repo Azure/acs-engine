@@ -33,7 +33,7 @@
   }],
   "portDefinitions": [
     {
-      "protocol": "tcp",
+      "protocol": "Tcp",
       "port": 0,
       "name": "80"
     }
