@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -122,12 +123,12 @@ type Status struct {
 }
 
 // ReplaceContainerImageFromFile loads in a YAML, finds the image: line, and replaces it with the value of containerImage
-func ReplaceContainerImageFromFile(filename, containerImage) (string, error) {
-	outString string
-	file, err := os.OpenFile(filename, O_RDONLY)
+func ReplaceContainerImageFromFile(filename, containerImage string) (string, error) {
+	var outString string
+	file, err := os.Open(filename)
 	if err != nil {
 		log.Printf("Error opening source YAML file %s\n", filename)
-		return nil, err
+		return "", err
 	}
 	defer file.Close()
 	re := regexp.MustCompile("(image:) .*$")
@@ -135,7 +136,7 @@ func ReplaceContainerImageFromFile(filename, containerImage) (string, error) {
 	reader := bufio.NewReader(file)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		outString += re.Replace(scanner.Text(), replacementString) + "\n"
+		outString += re.ReplaceAllString(scanner.Text(), replacementString) + "\n"
 	}
 	err = scanner.Err()
 	if err != nil {
@@ -145,7 +146,7 @@ func ReplaceContainerImageFromFile(filename, containerImage) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = tmpFile.Write(outString)
+	_, err = tmpFile.Write([]byte(outString))
 	return tmpFile.Name(), err
 }
 
