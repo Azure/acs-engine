@@ -472,10 +472,6 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.AADProfile = &vlabs.AADProfile{}
 		convertAADProfileToVLabs(api.AADProfile, vlabsProps.AADProfile)
 	}
-	if api.AzProfile != nil {
-		vlabsProps.AzProfile = &vlabs.AzProfile{}
-		convertAzProfileToVLabs(api.AzProfile, vlabsProps.AzProfile)
-	}
 
 	if api.FeatureFlags != nil {
 		vlabsProps.FeatureFlags = &vlabs.FeatureFlags{}
@@ -1154,13 +1150,6 @@ func convertAADProfileToVLabs(api *AADProfile, vlabs *vlabs.AADProfile) {
 	vlabs.ServerAppID = api.ServerAppID
 	vlabs.TenantID = api.TenantID
 	vlabs.AdminGroupID = api.AdminGroupID
-}
-
-func convertAzProfileToVLabs(api *AzProfile, vlabs *vlabs.AzProfile) {
-	vlabs.Location = api.Location
-	vlabs.ResourceGroup = api.ResourceGroup
-	vlabs.SubscriptionID = api.SubscriptionID
-	vlabs.TenantID = api.TenantID
 }
 
 func convertFeatureFlagsToVLabs(api *FeatureFlags, vlabs *vlabs.FeatureFlags) {

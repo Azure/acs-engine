@@ -395,22 +395,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties, isUpdate b
 		api.AADProfile = &AADProfile{}
 		convertVLabsAADProfile(vlabs.AADProfile, api.AADProfile)
 	}
-	if vlabs.AzProfile != nil {
-		api.AzProfile = &AzProfile{}
-		convertVLabsAZProfile(vlabs.AzProfile, api.AzProfile)
-	}
 
 	if vlabs.FeatureFlags != nil {
 		api.FeatureFlags = &FeatureFlags{}
 		convertVLabsFeatureFlags(vlabs.FeatureFlags, api.FeatureFlags)
 	}
-}
-
-func convertVLabsAZProfile(vlabs *vlabs.AzProfile, api *AzProfile) {
-	api.Location = vlabs.Location
-	api.ResourceGroup = vlabs.ResourceGroup
-	api.SubscriptionID = vlabs.SubscriptionID
-	api.TenantID = vlabs.TenantID
 }
 
 func convertVLabsFeatureFlags(vlabs *vlabs.FeatureFlags, api *FeatureFlags) {

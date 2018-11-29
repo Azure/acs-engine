@@ -42,16 +42,7 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
-	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
 	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
-}
-
-// AzProfile holds the azure context for where the cluster resides
-type AzProfile struct {
-	TenantID       string `json:"tenantId,omitempty"`
-	SubscriptionID string `json:"subscriptionId,omitempty"`
-	ResourceGroup  string `json:"resourceGroup,omitempty"`
-	Location       string `json:"location,omitempty"`
 }
 
 // FeatureFlags defines feature-flag restricted functionality

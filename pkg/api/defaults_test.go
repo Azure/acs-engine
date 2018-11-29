@@ -1227,12 +1227,6 @@ func TestDefaultCloudProvider(t *testing.T) {
 func TestSetCertDefaults(t *testing.T) {
 	cs := &ContainerService{
 		Properties: &Properties{
-			AzProfile: &AzProfile{
-				TenantID:       "sampleTenantID",
-				SubscriptionID: "foobarsubscription",
-				ResourceGroup:  "sampleRG",
-				Location:       "westus2",
-			},
 			ServicePrincipalProfile: &ServicePrincipalProfile{
 				ClientID: "barClientID",
 				Secret:   "bazSecret",
