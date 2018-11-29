@@ -7,7 +7,6 @@ import (
 
 	"github.com/blang/semver"
 
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -162,8 +161,6 @@ func ConvertOrchestratorVersionProfileToVLabs(api *OrchestratorVersionProfile) *
 		vlabsProfile.OrchestratorType = vlabs.Swarm
 	case SwarmMode:
 		vlabsProfile.OrchestratorType = vlabs.SwarmMode
-	case OpenShift:
-		vlabsProfile.OrchestratorType = vlabs.OpenShift
 	}
 	vlabsProfile.OrchestratorVersion = api.OrchestratorVersion
 	vlabsProfile.Default = api.Default
@@ -651,12 +648,8 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
-		// Enable using "unstable" as a valid version in the openshift orchestrator.
-		// Required for progressing on an unreleased version.
-		if !api.IsOpenShift() || api.OrchestratorVersion != common.OpenShiftVersionUnstable {
-			sv, _ := semver.Make(o.OrchestratorVersion)
-			o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
-		}
+		sv, _ := semver.Make(o.OrchestratorVersion)
+		o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major, sv.Minor)
 	}
 
 	if api.KubernetesConfig != nil {
@@ -664,26 +657,10 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, o.KubernetesConfig)
 	}
 
-	if api.OpenShiftConfig != nil {
-		o.OpenShiftConfig = &vlabs.OpenShiftConfig{}
-		convertOpenShiftConfigToVLabs(api.OpenShiftConfig, o.OpenShiftConfig)
-	}
-
 	if api.DcosConfig != nil {
 		o.DcosConfig = &vlabs.DcosConfig{}
 		convertDcosConfigToVLabs(api.DcosConfig, o.DcosConfig)
 	}
-}
-
-func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConfig) {
-	vl.KubernetesConfig = &vlabs.KubernetesConfig{}
-	if api.KubernetesConfig != nil {
-		convertKubernetesConfigToVLabs(api.KubernetesConfig, vl.KubernetesConfig)
-	}
-	vl.ClusterUsername = api.ClusterUsername
-	vl.ClusterPassword = api.ClusterPassword
-	vl.EnableAADAuthentication = api.EnableAADAuthentication
-	vl.ConfigBundles = api.ConfigBundles
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vl *vlabs.DcosConfig) {

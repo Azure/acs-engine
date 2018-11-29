@@ -720,7 +720,6 @@ func TestOrchestrator(t *testing.T) {
 		p                    Properties
 		expectedIsDCOS       bool
 		expectedIsKubernetes bool
-		expectedIsOpenShift  bool
 		expectedIsSwarmMode  bool
 	}{
 		{
@@ -731,7 +730,6 @@ func TestOrchestrator(t *testing.T) {
 			},
 			expectedIsDCOS:       true,
 			expectedIsKubernetes: false,
-			expectedIsOpenShift:  false,
 			expectedIsSwarmMode:  false,
 		},
 		{
@@ -742,18 +740,6 @@ func TestOrchestrator(t *testing.T) {
 			},
 			expectedIsDCOS:       false,
 			expectedIsKubernetes: true,
-			expectedIsOpenShift:  false,
-			expectedIsSwarmMode:  false,
-		},
-		{
-			p: Properties{
-				OrchestratorProfile: &OrchestratorProfile{
-					OrchestratorType: OpenShift,
-				},
-			},
-			expectedIsDCOS:       false,
-			expectedIsKubernetes: false,
-			expectedIsOpenShift:  true,
 			expectedIsSwarmMode:  false,
 		},
 		{
@@ -764,7 +750,6 @@ func TestOrchestrator(t *testing.T) {
 			},
 			expectedIsDCOS:       false,
 			expectedIsKubernetes: false,
-			expectedIsOpenShift:  false,
 			expectedIsSwarmMode:  true,
 		},
 	}
@@ -776,14 +761,8 @@ func TestOrchestrator(t *testing.T) {
 		if c.expectedIsKubernetes != c.p.OrchestratorProfile.IsKubernetes() {
 			t.Fatalf("Expected IsKubernetes() to be %t with OrchestratorType=%s", c.expectedIsKubernetes, c.p.OrchestratorProfile.OrchestratorType)
 		}
-		if c.expectedIsOpenShift != c.p.OrchestratorProfile.IsOpenShift() {
-			t.Fatalf("Expected IsOpenShift() to be %t with OrchestratorType=%s", c.expectedIsOpenShift, c.p.OrchestratorProfile.OrchestratorType)
-		}
 		if c.expectedIsSwarmMode != c.p.OrchestratorProfile.IsSwarmMode() {
 			t.Fatalf("Expected IsSwarmMode() to be %t with OrchestratorType=%s", c.expectedIsSwarmMode, c.p.OrchestratorProfile.OrchestratorType)
-		}
-		if c.expectedIsOpenShift && !c.p.HasStorageAccountDisks() {
-			t.Fatalf("Expected HasStorageAccountDisks() to return true when OrchestratorType is OpenShift")
 		}
 	}
 }

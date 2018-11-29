@@ -222,7 +222,6 @@ type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
 	OrchestratorVersion string            `json:"orchestratorVersion"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-	OpenShiftConfig     *OpenShiftConfig  `json:"openshiftConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
@@ -401,30 +400,6 @@ type DcosConfig struct {
 	DcosClusterPackageListID string            `json:"dcosClusterPackageListID,omitempty"` // all three of these items
 	DcosProviderPackageID    string            `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
 	BootstrapProfile         *BootstrapProfile `json:"bootstrapProfile,omitempty"`
-}
-
-// OpenShiftConfig holds configuration for OpenShift
-type OpenShiftConfig struct {
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
-
-	// ClusterUsername and ClusterPassword are temporary, do not rely on them.
-	ClusterUsername string `json:"clusterUsername,omitempty"`
-	ClusterPassword string `json:"clusterPassword,omitempty"`
-
-	// EnableAADAuthentication is temporary, do not rely on it.
-	EnableAADAuthentication bool `json:"enableAADAuthentication,omitempty"`
-
-	ConfigBundles map[string][]byte `json:"configBundles,omitempty"`
-
-	PublicHostname string
-	RouterProfiles []OpenShiftRouterProfile
-}
-
-// OpenShiftRouterProfile represents an OpenShift router.
-type OpenShiftRouterProfile struct {
-	Name            string
-	PublicSubdomain string
-	FQDN            string
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -719,9 +694,6 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
-	if p.OrchestratorProfile != nil && p.OrchestratorProfile.OrchestratorType == OpenShift {
-		return true
-	}
 	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
 		return true
 	}
@@ -760,12 +732,9 @@ func (p *Properties) HasVMSSAgentPool() bool {
 
 // K8sOrchestratorName returns the 3 character orchestrator code for kubernetes-based clusters.
 func (p *Properties) K8sOrchestratorName() string {
-	if p.OrchestratorProfile.IsKubernetes() ||
-		p.OrchestratorProfile.IsOpenShift() {
+	if p.OrchestratorProfile.IsKubernetes() {
 		if p.HostedMasterProfile != nil {
 			return DefaultHostedProfileMasterName
-		} else if p.OrchestratorProfile.IsOpenShift() {
-			return DefaultOpenshiftOrchestratorName
 		} else {
 			return DefaultOrchestratorName
 		}
@@ -1167,11 +1136,6 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
-}
-
-// IsOpenShift returns true if this template is for OpenShift orchestrator
-func (o *OrchestratorProfile) IsOpenShift() bool {
-	return o.OrchestratorType == OpenShift
 }
 
 // IsDCOS returns true if this template is for DCOS orchestrator

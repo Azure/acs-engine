@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,7 +19,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
 	"github.com/pkg/errors"
@@ -53,8 +51,8 @@ type scaleCmd struct {
 
 const (
 	scaleName             = "scale"
-	scaleShortDescription = "Scale an existing Kubernetes or OpenShift cluster"
-	scaleLongDescription  = "Scale an existing Kubernetes or OpenShift cluster by specifying increasing or decreasing the node count of an agentpool"
+	scaleShortDescription = "Scale an existing Kubernetes cluster"
+	scaleLongDescription  = "Scale an existing Kubernetes cluster by specifying increasing or decreasing the node count of an agentpool"
 	apiModelFilename      = "apimodel.json"
 )
 
@@ -276,20 +274,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				if err != nil {
 					return errors.Wrap(err, "Got error while draining the nodes to be deleted")
 				}
-			case api.OpenShift:
-				bundle := bytes.NewReader(sc.containerService.Properties.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"])
-				fs, err := filesystem.NewTGZReader(bundle)
-				if err != nil {
-					return errors.Wrap(err, "failed to read master bundle")
-				}
-				kubeConfig, err := fs.ReadFile("etc/origin/master/admin.kubeconfig")
-				if err != nil {
-					return errors.Wrap(err, "failed to read kube config")
-				}
-				err = sc.drainNodes(string(kubeConfig), vmsToDelete)
-				if err != nil {
-					return errors.Wrap(err, "Got error while draining the nodes to be deleted")
-				}
 			}
 
 			errList := operations.ScaleDownVMs(sc.client, sc.logger, sc.SubscriptionID.String(), sc.resourceGroupName, vmsToDelete...)
@@ -386,14 +370,6 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		templateJSON["variables"].(map[string]interface{})[sc.agentPool.Name+"Index"] = winPoolIndex
 	}
 	switch orchestratorInfo.OrchestratorType {
-	case api.OpenShift:
-		err = transformer.NormalizeForOpenShiftVMASScalingUp(sc.logger, sc.agentPool.Name, templateJSON)
-		if err != nil {
-			return errors.Wrapf(err, "error tranforming the template for scaling template %s", sc.apiModelPath)
-		}
-		if sc.agentPool.IsAvailabilitySets() {
-			addValue(parametersJSON, fmt.Sprintf("%sOffset", sc.agentPool.Name), highestUsedIndex+1)
-		}
 	case api.Kubernetes:
 		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
 		if err != nil {
