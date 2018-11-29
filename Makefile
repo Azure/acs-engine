@@ -3,7 +3,7 @@ DIST_DIRS         = find * -type d -exec
 
 .NOTPARALLEL:
 
-.PHONY: bootstrap build test test_fmt validate-headers fmt lint ci devenv
+.PHONY: bootstrap build test test_fmt fmt lint ci devenv
 
 ifdef DEBUG
 GOFLAGS   := -gcflags="-N -l"

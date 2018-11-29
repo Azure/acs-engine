@@ -62,8 +62,8 @@ func main() {
 
 	// Soak test specific setup
 	if cfg.SoakClusterName != "" {
-		sa.Name = "aksesoaktests" + cfg.Location
-		sa.ResourceGroup.Name = "akse-test-infrastructure-storage"
+		sa.Name = "acsesoaktests" + cfg.Location
+		sa.ResourceGroup.Name = "acse-test-infrastructure-storage"
 		sa.ResourceGroup.Location = cfg.Location
 		err = sa.CreateStorageAccount()
 		if err != nil {
