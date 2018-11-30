@@ -39,7 +39,6 @@ func (cs *ContainerService) setKubeletConfig() {
 	staticWindowsKubeletConfig["--cgroups-per-qos"] = "false"
 	staticWindowsKubeletConfig["--enforce-node-allocatable"] = "\"\"\"\""
 	staticWindowsKubeletConfig["--system-reserved"] = "memory=2Gi"
-	staticWindowsKubeletConfig["--kube-reserved"] = "memory=1Gi"
 	staticWindowsKubeletConfig["--client-ca-file"] = "c:\\k\\ca.crt"
 	staticWindowsKubeletConfig["--hairpin-mode"] = "promiscuous-bridge"
 	staticWindowsKubeletConfig["--image-pull-progress-deadline"] = "20m"
