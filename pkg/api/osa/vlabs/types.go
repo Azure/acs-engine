@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 package vlabs
 
 // OpenShiftCluster complies with the ARM model of resource definition in a JSON
