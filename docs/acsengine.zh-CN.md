@@ -25,7 +25,7 @@ make build
 
 ```
 # ./bin/acs-engine 
-ACS-Engine deploys and manages Kubernetes, OpenShift, Swarm Mode, and DC/OS clusters in Azure
+ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
 
 Usage:
   acs-engine [command]

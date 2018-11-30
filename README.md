@@ -6,11 +6,11 @@
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition (or apimodel) is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition (or apimodel) is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
 The cluster definition file enables you to customize your Docker enabled cluster in many ways including:
 
-* Choice of DC/OS, Kubernetes, OpenShift, Swarm Mode, or Swarm orchestrators
+* Choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
 * Multiple agent pools where each agent pool can specify:
   * Standard or premium VM Sizes, including GPU optimized VM sizes
   * Node count
@@ -28,7 +28,6 @@ These guides show how to create your first deployment for each orchestrator:
 
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Linux or Windows Kubernetes cluster on Azure
-* [OpenShift Walkthrough](docs/openshift.md) - shows how to create an OpenShift cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a [Docker Swarm Mode](https://docs.docker.com/engine/swarm/) cluster on Azure
 * [Standalone Swarm Walkthrough](docs/swarm.md) - shows how to create a [Docker Standalone Swarm](https://docs.docker.com/swarm/) cluster on Azure
 
