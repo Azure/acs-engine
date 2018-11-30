@@ -70,8 +70,8 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 		Name:    DefaultClusterAutoscalerAddonName,
 		Enabled: helpers.PointerToBool(DefaultClusterAutoscalerAddonEnabled),
 		Config: map[string]string{
-			"minNodes": "1",
-			"maxNodes": "5",
+			"min-nodes": "1",
+			"max-nodes": "5",
 		},
 		Containers: []KubernetesContainerSpec{
 			{
@@ -218,6 +218,10 @@ func (cs *ContainerService) setAddonsConfig(isUpdate bool) {
 				MemoryLimits:   "250Mi",
 				Image:          specConfig.KubernetesImageBase + "ip-masq-agent-amd64:v2.0.0",
 			},
+		},
+		Config: map[string]string{
+			"non-masquerade-cidr": cs.Properties.GetNonMasqueradeCIDR(),
+			"non-masq-cni-cidr":   cs.Properties.GetAzureCNICidr(),
 		},
 	}
 

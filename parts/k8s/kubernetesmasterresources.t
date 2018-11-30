@@ -224,7 +224,7 @@
               "backendAddressPool": {
                 "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "backendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "enableFloatingIP": false,
@@ -240,9 +240,9 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": {{if IsOpenShift}}8443{{else}}443{{end}},
-              "intervalInSeconds": "5",
+              "intervalInSeconds": 5,
               "numberOfProbes": "2"
             }
           }
@@ -271,7 +271,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[variables('sshNatPorts')[copyIndex(variables('masterOffset'))]]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -640,7 +640,7 @@
               },
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "probe": {
                 "id": "[concat(variables('masterInternalLbID'),'/probes/tcpHTTPSProbe')]"
               }
@@ -651,10 +651,10 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": {{if IsOpenShift}}8443{{else}}4443{{end}},
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ]
@@ -979,7 +979,7 @@
         {{if IsOpenShift}}
           "script": "{{ Base64 OpenShiftGetMasterSh }}"
         {{else}}
-          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 150 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && nc -vz gcr.io 443 && nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
         }
       }

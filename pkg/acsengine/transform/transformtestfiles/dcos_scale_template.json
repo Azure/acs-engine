@@ -753,7 +753,7 @@
             "adminUsername": "[variables('adminUsername')]",
             "computerNamePrefix": "[variables('agentpriVMNamePrefix')]",
             "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {
@@ -827,7 +827,7 @@
             "adminUsername": "[variables('adminUsername')]",
             "computerNamePrefix": "[variables('agentpri2VMNamePrefix')]",
             "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {
@@ -980,7 +980,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[copyIndex(2200)]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -998,7 +998,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "22",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -1109,7 +1109,7 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
+            "disablePasswordAuthentication": true,
             "ssh": {
               "publicKeys": [
                 {

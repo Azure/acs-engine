@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -41,14 +39,14 @@ type Config struct {
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
-	GeneratedDefinitionPath   string // Holds the contents of running acs-engine generate
+	GeneratedDefinitionPath   string // Holds the contents of running aks-engine generate
 	OutputPath                string // This is the root output path
 	DefinitionName            string // Unique cluster name
 	GeneratedTemplatePath     string // azuredeploy.json path
 	GeneratedParametersPath   string // azuredeploy.parameters.json path
 }
 
-// Engine holds necessary information to interact with acs-engine cli
+// Engine holds necessary information to interact with aks-engine cli
 type Engine struct {
 	Config             *Config
 	ClusterDefinition  *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
@@ -86,82 +84,48 @@ func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVM
 	if err != nil {
 		return nil, err
 	}
+	prop := cs.ContainerService.Properties
 
 	if config.ClientID != "" && config.ClientSecret != "" {
-		cs.ContainerService.Properties.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{
+		prop.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{
 			ClientID: config.ClientID,
 			Secret:   config.ClientSecret,
 		}
 	}
-	if cfg.IsOpenShift() {
-		// azProfile
-		cs.ContainerService.Properties.AzProfile = &vlabs.AzProfile{
-			TenantID:       config.TenantID,
-			SubscriptionID: config.SubscriptionID,
-			ResourceGroup:  cfg.Name,
-			Location:       cfg.Location,
-		}
-		// openshiftConfig
-		pass, err := generateRandomString(32)
-		if err != nil {
-			return nil, err
-		}
-		cs.ContainerService.Properties.OrchestratorProfile.OpenShiftConfig = &vlabs.OpenShiftConfig{
-			ClusterUsername: "test-user",
-			ClusterPassword: pass,
-		}
-		// master and agent config
-		cs.ContainerService.Properties.MasterProfile.Distro = vlabs.Distro(config.Distro)
-		cs.ContainerService.Properties.MasterProfile.ImageRef = nil
-		if config.ImageName != "" && config.ImageResourceGroup != "" {
-			cs.ContainerService.Properties.MasterProfile.ImageRef = &vlabs.ImageReference{
-				Name:          config.ImageName,
-				ResourceGroup: config.ImageResourceGroup,
-			}
-		}
-		for i := range cs.ContainerService.Properties.AgentPoolProfiles {
-			cs.ContainerService.Properties.AgentPoolProfiles[i].Distro = vlabs.Distro(config.Distro)
-			cs.ContainerService.Properties.AgentPoolProfiles[i].ImageRef = nil
-			if config.ImageName != "" && config.ImageResourceGroup != "" {
-				cs.ContainerService.Properties.AgentPoolProfiles[i].ImageRef = &vlabs.ImageReference{
-					Name:          config.ImageName,
-					ResourceGroup: config.ImageResourceGroup,
-				}
-			}
-		}
-	}
 
 	if config.MasterDNSPrefix != "" {
-		cs.ContainerService.Properties.MasterProfile.DNSPrefix = config.MasterDNSPrefix
+		prop.MasterProfile.DNSPrefix = config.MasterDNSPrefix
 	}
 
-	if !cfg.IsKubernetes() && !cfg.IsOpenShift() && config.AgentDNSPrefix != "" {
-		for idx, pool := range cs.ContainerService.Properties.AgentPoolProfiles {
+	if !cfg.IsKubernetes() && config.AgentDNSPrefix != "" {
+		for idx, pool := range prop.AgentPoolProfiles {
 			pool.DNSPrefix = fmt.Sprintf("%v-%v", config.AgentDNSPrefix, idx)
 		}
 	}
 
-	if config.PublicSSHKey != "" {
-		cs.ContainerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData = config.PublicSSHKey
-		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
-			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey = config.PublicSSHKey
+	if prop.LinuxProfile != nil {
+		if config.PublicSSHKey != "" {
+			prop.LinuxProfile.SSH.PublicKeys[0].KeyData = config.PublicSSHKey
+			if prop.OrchestratorProfile.KubernetesConfig != nil && prop.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil && prop.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+				prop.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey = config.PublicSSHKey
+			}
 		}
 	}
 
 	if config.WindowsAdminPasssword != "" {
-		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
+		prop.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
 	}
 
 	// If the parsed api model input has no expressed version opinion, we check if ENV does have an opinion
-	if cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease == "" &&
-		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion == "" {
+	if prop.OrchestratorProfile.OrchestratorRelease == "" &&
+		prop.OrchestratorProfile.OrchestratorVersion == "" {
 		// First, prefer the release string if ENV declares it
 		if config.OrchestratorRelease != "" {
-			cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
+			prop.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
 			// Or, choose the version string if ENV declares it
 		} else if config.OrchestratorVersion != "" {
-			cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
-			// If ENV similarly has no version opinion, we will rely upon the acs-engine default
+			prop.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
+			// If ENV similarly has no version opinion, we will rely upon the aks-engine default
 		} else {
 			log.Println("No orchestrator version specified, will use the default.")
 		}
@@ -169,25 +133,25 @@ func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVM
 
 	if config.CreateVNET {
 		if isVMSS {
-			cs.ContainerService.Properties.MasterProfile.VnetSubnetID = masterSubnetID
-			cs.ContainerService.Properties.MasterProfile.AgentVnetSubnetID = agentSubnetID
-			for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
+			prop.MasterProfile.VnetSubnetID = masterSubnetID
+			prop.MasterProfile.AgentVnetSubnetID = agentSubnetID
+			for _, p := range prop.AgentPoolProfiles {
 				p.VnetSubnetID = agentSubnetID
 			}
 		} else {
-			cs.ContainerService.Properties.MasterProfile.VnetSubnetID = masterSubnetID
-			for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
+			prop.MasterProfile.VnetSubnetID = masterSubnetID
+			for _, p := range prop.AgentPoolProfiles {
 				p.VnetSubnetID = masterSubnetID
 			}
 		}
 	}
 
 	if config.EnableKMSEncryption && config.ClientObjectID != "" {
-		if cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig == nil {
-			cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
+		if prop.OrchestratorProfile.KubernetesConfig == nil {
+			prop.OrchestratorProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
 		}
-		cs.ContainerService.Properties.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = &config.EnableKMSEncryption
-		cs.ContainerService.Properties.ServicePrincipalProfile.ObjectID = config.ClientObjectID
+		prop.OrchestratorProfile.KubernetesConfig.EnableEncryptionWithExternalKms = &config.EnableKMSEncryption
+		prop.ServicePrincipalProfile.ObjectID = config.ClientObjectID
 	}
 
 	return &Engine{
@@ -198,8 +162,8 @@ func Build(cfg *config.Config, masterSubnetID string, agentSubnetID string, isVM
 
 // NodeCount returns the number of nodes that should be provisioned for a given cluster definition
 func (e *Engine) NodeCount() int {
-	expectedCount := e.ClusterDefinition.Properties.MasterProfile.Count
-	for _, pool := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	expectedCount := e.ExpandedDefinition.Properties.MasterProfile.Count
+	for _, pool := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		expectedCount = expectedCount + pool.Count
 	}
 	return expectedCount
@@ -223,6 +187,31 @@ func (e *Engine) HasWindowsAgents() bool {
 		}
 	}
 	return false
+}
+
+// WindowsTestImages holds the Windows container image names used in this test pass
+type WindowsTestImages struct {
+	IIS        string
+	ServerCore string
+}
+
+// GetWindowsTestImages will return the right list of container images for the Windows version used
+func (e *Engine) GetWindowsTestImages() (*WindowsTestImages, error) {
+	if !e.HasWindowsAgents() {
+		return nil, errors.New("Can't guess a Windows version without Windows nodes in the cluster")
+	}
+
+	if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1809") || strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "2019") {
+		return &WindowsTestImages{IIS: "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019",
+			ServerCore: "mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019"}, nil
+	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1803") {
+		return &WindowsTestImages{IIS: "microsoft/iis:windowsservercore-1803",
+			ServerCore: "microsoft/iis:windowsservercore-1803"}, nil
+	} else if strings.Contains(e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku(), "1709") {
+		return nil, errors.New("Windows Server version 1709 hasn't been tested in a long time and is deprecated")
+	}
+
+	return nil, errors.New("Unknown Windows version. GetWindowsSku() = " + e.ExpandedDefinition.Properties.WindowsProfile.GetWindowsSku())
 }
 
 // HasAddon will return true if an addon is enabled
@@ -286,18 +275,4 @@ func ParseOutput(path string) (*api.ContainerService, error) {
 		return nil, err
 	}
 	return containerService, nil
-}
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-func generateRandomString(s int) (string, error) {
-	b, err := generateRandomBytes(s)
-	return base64.URLEncoding.EncodeToString(b), err
 }

@@ -118,7 +118,7 @@
           "computername": "[variables('bootstrapVMName')]",
           {{GetDCOSBootstrapCustomData}}
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
+            "disablePasswordAuthentication": true,
             "ssh": {
                 "publicKeys": [
                     {

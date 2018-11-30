@@ -45,6 +45,8 @@ const (
 	DockerCEDockerComposeVersion = "1.14.0"
 	// KubernetesWindowsDockerVersion is the default version for docker on Windows nodes in kubernetes
 	KubernetesWindowsDockerVersion = "18.09.0"
+	// KubernetesDefaultWindowsSku is the default SKU for Windows VMs in kubernetes
+	KubernetesDefaultWindowsSku = "Datacenter-Core-1809-with-Containers-smalldisk"
 )
 
 // validation values
@@ -75,6 +77,8 @@ const (
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultFirstConsecutiveKubernetesStaticIPVMSS specifies the static IP address on Kubernetes master 0 of VMSS
 	DefaultFirstConsecutiveKubernetesStaticIPVMSS = "10.240.0.4"
+	//DefaultCNICIDR specifies the default value for
+	DefaultCNICIDR = "168.63.129.16/32"
 	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
 	// when VNET integration is enabled.
 	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
@@ -198,6 +202,8 @@ const (
 	ARMVirtualNetworksResourceType = "virtualNetworks"
 	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
 	DefaultAcceleratedNetworkingWindowsEnabled = false
+	// DefaultAcceleratedNetworking determines the acs-engine provided default for enabling accelerated networking on Linux nodes
+	DefaultAcceleratedNetworking = true
 	// DefaultDNSAutoscalerAddonName is the name of the dns-autoscaler addon
 	DefaultDNSAutoscalerAddonName = "dns-autoscaler"
 )
