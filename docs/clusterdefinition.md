@@ -68,6 +68,8 @@ To learn more about supported orchestrators and versions, run the orchestrators 
 | serviceCidr                     | no       | IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNET                                                                                                                                                                                                                                                     |
 | useInstanceMetadata             | no       | Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`                                                                                                                                                                                                                                                                                        |
 | useManagedIdentity              | no       | Includes and uses MSI identities for all interactions with the Azure Resource Manager (ARM) API. Instead of using a static service principal written to /etc/kubernetes/azure.json, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.9.1 or newer. (boolean - default == false). When MasterProfile is using `VirtualMachineScaleSets`, this feature requires Kubernetes v1.12 or newer as we default to using user assigned identity. |
+| azureCNIURLLinux                | no       | Deploy a private build of Azure CNI on Linux nodes. This should be a full path to the .tar.gz |
+| azureCNIURLWindows              | no       | Deploy a private build of Azure CNI on Windows nodes. This should be a full path to the .tar.gz |
 
 #### addons
 
@@ -607,7 +609,7 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 | adminPassword                    | yes      | Password for the Windows adminstrator account created on each Windows node |
 | windowsPublisher                 | no       | Publisher used to find Windows VM to deploy from marketplace. Default: `MicrosoftWindowsServer` |
 | windowsOffer                     | no       | Offer used to find Windows VM to deploy from marketplace. Default: `WindowsServerSemiAnnual` |
-| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1803-with-Containers-smalldisk` |
+| windowsSku                       | no       | SKU usedto find Windows VM to deploy from marketplace. Default: `Datacenter-Core-1809-with-Containers-smalldisk` |
 | imageVersion                     | no       | Specific image version to deploy from marketplace.  Default: `latest` |
 | windowsImageSourceURL            | no       | Path to an existing Azure storage blob with a sysprepped VHD. This is used to test pre-release or customized VHD files that you have uploaded to Azure. If provided, the above 4 parameters are ignored. |
 
@@ -624,8 +626,10 @@ $ az vm image list --publisher MicrosoftWindowsServer --all -o table
 Offer                    Publisher                      Sku                                             Urn                                                                                                            Version
 -----------------------  -----------------------------  ----------------------------------------------  -------------------------------------------------------------------------------------------------------------  -----------------
 ...
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20180412  1709.0.20180412
-WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20180504  1803.0.20180504
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1709-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1709-with-Containers-smalldisk:1709.0.20181017  1709.0.20181017
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1803-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1803-with-Containers-smalldisk:1803.0.20181017  1803.0.20181017
+WindowsServerSemiAnnual  MicrosoftWindowsServer         Datacenter-Core-1809-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServerSemiAnnual:Datacenter-Core-1809-with-Containers-smalldisk:1809.0.20181107  1809.0.20181107
+WindowsServer            MicrosoftWindowsServer         2019-Datacenter-Core-with-Containers-smalldisk  MicrosoftWindowsServer:WindowsServer:2019-Datacenter-Core-with-Containers-smalldisk:2019.0.20181107            2019.0.20181107
 ```
 
 If you wanted to use the last one in the list above, then set:
@@ -635,9 +639,9 @@ If you wanted to use the last one in the list above, then set:
             "adminUsername": "...",
             "adminPassword": "...",
             "windowsPublisher": "MicrosoftWindowsServer",
-            "windowsOffer": "WindowsServerSemiAnnual",
-            "windowsSku": "Datacenter-Core-1803-with-Containers-smalldisk",
-            "imageVersion": "1803.0.20180504"
+            "windowsOffer": "WindowsServer",
+            "windowsSku": "2019-Datacenter-Core-with-Containers-smalldisk",
+            "imageVersion": "2019.0.20181107"
      },
 ```
 

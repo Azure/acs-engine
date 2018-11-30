@@ -140,7 +140,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should report all nodes in a Ready state", func() {
-			ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, cfg.Timeout)
+			nodeCount := eng.NodeCount()
+			log.Printf("Checking for %d Ready nodes\n", nodeCount)
+			ready := node.WaitOnReady(nodeCount, 10*time.Second, cfg.Timeout)
 			cmd := exec.Command("kubectl", "get", "nodes", "-o", "wide")
 			out, _ := cmd.CombinedOutput()
 			log.Printf("%s\n", out)
@@ -975,12 +977,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Describe("with a windows agent pool", func() {
 		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
-				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+				windowsImages, err := eng.GetWindowsTestImages()
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Creating a deployment with 1 pod running IIS")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
+				iisDeploy, err := deployment.CreateWindowsDeploy(windowsImages.IIS, deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Waiting on pod to be Ready")
@@ -1020,12 +1023,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to scale an iis webserver", func() {
 			if eng.HasWindowsAgents() {
-				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
+				windowsImages, err := eng.GetWindowsTestImages()
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Creating a deployment with 1 pod running IIS")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, -1)
+				iisDeploy, err := deployment.CreateWindowsDeploy(windowsImages.IIS, deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Waiting on pod to be Ready")
@@ -1123,13 +1127,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to resolve DNS across windows and linux deployments", func() {
 			if eng.HasWindowsAgents() {
-				iisImage := "microsoft/iis:windowsservercore-1803" // BUG: This should be set based on the host OS version
-				windowsServerImage := "microsoft/windowsservercore:1803"
+				windowsImages, err := eng.GetWindowsTestImages()
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Creating a deployment running IIS")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				windowsDeploymentName := fmt.Sprintf("iis-dns-%s-%v", cfg.Name, r.Intn(99999))
-				windowsIISDeployment, err := deployment.CreateWindowsDeploy(iisImage, windowsDeploymentName, "default", 80, -1)
+				windowsIISDeployment, err := deployment.CreateWindowsDeploy(windowsImages.IIS, windowsDeploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Creating a nginx deployment")
@@ -1162,14 +1166,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Connecting to Windows from another Windows deployment")
 				name := fmt.Sprintf("windows-2-windows-%s", cfg.Name)
 				command := fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", windowsService.Metadata.Name)
-				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
+				successes, err := pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsImages.ServerCore, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
 				By("Connecting to Linux from Windows deployment")
 				name = fmt.Sprintf("windows-2-linux-%s", cfg.Name)
 				command = fmt.Sprintf("iwr -UseBasicParsing -TimeoutSec 60 %s", linuxService.Metadata.Name)
-				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsServerImage, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
+				successes, err = pod.RunCommandMultipleTimes(pod.RunWindowsPod, windowsImages.ServerCore, name, command, cfg.StabilityIterations, 1*time.Second, retryCommandsTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(successes).To(Equal(cfg.StabilityIterations))
 
@@ -1219,24 +1223,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
 					iisDeploy, err := deployment.CreateWindowsDeploy(iisImage, deploymentName, "default", 80, hostport)
 					Expect(err).NotTo(HaveOccurred())
-
 					running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(running).To(Equal(true))
-
 					iisPods, err := iisDeploy.Pods()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(len(iisPods)).ToNot(BeZero())
-
 					kubeConfig, err := GetConfig()
 					Expect(err).NotTo(HaveOccurred())
 					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-
 					for _, iisPod := range iisPods {
 						valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, masterSSHPrivateKeyFilepath)
 						Expect(valid).To(BeTrue())
 					}
-
 					err = iisDeploy.Delete(kubectlOutput)
 					Expect(err).NotTo(HaveOccurred())
 				} else {
@@ -1250,6 +1249,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					// Failure in 1.11.0 - https://github.com/kubernetes/kubernetes/issues/65845, fixed in 1.11.1
 					Skip("Kubernetes 1.11.0 has a known issue creating Azure PersistentVolumeClaims")
 				} else if common.IsKubernetesVersionGe(eng.ExpandedDefinition.Properties.OrchestratorProfile.OrchestratorVersion, "1.8.0") {
+					windowsImages, err := eng.GetWindowsTestImages()
+					Expect(err).NotTo(HaveOccurred())
+
+					iisAzurefileYaml, err := pod.ReplaceContainerImageFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), windowsImages.IIS)
+					Expect(err).NotTo(HaveOccurred())
+					defer os.Remove(iisAzurefileYaml)
+
 					By("Creating an AzureFile storage class")
 					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
 					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
@@ -1267,8 +1273,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(ready).To(Equal(true))
 
 					By("Launching an IIS pod using the volume claim")
-					podName := "iis-azurefile"                                                                                                             // should be the same as in iis-azurefile.yaml
-					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default", 1*time.Second, cfg.Timeout) // BUG: this should support OS versioning
+					podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(iisAzurefileYaml, podName, "default", 1*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())

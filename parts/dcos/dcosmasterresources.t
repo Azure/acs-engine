@@ -176,7 +176,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[copyIndex(2200)]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -196,7 +196,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "22",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -364,7 +364,7 @@
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
           {{GetDCOSMasterCustomData}}
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
+            "disablePasswordAuthentication": true,
             "ssh": {
                 "publicKeys": [
                     {

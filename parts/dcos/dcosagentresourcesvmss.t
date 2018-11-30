@@ -152,7 +152,7 @@
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
             {{GetDCOSAgentCustomData .}}
             "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {
