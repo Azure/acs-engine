@@ -801,13 +801,6 @@
       },
       {{end}}
       {{end}}
-      {{if not UseMasterCustomImage}}
-      "plan": {
-        "name": "[parameters('osImageSku')]",
-        "publisher": "[parameters('osImagePublisher')]",
-        "product": "[parameters('osImageOffer')]"
-      },
-      {{end}}
       "properties": {
         {{if not .MasterProfile.HasAvailabilityZones}}
         "availabilitySet": {

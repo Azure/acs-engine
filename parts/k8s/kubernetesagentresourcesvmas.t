@@ -159,13 +159,6 @@
       },
       {{end}}
       {{end}}
-      {{if not (UseAgentCustomImage .)}}
-      "plan": {
-        "name": "[variables('{{.Name}}osImageSKU')]",
-        "publisher": "[variables('{{.Name}}osImagePublisher')]",
-        "product": "[variables('{{.Name}}osImageOffer')]"
-      },
-      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
