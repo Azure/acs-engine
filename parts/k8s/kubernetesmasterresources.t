@@ -238,7 +238,7 @@
             "properties": {
               "protocol": "Tcp",
               "port": 443,
-              "intervalInSeconds": "5",
+              "intervalInSeconds": 5,
               "numberOfProbes": "2"
             }
           }
