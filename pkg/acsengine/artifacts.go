@@ -325,6 +325,11 @@ func buildConfigString(configString, destinationFile, destinationPath string) st
 }
 
 func getCustomScriptFromFile(sourceFile, sourcePath, version string) string {
+	customDataFilePath := getCustomDataFilePath(sourceFile, sourcePath, version)
+	return getBase64CustomScript(customDataFilePath)
+}
+
+func getCustomDataFilePath(sourceFile, sourcePath, version string) string {
 	sourceFileFullPath := sourcePath + "/" + sourceFile
 	sourceFileFullPathVersioned := sourcePath + "/" + version + "/" + sourceFile
 
@@ -333,5 +338,5 @@ func getCustomScriptFromFile(sourceFile, sourcePath, version string) string {
 	if err == nil {
 		sourceFileFullPath = sourceFileFullPathVersioned
 	}
-	return getBase64CustomScript(sourceFileFullPath)
+	return sourceFileFullPath
 }
