@@ -189,7 +189,7 @@
             {{GetAgentSwarmCustomData .}} 
 {{end}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {

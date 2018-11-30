@@ -12,7 +12,6 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
-	outil "github.com/Azure/acs-engine/test/e2e/openshift/util"
 	"github.com/Azure/acs-engine/test/e2e/runner"
 )
 
@@ -131,7 +130,7 @@ func main() {
 			}
 		}
 	} else {
-		cliProvisioner.ResourceGroups = append(rgs, cliProvisioner.Config.Name)
+		rgs = append(rgs, cliProvisioner.Config.Name)
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
 		cfg.SetKubeConfig()
 		if err != nil {
@@ -195,24 +194,6 @@ func teardown() {
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
-		}
-	}
-	if cliProvisioner.Config.IsOpenShift() {
-		sshKeyPath := cfg.GetSSHKeyPath()
-		adminName := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
-		version := eng.Config.OrchestratorVersion
-		distro := eng.Config.Distro
-		if err := outil.FetchWaagentLogs(sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath); err != nil {
-			log.Printf("cannot fetch waagent logs: %v", err)
-		}
-		if err := outil.FetchOpenShiftLogs(distro, version, sshKeyPath, adminName, cfg.Name, cfg.Location, logsPath); err != nil {
-			log.Printf("cannot get openshift logs: %v", err)
-		}
-		if err := outil.FetchClusterInfo(logsPath); err != nil {
-			log.Printf("cannot get pod and node info: %v", err)
-		}
-		if err := outil.FetchOpenShiftMetrics(logsPath); err != nil {
-			log.Printf("cannot fetch openshift metrics: %v", err)
 		}
 	}
 	if !cfg.SkipLogsCollection {

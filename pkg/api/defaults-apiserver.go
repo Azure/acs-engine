@@ -10,29 +10,29 @@ import (
 func (cs *ContainerService) setAPIServerConfig() {
 	o := cs.Properties.OrchestratorProfile
 	staticAPIServerConfig := map[string]string{
-		"--bind-address":               "0.0.0.0",
-		"--advertise-address":          "<kubernetesAPIServerIP>",
-		"--allow-privileged":           "true",
-		"--anonymous-auth":             "false",
-		"--audit-log-path":             "/var/log/kubeaudit/audit.log",
-		"--insecure-port":              "8080",
-		"--secure-port":                "443",
-		"--service-account-lookup":     "true",
-		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
-		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
-		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
-		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
-		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
-		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
-		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
-		"--profiling":                  "false",
-		"--repair-malformed-updates":   "false",
-		"--service-account-key-file":   "/etc/kubernetes/certs/apiserver.key",
-		"--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
-		"--kubelet-client-key":         "/etc/kubernetes/certs/client.key",
-		"--service-cluster-ip-range":   o.KubernetesConfig.ServiceCIDR,
-		"--storage-backend":            o.GetAPIServerEtcdAPIVersion(),
-		"--v":                          "4",
+		"--bind-address":                "0.0.0.0",
+		"--advertise-address":           "<advertiseAddr>",
+		"--allow-privileged":            "true",
+		"--anonymous-auth":              "false",
+		"--audit-log-path":              "/var/log/kubeaudit/audit.log",
+		"--insecure-port":               "8080",
+		"--secure-port":                 "443",
+		"--service-account-lookup":      "true",
+		"--etcd-cafile":                 "/etc/kubernetes/certs/ca.crt",
+		"--etcd-certfile":               "/etc/kubernetes/certs/etcdclient.crt",
+		"--etcd-keyfile":                "/etc/kubernetes/certs/etcdclient.key",
+		"--etcd-servers":                "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
+		"--tls-cert-file":               "/etc/kubernetes/certs/apiserver.crt",
+		"--tls-private-key-file":        "/etc/kubernetes/certs/apiserver.key",
+		"--client-ca-file":              "/etc/kubernetes/certs/ca.crt",
+		"--repair-malformed-updates":    "false",
+		"--service-account-key-file":    "/etc/kubernetes/certs/apiserver.key",
+		"--kubelet-client-certificate":  "/etc/kubernetes/certs/client.crt",
+		"--kubelet-client-key":          "/etc/kubernetes/certs/client.key",
+		"--service-cluster-ip-range":    o.KubernetesConfig.ServiceCIDR,
+		"--storage-backend":             o.GetAPIServerEtcdAPIVersion(),
+		"--enable-bootstrap-token-auth": "true",
+		"--v":                           "4",
 	}
 
 	// Default apiserver config
@@ -40,6 +40,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--audit-log-maxage":    "30",
 		"--audit-log-maxbackup": "10",
 		"--audit-log-maxsize":   "100",
+		"--profiling":           DefaultKubernetesAPIServerEnableProfiling,
 	}
 
 	// Data Encryption at REST configuration conditions
@@ -142,9 +143,9 @@ func getDefaultAdmissionControls(cs *ContainerService) (string, string) {
 	// Add new version case when applying admission controllers only available in that version or later
 	switch {
 	case common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"):
-		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,AlwaysPullImages,ExtendedResourceToleration"
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,ExtendedResourceToleration"
 	default:
-		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
+		admissionControlValues = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 	}
 
 	// Pod Security Policy configuration

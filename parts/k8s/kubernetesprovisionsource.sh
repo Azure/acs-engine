@@ -18,11 +18,15 @@ ERR_DOCKER_DOWNLOAD_TIMEOUT=21 # Timout waiting for docker download(s)
 ERR_DOCKER_KEY_DOWNLOAD_TIMEOUT=22 # Timeout waiting to download docker repo key
 ERR_DOCKER_APT_KEY_TIMEOUT=23 # Timeout waiting for docker apt-key
 ERR_DOCKER_START_FAIL=24 # Docker could not be started by systemctl
+ERR_MOBY_APT_LIST_TIMEOUT=25 # Timeout waiting for moby apt sources
+ERR_MS_GPG_KEY_DOWNLOAD_TIMEOUT=26 # Timeout waiting for MS GPG key download
+ERR_MOBY_INSTALL_TIMEOUT=27 # Timeout waiting for moby install
 ERR_K8S_RUNNING_TIMEOUT=30 # Timeout waiting for k8s cluster to be healthy
 ERR_K8S_DOWNLOAD_TIMEOUT=31 # Timeout waiting for Kubernetes download(s)
 ERR_KUBECTL_NOT_FOUND=32 # kubectl client binary not found on local disk
-ERR_KUBELET_START_FAIL=34 # kubelet could not be started by systemctl
 ERR_IMG_DOWNLOAD_TIMEOUT=33 # Timeout waiting for img download
+ERR_KUBELET_START_FAIL=34 # kubelet could not be started by systemctl
+ERR_CONTAINER_IMG_PULL_TIMEOUT=35 # Timeout trying to pull a container image
 ERR_CNI_DOWNLOAD_TIMEOUT=41 # Timeout waiting for CNI download(s)
 ERR_MS_PROD_DEB_DOWNLOAD_TIMEOUT=42 # Timeout waiting for https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 ERR_MS_PROD_DEB_PKG_ADD_FAIL=43 # Failed to add repo pkg file
@@ -120,13 +124,20 @@ wait_for_file() {
         fi
     done
 }
+wait_for_apt_locks() {
+    while fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+        echo 'Waiting for release of apt locks'
+        sleep 3
+    done
+}
 apt_get_update() {
     retries=10
     apt_update_output=/tmp/apt-get-update.out
     for i in $(seq 1 $retries); do
-        timeout 30 dpkg --configure -a
-        timeout 30 apt-get -f -y install
-        timeout 120 apt-get update 2>&1 | tee $apt_update_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
+        wait_for_apt_locks
+        dpkg --configure -a
+        apt-get -f -y install
+        apt-get update 2>&1 | tee $apt_update_output | grep -E "^([WE]:.*)|([eE]rr.*)$"
         [ $? -ne 0  ] && cat $apt_update_output && break || \
         cat $apt_update_output
         if [ $i -eq $retries ]; then
@@ -135,12 +146,14 @@ apt_get_update() {
         fi
     done
     echo Executed apt-get update $i times
+    wait_for_apt_locks
 }
 apt_get_install() {
     retries=$1; wait_sleep=$2; timeout=$3; shift && shift && shift
     for i in $(seq 1 $retries); do
-        timeout 30 dpkg --configure -a
-        timeout $timeout apt-get install --no-install-recommends -y ${@}
+        wait_for_apt_locks
+        dpkg --configure -a
+        apt-get install --no-install-recommends -y ${@}
         [ $? -eq 0  ] && break || \
         if [ $i -eq $retries ]; then
             return 1
@@ -150,6 +163,7 @@ apt_get_install() {
         fi
     done
     echo Executed apt-get install --no-install-recommends -y \"$@\" $i times;
+    wait_for_apt_locks
 }
 systemctl_restart() {
     retries=$1; wait_sleep=$2; timeout=$3 svcname=$4

@@ -1,39 +1,40 @@
-apiVersion: "v1"
-kind: "Pod"
+apiVersion: v1
+kind: Pod
 metadata:
-  name: "cloud-controller-manager"
-  namespace: "kube-system"
+  name: cloud-controller-manager
+  namespace: kube-system
   labels:
     tier: control-plane
     component: cloud-controller-manager
 spec:
   hostNetwork: true
   containers:
-    - name: "cloud-controller-manager"
-      image: "<kubernetesCcmImageSpec>"
+    - name: cloud-controller-manager
+      image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["cloud-controller-manager"]
-      args: [<kubernetesCloudControllerManagerConfig>]
+      args: [<config>]
       volumeMounts:
-        - name: "etc-kubernetes"
-          mountPath: "/etc/kubernetes"
-        - name: "etc-ssl"
-          mountPath: "/etc/ssl"
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+        - name: etc-ssl
+          mountPath: /etc/ssl
           readOnly: true
-        - name: "var-lib-kubelet"
-          mountPath: "/var/lib/kubelet"
+        - name: var-lib-kubelet
+          mountPath: /var/lib/kubelet
         - name: msi
-          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+          mountPath: /var/lib/waagent/ManagedIdentity-Settings
           readOnly: true
   volumes:
-    - name: "etc-kubernetes"
+    - name: etc-kubernetes
       hostPath:
-        path: "/etc/kubernetes"
-    - name: "etc-ssl"
+        path: /etc/kubernetes
+    - name: etc-ssl
       hostPath:
-        path: "/etc/ssl"
-    - name: "var-lib-kubelet"
+        path: /etc/ssl
+    - name: var-lib-kubelet
       hostPath:
-        path: "/var/lib/kubelet"
+        path: /var/lib/kubelet
     - name: msi
       hostPath:
-        path: "/var/lib/waagent/ManagedIdentity-Settings"
+        path: /var/lib/waagent/ManagedIdentity-Settings

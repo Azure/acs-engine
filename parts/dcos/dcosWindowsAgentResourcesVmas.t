@@ -174,7 +174,7 @@
               "frontendIPConfiguration": {
                 "id": "[variables('{{.Name}}LbIPConfigID')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPortRangeStart": "[variables('{{.Name}}WindowsRDPNatRangeStart')]",
               "frontendPortRangeEnd": "[variables('{{.Name}}WindowsRDPEndRangeStop')]",
               "backendPort": "[variables('agentWindowsBackendPort')]"

@@ -1,7 +1,7 @@
 apiVersion: audit.k8s.io/v1beta1 # This is required.
 kind: Policy
 omitStages:
-  - "RequestReceived"
+  - RequestReceived
 rules:
   - level: RequestResponse
     resources:
@@ -20,8 +20,8 @@ rules:
   - level: None
     userGroups: ["system:authenticated"]
     nonResourceURLs:
-    - "/api*"
-    - "/version"
+    - /api*
+    - /version
   - level: Request
     resources:
     - group: ""
@@ -34,7 +34,7 @@ rules:
   - level: Request
     resources:
     - group: ""
-    - group: "extensions"
+    - group: extensions
   - level: Metadata
     omitStages:
-      - "RequestReceived"
+      - RequestReceived

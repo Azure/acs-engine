@@ -1,3 +1,35 @@
+ {{if or IsKubernetes IsOpenShift}}
+    "kubeBinariesSASURL": {
+      "metadata": {
+        "description": "The download url for kubernetes windows binaries package that is created by scripts/build-windows-k8s.sh"
+      },
+      "type": "string"
+    },
+    "windowsKubeBinariesURL": {
+      "metadata": {
+        "description": "The download url for kubernetes windows binaries produce by Kubernetes. This contains only the node binaries (example: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.11.md#node-binaries-1)"
+      },
+      "type": "string"
+    },
+    "kubeBinariesVersion": {
+      "metadata": {
+        "description": "Kubernetes windows binaries version"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      "metadata": {
+        "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
+    "windowsTelemetryGUID": {
+      "metadata": {
+        "description": "The GUID to set in windows agent to collect telemetry data."
+      },
+      "type": "string"
+    },
+ {{end}}
     "windowsAdminUsername": {
       "type": "string",
       "metadata": {
@@ -39,9 +71,16 @@
       "type": "string"
     },
     "agentWindowsSku": {
-      "defaultValue": "Datacenter-Core-1803-with-Containers-smalldisk",
+      "defaultValue": "Datacenter-Core-1809-with-Containers-smalldisk",
       "metadata": {
         "description": "The SKU of windows image for the agent virtual machines."
+      },
+      "type": "string"
+    },
+    "windowsDockerVersion": {
+      "defaultValue": "18.09.0",
+      "metadata": {
+        "description": "The version of Docker to be installed on Windows Nodes"
       },
       "type": "string"
     }

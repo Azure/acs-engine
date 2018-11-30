@@ -19,7 +19,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
 		"--v":                                "2",
-		"--profiling":                        "false",
+		"--controllers":                      "*,bootstrapsigner,tokencleaner",
 	}
 
 	// Set --cluster-name based on appropriate DNS prefix
@@ -42,6 +42,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--route-reconciliation-period":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 		"--terminated-pod-gc-threshold":     DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
 		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
+		"--profiling":                       DefaultKubernetesCtrMgrEnableProfiling,
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults
@@ -59,6 +60,9 @@ func (cs *ContainerService) setControllerManagerConfig() {
 
 	// Enables Node Exclusion from Services (toggled on agent nodes by the alpha.service-controller.kubernetes.io/exclude-balancer label).
 	addDefaultFeatureGates(o.KubernetesConfig.ControllerManagerConfig, o.OrchestratorVersion, "1.9.0", "ServiceNodeExclusion=true")
+
+	// Enable the consumption of local ephemeral storage and also the sizeLimit property of an emptyDir volume.
+	addDefaultFeatureGates(o.KubernetesConfig.ControllerManagerConfig, o.OrchestratorVersion, "1.10.0", "LocalStorageCapacityIsolation=true")
 
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values

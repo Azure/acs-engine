@@ -177,7 +177,7 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 		profile.OrchestratorProfile.OrchestratorVersion)
 
 	// add addons
-	str = substituteAddonConfigString(str,
+	str = substituteConfigString(str,
 		kubernetesAddonSettingsInit(profile),
 		"k8s/addons",
 		"/etc/kubernetes/addons",
@@ -192,6 +192,10 @@ func (t *TemplateGenerator) getMasterCustomData(cs *api.ContainerService, textFi
 	str = substituteConfigStringCustomFiles(str,
 		customFilesReader,
 		"MASTER_CUSTOM_FILES_PLACEHOLDER")
+
+	addonStr := getContainerAddonsString(cs.Properties, "k8s/containeraddons")
+
+	str = strings.Replace(str, "MASTER_CONTAINER_ADDONS_PLACEHOLDER", addonStr, -1)
 
 	// return the custom data
 	return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
@@ -232,7 +236,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
-			if isNSeriesSKU(profile) {
+			if common.IsNvidiaEnabledSKU(profile.VMSize) {
 				accelerator := "nvidia"
 				buf.WriteString(fmt.Sprintf(",accelerator=%s", accelerator))
 			}
@@ -371,7 +375,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"UseAksExtension": func() bool {
 			cloudSpecConfig := cs.GetCloudSpecConfig()
-			return cloudSpecConfig.CloudName == azurePublicCloud
+			return cloudSpecConfig.CloudName == api.AzurePublicCloud
+		},
+		"IsMooncake": func() bool {
+			cloudSpecConfig := cs.GetCloudSpecConfig()
+			return cloudSpecConfig.CloudName == api.AzureChinaCloud
 		},
 		"UseInstanceMetadata": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
@@ -417,6 +425,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"IsHostedBootstrap": func() bool {
 			return false
+		},
+		"IsFeatureEnabled": func(feature string) bool {
+			return cs.Properties.FeatureFlags.IsFeatureEnabled(feature)
 		},
 		"GetDCOSBootstrapCustomData": func() string {
 			masterIPList := generateIPList(cs.Properties.MasterProfile.Count, cs.Properties.MasterProfile.FirstConsecutiveStaticIP)
@@ -523,16 +534,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 				return helpers.GetDCOSMasterAllowedSizes()
 			}
-			return helpers.GetMasterAgentAllowedSizes()
+			return helpers.GetKubernetesAllowedSizes()
 		},
 		"GetDefaultVNETCIDR": func() string {
 			return DefaultVNETCIDR
 		},
 		"GetAgentAllowedSizes": func() string {
-			if cs.Properties.OrchestratorProfile.IsKubernetes() || cs.Properties.OrchestratorProfile.IsOpenShift() {
-				return helpers.GetKubernetesAgentAllowedSizes()
-			}
-			return helpers.GetMasterAgentAllowedSizes()
+			return helpers.GetKubernetesAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
 			return getSwarmVersions(api.SwarmVersion, api.SwarmDockerComposeVersion)
@@ -551,10 +559,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataYaml, profile)
-			return str
-		},
-		"GetKubernetesMasterCustomDataVMSS": func(profile *api.Properties) string {
-			str := t.getMasterCustomData(cs, kubernetesMasterCustomDataVMSSYaml, profile)
 			return str
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
@@ -780,7 +784,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.IsNVIDIADevicePluginEnabled()
 		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
-			return isNSeriesSKU(profile)
+			return common.IsNvidiaEnabledSKU(profile.VMSize)
 		},
 		"UseSinglePlacementGroup": func(profile *api.AgentPoolProfile) bool {
 			return *profile.SinglePlacementGroup

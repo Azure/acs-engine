@@ -28,7 +28,7 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
       "properties": {
-        "enableAcceleratedNetworking" : "{{.AcceleratedNetworkingEnabled}}",
+        "enableAcceleratedNetworking" : {{.AcceleratedNetworkingEnabled}},
 {{if not IsOpenShift}}
 {{if .IsCustomVNET}}
         "networkSecurityGroup": {
@@ -174,7 +174,7 @@
       "identity": {
         "type": "userAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+          "[variables('userAssignedIDReference')]":{}
         }
       },
       {{else}}
@@ -211,7 +211,7 @@
           {{GetKubernetesAgentCustomData .}}
           {{end}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {
@@ -260,7 +260,7 @@
     {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "[variables('apiVersionCompute')]",
+      "apiVersion": "[variables('apiVersionAuthorization')]",
       "copy": {
          "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
          "name": "vmLoopNode"
@@ -284,7 +284,8 @@
        "location": "[resourceGroup().location]",
        {{if UserAssignedIDEnabled}}
        "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+        "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id)))]"
        ],
        {{else}}
        "dependsOn": [
@@ -330,7 +331,7 @@
         {{if IsOpenShift }}
           "script": "{{ Base64 (OpenShiftGetNodeSh .) }}"
         {{else}}
-          "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1{{if IsFeatureEnabled "CSERunInBackground" }} &{{end}}\"')]"
         {{end}}
         }
       }

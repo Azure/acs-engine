@@ -58,10 +58,10 @@ type LoadBalancer struct {
 // Get returns the service definition specified in a given namespace
 func Get(name, namespace string) (*Service, error) {
 	cmd := exec.Command("kubectl", "get", "svc", "-o", "json", "-n", namespace, name)
-	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get svc':%s\n", string(out))
+		log.Printf("Error getting svc:\n")
+		util.PrintCommand(cmd)
 		return nil, err
 	}
 	s := Service{}

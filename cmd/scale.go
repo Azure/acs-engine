@@ -24,7 +24,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
 	"github.com/pkg/errors"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -56,6 +55,7 @@ const (
 	scaleName             = "scale"
 	scaleShortDescription = "Scale an existing Kubernetes or OpenShift cluster"
 	scaleLongDescription  = "Scale an existing Kubernetes or OpenShift cluster by specifying increasing or decreasing the node count of an agentpool"
+	apiModelFilename      = "apimodel.json"
 )
 
 // NewScaleCmd run a command to upgrade a Kubernetes cluster
@@ -138,7 +138,7 @@ func (sc *scaleCmd) load(cmd *cobra.Command) error {
 	}
 
 	// load apimodel from the deployment directory
-	sc.apiModelPath = path.Join(sc.deploymentDirectory, "apimodel.json")
+	sc.apiModelPath = path.Join(sc.deploymentDirectory, apiModelFilename)
 
 	if _, err = os.Stat(sc.apiModelPath); os.IsNotExist(err) {
 		return errors.Errorf("specified api model does not exist (%s)", sc.apiModelPath)
@@ -223,23 +223,22 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				return errors.New("The provided resource group does not contain any vms")
 			}
 			for _, vm := range vmsListPage.Values() {
-				vmTags := vm.Tags
-				poolName := *vmTags["poolName"]
-				nameSuffix := *vmTags["resourceNameSuffix"]
-
-				//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-				if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+				vmName := *vm.Name
+				if !sc.vmInAgentPool(vmName, vm.Tags) {
 					continue
 				}
 
 				osPublisher := vm.StorageProfile.ImageReference.Publisher
 				if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
-					_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(*vm.Name)
+					_, _, winPoolIndex, index, err = utils.WindowsVMNameParts(vmName)
 				} else {
-					_, _, index, err = utils.K8sLinuxVMNameParts(*vm.Name)
+					_, _, index, err = utils.K8sLinuxVMNameParts(vmName)
+				}
+				if err != nil {
+					return err
 				}
 
-				indexToVM[index] = *vm.Name
+				indexToVM[index] = vmName
 				indexes = append(indexes, index)
 			}
 		}
@@ -310,7 +309,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				return err
 			}
 
-			return nil
+			return sc.saveAPIModel()
 		}
 	} else {
 		for vmssListPage, err := sc.client.ListVirtualMachineScaleSets(ctx, sc.resourceGroupName); vmssListPage.NotDone(); vmssListPage.Next() {
@@ -318,18 +317,14 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 				return errors.Wrap(err, "failed to get vmss list in the resource group")
 			}
 			for _, vmss := range vmssListPage.Values() {
-				vmTags := vmss.Tags
-				poolName := *vmTags["poolName"]
-				nameSuffix := *vmTags["resourceNameSuffix"]
-
-				//Changed to string contains for the nameSuffix as the Windows Agent Pools use only a substring of the first 5 characters of the entire nameSuffix
-				if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.Contains(sc.nameSuffix, nameSuffix) {
+				vmName := *vmss.Name
+				if !sc.vmInAgentPool(vmName, vmss.Tags) {
 					continue
 				}
 
 				osPublisher := vmss.VirtualMachineProfile.StorageProfile.ImageReference.Publisher
 				if osPublisher != nil && strings.EqualFold(*osPublisher, "MicrosoftWindowsServer") {
-					_, _, winPoolIndex, err = utils.WindowsVMSSNameParts(*vmss.Name)
+					_, _, winPoolIndex, _, err = utils.WindowsVMNameParts(vmName)
 					log.Errorln(err)
 				}
 
@@ -429,6 +424,11 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	return sc.saveAPIModel()
+}
+
+func (sc *scaleCmd) saveAPIModel() error {
+	var err error
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{
 			Locale: sc.locale,
@@ -453,7 +453,25 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	return f.SaveFile(sc.deploymentDirectory, "apimodel.json", b)
+	return f.SaveFile(sc.deploymentDirectory, apiModelFilename, b)
+}
+
+func (sc *scaleCmd) vmInAgentPool(vmName string, tags map[string]*string) bool {
+	// Try to locate the VM's agent pool by expected tags.
+	if tags != nil {
+		if poolName, ok := tags["poolName"]; ok {
+			if nameSuffix, ok := tags["resourceNameSuffix"]; ok {
+				// Use strings.Contains for the nameSuffix as the Windows Agent Pools use only
+				// a substring of the first 5 characters of the entire nameSuffix.
+				if strings.EqualFold(*poolName, sc.agentPoolToScale) && strings.Contains(sc.nameSuffix, *nameSuffix) {
+					return true
+				}
+			}
+		}
+	}
+
+	// Fall back to checking the VM name to see if it fits the naming pattern.
+	return strings.Contains(vmName, sc.nameSuffix[:5]) && strings.Contains(vmName, sc.agentPoolToScale)
 }
 
 type paramsMap map[string]interface{}

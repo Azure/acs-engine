@@ -47,9 +47,10 @@ write_certs_to_disk_with_retry() {
 # block until all etcd is ready
 retrycmd_if_failure 100 5 10 etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
-if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
-    etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"
-    etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})"
+# etcdctl will output the data it's given, stdout is redirected to dev null to avoid capturing sensitive data in logs
+if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})" > /dev/null 2>&1; then
+    etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})" > /dev/null 2>&1
+    etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})" > /dev/null 2>&1
     sleep 5
     write_certs_to_disk_with_retry
 # If the etcdtl mk command failed, that means the key already exists

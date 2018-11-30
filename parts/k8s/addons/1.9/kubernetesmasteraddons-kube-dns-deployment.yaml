@@ -28,7 +28,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: <kubeDNSServiceIP>
+  clusterIP: <clustIP>
   ports:
   - name: dns
     port: 53
@@ -92,7 +92,8 @@ spec:
           optional: true
       containers:
       - name: kubedns
-        image: <kubernetesKubeDNSSpec>
+        image: <img>
+        imagePullPolicy: IfNotPresent
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -120,7 +121,7 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
-        - --domain=<kubernetesKubeletClusterDomain>.
+        - --domain=<domain>.
         - --dns-port=10053
         - --config-dir=/kube-dns-config
         - --v=2
@@ -141,7 +142,8 @@ spec:
         - name: kube-dns-config
           mountPath: /kube-dns-config
       - name: dnsmasq
-        image: <kubernetesDNSMasqSpec>
+        image: <imgMasq>
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -179,7 +181,8 @@ spec:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny
       - name: sidecar
-        image: <kubernetesDNSSidecarSpec>
+        image: <imgSidecar>
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /metrics
@@ -192,8 +195,8 @@ spec:
         args:
         - --v=2
         - --logtostderr
-        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.<kubernetesKubeletClusterDomain>,5,SRV
-        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.<kubernetesKubeletClusterDomain>,5,SRV
+        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.<domain>,5,SRV
+        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.<domain>,5,SRV
         ports:
         - containerPort: 10054
           name: metrics

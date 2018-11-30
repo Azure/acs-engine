@@ -21,12 +21,13 @@ spec:
         effect: NoSchedule
       containers:
       - command:
-        - "/hyperkube"
+        - /hyperkube
         - proxy
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        - "--cluster-cidr=<kubeClusterCidr>"
-        - "--feature-gates=ExperimentalCriticalPodAnnotation=true"
-        image: "<kubernetesHyperkubeSpec>"
+        - --kubeconfig=/var/lib/kubelet/kubeconfig
+        - --cluster-cidr=<CIDR>
+        - --feature-gates=ExperimentalCriticalPodAnnotation=true
+        image: <img>
+        imagePullPolicy: IfNotPresent
         name: kube-proxy
         resources:
           requests:
@@ -34,25 +35,30 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: "/etc/ssl/certs"
+        - mountPath: /etc/ssl/certs
           name: ssl-certs-host
           readOnly: true
-        - mountPath: "/etc/kubernetes"
+        - mountPath: /etc/kubernetes
           name: etc-kubernetes
           readOnly: true
-        - mountPath: "/var/lib/kubelet/kubeconfig"
+        - mountPath: /var/lib/kubelet/kubeconfig
           name: kubeconfig
           readOnly: true
+        - mountPath: /run/xtables.lock
+          name: iptableslock
       hostNetwork: true
       volumes:
       - hostPath:
-          path: "/usr/share/ca-certificates"
+          path: /usr/share/ca-certificates
         name: ssl-certs-host
       - hostPath:
-          path: "/var/lib/kubelet/kubeconfig"
+          path: /var/lib/kubelet/kubeconfig
         name: kubeconfig
       - hostPath:
-          path: "/etc/kubernetes"
+          path: /etc/kubernetes
         name: etc-kubernetes
+      - hostPath:
+          path: /run/xtables.lock
+        name: iptableslock
       nodeSelector:
         beta.kubernetes.io/os: linux

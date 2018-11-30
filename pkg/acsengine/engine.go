@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -26,7 +27,7 @@ import (
 var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var dcos2TemplateFiles = []string{dcos2BaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcos2MasterResources, dcos2BootstrapResources, dcos2MasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcos2BootstrapVars, dcos2BootstrapParams}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResourcesVMAS, kubernetesMasterResourcesVMSS, kubernetesMasterVarsVMAS, kubernetesMasterVarsVMSS, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentResourcesVMSS, kubernetesAgentVars, kubernetesMasterResourcesVMAS, kubernetesMasterResourcesVMSS, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars, kubernetesWinAgentVarsVMSS}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var openshiftTemplateFiles = append(
@@ -363,44 +364,6 @@ func getDCOSDefaultRepositoryURL(orchestratorType string, orchestratorVersion st
 	return ""
 }
 
-func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
-	/* If a new GPU sku becomes available, add a key to this map, but only if you have a confirmation
-	   that we have an agreement with NVIDIA for this specific gpu.
-	*/
-	dm := map[string]bool{
-		// K80
-		"Standard_NC6":   true,
-		"Standard_NC12":  true,
-		"Standard_NC24":  true,
-		"Standard_NC24r": true,
-		// M60
-		"Standard_NV6":   true,
-		"Standard_NV12":  true,
-		"Standard_NV24":  true,
-		"Standard_NV24r": true,
-		// P40
-		"Standard_ND6s":   true,
-		"Standard_ND12s":  true,
-		"Standard_ND24s":  true,
-		"Standard_ND24rs": true,
-		// P100
-		"Standard_NC6s_v2":   true,
-		"Standard_NC12s_v2":  true,
-		"Standard_NC24s_v2":  true,
-		"Standard_NC24rs_v2": true,
-		// V100
-		"Standard_NC6s_v3":   true,
-		"Standard_NC12s_v3":  true,
-		"Standard_NC24s_v3":  true,
-		"Standard_NC24rs_v3": true,
-	}
-	if _, ok := dm[profile.VMSize]; ok {
-		return dm[profile.VMSize]
-	}
-
-	return false
-}
-
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer
@@ -547,7 +510,7 @@ func getLBRule(name string, port int) string {
               "probe": {
                 "id": "[concat(variables('%sLbID'),'/probes/tcp%dProbe')]"
               },
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }`, port, name, name, port, name, port, name, port)
 }
@@ -567,10 +530,10 @@ func getProbe(port int) string {
 	return fmt.Sprintf(`          {
             "name": "tcp%dProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": %d,
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }`, port, port)
 }
@@ -728,6 +691,78 @@ func getDCOSProvisionScript(script string) string {
 	}
 
 	return strings.Replace(strings.Replace(provisionScript, "\r\n", "\n", -1), "\n", "\n\n    ", -1)
+}
+
+func getAddonFuncMap(addon api.KubernetesAddon) template.FuncMap {
+	return template.FuncMap{
+		"ContainerImage": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].Image
+		},
+
+		"ContainerCPUReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPURequests
+		},
+
+		"ContainerCPULimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].CPULimits
+		},
+
+		"ContainerMemReqs": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryRequests
+		},
+
+		"ContainerMemLimits": func(name string) string {
+			i := addon.GetAddonContainersIndexByName(name)
+			return addon.Containers[i].MemoryLimits
+		},
+		"ContainerConfig": func(name string) string {
+			return addon.Config[name]
+		},
+	}
+}
+
+func getContainerAddonsString(properties *api.Properties, sourcePath string) string {
+	var result string
+	settingsMap := kubernetesContainerAddonSettingsInit(properties)
+
+	var addonNames []string
+
+	for addonName := range settingsMap {
+		addonNames = append(addonNames, addonName)
+	}
+
+	sort.Strings(addonNames)
+
+	for _, addonName := range addonNames {
+		setting := settingsMap[addonName]
+		if setting.isEnabled {
+			var input string
+			if setting.rawScript != "" {
+				input = setting.rawScript
+			} else {
+				addon := properties.OrchestratorProfile.KubernetesConfig.GetAddonByName(addonName)
+				templ := template.New("addon resolver template").Funcs(getAddonFuncMap(addon))
+				addonFile := sourcePath + "/" + setting.sourceFile
+				addonFileBytes, err := Asset(addonFile)
+				if err != nil {
+					return ""
+				}
+				_, err = templ.Parse(string(addonFileBytes))
+				if err != nil {
+					return ""
+				}
+				var buffer bytes.Buffer
+				templ.Execute(&buffer, addon)
+				input = buffer.String()
+			}
+			result += getAddonString(input, "/etc/kubernetes/addons", setting.destinationFile)
+		}
+	}
+	return result
 }
 
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile *api.OrchestratorProfile, bootstrapIP string) string {

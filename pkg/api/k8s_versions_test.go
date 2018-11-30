@@ -14,7 +14,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.12.0",
 		"ccm":                              "cloud-controller-manager-amd64:v1.12.0",
 		"windowszip":                       "v1.12.0-1int.zip",
-		"dockerEngineVersion":              k8sComponentVersions["1.12"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.12"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.12"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.12"]["addon-resizer"],
@@ -61,7 +60,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.11.0-alpha.1",
 		"ccm":                              "cloud-controller-manager-amd64:v1.11.0-alpha.1",
 		"windowszip":                       "v1.11.0-alpha.1-1int.zip",
-		"dockerEngineVersion":              k8sComponentVersions["1.11"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.11"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.11"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.11"]["addon-resizer"],
@@ -107,7 +105,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.10.0",
 		"ccm":                              "cloud-controller-manager-amd64:v1.10.0",
 		"windowszip":                       "v1.10.0-1int.zip",
-		"dockerEngineVersion":              k8sComponentVersions["1.10"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.10"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.10"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.10"]["addon-resizer"],
@@ -153,7 +150,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.9.3",
 		"ccm":                              "cloud-controller-manager-amd64:v1.9.3",
 		"windowszip":                       "v1.9.3-1int.zip",
-		"dockerEngineVersion":              k8sComponentVersions["1.9"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.9"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.9"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.9"]["addon-resizer"],
@@ -198,7 +194,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.8.8",
 		"ccm":                              "cloud-controller-manager-amd64:v1.8.8",
 		"windowszip":                       "v1.8.8-1int.zip",
-		"dockerEngineVersion":              k8sComponentVersions["1.8"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.8"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.8"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.8"]["addon-resizer"],
@@ -238,7 +233,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 	}
 	expected = map[string]string{
 		"hyperkube":                        "hyperkube-amd64:v1.7.13",
-		"dockerEngineVersion":              k8sComponentVersions["1.7"]["dockerEngine"],
 		DefaultDashboardAddonName:          k8sComponentVersions["1.7"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.7"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.7"]["addon-resizer"],
@@ -272,7 +266,7 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		}
 	}
 
-	override := getK8sVersionComponents("1.9.3", map[string]string{"windowszip": "v1.9.3-2int.zip", "dockerEngineVersion": "1.99.*"})
+	override := getK8sVersionComponents("1.9.3", map[string]string{"windowszip": "v1.9.3-2int.zip"})
 	if override == nil {
 		t.Fatalf("getK8sVersionComponents() should not return nil for valid version")
 	}
@@ -280,7 +274,6 @@ func TestGetK8sVersionComponents(t *testing.T) {
 		"hyperkube":                        "hyperkube-amd64:v1.9.3",
 		"ccm":                              "cloud-controller-manager-amd64:v1.9.3",
 		"windowszip":                       "v1.9.3-2int.zip",
-		"dockerEngineVersion":              "1.99.*",
 		DefaultDashboardAddonName:          k8sComponentVersions["1.9"]["dashboard"],
 		"exechealthz":                      k8sComponentVersions["1.9"]["exechealthz"],
 		"addonresizer":                     k8sComponentVersions["1.9"]["addon-resizer"],

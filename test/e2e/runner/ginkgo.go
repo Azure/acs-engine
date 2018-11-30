@@ -34,12 +34,7 @@ func BuildGinkgoRunner(cfg *config.Config, pt *metrics.Point) (*Ginkgo, error) {
 func (g *Ginkgo) Run() error {
 	g.Point.SetTestStart()
 	testDir := fmt.Sprintf("test/e2e/%s", g.Config.Orchestrator)
-	var cmd *exec.Cmd
-	if g.Config.GinkgoFocus != "" {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", "--focus", g.Config.GinkgoFocus, testDir)
-	} else {
-		cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", testDir)
-	}
+	var cmd = exec.Command("ginkgo", "-slowSpecThreshold", "180", "-failFast", "-r", "-v", "--focus", g.Config.GinkgoFocus, "--skip", g.Config.GinkgoSkip, testDir)
 	util.PrintCommand(cmd)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -53,7 +48,7 @@ func (g *Ginkgo) Run() error {
 	err = cmd.Wait()
 	if err != nil {
 		g.Point.RecordTestError()
-		if g.Config.IsKubernetes() || g.Config.IsOpenShift() {
+		if g.Config.IsKubernetes() {
 			kubectl := exec.Command("kubectl", "get", "all", "--all-namespaces", "-o", "wide")
 			util.PrintCommand(kubectl)
 			kubectl.CombinedOutput()

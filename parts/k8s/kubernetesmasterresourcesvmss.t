@@ -1,14 +1,3 @@
-{{if and UseManagedIdentity (not UserAssignedIDEnabled)}}
-  {
-    "apiVersion": "[variables('apiVersionCompute')]",
-    "name": "[guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity'))]",
-    "type": "Microsoft.Authorization/roleAssignments",
-    "properties": {
-      "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-      "principalId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]"
-    }
-  },
-{{end}}
 {{if EnableEncryptionWithExternalKms}}
   {
     "type": "Microsoft.Storage/storageAccounts",
@@ -24,11 +13,13 @@
     "name": "[variables('clusterKeyVaultName')]",
     "apiVersion": "[variables('apiVersionKeyVault')]",
     "location": "[variables('location')]",
-    {{ if UseManagedIdentity}}
-    "dependsOn": 
+    {{if UseManagedIdentity}}
+    "dependsOn":
     [
-      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]",
-      "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmidentity')))]",
+      "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss')]"
+      {{if UserAssignedIDEnabled}}
+      ,"[variables('userAssignedIDReference')]"
+      {{end}}
     ],
     {{end}}
     "properties": {
@@ -36,35 +27,22 @@
       "enabledForDiskEncryption": "false",
       "enabledForTemplateDeployment": "false",
       "tenantId": "[variables('tenantID')]",
-  {{if UseManagedIdentity}}
     "accessPolicies": 
       [
         {
-          "objectId": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/', variables('masterVMNamePrefix'), 'vmss'), '2017-03-30', 'Full').identity.principalId]",
-          "permissions": {
-            "keys": [
-              "create",
-              "encrypt",
-              "decrypt",
-              "get",
-              "list"
-            ]
-          },
-          "tenantId": "[variables('tenantID')]"
-        },
-      ],
-  {{else}}
-      "accessPolicies": 
-      [
-        {
           "tenantId": "[variables('tenantID')]",
+          {{if UseManagedIdentity}}
+          {{if UserAssignedIDEnabled}}
+          "objectId": "[reference(variables('userAssignedIDReference'), variables('apiVersionManagedIdentity')).principalId]",
+          {{end}}
+          {{else}}
           "objectId": "[parameters('servicePrincipalObjectId')]",
+          {{end}}
           "permissions": {
             "keys": ["create", "encrypt", "decrypt", "get", "list"]
           }
         }
       ],
-  {{end}}
       "sku": {
         "name": "[parameters('clusterKeyVaultSku')]",
         "family": "A"
@@ -122,6 +100,36 @@
           "sourcePortRange": "*"
         }
       }
+    {{if IsFeatureEnabled "BlockOutboundInternet"}}
+      ,{
+        "name": "allow_vnet",
+        "properties": {
+          "access": "Allow",
+          "description": "Allow outbound internet to vnet",
+          "destinationAddressPrefix": "[parameters('masterSubnet')]",
+          "destinationPortRange": "*",
+          "direction": "Outbound",
+          "priority": 110,
+          "protocol": "*",
+          "sourceAddressPrefix": "VirtualNetwork",
+          "sourcePortRange": "*"
+        }
+      },
+      {
+        "name": "block_outbound",
+        "properties": {
+          "access": "Deny",
+          "description": "Block outbound internet from master",
+          "destinationAddressPrefix": "*",
+          "destinationPortRange": "*",
+          "direction": "Outbound",
+          "priority": 120,
+          "protocol": "*",
+          "sourceAddressPrefix": "*",
+          "sourcePortRange": "*"
+        }
+      }
+    {{end}}
     ]
   },
   "type": "Microsoft.Network/networkSecurityGroups"
@@ -193,7 +201,7 @@
     "dnsSettings": {
       "domainNameLabel": "[variables('masterFqdnPrefix')]"
     },
-    {{ if .MasterProfile.HasAvailabilityZones}}
+    {{ if eq LoadBalancerSku "Standard"}}
     "publicIPAllocationMethod": "Static"
     {{else}}
     "publicIPAllocationMethod": "Dynamic"
@@ -232,7 +240,7 @@
           {
               "name": "tcpHTTPSProbe",
               "properties": {
-                  "protocol": "tcp",
+                  "protocol": "Tcp",
                   "port": 443,
                   "intervalInSeconds": 5,
                   "numberOfProbes": 2
@@ -246,7 +254,7 @@
                   "frontendIPConfiguration": {
                       "id": "[variables('masterLbIPConfigID')]"
                   },
-                  "protocol": "tcp",
+                  "protocol": "Tcp",
                   "backendPort": "22",
                   "frontendPortRangeStart": "50001",
                   "frontendPortRangeEnd": "50119",
@@ -264,7 +272,7 @@
                 "backendAddressPool": {
                     "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 },
-                "protocol": "tcp",
+                "protocol": "Tcp",
                 "frontendPort": 443,
                 "backendPort": 443,
                 "enableFloatingIP": false,
@@ -287,9 +295,9 @@
     {{if .MasterProfile.IsCustomVNET}}
       "[variables('nsgID')]"
     {{else}}
-      "[variables('vnetID')]",
-      "[variables('masterLbID')]"
+      "[variables('vnetID')]"
     {{end}}
+      ,"[variables('masterLbID')]"
     ],
     "tags":
     {
@@ -308,13 +316,9 @@
     {{if UserAssignedIDEnabled}}
     "identity": {
       "type": "userAssigned",
-        "identityIds": [
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
-        ]
-      },
-    {{else}}
-    "identity": {
-      "type": "systemAssigned"
+      "userAssignedIdentities": {
+        "[variables('userAssignedIDReference')]":{}
+      }
     },
     {{end}}
     {{end}}
@@ -386,9 +390,9 @@
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computerNamePrefix": "[concat(variables('masterVMNamePrefix'), 'vmss')]",
-          {{GetKubernetesMasterCustomDataVMSS .}}
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
-              "disablePasswordAuthentication": "true",
+              "disablePasswordAuthentication": true,
               "ssh": {
                 "publicKeys": [
                   {
@@ -457,7 +461,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                     "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+                  "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
                 }
               }
             }

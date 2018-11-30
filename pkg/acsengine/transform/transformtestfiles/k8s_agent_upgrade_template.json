@@ -1802,7 +1802,7 @@
               "probe": {
                 "id": "[concat(variables('masterLbID'),'/probes/tcpHTTPSProbe')]"
               },
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ],
@@ -1810,10 +1810,10 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": 443,
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ]
@@ -1856,7 +1856,7 @@
               },
               "frontendPort": 443,
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ],
@@ -1864,10 +1864,10 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": 4443,
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ]
@@ -1904,7 +1904,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[variables('sshNatPorts')[copyIndex(variables('masterOffset'))]]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -1979,7 +1979,7 @@
           "adminUsername": "[parameters('linuxAdminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
+            "disablePasswordAuthentication": true,
             "ssh": {
               "publicKeys": [
                 {

@@ -64,6 +64,10 @@ var (
 			networkPolicy: "calico",
 		},
 		{
+			networkPlugin: "azure",
+			networkPolicy: "calico",
+		},
+		{
 			networkPlugin: "",
 			networkPolicy: "calico",
 		},
@@ -281,6 +285,10 @@ func (a *Properties) validateOrchestratorProfile(isUpdate bool) error {
 						return errors.Errorf("standard loadBalancerSku should exclude master nodes. Please set KubernetesConfig \"ExcludeMasterFromStandardLB\" to \"true\"")
 					}
 				}
+
+				if o.KubernetesConfig.DockerEngineVersion != "" {
+					log.Warnf("docker-engine is deprecated in favor of moby, but you passed in a dockerEngineVersion configuration. This will be ignored.")
+				}
 			}
 		case OpenShift:
 			// TODO: add appropriate additional validation logic
@@ -359,6 +367,12 @@ func (a *Properties) validateMasterProfile() error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if m.IsVirtualMachineScaleSets() && m.VnetSubnetID != "" && m.FirstConsecutiveStaticIP != "" {
+			return errors.New("when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr")
+		}
+	}
+
 	if m.ImageRef != nil {
 		if err := m.ImageRef.validateImageNameAndGroup(); err != nil {
 			return err
@@ -373,6 +387,10 @@ func (a *Properties) validateMasterProfile() error {
 		}
 		if !a.IsClusterAllVirtualMachineScaleSets() {
 			return errors.New("VirtualMachineScaleSets for master profile must be used together with virtualMachineScaleSets for agent profiles. Set \"availabilityProfile\" to \"VirtualMachineScaleSets\" for agent profiles")
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig != nil && a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity && a.OrchestratorProfile.KubernetesConfig.UserAssignedID == "" {
+			return errors.New("virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"")
 		}
 	}
 	if m.SinglePlacementGroup != nil && m.AvailabilityProfile == AvailabilitySet {
@@ -473,9 +491,6 @@ func (a *Properties) validateZones() error {
 		if a.HasAvailabilityZones() {
 			if a.MastersAndAgentsUseAvailabilityZones() {
 				// master profile
-				if a.MasterProfile.AvailabilityProfile != VirtualMachineScaleSets {
-					return errors.New("Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets")
-				}
 				if a.MasterProfile.Count < len(a.MasterProfile.AvailabilityZones)*2 {
 					return errors.New("the node count and the number of availability zones provided can result in zone imbalance. To achieve zone balance, each zone should have at least 2 nodes or more")
 				}
@@ -520,7 +535,6 @@ func (a *Properties) validateAddons() error {
 				IsNSeriesSKU = true
 			}
 		}
-
 		for _, addon := range a.OrchestratorProfile.KubernetesConfig.Addons {
 
 			if addon.Data != "" {
@@ -827,6 +841,16 @@ func (a *AgentPoolProfile) validateCustomNodeLabels(orchestratorType string) err
 			}
 		default:
 			return errors.New("Agent CustomNodeLabels are only supported for DCOS and Kubernetes")
+		}
+	}
+	return nil
+}
+
+func (a *AgentPoolProfile) validateKubernetesDistro() error {
+	switch a.Distro {
+	case AKS:
+		if a.IsNSeriesSKU() {
+			return errors.Errorf("The %s VM SKU must use the %s Distro as they require the docker-engine container runtime", a.VMSize, AKSDockerEngine)
 		}
 	}
 	return nil
@@ -1250,7 +1274,7 @@ func (a *Properties) validateContainerRuntime() error {
 		return errors.Errorf("unknown containerRuntime %q specified", containerRuntime)
 	}
 
-	// Make sure we don't use clear containers on windows.
+	// Make sure we don't use unsupported container runtimes on windows.
 	if (containerRuntime == "clear-containers" || containerRuntime == "kata-containers" || containerRuntime == "containerd") && a.HasWindows() {
 		return errors.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}

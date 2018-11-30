@@ -1,9 +1,28 @@
 #!/bin/bash
+ERR_FILE_WATCH_TIMEOUT=6 # Timeout waiting for a file
 set -x
 echo `date`,`hostname`, startcustomscript>>/opt/m
-source /opt/azure/containers/provision_source.sh
-source /opt/azure/containers/provision_installs.sh
-source /opt/azure/containers/provision_configs.sh
+
+script_lib=/opt/azure/containers/provision_source.sh
+for i in $(seq 1 3600); do
+    if [ -f $script_lib ]; then
+        break
+    fi
+    if [ $i -eq 3600 ]; then
+        exit $ERR_FILE_WATCH_TIMEOUT
+    else
+        sleep 1
+    fi
+done
+source $script_lib
+
+install_script=/opt/azure/containers/provision_installs.sh
+wait_for_file 3600 1 $install_script || exit $ERR_FILE_WATCH_TIMEOUT
+source $install_script
+
+config_script=/opt/azure/containers/provision_configs.sh
+wait_for_file 3600 1 $config_script || exit $ERR_FILE_WATCH_TIMEOUT
+source $config_script
 
 CUSTOM_SEARCH_DOMAIN_SCRIPT=/opt/azure/containers/setup-custom-search-domains.sh
 
@@ -27,21 +46,18 @@ if [ -f /var/log/azure/golden-image-install.complete ]; then
     echo "detected golden image pre-install"
     FULL_INSTALL_REQUIRED=false
     rm -rf /home/packer
+    cleanUpContainerImages
 else
     FULL_INSTALL_REQUIRED=true
 fi
 
-function testOutboundConnection() {
-    retrycmd_if_failure 40 1 3 nc -vz www.google.com 443 || retrycmd_if_failure 40 1 3 nc -vz www.1688.com 443 || exit $ERR_OUTBOUND_CONN_FAIL
-}
-
-function holdWALinuxAgent() {
+holdWALinuxAgent() {
     if [[ $OS == $UBUNTU_OS_NAME ]]; then
-        retrycmd_if_failure 20 5 30 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+        wait_for_apt_locks
+        retrycmd_if_failure 120 5 25 apt-mark hold walinuxagent || exit $ERR_HOLD_WALINUXAGENT
+        wait_for_apt_locks
     fi
 }
-
-testOutboundConnection
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     installEtcd
@@ -57,7 +73,13 @@ fi
 installContainerRuntime
 installNetworkPlugin
 installContainerd
-extractHyperkube
+if [[ "${GPU_NODE}" = true ]]; then
+    if $FULL_INSTALL_REQUIRED; then
+        installGPUDrivers
+    fi
+    ensureGPUDrivers
+fi
+installKubeletAndKubectl
 ensureRPC
 createKubeManifestDir
 
@@ -99,22 +121,11 @@ fi
 ensureKubelet
 ensureJournal
 
-
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureEtcd
     ensureK8sControlPlane
-    # workaround for 1.12 bug https://github.com/Azure/acs-engine/issues/3681
-    if [[ "${KUBERNETES_VERSION}" = 1.12.* ]]; then
-        ensureKubelet 
-    fi
-fi
-
-if [[ "${GPU_NODE}" = true ]]; then
-    if $FULL_INSTALL_REQUIRED; then
-        installGPUDrivers
-    fi
-    ensureGPUDrivers
+    ensurePodSecurityPolicy
 fi
 
 if $FULL_INSTALL_REQUIRED; then
@@ -123,7 +134,9 @@ if $FULL_INSTALL_REQUIRED; then
         echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
         sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-        retrycmd_if_failure 20 5 30 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENT
+        wait_for_apt_locks
+        retrycmd_if_failure 120 5 25 apt-mark unhold walinuxagent || exit $ERR_RELEASE_HOLD_WALINUXAGENT
+        wait_for_apt_locks
     fi
 fi
 

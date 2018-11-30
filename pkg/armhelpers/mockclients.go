@@ -30,6 +30,7 @@ type MockACSEngineClient struct {
 	FailDeployTemplateWithProperties      bool
 	FailEnsureResourceGroup               bool
 	FailListVirtualMachines               bool
+	FailListVirtualMachinesTags           bool
 	FailListVirtualMachineScaleSets       bool
 	FailGetVirtualMachine                 bool
 	FailDeleteVirtualMachine              bool
@@ -189,6 +190,7 @@ func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
 	}
 	node := &v1.Node{}
 	node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{Type: v1.NodeReady, Status: v1.ConditionTrue})
+	node.Status.NodeInfo.KubeletVersion = "1.7.9"
 	return node, nil
 }
 
@@ -374,7 +376,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resource
 	poolnameString := "poolName"
 
 	creationSource := "acsengine-k8s-agentpool1-12345678-0"
-	orchestrator := "Kubernetes:1.6.9"
+	orchestrator := "Kubernetes:1.7.9"
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 
@@ -383,6 +385,9 @@ func (mc *MockACSEngineClient) ListVirtualMachines(ctx context.Context, resource
 		orchestratorString:       &orchestrator,
 		resourceNameSuffixString: &resourceNameSuffix,
 		poolnameString:           &poolname,
+	}
+	if mc.FailListVirtualMachinesTags {
+		tags = nil
 	}
 
 	vm1 := compute.VirtualMachine{
@@ -439,7 +444,7 @@ func (mc *MockACSEngineClient) GetVirtualMachine(ctx context.Context, resourceGr
 	poolnameString := "poolName"
 
 	creationSource := "acsengine-k8s-agentpool1-12345678-0"
-	orchestrator := "Kubernetes:1.6.9"
+	orchestrator := "Kubernetes:1.7.9"
 	resourceNameSuffix := "12345678"
 	poolname := "agentpool1"
 

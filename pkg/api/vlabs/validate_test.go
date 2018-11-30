@@ -674,10 +674,6 @@ func Test_Properties_ValidateNetworkPluginPlusPolicy(t *testing.T) {
 	for _, config := range []k8sNetworkConfig{
 		{
 			networkPlugin: "azure",
-			networkPolicy: "calico",
-		},
-		{
-			networkPlugin: "azure",
 			networkPolicy: "cilium",
 		},
 		{
@@ -1148,6 +1144,28 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	}
 }
 
+func TestAgentPoolProfileDistro(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			Distro: AKS,
+			VMSize: "Standard_NC6",
+		},
+		{
+			Distro: AKSDockerEngine,
+			VMSize: "Standard_NC6",
+		},
+	}
+	if err := p.AgentPoolProfiles[0].validateKubernetesDistro(); err == nil {
+		t.Errorf("should error on %s Distro with N Series VM SKU", AKS)
+	}
+	if err := p.AgentPoolProfiles[1].validateKubernetesDistro(); err != nil {
+		t.Errorf("should not error on %s Distro with N Series VM SKU", AKSDockerEngine)
+	}
+}
+
 func Test_Properties_ValidateAddons(t *testing.T) {
 	p := &Properties{}
 	p.OrchestratorProfile = &OrchestratorProfile{}
@@ -1425,6 +1443,7 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 			name:                "use managed identity with master vmss",
 			orchestratorRelease: "1.11",
 			useManagedIdentity:  true,
+			userAssignedID:      "utacsenginetestid",
 			masterProfile: MasterProfile{
 				DNSPrefix:           "dummy",
 				Count:               3,
@@ -1473,6 +1492,25 @@ func TestProperties_ValidateManagedIdentity(t *testing.T) {
 				},
 			},
 			expectedErr: "user assigned identity can only be used with Kubernetes 1.12.0 or above. Please specify \"orchestratorRelease\": \"1.12\"",
+		},
+		{
+			name:                "user master vmss with empty user assigned ID",
+			orchestratorRelease: "1.12",
+			useManagedIdentity:  true,
+			masterProfile: MasterProfile{
+				DNSPrefix:           "dummy",
+				Count:               3,
+				AvailabilityProfile: VirtualMachineScaleSets,
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_DS2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+				},
+			},
+			expectedErr: "virtualMachineScaleSets for master profile can be used only with user assigned MSI ! Please specify \"userAssignedID\" in \"kubernetesConfig\"",
 		},
 	}
 	for _, test := range tests {
@@ -1702,26 +1740,6 @@ func TestProperties_ValidateZones(t *testing.T) {
 			expectedErr: "availabilityZone is only available in Kubernetes version 1.12 or greater",
 		},
 		{
-			name:                "Master profile with zones vmas",
-			orchestratorRelease: "1.12",
-			masterProfile: &MasterProfile{
-				Count:             3,
-				DNSPrefix:         "foo",
-				VMSize:            "Standard_DS2_v2",
-				AvailabilityZones: []string{"1", "2"},
-			},
-			agentProfiles: []*AgentPoolProfile{
-				{
-					Name:                "agentpool",
-					VMSize:              "Standard_DS2_v2",
-					Count:               4,
-					AvailabilityProfile: VirtualMachineScaleSets,
-					AvailabilityZones:   []string{"1", "2"},
-				},
-			},
-			expectedErr: "Availability Zones are not supported with an AvailabilitySet. Please set availabilityProfile to VirtualMachineScaleSets",
-		},
-		{
 			name:                "Master profile with zones node count",
 			orchestratorRelease: "1.12",
 			masterProfile: &MasterProfile{
@@ -1905,11 +1923,13 @@ func TestProperties_ValidateZones(t *testing.T) {
 				ExcludeMasterFromStandardLB: helpers.PointerToBool(test.excludeMasterFromStandardLB),
 			}
 
-			err := p.Validate(false)
-
-			expectedMsg := test.expectedErr
-			if err.Error() != expectedMsg {
-				t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+			if err := p.Validate(false); err != nil {
+				expectedMsg := test.expectedErr
+				if err.Error() != expectedMsg {
+					t.Errorf("expected error with message : %s, but got : %s", expectedMsg, err.Error())
+				}
+			} else {
+				t.Errorf("error should have occurred")
 			}
 		})
 	}
@@ -2104,6 +2124,27 @@ func TestProperties_ValidateVNET(t *testing.T) {
 				},
 			},
 			expectedMsg: "when master profile is using VirtualMachineScaleSets and is custom vnet, set \"vnetsubnetid\" and \"agentVnetSubnetID\" for master profile",
+		},
+		{
+			name: "User-provided MasterProfile FirstConsecutiveStaticIP when master is VMSS",
+			masterProfile: &MasterProfile{
+				VnetSubnetID:             validVNetSubnetID,
+				Count:                    1,
+				DNSPrefix:                "foo",
+				VMSize:                   "Standard_DS2_v2",
+				AvailabilityProfile:      VirtualMachineScaleSets,
+				FirstConsecutiveStaticIP: "10.0.0.4",
+			},
+			agentPoolProfiles: []*AgentPoolProfile{
+				{
+					Name:                "agentpool",
+					VMSize:              "Standard_D2_v2",
+					Count:               1,
+					AvailabilityProfile: VirtualMachineScaleSets,
+					VnetSubnetID:        validVNetSubnetID,
+				},
+			},
+			expectedMsg: "when masterProfile's availabilityProfile is VirtualMachineScaleSets and a vnetSubnetID is specified, the firstConsecutiveStaticIP should be empty and will be determined by an offset from the first IP in the vnetCidr",
 		},
 		{
 			name: "Invalid vnetcidr",

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/pkg/errors"
 )
 
@@ -42,6 +43,7 @@ type Properties struct {
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 // AzProfile holds the azure context for where the cluster resides
@@ -50,6 +52,12 @@ type AzProfile struct {
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	ResourceGroup  string `json:"resourceGroup,omitempty"`
 	Location       string `json:"location,omitempty"`
+}
+
+// FeatureFlags defines feature-flag restricted functionality
+type FeatureFlags struct {
+	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
+	BlockOutboundInternet    bool `json:"blockOutboundInternet,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -157,6 +165,7 @@ type WindowsProfile struct {
 	WindowsPublisher      string            `json:"WindowsPublisher"`
 	WindowsOffer          string            `json:"WindowsOffer"`
 	WindowsSku            string            `json:"WindowsSku"`
+	WindowsDockerVersion  string            `json:"windowsDockerVersion"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
@@ -277,10 +286,11 @@ type KubernetesConfig struct {
 	UserAssignedID                  string            `json:"userAssignedID,omitempty"`
 	UserAssignedClientID            string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage            string            `json:"customHyperkubeImage,omitempty"`
-	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"`
+	DockerEngineVersion             string            `json:"dockerEngineVersion,omitempty"` // Deprecated
 	CustomCcmImage                  string            `json:"customCcmImage,omitempty"`
 	UseCloudControllerManager       *bool             `json:"useCloudControllerManager,omitempty"`
 	CustomWindowsPackageURL         string            `json:"customWindowsPackageURL,omitempty"`
+	WindowsNodeBinariesURL          string            `json:"windowsNodeBinariesURL,omitempty"`
 	UseInstanceMetadata             *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                      *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet             *bool             `json:"enableSecureKubelet,omitempty"`
@@ -300,6 +310,7 @@ type KubernetesConfig struct {
 	CloudControllerManagerConfig    map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig                 map[string]string `json:"apiServerConfig,omitempty"`
 	SchedulerConfig                 map[string]string `json:"schedulerConfig,omitempty"`
+	PodSecurityPolicyConfig         map[string]string `json:"podSecurityPolicyConfig,omitempty"`
 	CloudProviderBackoff            *bool             `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries     int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter      float64           `json:"cloudProviderBackoffJitter,omitempty"`
@@ -311,6 +322,8 @@ type KubernetesConfig struct {
 	LoadBalancerSku                 string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB     *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 	AzureCNIVersion                 string            `json:"azureCNIVersion,omitempty"`
+	AzureCNIURLLinux                string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows              string            `json:"azureCNIURLWindows,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -633,7 +646,7 @@ func (a *AgentPoolProfile) IsVirtualMachineScaleSets() bool {
 
 // IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
 func (a *AgentPoolProfile) IsNSeriesSKU() bool {
-	return strings.Contains(a.VMSize, "Standard_N")
+	return common.IsNvidiaEnabledSKU(a.VMSize)
 }
 
 // IsManagedDisks returns true if the customer specified managed disks
@@ -691,7 +704,7 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
 }
 
-// RequiresDocker returns if the kubernetes settings require docker to be installed.
+// RequiresDocker returns if the kubernetes settings require docker binary to be installed.
 func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == ""

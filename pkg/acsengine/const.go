@@ -50,8 +50,6 @@ const (
 	DefaultAuditPolicyAddonName = "audit-policy"
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
-	// DefaultTillerMaxHistory limits the maximum number of revisions saved per release. Use 0 for no limit.
-	DefaultTillerMaxHistory = 0
 	// DefaultAADPodIdentityAddonName is the name of the aad-pod-identity addon deployment
 	DefaultAADPodIdentityAddonName = "aad-pod-identity"
 	// DefaultACIConnectorAddonName is the name of the aci-connector addon deployment
@@ -90,8 +88,6 @@ const (
 	DefaultMasterEtcdServerPort = 2380
 	// DefaultMasterEtcdClientPort is the default etcd client port for Kubernetes master nodes
 	DefaultMasterEtcdClientPort = 2379
-	// DefaultUserAssignedID specifies the default name for the user assigned identity
-	DefaultUserAssignedID = "acsenginetestid"
 )
 
 const (
@@ -110,7 +106,6 @@ const (
 
 const (
 	kubernetesMasterCustomDataYaml           = "k8s/kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomDataVMSSYaml       = "k8s/kubernetesmastercustomdatavmss.yml"
 	kubernetesCustomScript                   = "k8s/kubernetescustomscript.sh"
 	kubernetesProvisionSourceScript          = "k8s/kubernetesprovisionsource.sh"
 	kubernetesHealthMonitorScript            = "k8s/health-monitor.sh"
@@ -185,8 +180,7 @@ const (
 	kubernetesAgentVars           = "k8s/kubernetesagentvars.t"
 	kubernetesMasterResourcesVMAS = "k8s/kubernetesmasterresources.t"
 	kubernetesMasterResourcesVMSS = "k8s/kubernetesmasterresourcesvmss.t"
-	kubernetesMasterVarsVMAS      = "k8s/kubernetesmastervars.t"
-	kubernetesMasterVarsVMSS      = "k8s/kubernetesmastervarsvmss.t"
+	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
 	kubernetesWinAgentVarsVMSS    = "k8s/kuberneteswinagentresourcesvmss.t"
@@ -203,8 +197,4 @@ const (
 	swarmWinAgentResourcesVMAS    = "swarm/swarmwinagentresourcesvmas.t"
 	swarmWinAgentResourcesVMSS    = "swarm/swarmwinagentresourcesvmss.t"
 	windowsParams                 = "windowsparams.t"
-)
-
-const (
-	azurePublicCloud = "AzurePublicCloud"
 )

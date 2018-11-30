@@ -8,22 +8,23 @@ spec:
   hostNetwork: true
   containers:
   - name: kube-addon-manager
-    image: <kubernetesAddonManagerSpec>
+    image: <img>
+    imagePullPolicy: IfNotPresent
     resources:
       requests:
         cpu: 5m
         memory: 50Mi
     volumeMounts:
     - name: addons
-      mountPath: "/etc/kubernetes/addons"
+      mountPath: /etc/kubernetes/addons
       readOnly: true
     - name: msi
-      mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+      mountPath: /var/lib/waagent/ManagedIdentity-Settings
       readOnly: true
   volumes:
   - name: addons
     hostPath:
-      path: "/etc/kubernetes/addons"
+      path: /etc/kubernetes/addons
   - name: msi
     hostPath:
-      path: "/var/lib/waagent/ManagedIdentity-Settings"
+      path: /var/lib/waagent/ManagedIdentity-Settings

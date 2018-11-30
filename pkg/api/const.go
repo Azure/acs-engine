@@ -24,10 +24,11 @@ const (
 
 // the LinuxDistros supported by vlabs
 const (
-	Ubuntu Distro = "ubuntu"
-	RHEL   Distro = "rhel"
-	CoreOS Distro = "coreos"
-	AKS    Distro = "aks"
+	Ubuntu          Distro = "ubuntu"
+	RHEL            Distro = "rhel"
+	CoreOS          Distro = "coreos"
+	AKS             Distro = "aks"
+	AKSDockerEngine Distro = "aks-docker-engine"
 	// Supported distros by OpenShift
 	OpenShift39RHEL Distro = "openshift39_rhel"
 	OpenShiftCentOS Distro = "openshift39_centos"
@@ -42,6 +43,10 @@ const (
 	DockerCEVersion = "17.03.*"
 	// DockerCEDockerComposeVersion is the Docker Compose version
 	DockerCEDockerComposeVersion = "1.14.0"
+	// KubernetesWindowsDockerVersion is the default version for docker on Windows nodes in kubernetes
+	KubernetesWindowsDockerVersion = "18.09.0"
+	// KubernetesDefaultWindowsSku is the default SKU for Windows VMs in kubernetes
+	KubernetesDefaultWindowsSku = "Datacenter-Core-1809-with-Containers-smalldisk"
 )
 
 // validation values
@@ -72,6 +77,8 @@ const (
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultFirstConsecutiveKubernetesStaticIPVMSS specifies the static IP address on Kubernetes master 0 of VMSS
 	DefaultFirstConsecutiveKubernetesStaticIPVMSS = "10.240.0.4"
+	//DefaultCNICIDR specifies the default value for
+	DefaultCNICIDR = "168.63.129.16/32"
 	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
 	// when VNET integration is enabled.
 	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
@@ -119,7 +126,7 @@ const (
 	// DefaultBlobfuseFlexVolumeAddonEnabled determines the acs-engine provided default for enabling blobfuse flexvolume addon
 	DefaultBlobfuseFlexVolumeAddonEnabled = true
 	// DefaultSMBFlexVolumeAddonEnabled determines the acs-engine provided default for enabling smb flexvolume addon
-	DefaultSMBFlexVolumeAddonEnabled = true
+	DefaultSMBFlexVolumeAddonEnabled = false
 	// DefaultKeyVaultFlexVolumeAddonEnabled determines the acs-engine provided default for enabling key vault flexvolume addon
 	DefaultKeyVaultFlexVolumeAddonEnabled = true
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
@@ -142,8 +149,8 @@ const (
 	DefaultNVIDIADevicePluginAddonEnabled = false
 	// DefaultContainerMonitoringAddonEnabled determines the acs-engine provided default for enabling kubernetes container monitoring addon
 	DefaultContainerMonitoringAddonEnabled = false
-	// DefaultAzureCNINetworkMonitoringAddonEnabled Azure CNI networkmonitor addon default
-	DefaultAzureCNINetworkMonitoringAddonEnabled = false
+	// DefaultDNSAutoscalerAddonEnabled determines the acs-engine provided default for dns-autoscaler addon
+	DefaultDNSAutoscalerAddonEnabled = false
 	// IPMasqAgentAddonEnabled enables the ip-masq-agent addon
 	IPMasqAgentAddonEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
@@ -191,6 +198,10 @@ const (
 	ARMVirtualNetworksResourceType = "virtualNetworks"
 	// DefaultAcceleratedNetworkingWindowsEnabled determines the acs-engine provided default for enabling accelerated networking on Windows nodes
 	DefaultAcceleratedNetworkingWindowsEnabled = false
+	// DefaultAcceleratedNetworking determines the acs-engine provided default for enabling accelerated networking on Linux nodes
+	DefaultAcceleratedNetworking = true
+	// DefaultDNSAutoscalerAddonName is the name of the dns-autoscaler addon
+	DefaultDNSAutoscalerAddonName = "dns-autoscaler"
 )
 
 const (
@@ -237,11 +248,11 @@ const (
 	// AzureCniPluginVerLinux specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVerLinux = "v1.0.12"
+	AzureCniPluginVerLinux = "v1.0.14"
 	// AzureCniPluginVerWindows specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-windows-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni
-	AzureCniPluginVerWindows = "v1.0.12"
+	AzureCniPluginVerWindows = "v1.0.14"
 	// CNIPluginVer specifies the version of CNI implementation
 	// https://github.com/containernetworking/plugins
 	CNIPluginVer = "v0.7.1"
@@ -365,6 +376,12 @@ const (
 	DefaultKubernetesMaxPodsKubenet = "110"
 	// DefaultKubernetesMaxPodsAzureCNI is the maximum number of pods to run on a node for Azure CNI.
 	DefaultKubernetesMaxPodsAzureCNI = "30"
+	// DefaultKubernetesAPIServerEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesAPIServerEnableProfiling = "false"
+	// DefaultKubernetesCtrMgrEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesCtrMgrEnableProfiling = "false"
+	// DefaultKubernetesSchedulerEnableProfiling is the config that enables profiling via web interface host:port/debug/pprof/
+	DefaultKubernetesSchedulerEnableProfiling = "false"
 )
 
 const (
@@ -373,8 +390,10 @@ const (
 )
 
 const (
-	azurePublicCloud       = "AzurePublicCloud"
-	azureChinaCloud        = "AzureChinaCloud"
+	// AzurePublicCloud is a const string reference identifier for public cloud
+	AzurePublicCloud = "AzurePublicCloud"
+	// AzureChinaCloud is a const string reference identifier for china cloud
+	AzureChinaCloud        = "AzureChinaCloud"
 	azureGermanCloud       = "AzureGermanCloud"
 	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )

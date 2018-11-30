@@ -69,6 +69,7 @@ type Properties struct {
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 	AzProfile               *AzProfile               `json:"azProfile,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 // ClusterMetadata represents the metadata of the ACS cluster.
@@ -95,6 +96,12 @@ type AzProfile struct {
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	ResourceGroup  string `json:"resourceGroup,omitempty"`
 	Location       string `json:"location,omitempty"`
+}
+
+// FeatureFlags defines feature-flag restricted functionality
+type FeatureFlags struct {
+	EnableCSERunInBackground bool `json:"enableCSERunInBackground,omitempty"`
+	BlockOutboundInternet    bool `json:"blockOutboundInternet,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -185,6 +192,7 @@ type WindowsProfile struct {
 	WindowsPublisher      string            `json:"windowsPublisher"`
 	WindowsOffer          string            `json:"windowsOffer"`
 	WindowsSku            string            `json:"windowsSku"`
+	WindowsDockerVersion  string            `json:"windowsDockerVersion"`
 	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
@@ -320,10 +328,11 @@ type KubernetesConfig struct {
 	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 	UserAssignedClientID             string            `json:"userAssignedClientID,omitempty"` //Note: cannot be provided in config. Used *only* for transferring this to azure.json.
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
-	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
-	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"` // Deprecated
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`      // Image for cloud-controller-manager
 	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
+	WindowsNodeBinariesURL           string            `json:"windowsNodeBinariesURL,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`
@@ -343,6 +352,7 @@ type KubernetesConfig struct {
 	CloudControllerManagerConfig     map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
 	SchedulerConfig                  map[string]string `json:"schedulerConfig,omitempty"`
+	PodSecurityPolicyConfig          map[string]string `json:"podSecurityPolicyConfig,omitempty"`
 	CloudProviderBackoff             *bool             `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries      int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter       float64           `json:"cloudProviderBackoffJitter,omitempty"`
@@ -360,6 +370,8 @@ type KubernetesConfig struct {
 	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
 	AzureCNIVersion                  string            `json:"azureCNIVersion,omitempty"`
+	AzureCNIURLLinux                 string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
 }
 
 // CustomFile has source as the full absolute source path to a file and dest
@@ -779,7 +791,7 @@ func (p *Properties) GetAgentVMPrefix(a *AgentPoolProfile) string {
 	vmPrefix := ""
 	if index != -1 {
 		if a.IsWindows() {
-			vmPrefix = nameSuffix[:5] + p.K8sOrchestratorName() + strconv.Itoa(900+index)
+			vmPrefix = nameSuffix[:4] + p.K8sOrchestratorName() + fmt.Sprintf("%02d", index)
 		} else {
 			vmPrefix = p.K8sOrchestratorName() + "-" + a.Name + "-" + nameSuffix + "-"
 			if a.IsVirtualMachineScaleSets() {
@@ -946,6 +958,32 @@ func (p *Properties) HasAvailabilityZones() bool {
 	return hasZones
 }
 
+// GetNonMasqueradeCIDR returns the non-masquerade CIDR for the ip-masq-agent.
+func (p *Properties) GetNonMasqueradeCIDR() string {
+	var nonMasqCidr string
+	if !p.IsHostedMasterProfile() {
+		if p.OrchestratorProfile.IsAzureCNI() {
+			if p.MasterProfile != nil && p.MasterProfile.IsCustomVNET() {
+				nonMasqCidr = p.MasterProfile.VnetCidr
+			} else {
+				nonMasqCidr = DefaultVNETCIDR
+			}
+		} else {
+			nonMasqCidr = p.OrchestratorProfile.KubernetesConfig.ClusterSubnet
+		}
+	}
+	return nonMasqCidr
+}
+
+// GetAzureCNICidr returns the default CNI Cidr if Azure CNI is enabled.
+func (p *Properties) GetAzureCNICidr() string {
+	var masqCNIIP string
+	if p.OrchestratorProfile != nil && p.OrchestratorProfile.IsAzureCNI() {
+		masqCNIIP = DefaultCNICIDR
+	}
+	return masqCNIIP
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -1078,6 +1116,22 @@ func (w *WindowsProfile) HasSecrets() bool {
 // HasCustomImage returns true if there is a custom windows os image url specified
 func (w *WindowsProfile) HasCustomImage() bool {
 	return len(w.WindowsImageSourceURL) > 0
+}
+
+// GetWindowsDockerVersion gets the docker version specified or returns default value
+func (w *WindowsProfile) GetWindowsDockerVersion() string {
+	if w.WindowsDockerVersion != "" {
+		return w.WindowsDockerVersion
+	}
+	return KubernetesWindowsDockerVersion
+}
+
+// GetWindowsSku gets the marketplace sku specified (such as Datacenter-Core-1809-with-Containers-smalldisk) or returns default value
+func (w *WindowsProfile) GetWindowsSku() string {
+	if w.WindowsSku != "" {
+		return w.WindowsSku
+	}
+	return KubernetesDefaultWindowsSku
 }
 
 // HasSecrets returns true if the customer specified secrets to install
@@ -1216,7 +1270,7 @@ func (k *KubernetesConfig) IsAADPodIdentityEnabled() bool {
 
 // IsACIConnectorEnabled checks if the ACI Connector addon is enabled
 func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
-	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultAADPodIdentityAddonEnabled)
+	return k.isAddonEnabled(DefaultACIConnectorAddonName, DefaultACIConnectorAddonEnabled)
 }
 
 // IsClusterAutoscalerEnabled checks if the cluster autoscaler addon is enabled
@@ -1249,8 +1303,13 @@ func (k *KubernetesConfig) IsIPMasqAgentEnabled() bool {
 	return k.isAddonEnabled(IPMASQAgentAddonName, IPMasqAgentAddonEnabled)
 }
 
-// IsNSeriesSKU returns whether or not the agent pool has Standard_N SKU VMs
-func IsNSeriesSKU(p *Properties) bool {
+// IsNSeriesSKU returns true if the agent pool contains an N-series (NVIDIA GPU) VM
+func (a *AgentPoolProfile) IsNSeriesSKU() bool {
+	return common.IsNvidiaEnabledSKU(a.VMSize)
+}
+
+// HasNSeriesSKU returns whether or not there is an N series SKU agent pool
+func (p *Properties) HasNSeriesSKU() bool {
 	for _, profile := range p.AgentPoolProfiles {
 		if strings.Contains(profile.VMSize, "Standard_N") {
 			return true
@@ -1269,7 +1328,7 @@ func (p *Properties) IsNVIDIADevicePluginEnabled() bool {
 func getDefaultNVIDIADevicePluginEnabled(p *Properties) bool {
 	o := p.OrchestratorProfile
 	var addonEnabled bool
-	if IsNSeriesSKU(p) && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
+	if p.HasNSeriesSKU() && common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.10.0") {
 		addonEnabled = true
 	} else {
 		addonEnabled = false
@@ -1290,7 +1349,7 @@ func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
 	return false
 }
 
-// RequiresDocker returns if the kubernetes settings require docker to be installed.
+// RequiresDocker returns if the kubernetes settings require docker binary to be installed.
 func (k *KubernetesConfig) RequiresDocker() bool {
 	runtime := strings.ToLower(k.ContainerRuntime)
 	return runtime == "docker" || runtime == ""
@@ -1320,6 +1379,37 @@ func (k *KubernetesConfig) SetCloudProviderRateLimitDefaults() {
 	if k.CloudProviderRateLimitBucket == 0 {
 		k.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 	}
+}
+
+// GetAzureCNIURLLinux returns the full URL to source Azure CNI binaries from
+func (k *KubernetesConfig) GetAzureCNIURLLinux(cloudSpecConfig AzureEnvironmentSpecConfig) string {
+	if k.AzureCNIURLLinux != "" {
+		return k.AzureCNIURLLinux
+	}
+	return cloudSpecConfig.KubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL
+}
+
+// GetAzureCNIURLWindows returns the full URL to source Azure CNI binaries from
+func (k *KubernetesConfig) GetAzureCNIURLWindows(cloudSpecConfig AzureEnvironmentSpecConfig) string {
+	if k.AzureCNIURLWindows != "" {
+		return k.AzureCNIURLWindows
+	}
+	return cloudSpecConfig.KubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL
+}
+
+// IsFeatureEnabled returns true if a feature flag is on for the provided feature
+func (f *FeatureFlags) IsFeatureEnabled(feature string) bool {
+	if f != nil {
+		switch feature {
+		case "CSERunInBackground":
+			return f.EnableCSERunInBackground
+		case "BlockOutboundInternet":
+			return f.BlockOutboundInternet
+		default:
+			return false
+		}
+	}
+	return false
 }
 
 //GetCloudSpecConfig returns the Kubernetes container images URL configurations based on the deploy target environment.

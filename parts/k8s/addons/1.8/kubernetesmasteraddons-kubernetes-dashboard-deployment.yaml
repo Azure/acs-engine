@@ -63,8 +63,8 @@ spec:
       containers:
       - args:
         - --heapster-host=http://heapster.kube-system:80
-        image: <kubernetesDashboardSpec>
-        imagePullPolicy: Always
+        image: <img>
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: "/"
@@ -77,11 +77,11 @@ spec:
           protocol: TCP
         resources:
           requests:
-            cpu: <kubernetesDashboardCPURequests>
-            memory: <kubernetesDashboardMemoryRequests>
+            cpu: <cpuReq>
+            memory: <memReq>
           limits:
-            cpu: <kubernetesDashboardCPULimit>
-            memory: <kubernetesDashboardMemoryLimit>
+            cpu: <cpuLim>
+            memory: <memLim>
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
         beta.kubernetes.io/os: linux

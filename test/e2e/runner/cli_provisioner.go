@@ -11,18 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kelseyhightower/envconfig"
-
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
-	"github.com/Azure/acs-engine/test/e2e/dcos"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
-	onode "github.com/Azure/acs-engine/test/e2e/openshift/node"
 	"github.com/Azure/acs-engine/test/e2e/remote"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 )
 
@@ -226,9 +223,9 @@ func (cli *CLIProvisioner) generateAndDeploy() error {
 	}
 	cli.Engine.ExpandedDefinition = csGenerated
 
-	// Both Openshift and Kubernetes deployments should have a kubeconfig available
+	// Kubernetes deployments should have a kubeconfig available
 	// at this point.
-	if (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) && !cli.IsPrivate() {
+	if cli.Config.IsKubernetes() && !cli.IsPrivate() {
 		cli.Config.SetKubeConfig()
 	}
 
@@ -251,10 +248,13 @@ func (cli *CLIProvisioner) generateName() string {
 }
 
 func (cli *CLIProvisioner) waitForNodes() error {
-	if cli.Config.IsKubernetes() || cli.Config.IsOpenShift() {
+	if cli.Config.IsKubernetes() {
 		if !cli.IsPrivate() {
 			log.Println("Waiting on nodes to go into ready state...")
 			ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
+			cmd := exec.Command("kubectl", "get", "nodes", "-o", "wide")
+			out, _ := cmd.CombinedOutput()
+			log.Printf("%s\n", out)
 			if !ready {
 				return errors.New("Error: Not all nodes in a healthy state")
 			}
@@ -262,8 +262,6 @@ func (cli *CLIProvisioner) waitForNodes() error {
 			var err error
 			if cli.Config.IsKubernetes() {
 				version, err = node.Version()
-			} else if cli.Config.IsOpenShift() {
-				version, err = onode.Version()
 			}
 			if err != nil {
 				log.Printf("Ready nodes did not return a version: %s", err)
@@ -280,25 +278,6 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		}
 	}
 
-	if cli.Config.IsDCOS() {
-		host := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
-		user := cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername
-		log.Printf("SSH Key: %s\n", cli.Config.GetSSHKeyPath())
-		log.Printf("Master Node: %s@%s\n", user, host)
-		log.Printf("SSH Command: ssh -i %s -p 2200 %s@%s", cli.Config.GetSSHKeyPath(), user, host)
-		cluster, err := dcos.NewCluster(cli.Config, cli.Engine)
-		if err != nil {
-			return err
-		}
-		err = cluster.InstallDCOSClient()
-		if err != nil {
-			return errors.Wrap(err, "Error trying to install dcos client")
-		}
-		ready := cluster.WaitForNodes(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if !ready {
-			return errors.New("Error: Not all nodes in a healthy state")
-		}
-	}
 	return nil
 }
 
@@ -355,7 +334,7 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 
 // IsPrivate will return true if the cluster has no public IPs
 func (cli *CLIProvisioner) IsPrivate() bool {
-	return (cli.Config.IsKubernetes() || cli.Config.IsOpenShift()) &&
+	return cli.Config.IsKubernetes() &&
 		cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster != nil &&
 		helpers.IsTrueBoolPointer(cli.Engine.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
 }

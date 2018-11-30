@@ -1,4 +1,5 @@
 {{if .MasterProfile.IsManagedDisks}}
+    {{if not .MasterProfile.HasAvailabilityZones}}
     {
       "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
@@ -13,7 +14,9 @@
       },
       "type": "Microsoft.Compute/availabilitySets"
     },
+    {{end}}
 {{else if .MasterProfile.IsStorageAccount}}
+    {{if not .MasterProfile.HasAvailabilityZones}}
     {
       "apiVersion": "[variables('apiVersionCompute')]",
       "location": "[variables('location')]",
@@ -21,6 +24,7 @@
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
+    {{end}}
     {
       "apiVersion": "[variables('apiVersionStorage')]",
 {{if not IsPrivateCluster}}
@@ -85,7 +89,7 @@
       "name": "[variables('nsgName')]",
       "properties": {
         "securityRules": [
-{{if .HasWindows}}
+        {{if .HasWindows}}
           {
             "name": "allow_rdp",
             "properties": {
@@ -100,7 +104,7 @@
               "sourcePortRange": "*"
             }
           },
-{{end}}
+        {{end}}
           {
             "name": "allow_ssh",
             "properties": {
@@ -129,6 +133,36 @@
               "sourcePortRange": "*"
             }
           }
+        {{if IsFeatureEnabled "BlockOutboundInternet"}}
+          ,{
+            "name": "allow_vnet",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow outbound internet to vnet",
+              "destinationAddressPrefix": "[parameters('masterSubnet')]",
+              "destinationPortRange": "*",
+              "direction": "Outbound",
+              "priority": 110,
+              "protocol": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "sourcePortRange": "*"
+            }
+          },
+          {
+            "name": "block_outbound",
+            "properties": {
+              "access": "Deny",
+              "description": "Block outbound internet from master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "*",
+              "direction": "Outbound",
+              "priority": 120,
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          }
+        {{end}}
         ]
       },
       "type": "Microsoft.Network/networkSecurityGroups"
@@ -150,7 +184,10 @@
         "dnsSettings": {
           "domainNameLabel": "[variables('masterFqdnPrefix')]"
         },
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Static"
+      },
+      "sku": {
+        "name": "[variables('loadBalancerSku')]"
       },
       "type": "Microsoft.Network/publicIPAddresses"
     },
@@ -187,7 +224,7 @@
               "backendAddressPool": {
                 "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "backendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "enableFloatingIP": false,
@@ -203,13 +240,16 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": {{if IsOpenShift}}8443{{else}}443{{end}},
-              "intervalInSeconds": "5",
+              "intervalInSeconds": 5,
               "numberOfProbes": "2"
             }
           }
         ]
+      },
+      "sku": {
+        "name": "[variables('loadBalancerSku')]"
       },
       "type": "Microsoft.Network/loadBalancers"
     },
@@ -231,7 +271,7 @@
           "id": "[variables('masterLbIPConfigID')]"
         },
         "frontendPort": "[variables('sshNatPorts')[copyIndex(variables('masterOffset'))]]",
-        "protocol": "tcp"
+        "protocol": "Tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
@@ -600,7 +640,7 @@
               },
               "frontendPort": {{if IsOpenShift}}8443{{else}}443{{end}},
               "idleTimeoutInMinutes": 5,
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "probe": {
                 "id": "[concat(variables('masterInternalLbID'),'/probes/tcpHTTPSProbe')]"
               }
@@ -611,13 +651,16 @@
           {
             "name": "tcpHTTPSProbe",
             "properties": {
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "port": {{if IsOpenShift}}8443{{else}}4443{{end}},
-              "protocol": "tcp"
+              "protocol": "Tcp"
             }
           }
         ]
+      },
+      "sku": {
+        "name": "[variables('loadBalancerSku')]"
       },
       "type": "Microsoft.Network/loadBalancers"
     },
@@ -640,6 +683,9 @@
        {{ if UseManagedIdentity}}
        "dependsOn": 
        [
+       {{if UserAssignedIDEnabled}}
+       "[variables('userAssignedIDReference')]"
+       {{else}}
           {{$max := .MasterProfile.Count}}
           {{$c := subtract $max 1}}
           {{range $i := loop 0 $max}}
@@ -653,6 +699,7 @@
                 {{end}}
             {{end}}
           {{end}}
+        {{end}}
         ],
        {{end}}
        "properties": {
@@ -661,6 +708,18 @@
          "enabledForTemplateDeployment": "false",
          "tenantId": "[variables('tenantID')]",
  {{if UseManagedIdentity}}
+    {{if UserAssignedIDEnabled}}
+        "accessPolicies":
+        [
+          {
+            "tenantId": "[variables('tenantID')]",
+            "objectId": "[reference(variables('userAssignedIDReference'), variables('apiVersionManagedIdentity')).principalId]",
+            "permissions": {
+              "keys": ["create", "encrypt", "decrypt", "get", "list"]
+            }
+          }
+        ],
+    {{else}}
         "accessPolicies":
         [
           {{$max := .MasterProfile.Count}}
@@ -699,6 +758,7 @@
             {{end}}
           {{end}}
          ],
+    {{end}}
  {{else}}
           "accessPolicies": [
             {
@@ -725,7 +785,9 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
+        {{if not .MasterProfile.HasAvailabilityZones}}
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
+        {{end}}
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}
@@ -740,12 +802,15 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+      {{if .MasterProfile.HasAvailabilityZones}}
+      "zones": "[split(string(parameters('availabilityZones')[mod(copyIndex(variables('masterOffset')), length(parameters('availabilityZones')))]), ',')]",
+      {{end}}
       {{if UseManagedIdentity}}
       {{if UserAssignedIDEnabled}}
       "identity": {
         "type": "userAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]":{}
+          "[variables('userAssignedIDReference')]":{}
         }
       },
       {{else}}
@@ -762,9 +827,11 @@
       },
       {{end}}
       "properties": {
+        {{if not .MasterProfile.HasAvailabilityZones}}
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
         },
+        {{end}}
         "hardwareProfile": {
           "vmSize": "[parameters('masterVMSize')]"
         },
@@ -844,7 +911,7 @@
     {{if UseManagedIdentity}}
     {{if (not UserAssignedIDEnabled)}}
     {
-      "apiVersion": "[variables('apiVersionCompute')]",
+      "apiVersion": "[variables('apiVersionAuthorization')]",
       "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
@@ -866,16 +933,14 @@
        },
        "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
-       {{if (not UserAssignedIDEnabled)}}
        "dependsOn": [
          "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+         {{if UserAssignedIDEnabled}}
+         "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id)))]"
+         {{else}}
          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
+         {{end}}
        ],
-       {{else}}
-       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
-       ],
-       {{end}}
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
          "type": "ManagedIdentityExtensionForLinux",
@@ -914,7 +979,7 @@
         {{if IsOpenShift}}
           "script": "{{ Base64 OpenShiftGetMasterSh }}"
         {{else}}
-          "commandToExecute": "[concat('for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete > /dev/null 2>&1 || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
         }
       }

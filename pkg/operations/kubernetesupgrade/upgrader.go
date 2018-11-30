@@ -226,13 +226,9 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		}
 
 		var agentCount, agentPoolIndex int
-		var agentOsType api.OSType
-		var agentPoolName string
 		for indx, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
 			if app.Name == *agentPool.Name {
 				agentCount = app.Count
-				agentOsType = app.OSType
-				agentPoolName = app.Name
 				agentPoolIndex = indx
 				break
 			}
@@ -316,8 +312,7 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 		for upgradedCount+toBeUpgradedCount < agentCount {
 			agentIndex := getAvailableIndex(agentVMs)
 
-			vmName, err := utils.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
-				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
+			vmName, err := utils.GetK8sVMName(ku.DataModel.Properties, agentPoolIndex, agentIndex)
 			if err != nil {
 				ku.logger.Errorf("Error reconstructing agent VM name with index %d: %v", agentIndex, err)
 				return err
@@ -359,20 +354,26 @@ func (ku *Upgrader) upgradeAgentPools(ctx context.Context) error {
 				return err
 			}
 
+			vmName, err := utils.GetK8sVMName(ku.DataModel.Properties, agentPoolIndex, agentIndex)
+			if err != nil {
+				ku.logger.Errorf("Error fetching new VM name: %v", err)
+				return err
+			}
+
 			// do not create last node in favor of already created extra node.
 			if upgradedCount == toBeUpgradedCount-1 {
-				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.name, agentIndex)
+				ku.logger.Infof("Skipping creation of VM %s (index %d)", vmName, agentIndex)
 				delete(agentVMs, agentIndex)
 			} else {
 				err = upgradeAgentNode.CreateNode(ctx, *agentPool.Name, agentIndex)
 				if err != nil {
-					ku.logger.Errorf("Error creating upgraded agent VM %s: %v", vm.name, err)
+					ku.logger.Errorf("Error creating upgraded agent VM %s: %v", vmName, err)
 					return err
 				}
 
-				err = upgradeAgentNode.Validate(&vm.name)
+				err = upgradeAgentNode.Validate(&vmName)
 				if err != nil {
-					ku.logger.Errorf("Error validating upgraded agent VM %s: %v", vm.name, err)
+					ku.logger.Errorf("Error validating upgraded agent VM %s: %v", vmName, err)
 					return err
 				}
 				vm.status = vmStatusUpgraded

@@ -106,7 +106,8 @@ spec:
     spec:
       priorityClassName: system-cluster-critical
       containers:
-        - image: <kubernetesHeapsterSpec>
+        - image: <img>
+          imagePullPolicy: IfNotPresent
           name: heapster
           resources:
             limits:
@@ -125,7 +126,8 @@ spec:
           command:
             - /heapster
             - --source=kubernetes.summary_api:''
-        - image: <kubernetesAddonResizerSpec>
+        - image: <imgNanny>
+          imagePullPolicy: IfNotPresent
           name: heapster-nanny
           resources:
             limits:
@@ -164,7 +166,7 @@ spec:
             name: heapster-config
       serviceAccountName: heapster
       tolerations:
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
+        - key: CriticalAddonsOnly
+          operator: Exists
       nodeSelector:
         beta.kubernetes.io/os: linux

@@ -53,9 +53,12 @@ $global:CACertificate = "{{WrapAsParameter "caCertificate"}}"
 $global:AgentCertificate = "{{WrapAsParameter "clientCertificate"}}"
 
 ## Download sources provided by acs-engine
-$global:KubeBinariesSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
-$global:WindowsPackageSASURLBase = "{{WrapAsParameter "windowsPackageSASURLBase"}}"
+$global:KubeBinariesPackageSASURL = "{{WrapAsParameter "kubeBinariesSASURL"}}"
+$global:WindowsKubeBinariesURL = "{{WrapAsParameter "windowsKubeBinariesURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsParameter "kubeBinariesVersion"}}"
+
+## Docker Version
+$global:DockerVersion = "{{WrapAsParameter "windowsDockerVersion"}}"
 
 ## VM configuration passed by Azure
 $global:WindowsTelemetryGUID = "{{WrapAsParameter "windowsTelemetryGUID"}}"
@@ -119,6 +122,14 @@ Expand-Archive scripts.zip -DestinationPath "C:\\AzureData\\"
 . c:\AzureData\k8s\windowscnifunc.ps1
 . c:\AzureData\k8s\windowsazurecnifunc.ps1
 
+function
+Update-ServiceFailureActions()
+{
+    sc.exe failure "kubelet" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "kubeproxy" actions= restart/60000/restart/60000/restart/60000 reset= 900
+    sc.exe failure "docker" actions= restart/60000/restart/60000/restart/60000 reset= 900
+}
+
 try
 {
     # Set to false for debugging.  This will output the start script to
@@ -128,14 +139,30 @@ try
     if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
-        Write-Log "apply telemetry data setting"
+        Write-Log "Apply telemetry data setting"
         Set-TelemetrySetting -WindowsTelemetryGUID $global:WindowsTelemetryGUID
 
-        Write-Log "resize os drive if possible"
+        Write-Log "Resize os drive if possible"
         Resize-OSDrive
 
-        Write-Log "download kubelet binaries and unzip"
-        Get-KubeBinaries -KubeBinariesSASURL $global:KubeBinariesSASURL
+        Write-Log "Create required data directories as needed"
+        Initialize-DataDirectories
+
+        Write-Log "Install docker"
+        Install-Docker -DockerVersion $global:DockerVersion
+
+        Write-Log "Download kubelet binaries and unzip"
+        Get-KubePackage -KubeBinariesSASURL $global:KubeBinariesPackageSASURL
+
+        # this overwrite the binaries that are download from the custom packge with binaries 
+        # The custom package has a few files that are nessary for future steps (nssm.exe)
+        # this is a temporary work around to get the binaries until we depreciate 
+        # custom package and nssm.exe as defined in #3851.
+        if ($global:WindowsKubeBinariesURL){
+            Write-Log "Overwriting kube node binaries from $global:WindowsKubeBinariesURL"
+            Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
+        }
+
 
         Write-Log "Write Azure cloud provider config"
         Write-AzureConfig `
@@ -192,7 +219,7 @@ try
             Get-HnsPsm1 -HNSModule $global:HNSModule
         }
 
-        Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
+        Write-Log "Write kubelet startfile with pod CIDR of $podCIDR"
         Install-KubernetesServices `
             -KubeletConfigArgs $global:KubeletConfigArgs `
             -KubeBinariesVersion $global:KubeBinariesVersion `
@@ -215,8 +242,14 @@ try
         Write-Log "Disable Internet Explorer compat mode and set homepage"
         Set-Explorer
 
+        Write-Log "Adjust pagefile size"
+        Adjust-PageFileSize
+
         Write-Log "Start preProvisioning script"
         PREPROVISION_EXTENSION
+
+        Write-Log "Update service failure actions"
+        Update-ServiceFailureActions
 
         Write-Log "Setup Complete, reboot computer"
         Restart-Computer

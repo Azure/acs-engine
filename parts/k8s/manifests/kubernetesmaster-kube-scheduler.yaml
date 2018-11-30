@@ -1,33 +1,34 @@
-apiVersion: "v1"
-kind: "Pod"
+apiVersion: v1
+kind: Pod
 metadata:
-  name: "kube-scheduler"
-  namespace: "kube-system"
+  name: kube-scheduler
+  namespace: kube-system
   labels:
     tier: control-plane
     component: kube-scheduler
 spec:
   hostNetwork: true
   containers:
-    - name: "kube-scheduler"
-      image: "<kubernetesHyperkubeSpec>"
+    - name: kube-scheduler
+      image: <img>
+      imagePullPolicy: IfNotPresent
       command: ["/hyperkube", "scheduler"]
-      args: [<kubernetesSchedulerConfig>]
+      args: [<args>]
       volumeMounts:
-        - name: "etc-kubernetes"
-          mountPath: "/etc/kubernetes"
-        - name: "var-lib-kubelet"
-          mountPath: "/var/lib/kubelet"
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+        - name: var-lib-kubelet
+          mountPath: /var/lib/kubelet
         - name: msi
-          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+          mountPath: /var/lib/waagent/ManagedIdentity-Settings
           readOnly: true
   volumes:
-    - name: "etc-kubernetes"
+    - name: etc-kubernetes
       hostPath:
-        path: "/etc/kubernetes"
-    - name: "var-lib-kubelet"
+        path: /etc/kubernetes
+    - name: var-lib-kubelet
       hostPath:
-        path: "/var/lib/kubelet"
+        path: /var/lib/kubelet
     - name: msi
       hostPath:
-        path: "/var/lib/waagent/ManagedIdentity-Settings"
+        path: /var/lib/waagent/ManagedIdentity-Settings

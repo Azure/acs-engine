@@ -4,30 +4,6 @@
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
     {{if .HasWindows}}
-      "kubeBinariesSASURL": {
-        "metadata": {
-          "description": "The download url for kubernetes windows binaries."
-        },
-        "type": "string"
-      },
-      "windowsPackageSASURLBase": {
-        "metadata": {
-          "description": "The download url base for windows packages for kubernetes."
-        },
-        "type": "string"
-      },
-      "kubeBinariesVersion": {
-        "metadata": {
-          "description": "Kubernetes windows binaries version"
-        },
-        "type": "string"
-      },
-      "windowsTelemetryGUID": {
-        "metadata": {
-          "description": "The GUID to set in windows agent to collect telemetry data."
-        },
-        "type": "string"
-      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
@@ -49,19 +25,29 @@
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
         {{end}}
     {{end}}
-    {{if IsMasterVirtualMachineScaleSets}}
-      {{template "k8s/kubernetesmastervarsvmss.t" .}}
-    {{else}}
-      {{template "k8s/kubernetesmastervars.t" .}}
-    {{end}}
+    {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
     {{if UserAssignedIDEnabled}}
       {
         "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
         "name": "[variables('userAssignedID')]",
-        "apiVersion": "[variables('apiVersionCompute')]",
+        "apiVersion": "[variables('apiVersionManagedIdentity')]",
         "location": "[variables('location')]"
+      },
+      {
+        "apiVersion": "[variables('apiVersionAuthorization')]",
+        "type": "Microsoft.Authorization/roleAssignments",
+        "name": "[guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id))]",
+        "properties": {
+          "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))).principalId]",
+          "principalType": "ServicePrincipal",
+          "scope": "[resourceGroup().id]"
+        },
+        "dependsOn": [
+          "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('userAssignedID'))]"
+        ]
       },
     {{end}}
     {{if IsOpenShift}}
@@ -85,106 +71,61 @@
     {{end}}
     {{if IsHostedMaster}}
       {{if not IsCustomVNET}}
-      ,{
-        "apiVersion": "[variables('apiVersionNetwork')]",
-        "dependsOn": [
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-      {{if not IsAzureCNI}}
-          ,
-          "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
-      {{end}}
-        ],
-        "location": "[variables('location')]",
-        "name": "[variables('virtualNetworkName')]",
-        "properties": {
-          "addressSpace": {
-            "addressPrefixes": [
-              "[parameters('vnetCidr')]"
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+          {{if not IsAzureCNI}}
+            ,
+            "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+          {{end}}
+          ],
+          "location": "[variables('location')]",
+          "name": "[variables('virtualNetworkName')]",
+          "properties": {
+            "addressSpace": {
+              "addressPrefixes": [
+                "[parameters('vnetCidr')]"
+              ]
+            },
+            "subnets": [
+              {
+                "name": "[variables('subnetName')]",
+                "properties": {
+                  "addressPrefix": "[parameters('masterSubnet')]",
+                  "networkSecurityGroup": {
+                    "id": "[variables('nsgID')]"
+                  }
+                {{if not IsAzureCNI}}
+                  ,
+                  "routeTable": {
+                    "id": "[variables('routeTableID')]"
+                  }
+                {{end}}
+                }
+              }
             ]
           },
-          "subnets": [
-            {
-              "name": "[variables('subnetName')]",
-              "properties": {
-                "addressPrefix": "[parameters('masterSubnet')]",
-                "networkSecurityGroup": {
-                  "id": "[variables('nsgID')]"
-                }
-      {{if not IsAzureCNI}}
-                ,
-                "routeTable": {
-                  "id": "[variables('routeTableID')]"
-                }
+          "type": "Microsoft.Network/virtualNetworks"
+        }
       {{end}}
-              }
-            }
-          ]
+      {{if not IsAzureCNI}}
+        ,{
+          "apiVersion": "[variables('apiVersionNetwork')]",
+          "location": "[variables('location')]",
+          "name": "[variables('routeTableName')]",
+          "type": "Microsoft.Network/routeTables"
+        }
+      {{end}}
+      ,{
+        "apiVersion": "[variables('apiVersionNetwork')]",
+        "location": "[variables('location')]",
+        "name": "[variables('nsgName')]",
+        "properties": {
+          "securityRules": []
         },
-        "type": "Microsoft.Network/virtualNetworks"
+        "type": "Microsoft.Network/networkSecurityGroups"
       }
-    {{end}}
-    {{if not IsAzureCNI}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('routeTableName')]",
-      "type": "Microsoft.Network/routeTables"
-    }
-    {{end}}
-    ,{
-      "apiVersion": "[variables('apiVersionNetwork')]",
-      "location": "[variables('location')]",
-      "name": "[variables('nsgName')]",
-      "properties": {
-        "securityRules": [
-{{if .HasWindows}}
-          {
-            "name": "allow_rdp",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow RDP traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "3389-3389",
-              "direction": "Inbound",
-              "priority": 102,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-{{end}}
-          {
-            "name": "allow_ssh",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow SSH traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22-22",
-              "direction": "Inbound",
-              "priority": 101,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-          {
-            "name": "allow_kube_tls",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow kube-apiserver (tls) traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "443-443",
-              "direction": "Inbound",
-              "priority": 100,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          }
-        ]
-      },
-      "type": "Microsoft.Network/networkSecurityGroups"
-    }
     {{else}}
       {{if IsMasterVirtualMachineScaleSets}}
           ,{{template "k8s/kubernetesmasterresourcesvmss.t" .}}
