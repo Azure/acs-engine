@@ -26,7 +26,7 @@ jobs:
           command: make bootstrap
       - run:
           name: Run linting rules
-          command: make validate-headers test-style
+          command: make validate-copyright-headers test-style
       - run:
           name: Check if imports, Gopkg.toml, and Gopkg.lock are in sync
           command: make validate-dependencies
