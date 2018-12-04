@@ -1,3 +1,15 @@
+# Pardon our Dust!
+
+This codebase has been deprecated in favor of aks-engine, the natural evolution from acs-engine:
+
+https://github.com/Azure/aks-engine
+
+All future development and maintenance will occur there as an outcome of this deprecation. We're sorry for any inconvenience!
+
+We've moved the Kubernetes code over 100% as-is (with the exception of the boilerplate renaming overhead that accompanies such a move); we're confident this housekeeping manouver will more effectively track the close affinity between the AKS managed service and the "build and manage your own configurable Kubernetes" stories that folks use this tool for.
+
+See you at https://github.com/Azure/aks-engine!
+
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
 
 [![Coverage Status](https://codecov.io/gh/Azure/acs-engine/branch/master/graph/badge.svg)](https://codecov.io/gh/Azure/acs-engine)
