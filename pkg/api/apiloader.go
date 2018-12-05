@@ -177,8 +177,10 @@ func (a *Apiloader) LoadContainerService(
 		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e
 		}
-		unversioned := ConvertV20170701ContainerService(containerService)
-		if curOrchVersion != "" {
+		unversioned := ConvertV20170701ContainerService(containerService, isUpdate)
+		if curOrchVersion != "" &&
+			(containerService.Properties.OrchestratorProfile == nil ||
+				containerService.Properties.OrchestratorProfile.OrchestratorVersion == "") {
 			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
 		}
 		return unversioned, nil
