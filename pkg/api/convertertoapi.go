@@ -574,6 +574,9 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	switch api.OrchestratorType {
 	case Kubernetes:
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(Kubernetes, "", v20170701cs.OrchestratorVersion, isUpdate, hasWindows)
+		if api.OrchestratorVersion == "" {
+			api.OrchestratorVersion = common.GetDefaultKubernetesVersion(hasWindows)
+		}
 	case DCOS:
 		switch v20170701cs.OrchestratorVersion {
 		case common.DCOSVersion1Dot10Dot0, common.DCOSVersion1Dot9Dot0, common.DCOSVersion1Dot8Dot8:
