@@ -82,7 +82,18 @@ $URIs | ForEach-Object {
     }
 }
 
-# No failures, schedule reboot now
 
+# Remove lockfile after reboot
+$taskName = "\PowerShell\RemoveLock"
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-command C:\k\postreboot.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $taskName -Description "Remove Azure-CNI lockfile after reboot"
+$postRebootScript = @"
+Disable-ScheduledTask -TaskName '\PowerShell\RemoveLock'
+Remove-Item "c:\k\azure-vnet.json.lock" -ErrorAction Ignore
+"@
+$postRebootScript | Out-File -Encoding ascii "c:\k\postreboot.ps1"
+
+# No failures, schedule reboot now
 schtasks /create /TN RebootAfterPatch /RU SYSTEM /TR "shutdown.exe /r /t 0 /d 2:17" /SC ONCE /ST $(([System.DateTime]::Now + [timespan]::FromMinutes(1)).ToString("HH:mm")) /V1 /Z
 exit 0
