@@ -11,18 +11,6 @@ acs-engine.
 - An Azure account (needed for deploying VMs and Azure infrastructure)
 - Git
 
-## Contribution Guidelines
-
-We welcome contributions. This project has set up some guidelines in
-order to ensure that (a) code quality remains high, (b) the project
-remains consistent, and (c) contributions follow the open source legal
-requirements. Our intent is not to burden contributors, but to build
-elegant and high-quality open source code so that our users will benefit.
-
-Make sure you have read and understood the main CONTRIBUTING guide:
-
-https://github.com/Azure/acs-engine/blob/master/CONTRIBUTING.md
-
 ### Structure of the Code
 
 The code for the acs-engine project is organized as follows:
@@ -57,10 +45,6 @@ workflow for doing this is as follows:
 ### Third Party Dependencies
 
 Third party dependencies reside locally inside the repository under the `vendor/` directory. We use [dep](https://github.com/golang/dep) to enforce our dependency graph, declared in [Gopkg.toml](https://github.com/Azure/acs-engine/blob/master/CONTRIBUTING.md) in the project root.
-
-If you wish to introduce a new third party dependency into `acs-engine`, please file an [issue](https://github.com/Azure/acs-engine/issues), and include the canonical VCS path (e.g., `github.com/Azure/azure-sdk-for-go`) along with either the desired release string expression to depend on (e.g., `~8.1.0`), or the commit hash to pin to a static commit (e.g., `4cdb38c072b86bf795d2c81de50784d9fdd6eb77`). A project maintainer will then own the effort to update the codebase with that dependency, including relevant updates to `Gopkg.toml` and `vendor/`.
-
-As a rule we want to distinguish dependency update PRs from feature/bug PRs; we may ask that feature/bug PRs which include updates to `vendor/` and/or contain any other dependency-related overhead to be triaged into separate PRs that can be managed independently, pre-requisite dependency changes in one, and features/bugs in another. The objective of enforcing these distinctions is to help focus the PR review process, and to make manageable the difficult task of rationalizing a multitude of parallel PRs in flight, many of which which may carry hard-to-reconcile dependency side-effects when aggressively updated with a fresh dependency graph as part of the PR payload.
 
 ### Go Conventions
 
