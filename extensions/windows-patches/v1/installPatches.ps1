@@ -85,7 +85,7 @@ $URIs | ForEach-Object {
 
 # Remove lockfile after reboot
 $taskName = "\PowerShell\RemoveLock"
-$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-command C:\k\postreboot.ps1'
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass C:\k\postreboot.ps1'
 $trigger = New-ScheduledTaskTrigger -AtStartup
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $taskName -Description "Remove Azure-CNI lockfile after reboot"
 $postRebootScript = @"
