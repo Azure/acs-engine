@@ -1,0 +1,90 @@
+{
+  "apiVersion": "vlabs",
+  "plan": {},
+  "properties": {
+    "provisioningState": "",
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorVersion": "1.8.2",
+      "kubernetesConfig": {
+        "networkPolicy": "none",
+        "kubeletConfig": {
+          "--cloud-provider": "",
+          "--cloud-config": "",
+          "--azure-container-registry-config": ""
+        },
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled" : false
+          },
+          {
+            "name": "kubernetes-dashboard",
+            "enabled" : false
+          }
+        ]
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "caas-test-eastus-linux-03",
+      "vmSize": "Standard_D2_v2",
+      "firstConsecutiveStaticIP": "10.240.255.5"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "system",
+        "count": 2,
+        "vmSize": "Standard_F1",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "osType": "Linux"
+      },
+      {
+        "name": "agentpool1",
+        "count": 2,
+        "vmSize": "Standard_F2",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "osType": "Linux"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_F1",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "osType": "Linux",
+        "osDiskSizeGB": 50
+      },
+      {
+        "name": "agentpool3",
+        "count": 3,
+        "vmSize": "Standard_F1",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "osType": "Linux",
+        "osDiskSizeGB": 50
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "windowsProfile": {
+      "adminUsername": "",
+      "adminPassword": ""
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    },
+    "certificateProfile": {}
+  }
+}

@@ -75,6 +75,11 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -211,3 +216,4 @@ spec:
       serviceAccountName: kube-dns
       nodeSelector:
         beta.kubernetes.io/os: linux
+        agentpool: system

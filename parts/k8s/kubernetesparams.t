@@ -389,6 +389,10 @@
       "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
       "type": "string"
     },
+    "vnetCniMultitenancyLinuxPluginsURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-multitenancy-linux-amd64-latest.tgz",
+      "type": "string"
+    },
     "vnetCniWindowsPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
       "type": "string"

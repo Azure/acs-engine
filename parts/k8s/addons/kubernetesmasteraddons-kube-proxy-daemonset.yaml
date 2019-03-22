@@ -29,9 +29,6 @@ spec:
         image: <img>
         imagePullPolicy: IfNotPresent
         name: kube-proxy
-        resources:
-          requests:
-            cpu: 100m
         securityContext:
           privileged: true
         volumeMounts:

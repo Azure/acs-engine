@@ -9,14 +9,14 @@
 {{if and .IsAvailabilitySets .IsStorageAccount}}
   "{{.Name}}StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('{{.Name}}StorageAccountOffset')]"
+      "value": "[variables('{{.Name}}Variables').StorageAccountOffset]"
     },
     "{{.Name}}StorageAccountCount": {
       "type": "int",
-      "value": "[variables('{{.Name}}StorageAccountsCount')]"
+      "value": "[variables('{{.Name}}Variables').StorageAccountsCount]"
     },
     "{{.Name}}SubnetName": {
       "type": "string",
-      "value": "[variables('{{.Name}}SubnetName')]"
+      "value": "[variables('{{.Name}}Variables').SubnetName]"
     },
 {{end}}

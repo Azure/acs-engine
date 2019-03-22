@@ -123,7 +123,7 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 
 			"kubernetesmasteraddons-heapster-deployment.yaml",
 			"kube-heapster-deployment.yaml",
-			true,
+			false,
 			profile.OrchestratorProfile.KubernetesConfig.GetAddonScript(DefaultKubeHeapsterDeploymentAddonName),
 		},
 		{

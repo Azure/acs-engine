@@ -1,7 +1,7 @@
     {
       "apiVersion": "[variables('apiVersionNetwork')]",
       "copy": {
-        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
         "name": "loop"
       },
       "dependsOn": [
@@ -26,7 +26,7 @@
 {{end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
+      "name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, 'nic-', copyIndex(variables('{{.Name}}Variables').Offset))]",
       "properties": {
         "enableAcceleratedNetworking" : {{.AcceleratedNetworkingEnabled}},
 {{if not IsOpenShift}}
@@ -50,11 +50,24 @@
             "name": "ipconfig{{$seq}}",
             "properties": {
               {{if eq $seq 1}}
-              "primary": true,
+                "primary": true,
+                {{if eq $.Name "system"}}
+                "privateIPAddress": "[concat(variables('aciSystemNodeAddrPrefix'), copyIndex(add(50, int(variables('aciPrimaryIPOctet4')))))]",
+                {{else if eq $.Name "agentpool1"}}
+                "privateIPAddress": "[concat(variables('aciSystemNodeAddrPrefix'), copyIndex(add(100, int(variables('aciPrimaryIPOctet4')))))]",
+                {{else}}
+                "privateIPAddress": "[concat(variables('aciCustomerNodeAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Index')), 2))), '.', variables('aciPrimaryIPOctet4'))]",
+                {{end}}
+              {{else if eq $.Name "system"}}
+              "privateIPAddress": "[concat(variables('aciSystemPodAddrPrefix'), copyIndex(add(50, int(variables('aciPrimaryIPOctet4')))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
+              {{else if eq $.Name "agentpool1"}}
+              "privateIPAddress": "[concat(variables('aciSystemPodAddrPrefix'), copyIndex(add(100, int(variables('aciPrimaryIPOctet4')))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
+              {{else}}
+              "privateIPAddress": "[concat(variables('aciCustomerPodAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Index')), 2))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
               {{end}}
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[variables('{{$.Name}}VnetSubnetID')]"
+                "id": "[variables('{{$.Name}}Variables').VnetSubnetID]"
               }
 {{if eq $.Role "infra"}}
               ,
@@ -79,12 +92,13 @@
 {{if .IsManagedDisks}}
    {
       "location": "[variables('location')]",
-      "name": "[variables('{{.Name}}AvailabilitySet')]",
-      "apiVersion": "[variables('apiVersionCompute')]",
+      "name": "[variables('{{.Name}}Variables').AvailabilitySet]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "properties":
         {
             "platformFaultDomainCount": 2,
             "platformUpdateDomainCount": 3
+            "managed" : "true"
         },
       "sku": {
         "name": "Aligned"
@@ -95,7 +109,7 @@
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
-        "count": "[variables('{{.Name}}StorageAccountsCount')]",
+        "count": "[variables('{{.Name}}Variables').StorageAccountsCount]",
         "name": "loop"
       },
       {{if not IsHostedMaster}}
@@ -105,10 +119,25 @@
           ],
         {{end}}
       {{end}}
+      "kind": "Storage",
       "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          }
+        },
+        "supportsHttpsTrafficOnly": true
+      },
       "sku": {
-        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}Variables').VMSize].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
@@ -116,7 +145,7 @@
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
-        "count": "[variables('{{.Name}}StorageAccountsCount')]",
+        "count": "[variables('{{.Name}}Variables').StorageAccountsCount]",
         "name": "datadiskLoop"
       },
       {{if not IsHostedMaster}}
@@ -126,17 +155,32 @@
           ],
         {{end}}
       {{end}}
+      "kind": "Storage",
       "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          }
+        },
+        "supportsHttpsTrafficOnly": true
+      },
       "sku": {
-        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}Variables').VMSize].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
     {{end}}
     {
       "location": "[variables('location')]",
-      "name": "[variables('{{.Name}}AvailabilitySet')]",
+      "name": "[variables('{{.Name}}Variables').AvailabilitySet]",
       "apiVersion": "[variables('apiVersionCompute')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -145,30 +189,30 @@
   {
       "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
-        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
 {{if .IsStorageAccount}}
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
 
   {{if .HasDisks}}
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
   {{end}}
 {{end}}
-        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}Variables').VMNamePrefix, 'nic-', copyIndex(variables('{{.Name}}Variables').Offset))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}Variables').AvailabilitySet)]"
       ],
       "tags":
       {
-        "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+        "creationSource" : "[concat(parameters('generatorCode'), '-', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]",
         "resourceNameSuffix" : "[parameters('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
         "acsengineVersion" : "[parameters('acsengineVersion')]",
         "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+      "name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]",
       {{if UseManagedIdentity}}
       {{if UserAssignedIDEnabled}}
       "identity": {
@@ -192,21 +236,21 @@
       {{end}}
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}Variables').AvailabilitySet)]"
         },
         "hardwareProfile": {
-          "vmSize": "[variables('{{.Name}}VMSize')]"
+          "vmSize": "[variables('{{.Name}}Variables').VMSize]"
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset'))))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}Variables').VMNamePrefix, 'nic-', copyIndex(variables('{{.Name}}Variables').Offset)))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[parameters('linuxAdminUsername')]",
-          "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+          "computername": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]",
           {{if not IsOpenShift}}
           {{GetKubernetesAgentCustomData .}}
           {{end}}
@@ -232,21 +276,21 @@
           {{end}}
           "imageReference": {
             {{if UseAgentCustomImage .}}
-            "id": "[resourceId(variables('{{.Name}}osImageResourceGroup'), 'Microsoft.Compute/images', variables('{{.Name}}osImageName'))]"
+            "id": "[resourceId(variables('{{.Name}}Variables').osImageResourceGroup, 'Microsoft.Compute/images', variables('{{.Name}}Variables').osImageName)]"
             {{else}}
-            "offer": "[variables('{{.Name}}osImageOffer')]",
-            "publisher": "[variables('{{.Name}}osImagePublisher')]",
-            "sku": "[variables('{{.Name}}osImageSKU')]",
-            "version": "[variables('{{.Name}}osImageVersion')]"
+            "offer": "[variables('{{.Name}}Variables').osImageOffer]",
+            "publisher": "[variables('{{.Name}}Variables').osImagePublisher]",
+            "sku": "[variables('{{.Name}}Variables').osImageSKU]",
+            "version": "[variables('{{.Name}}Variables').osImageVersion]"
             {{end}}
           },
           "osDisk": {
             "createOption": "FromImage"
             ,"caching": "ReadWrite"
           {{if .IsStorageAccount}}
-            ,"name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]"
+            ,"name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset),'-osdisk')]"
             ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Variables').Offset),variables('maxVMsPerStorageAccount')),variables('{{.Name}}Variables').StorageAccountOffset),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), '-osdisk.vhd')]"
             }
           {{end}}
           {{if ne .OSDiskSizeGB 0}}
@@ -262,35 +306,35 @@
     {
       "apiVersion": "[variables('apiVersionAuthorization')]",
       "copy": {
-         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
          "name": "vmLoopNode"
        },
-      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), 'vmidentity'))]",
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), 'vmidentity'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
         "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
-        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset'))), '2017-03-30', 'Full').identity.principalId]"
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset)), '2017-03-30', 'Full').identity.principalId]"
       }
     },
     {{end}}
      {
        "type": "Microsoft.Compute/virtualMachines/extensions",
-       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/ManagedIdentityExtension')]",
+       "name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), '/ManagedIdentityExtension')]",
        "copy": {
-         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
          "name": "vmLoopNode"
        },
        "apiVersion": "[variables('apiVersionCompute')]",
        "location": "[resourceGroup().location]",
        {{if UserAssignedIDEnabled}}
        "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]",
         "[concat('Microsoft.Authorization/roleAssignments/',guid(concat(variables('userAssignedID'), 'roleAssignment', resourceGroup().id)))]"
        ],
        {{else}}
        "dependsOn": [
-         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), 'vmidentity')))]"
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), 'vmidentity')))]"
        ],
        {{end}}
        "properties": {
@@ -308,19 +352,19 @@
      {
       "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
-        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
         {{if UseManagedIdentity}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/extensions/ManagedIdentityExtension')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), '/extensions/ManagedIdentityExtension')]"
         {{else}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]"
         {{end}}
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'/cse', '-agent-', copyIndex(variables('{{.Name}}Offset')))]",
+      "name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset),'/cse', '-agent-', copyIndex(variables('{{.Name}}Variables').Offset))]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
@@ -328,26 +372,28 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-        {{if IsOpenShift }}
-          "script": "{{ Base64 (OpenShiftGetNodeSh .) }}"
-        {{else}}
-          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1{{if IsFeatureEnabled "CSERunInBackground" }} &{{end}}\"')]"
-        {{end}}
+          {{if eq $.Name "system"}}
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' VNET_CNI_PLUGINS_URL=', parameters('vnetCniLinuxPluginsURL'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1{{if IsFeatureEnabled "CSERunInBackground" }} &{{end}}\"')]"
+          {{else if eq $.Name "agentpool1"}}
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' VNET_CNI_PLUGINS_URL=', parameters('vnetCniLinuxPluginsURL'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1{{if IsFeatureEnabled "CSERunInBackground" }} &{{end}}\"')]"
+          {{else}}
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' VNET_CNI_PLUGINS_URL=', parameters('vnetCniMultitenancyLinuxPluginsURL'),' GPU_NODE={{IsNSeriesSKU .}} /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1{{if IsFeatureEnabled "CSERunInBackground" }} &{{end}}\"')]"
+          {{end}}
         }
       }
     }
     {{if UseAksExtension}}
     ,{
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/computeAksLinuxBilling')]",
+      "name": "[concat(variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset), '/computeAksLinuxBilling')]",
       "apiVersion": "[variables('apiVersionCompute')]",
       "copy": {
-        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
+        "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Variables').Offset)]",
         "name": "vmLoopNode"
       },
       "location": "[variables('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}Variables').VMNamePrefix, copyIndex(variables('{{.Name}}Variables').Offset))]"
       ],
       "properties": {
         "publisher": "Microsoft.AKS",

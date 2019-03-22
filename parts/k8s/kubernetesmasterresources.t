@@ -6,8 +6,8 @@
       "name": "[variables('masterAvailabilitySet')]",
       "properties":
       {
-        "platformFaultDomainCount": 2,
-        "platformUpdateDomainCount": 3
+        "platformFaultDomainCount": 1,
+        "platformUpdateDomainCount": 1
       },
       "sku": {
         "name": "Aligned"
@@ -32,8 +32,23 @@
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
 {{end}}
+      "kind": "Storage",
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          }
+        },
+        "supportsHttpsTrafficOnly": true
+      },
       "sku": {
         "name": "[variables('vmSizesMap')[parameters('masterVMSize')].storageAccountType]"
       },
@@ -89,36 +104,6 @@
       "name": "[variables('nsgName')]",
       "properties": {
         "securityRules": [
-        {{if .HasWindows}}
-          {
-            "name": "allow_rdp",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow RDP traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "3389-3389",
-              "direction": "Inbound",
-              "priority": 102,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
-        {{end}}
-          {
-            "name": "allow_ssh",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow SSH traffic to master",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22-22",
-              "direction": "Inbound",
-              "priority": 101,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
-            }
-          },
           {
             "name": "allow_kube_tls",
             "properties": {
@@ -322,7 +307,7 @@
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
                 }
               ],
-              "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
+              "privateIPAddress": "[concat(variables('aciSystemNodeAddrPrefix'), copyIndex(int(variables('aciPrimaryIPOctet4'))))]",
               "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
@@ -337,7 +322,8 @@
             "name": "ipconfig{{$seq}}",
             "properties": {
               "primary": false,
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddress": "[concat(variables('aciSystemPodAddrPrefix'), copyIndex(int(variables('aciPrimaryIPOctet4'))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
+              "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
@@ -979,7 +965,7 @@
         {{if IsOpenShift}}
           "script": "{{ Base64 OpenShiftGetMasterSh }}"
         {{else}}
-          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('retrycmd_if_failure() { r=$1; w=$2; t=$3; shift && shift && shift; for i in $(seq 1 $r); do timeout $t ${@}; [ $? -eq 0  ] && break || if [ $i -eq $r ]; then return 1; else sleep $w; fi; done };{{if not (IsFeatureEnabled "BlockOutboundInternet")}} ERR_OUTBOUND_CONN_FAIL=50; retrycmd_if_failure 50 1 3 nc -vz {{if IsMooncake}}gcr.azk8s.cn 80{{else}}k8s.gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz gcr.io 443 && retrycmd_if_failure 50 1 3 nc -vz docker.io 443{{end}} || exit $ERR_OUTBOUND_CONN_FAIL;{{end}} for i in $(seq 1 1200); do if [ -f /opt/azure/containers/provision.sh ]; then break; fi; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' VNET_CNI_PLUGINS_URL=', parameters('vnetCniLinuxPluginsURL'), ' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         {{end}}
         }
       }

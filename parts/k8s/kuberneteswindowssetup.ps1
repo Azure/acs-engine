@@ -137,7 +137,11 @@ try
     # to the windows machine, and run the script manually to watch
     # the output.
     if ($true) {
+        Write-Log "Disable automatic Windows update"
+        reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 1 /f
+
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
+        net start Docker
 
         Write-Log "Apply telemetry data setting"
         Set-TelemetrySetting -WindowsTelemetryGUID $global:WindowsTelemetryGUID
@@ -162,29 +166,6 @@ try
             Write-Log "Overwriting kube node binaries from $global:WindowsKubeBinariesURL"
             Get-KubeBinaries -KubeBinariesURL $global:WindowsKubeBinariesURL
         }
-
-
-        Write-Log "Write Azure cloud provider config"
-        Write-AzureConfig `
-            -KubeDir $global:KubeDir `
-            -AADClientId $AADClientId `
-            -AADClientSecret $AADClientSecret `
-            -TenantId $global:TenantId `
-            -SubscriptionId $global:SubscriptionId `
-            -ResourceGroup $global:ResourceGroup `
-            -Location $Location `
-            -VmType $global:VmType `
-            -SubnetName $global:SubnetName `
-            -SecurityGroupName $global:SecurityGroupName `
-            -VNetName $global:VNetName `
-            -RouteTableName $global:RouteTableName `
-            -PrimaryAvailabilitySetName $global:PrimaryAvailabilitySetName `
-            -PrimaryScaleSetName $global:PrimaryScaleSetName `
-            -UseManagedIdentityExtension $global:UseManagedIdentityExtension `
-            -UserAssignedClientID $global:UserAssignedClientID `
-            -UseInstanceMetadata $global:UseInstanceMetadata `
-            -LoadBalancerSku $global:LoadBalancerSku `
-            -ExcludeMasterFromStandardLB $global:ExcludeMasterFromStandardLB
 
         Write-Log "Write ca root"
         Write-CACert -CACertificate $global:CACertificate `
